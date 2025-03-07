@@ -200,18 +200,44 @@ const getRandomBiome = (): BiomeType => {
 	return availableBiomes[randomIndex];
 };
 
-// XP calculation constants
+// XP calculation constants - Exponential XP system
 const BASE_XP_PER_TILE = 100;
-const XP_PER_LEVEL = 1000; // Linear XP scaling
+const XP_GROWTH_FACTOR = 1.1; // Exponential growth factor for XP needed per level
+const BASE_XP_PER_LEVEL = 1000; // Starting XP needed for level 1 to 2
 
+/**
+ * Calculate level based on total XP using exponential scaling
+ * Each level requires more XP than the previous one
+ */
 const calculateLevel = (xp: number): { level: number; progress: number } => {
-	const level = Math.floor(xp / XP_PER_LEVEL) + 1;
-	const progress = (xp % XP_PER_LEVEL) / XP_PER_LEVEL;
+	// Start at level 1, no XP needed for first level
+	let level = 1;
+	let xpForNextLevel = BASE_XP_PER_LEVEL;
+	let remainingXp = xp;
+
+	// Keep leveling up until we don't have enough XP
+	while (remainingXp >= xpForNextLevel) {
+		remainingXp -= xpForNextLevel;
+		level++;
+		xpForNextLevel = Math.floor(
+			BASE_XP_PER_LEVEL * Math.pow(XP_GROWTH_FACTOR, level - 1)
+		);
+	}
+
+	// Calculate progress to next level
+	const progress = xpForNextLevel > 0 ? remainingXp / xpForNextLevel : 0;
+
 	return { level, progress };
 };
 
+/**
+ * Calculate XP gain scaling based on owned tiles
+ * The more tiles owned, the more XP gained
+ */
 const calculateXpGain = (ownedTiles: number): number => {
-	return BASE_XP_PER_TILE * (ownedTiles / 2);
+	// Basic XP gain increases with the number of tiles owned
+	// Each tile contributes XP that increases slightly with more tiles
+	return BASE_XP_PER_TILE * Math.pow(1.02, ownedTiles - 1) * ownedTiles;
 };
 
 const createGameSlice = (
@@ -370,7 +396,7 @@ const createGameSlice = (
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'idle-explorer-storage-v1337-testing',
+		name: 'idle-explorer-storage-v1337-tests-local',
 		version: 2,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {

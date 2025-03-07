@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { EQUIPMENT_SLOT_INFO } from '@/config/gameConfig';
 import { EquipmentSlot, Item } from '@/types/game';
+import { formatNumber, formatTime } from '@/utils/formatters';
 
 const RARITY_COLORS = {
 	common: 'border-gray-500',
@@ -33,11 +34,54 @@ const ItemTooltip: React.FC<{ item: Item }> = ({ item }) => {
 	);
 };
 
+// Level Up Timer Component that updates every second
 const LevelUpTimer: React.FC = () => {
+	const { resourceRates, resources, level } = useGameStore();
+	const [timeRemaining, setTimeRemaining] = useState('Calculating...');
+
+	useEffect(() => {
+		const timer = setInterval(() => {
+			// Get current XP rate
+			const xpRate = resourceRates.total.xp;
+			if (xpRate <= 0) {
+				setTimeRemaining('∞');
+				return;
+			}
+
+			// Calculate remaining XP to level up using the exponential formula
+			const currentXp = resources.xp;
+
+			// Calculate remaining XP by finding what's needed for the next level
+			let xpForCurrentLevel = 0;
+			let xpForNextLevel = 1000; // Base value for level 1
+			let tempLevel = 1;
+			let accumulatedXp = 0;
+
+			// Find the XP threshold for the current level
+			while (tempLevel < level.level) {
+				xpForCurrentLevel = xpForNextLevel;
+				xpForNextLevel = Math.floor(1000 * Math.pow(1.1, tempLevel));
+				accumulatedXp += xpForCurrentLevel;
+				tempLevel++;
+			}
+
+			const totalXpForNextLevel = accumulatedXp + xpForNextLevel;
+			const remainingXp = totalXpForNextLevel - currentXp;
+
+			// Calculate time in seconds
+			const timeInSeconds = remainingXp / xpRate;
+
+			// Format the time using the new formatTime utility
+			setTimeRemaining(formatTime(timeInSeconds));
+		}, 1000);
+
+		return () => clearInterval(timer);
+	}, [resourceRates.total.xp, resources.xp, level.level]);
+
 	return (
 		<div className='mt-2 text-center'>
 			<div className='text-gray-400 text-xs'>Time until level up</div>
-			<div className='text-yellow-400 text-sm font-medium'>xxx</div>
+			<div className='text-yellow-400 text-sm font-medium'>{timeRemaining}</div>
 		</div>
 	);
 };
@@ -67,8 +111,9 @@ const CharacterOverlay: React.FC = () => {
 		}
 	});
 
-	const xpToNextLevel = level.level * 1000;
-	const currentXp = Math.floor(resources.xp % 1000);
+	// Calculate XP needed for next level using the exponential formula
+	const xpToNextLevel = Math.floor(1000 * Math.pow(1.1, level.level - 1));
+	const currentXp = Math.floor(resources.xp % xpToNextLevel);
 
 	return (
 		<div className='fixed inset-[8vh] inset-x-[17vw] bg-black bg-opacity-90 rounded-3xl z-50 flex items-start justify-center overflow-y-auto'>
@@ -124,7 +169,7 @@ const CharacterOverlay: React.FC = () => {
 											{Math.floor(level.progress * 100)}%
 										</div>
 										<div className='text-gray-600 text-xs scale-75'>
-											{currentXp} / {xpToNextLevel}
+											{formatNumber(currentXp)} / {formatNumber(xpToNextLevel)}
 										</div>
 									</div>
 								</div>
