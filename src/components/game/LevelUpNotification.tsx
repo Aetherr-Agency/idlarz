@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { useHydration } from '@/hooks/useHydration';
 import '@/styles/LevelUpNotification.css';
@@ -7,14 +7,34 @@ const LevelUpNotification: React.FC = () => {
   const level = useGameStore((state) => state.level);
   const isHydrated = useHydration();
   const [showNotification, setShowNotification] = useState(false);
-  const [prevLevel, setPrevLevel] = useState(level.level);
+  // Use a ref to track initial level to avoid false positives during hydration
+  const initialLevelRef = useRef<number | null>(null);
+  const [prevLevel, setPrevLevel] = useState(0);
+  const initialLoadCompleted = useRef(false);
   
-  // Don't process level changes until the store is hydrated
+  // Initialize the level tracking once hydration is complete
   useEffect(() => {
-    if (!isHydrated) return;
+    if (isHydrated && initialLevelRef.current === null) {
+      // Set the initial level reference on first hydration
+      initialLevelRef.current = level.level;
+      setPrevLevel(level.level);
+      
+      // Mark initial load as completed after a brief delay
+      setTimeout(() => {
+        initialLoadCompleted.current = true;
+        console.log('Initial level tracking initialized:', level.level);
+      }, 500);
+    }
+  }, [isHydrated, level.level]);
+  
+  // Only process level changes after hydration and initial setup
+  useEffect(() => {
+    // Don't check for level changes until hydration is complete and initial setup is done
+    if (!isHydrated || !initialLoadCompleted.current) return;
     
     // Check if level increased
     if (level.level > prevLevel) {
+      console.log(`Level up detected: ${prevLevel} -> ${level.level}`);
       // Show the notification
       setShowNotification(true);
       
