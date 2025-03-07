@@ -16,8 +16,8 @@ export const ADJACENCY_BONUS = 0.25; // 25% bonus for adjacent same biomes
 export const SCALING_CONFIG = {
 	// Base scaling factor that increases exponentially
 	baseScalingFactor: 1.25,
-	scalingIncreasePer: 10, // Increase scaling every X tiles
-	scalingIncreaseAmount: 0.1, // 10% increase in scaling factor
+	scalingIncreasePer: 17, // Increase scaling every X tiles
+	scalingIncreaseAmount: 0.15, // 15% increase in scaling factor
 
 	// Exponential cost scaling formula
 	costFormula: (ownedTiles: number) => {
@@ -50,6 +50,7 @@ export const BIOME_ICONS = {
 	tundra: '❄️',
 	lake: '💧',
 	empty: '⬛',
+	grounds: '🛠️', 
 };
 
 export const INITIAL_RESOURCES = {
@@ -73,12 +74,12 @@ export const BASE_GENERATION_RATES = {
 
 // Castle Configuration - improved to make upgrades more impactful
 export const CASTLE_BASE_RATES = {
-	gold: 0.2, // Increased from 0.05
-	wood: 0.1, // Added some base wood generation
-	stone: 0.1, // Added some base stone generation
+	gold: 0.1, // Increased from 0.05
+	wood: 0.05, // Added some base wood generation
+	stone: 0.05, // Added some base stone generation
 	coal: 0,
-	food: 0.1, // Increased from 0.01
-	xp: 1.0, // Castle provides more base XP
+	food: 0.05, // Increased from 0.01
+	xp: 0.5, // Castle provides more base XP
 };
 
 // Exponential castle upgrade system
@@ -125,14 +126,29 @@ export const BIOMES: Record<string, BiomeInfo> = {
 		resourceIcons: [RESOURCE_ICONS.gold, RESOURCE_ICONS.xp],
 		description: 'Your castle generates resources over time',
 	},
+	grounds: {
+		name: 'grounds',
+		label: 'Grounds',
+		baseColor: '#c0c0c0',
+		cost: 100,
+		resourceGeneration: {
+			gold: 0,
+			wood: 0,
+			stone: 0,
+			food: 0,
+			xp: 0.15,
+		},
+		resourceIcons: [RESOURCE_ICONS.xp],
+		description: 'Allow you to build structures',
+	},
 	forest: {
 		name: 'forest',
 		label: 'Forest',
 		baseColor: '#166534',
 		cost: 100,
 		resourceGeneration: {
-			gold: 0.15,
-			wood: 2.0,
+			gold: 0.1,
+			wood: 0.3,
 		},
 		resourceIcons: [RESOURCE_ICONS.wood],
 		description: 'Forests provide wood and gold',
@@ -144,7 +160,7 @@ export const BIOMES: Record<string, BiomeInfo> = {
 		cost: 100,
 		resourceGeneration: {
 			gold: 0.1,
-			food: 2.0,
+			food: 0.3,
 		},
 		resourceIcons: [RESOURCE_ICONS.food],
 		description: 'Plains provide food and gold',
@@ -156,8 +172,8 @@ export const BIOMES: Record<string, BiomeInfo> = {
 		cost: 100,
 		resourceGeneration: {
 			gold: 0.05,
-			stone: 1.5,
-			coal: 1.0,
+			stone: 0.3,
+			coal: 0.2,
 		},
 		resourceIcons: [RESOURCE_ICONS.stone, RESOURCE_ICONS.coal],
 		description: 'Hills provide stone and coal',
@@ -168,8 +184,8 @@ export const BIOMES: Record<string, BiomeInfo> = {
 		baseColor: '#365314',
 		cost: 100,
 		resourceGeneration: {
-			food: 1.0,
-			wood: 0.5,
+			food: 0.1,
+			wood: 0.2,
 		},
 		resourceIcons: [RESOURCE_ICONS.food, RESOURCE_ICONS.wood],
 		description: 'Swamps provide food and wood',
@@ -180,8 +196,8 @@ export const BIOMES: Record<string, BiomeInfo> = {
 		baseColor: '#d1d5db',
 		cost: 100,
 		resourceGeneration: {
-			gold: 0.2,
-			coal: 2.0,
+			gold: 0.1,
+			coal: 0.35,
 		},
 		resourceIcons: [RESOURCE_ICONS.gold, RESOURCE_ICONS.coal],
 		description: 'Tundras provide gold and coal',
@@ -192,8 +208,8 @@ export const BIOMES: Record<string, BiomeInfo> = {
 		baseColor: '#0ea5e9',
 		cost: 100,
 		resourceGeneration: {
-			gold: 0.25,
-			food: 1.5,
+			gold: 0.05,
+			food: 0.25,
 		},
 		resourceIcons: [RESOURCE_ICONS.gold, RESOURCE_ICONS.food],
 		description: 'Lakes provide gold and food',

@@ -204,7 +204,7 @@ const canAffordCost = (
 
 const getRandomBiome = (): BiomeType => {
 	const availableBiomes = Object.entries(BIOMES)
-		.filter(([name]) => !['empty', 'castle', 'grounds'].includes(name))
+		.filter(([name]) => !['empty', 'castle'].includes(name))
 		.map(([name]) => name as BiomeType);
 
 	const randomIndex = Math.floor(Math.random() * availableBiomes.length);
@@ -212,9 +212,9 @@ const getRandomBiome = (): BiomeType => {
 };
 
 // XP calculation constants - Exponential XP system
-const BASE_XP_PER_TILE = 100;
-const XP_GROWTH_FACTOR = 1.1; // Exponential growth factor for XP needed per level
-const BASE_XP_PER_LEVEL = 1000; // Starting XP needed for level 1 to 2
+const BASE_XP_PER_TILE = 125;
+const XP_GROWTH_FACTOR = 2.0; // Exponential growth factor for XP needed per level (2x)
+const BASE_XP_PER_LEVEL = 750; // Starting XP needed for level 1 to 2
 
 /**
  * Calculate level based on total XP using exponential scaling
@@ -428,7 +428,7 @@ const createGameSlice = (
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'giorgio-explorer-game',
+		name: 'giorgio-explorer-game-v3',
 		version: 2,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {

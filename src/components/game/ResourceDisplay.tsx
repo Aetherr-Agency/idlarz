@@ -119,7 +119,7 @@ const ResourceDisplay: React.FC = () => {
 										className='h-full bg-green-500 rounded-full transition-all duration-300 ease-out'
 										style={{ width: `${level.progress * 100}%` }}
 										title={`XP: ${formatNumber(resources.xp)} / ${formatNumber(
-											Math.floor(1000 * Math.pow(1.1, level.level - 1))
+											Math.floor(750 * Math.pow(2.0, level.level - 1))
 										)}`}
 									/>
 								</div>

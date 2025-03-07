@@ -24,7 +24,7 @@ const LevelUpTimer: React.FC<{
 			}
 
 			// Calculate remaining XP to level up
-			const xpForNextLevel = Math.floor(1000 * Math.pow(1.1, level.level - 1));
+			const xpForNextLevel = Math.floor(750 * Math.pow(2.0, level.level - 1));
 			const remainingXp = xpForNextLevel * (1 - level.progress);
 
 			// Calculate time in seconds
@@ -52,7 +52,7 @@ const LevelDetails: React.FC = () => {
 	const { resources, level, resourceRates } = useGameStore();
 
 	// Calculate XP needed for next level using the exponential formula
-	const xpForNextLevel = Math.floor(1000 * Math.pow(1.1, level.level - 1));
+	const xpForNextLevel = Math.floor(750 * Math.pow(2.0, level.level - 1));
 	const currentXp = Math.floor(xpForNextLevel * level.progress);
 
 	return (
