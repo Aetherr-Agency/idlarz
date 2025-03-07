@@ -1,9 +1,10 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useState } from 'react';
 import { BiomeType } from '@/types/game';
 import { BIOMES, GRID_SIZE, GRID_HEIGHT, SCALING_CONFIG } from '@/config/gameConfig';
 import { useGameStore } from '@/stores/gameStore';
-import { cn } from '@/lib/utils';
 import { countOwnedTiles } from '@/utils/gameUtils';
+import { cn } from '@/lib/utils';
+import audioManager from '@/utils/audioManager';
 
 // Utility functions
 
@@ -161,6 +162,7 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
   const tiles = useGameStore(state => state.tiles);
   const buyTile = useGameStore(state => state.buyTile);
   const resources = useGameStore(state => state.resources);
+  const [isShaking, setIsShaking] = useState(false);
   
   const isAdjacent = useMemo(() => {
     if (isOwned || !tiles) return false;
@@ -193,10 +195,18 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
     return SCALING_CONFIG.costFormula(ownedTilesCount);
   }, [ownedTilesCount]);
 
+  const canAfford = resources.gold >= cost;
+
   const handleClick = () => {
     if (isAdjacent && !isOwned) {
-      if (resources.gold >= cost) {
+      if (canAfford) {
         buyTile(x, y);
+        audioManager.playSound('purchase');
+      } else if (cost > 0) {
+        // Only play wrong sound and shake for adjacent unaffordable tiles
+        setIsShaking(true);
+        audioManager.playSound('wrong');
+        setTimeout(() => setIsShaking(false), 300);
       }
     }
   };
@@ -206,9 +216,15 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
       className={cn(
         'absolute transition-all duration-200 ease-in-out select-none',
         isOwned ? 'opacity-100' : isAdjacent ? 'opacity-75 hover:opacity-100' : 'opacity-25',
-        !isOwned && isAdjacent && 'hover:z-10 cursor-pointer border border-gray-900 hover:border-gray-800',
+        !isOwned && isAdjacent && [
+          'hover:z-10 cursor-pointer',
+          'border border-gray-900',
+          canAfford ? 'hover:border-green-800' : 'hover:border-red-800',
+          !canAfford && 'cursor-not-allowed'
+        ],
         biome === 'castle' && 'border border-purple-400',
-        'group hover:z-20'
+        'group hover:z-20',
+        isShaking && 'opacity-75 border-2 border-red-500'
       )}
       style={{ 
         ...style,

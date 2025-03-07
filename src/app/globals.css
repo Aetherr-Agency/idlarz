@@ -17,13 +17,13 @@ body {
 }
 
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  75% { transform: translateX(4px); }
+  0%, 100% { transform: translateX(0) rotate(0); }
+  25% { transform: translateX(-3px) rotate(-1deg); }
+  75% { transform: translateX(3px) rotate(1deg); }
 }
 
 .animate-shake {
-  animation: shake 0.2s cubic-bezier(.36,.07,.19,.97) 3;
+  animation: shake 0.15s cubic-bezier(.36,.07,.19,.97) 2;
 }
 
 @keyframes pulse-ring {
