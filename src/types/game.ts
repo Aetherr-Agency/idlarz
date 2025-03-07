@@ -39,6 +39,8 @@ export interface GameState {
   tiles: Tile[][];
   resources: Resources;
   resourceRates: ResourceRates;
-  buyTile: (biome: BiomeType, x: number, y: number) => boolean;
+  resourceModifiers: Resources;
+  buyTile: (x: number, y: number) => boolean;
+  upgradeCastle: () => boolean;
   tick: (deltaTime: number) => void;
 }
