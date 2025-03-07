@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import Tile from './Tile';
-import { GRID_SIZE, TILE_SIZE, VIEWPORT_SIZE } from '@/config/gameConfig';
+import { GRID_SIZE, GRID_HEIGHT, TILE_SIZE, VIEWPORT_SIZE, TILE_PURCHASE_COST } from '@/config/gameConfig';
 
 const MIN_VELOCITY = 1;
 const VELOCITY_SCALE = 1;
@@ -19,6 +19,8 @@ interface Velocity {
 
 const Grid: React.FC = () => {
   const tiles = useGameStore(state => state.tiles);
+  const buyTile = useGameStore(state => state.buyTile);
+  const resources = useGameStore(state => state.resources);
   const gridRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
   const [velocity, setVelocity] = useState<Velocity>({ x: 0, y: 0 });
@@ -43,7 +45,7 @@ const Grid: React.FC = () => {
 
     // Center the grid initially
     const centerX = Math.floor(GRID_SIZE / 2);
-    const centerY = Math.floor(GRID_SIZE / 2);
+    const centerY = Math.floor(GRID_HEIGHT / 2);
     
     // Adjust initial position to center the viewport
     const viewportWidth = VIEWPORT_SIZE * TILE_SIZE;
@@ -64,14 +66,13 @@ const Grid: React.FC = () => {
 
   const getBoundedPosition = useCallback((pos: Position): Position => {
     const gridWidth = GRID_SIZE * TILE_SIZE;
-    const gridHeight = GRID_SIZE * TILE_SIZE;
+    const gridHeight = GRID_HEIGHT * TILE_SIZE;
     
-    // Ensure at least VIEWPORT_SIZE/2 tiles are always visible
-    const minVisibleTiles = Math.floor(VIEWPORT_SIZE / 2);
-    const minX = -gridWidth + (minVisibleTiles * TILE_SIZE);
-    const minY = -gridHeight + (minVisibleTiles * TILE_SIZE);
-    const maxX = windowSize.x - (minVisibleTiles * TILE_SIZE);
-    const maxY = windowSize.y - (minVisibleTiles * TILE_SIZE);
+    // Calculate maximum allowed movement to keep grid visible
+    const minX = -(gridWidth - windowSize.x);  // Don't allow dragging past right edge
+    const minY = -(gridHeight - windowSize.y);  // Don't allow dragging past bottom edge
+    const maxX = 0;  // Don't allow dragging past left edge
+    const maxY = 0;  // Don't allow dragging past top edge
     
     return {
       x: Math.min(maxX, Math.max(minX, pos.x)),
@@ -151,6 +152,51 @@ const Grid: React.FC = () => {
     };
   }, [animate]);
 
+  const getTileCoordinates = useCallback((clientX: number, clientY: number) => {
+    const rect = gridRef.current?.getBoundingClientRect();
+    if (!rect) return { x: -1, y: -1 };
+
+    const x = Math.floor((clientX - rect.left - position.x) / TILE_SIZE);
+    const y = Math.floor((clientY - rect.top - position.y) / TILE_SIZE);
+
+    return { x, y };
+  }, [position.x, position.y]);
+
+  const isAdjacentToOwned = useCallback((x: number, y: number, tiles: any[][]) => {
+    if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_HEIGHT) return false;
+
+    // Check only orthogonal adjacency (not diagonal)
+    const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+    return directions.some(([dx, dy]) => {
+      const nx = x + dx;
+      const ny = y + dy;
+      return nx >= 0 && nx < GRID_SIZE && 
+             ny >= 0 && ny < GRID_HEIGHT && 
+             tiles[ny][nx]?.isOwned;
+    });
+  }, []);
+
+  const handleClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
+    if (isDragging) return;
+
+    const pos = 'touches' in e ? e.touches[0] : e;
+    const { x, y } = getTileCoordinates(pos.clientX, pos.clientY);
+    
+    if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_HEIGHT && tiles?.[y]?.[x]) {
+      const tile = tiles[y][x];
+      if (!tile.isOwned && isAdjacentToOwned(x, y, tiles)) {
+        if (resources.gold >= TILE_PURCHASE_COST) {
+          buyTile(x, y);
+        } else {
+          // Add shake animation for can't afford
+          const element = e.currentTarget;
+          element.classList.add('shake');
+          setTimeout(() => element.classList.remove('shake'), 500);
+        }
+      }
+    }
+  }, [isDragging, getTileCoordinates, tiles, isAdjacentToOwned, buyTile, resources.gold]);
+
   const visibleTiles = useMemo(() => {
     const startX = Math.floor(-position.x / TILE_SIZE);
     const startY = Math.floor(-position.y / TILE_SIZE);
@@ -161,7 +207,7 @@ const Grid: React.FC = () => {
       startX: Math.max(0, startX - VISIBLE_PADDING),
       startY: Math.max(0, startY - VISIBLE_PADDING),
       endX: Math.min(GRID_SIZE, startX + tilesX),
-      endY: Math.min(GRID_SIZE, startY + tilesY)
+      endY: Math.min(GRID_HEIGHT, startY + tilesY)
     };
 
     const result = [];
@@ -184,6 +230,16 @@ const Grid: React.FC = () => {
       ref={gridRef}
       className="fixed inset-0 overflow-hidden bg-gray-900 select-none touch-none"
     >
+      <style jsx>{`
+        @keyframes shake {
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          75% { transform: translateX(5px); }
+        }
+        .shake {
+          animation: shake 0.2s ease-in-out 0s 3;
+        }
+      `}</style>
       <div 
         className="relative w-full h-full cursor-grab active:cursor-grabbing"
         style={{
@@ -194,6 +250,7 @@ const Grid: React.FC = () => {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
+        onClick={handleClick}
         onTouchStart={handleMouseDown}
         onTouchMove={handleMouseMove}
         onTouchEnd={handleMouseUp}

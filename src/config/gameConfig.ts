@@ -1,14 +1,16 @@
 import { BiomeInfo } from '@/types/game';
 
 // Grid Configuration
-export const GRID_SIZE = 48; // 48x48 tile matrix
-export const VIEWPORT_SIZE = 25; // 12 tiles in each direction from center
+export const GRID_SIZE = 48; // Width of the grid
+export const GRID_HEIGHT = 26; // Height of the grid (half of width)
 export const TILE_SIZE = 48; // Balanced for visibility
+export const VIEWPORT_SIZE = 25; // 12 tiles in each direction from center
 
 // Game Constants
 export const TICK_RATE = 100; // 10 times per second
+export const TILE_PURCHASE_COST = 100; // Cost to reveal a new tile
 export const INITIAL_RESOURCES = {
-  gold: 100, // Starting currency
+  gold: 500, // Starting currency
   wood: 0,
   stone: 0,
   coal: 0,
@@ -17,16 +19,16 @@ export const INITIAL_RESOURCES = {
 
 // Resource Generation (per second)
 export const BASE_GENERATION_RATES = {
-  gold: 0.2,  // Base: 0.2/s
-  wood: 0.1,  // Base: 0.1/s
-  stone: 0.1, // Base: 0.1/s
-  coal: 0.05, // Base: 0.05/s
-  food: 0.1   // Base: 0.1/s
+  gold: 0,
+  wood: 0,
+  stone: 0,
+  coal: 0,
+  food: 0
 };
 
 // Castle Configuration
 export const CASTLE_BASE_RATES = {
-  gold: 1.0,   // Base: 1.0/s
+  gold: 1,   // Base: 0.5/s
   wood: 0.25,  // Base: 0.25/s
   stone: 0.25, // Base: 0.25/s
   coal: 0.25,  // Base: 0.25/s
@@ -35,36 +37,12 @@ export const CASTLE_BASE_RATES = {
 
 export const CASTLE_UPGRADE = {
   maxLevel: 5,
-  levelMultiplier: 1.5, // Each level increases base rates by 50%
+  levelMultiplier: 1.5,
   upgradeCosts: [
-    {
-      gold: 1000,
-      wood: 100,
-      stone: 100,
-      coal: 50,
-      food: 100
-    },
-    {
-      gold: 2500,
-      wood: 250,
-      stone: 250,
-      coal: 125,
-      food: 250
-    },
-    {
-      gold: 5000,
-      wood: 500,
-      stone: 500,
-      coal: 250,
-      food: 500
-    },
-    {
-      gold: 10000,
-      wood: 1000,
-      stone: 1000,
-      coal: 500,
-      food: 1000
-    }
+    { gold: 1000, wood: 100, stone: 100 },
+    { gold: 2500, wood: 250, stone: 250 },
+    { gold: 5000, wood: 500, stone: 500 },
+    { gold: 10000, wood: 1000, stone: 1000 }
   ]
 };
 
@@ -73,10 +51,17 @@ export const BIOMES: Record<string, BiomeInfo> = {
   empty: {
     name: 'empty',
     label: 'Empty',
-    baseColor: '#1a1b26',
+    baseColor: '#1f2937',
     cost: 0,
-    resourceModifiers: {},
-    resourceIcons: []
+    resourceModifiers: {
+      gold: 1.0,
+      wood: 1.0,
+      stone: 1.0,
+      coal: 1.0,
+      food: 1.0
+    },
+    resourceIcons: ['❔'],
+    unique: false
   },
   castle: {
     name: 'castle',
@@ -84,84 +69,127 @@ export const BIOMES: Record<string, BiomeInfo> = {
     baseColor: '#4c1d95', // Royal purple
     cost: 0,
     resourceModifiers: {
-      gold: 2.0,    // +100% gold
-      wood: 1.5,    // +50% wood
-      stone: 1.5,   // +50% stone
-      coal: 1.5,    // +50% coal
-      food: 1.5     // +50% food
+      gold: 2,
+      wood: 1.5,
+      stone: 1.5,
+      coal: 1.5,
+      food: 1.5
     },
     resourceIcons: ['🏰'],
     unique: true,
     upgradeable: true,
     maxLevel: CASTLE_UPGRADE.maxLevel
   },
-  plains: {
-    name: 'plains',
-    label: 'Plains',
-    baseColor: '#90a955',
-    cost: 100,
+  grounds: {
+    name: 'grounds',
+    label: 'Grounds',
+    baseColor: '#78350f', // Brown
+    cost: 0,
     resourceModifiers: {
-      gold: 1.1,   // +10% gold
-      food: 1.2    // +20% food
+      gold: 1.0,
+      wood: 1.0,
+      stone: 1.0,
+      coal: 1.0,
+      food: 1.0
     },
-    resourceIcons: ['🌾']
+    resourceIcons: ['🏗️'],
+    unique: false,
+    description: 'Buildable grounds for future structures'
   },
   forest: {
     name: 'forest',
     label: 'Forest',
-    baseColor: '#2d6a4f',
-    cost: 150,
+    baseColor: '#064e3b', // Dark green
+    cost: 0,
     resourceModifiers: {
-      gold: 1.15,  // +15% gold
-      wood: 1.5    // +50% wood
+      gold: 1.15,
+      wood: 2.0,
+      stone: 1.0,
+      coal: 1.0,
+      food: 1.2
     },
-    resourceIcons: ['🌲']
+    resourceIcons: ['🌲'],
+    unique: false,
+    description: 'Rich in wood and minor food bonus'
+  },
+  plains: {
+    name: 'plains',
+    label: 'Plains',
+    baseColor: '#3f6212', // Light green
+    cost: 0,
+    resourceModifiers: {
+      gold: 1.1,
+      wood: 1.0,
+      stone: 1.0,
+      coal: 1.0,
+      food: 1.5
+    },
+    resourceIcons: ['🌾'],
+    unique: false,
+    description: 'Good food production'
   },
   hills: {
     name: 'hills',
     label: 'Hills',
-    baseColor: '#9c6644',
-    cost: 200,
+    baseColor: '#854d0e', // Brown
+    cost: 0,
     resourceModifiers: {
-      gold: 1.05,  // +5% gold
-      stone: 1.4,  // +40% stone
-      coal: 1.3    // +30% coal
+      gold: 1.05,
+      wood: 1.0,
+      stone: 1.5,
+      coal: 1.5,
+      food: 1.0
     },
-    resourceIcons: ['⛰️']
-  },
-  tundra: {
-    name: 'tundra',
-    label: 'Tundra',
-    baseColor: '#cad2c5',
-    cost: 300,
-    resourceModifiers: {
-      gold: 1.2,   // +20% gold
-      wood: 0.8,   // -20% wood
-      food: 0.7    // -30% food
-    },
-    resourceIcons: ['❄️']
-  },
-  lake: {
-    name: 'lake',
-    label: 'Lake',
-    baseColor: '#219ebc',
-    cost: 250,
-    resourceModifiers: {
-      gold: 1.25,  // +25% gold
-      food: 1.3    // +30% food
-    },
-    resourceIcons: ['💧']
+    resourceIcons: ['⛰️'],
+    unique: false,
+    description: 'Rich in stone and coal'
   },
   swamp: {
     name: 'swamp',
     label: 'Swamp',
-    baseColor: '#4a4e69',
-    cost: 350,
+    baseColor: '#365314', // Dark green-brown
+    cost: 0,
     resourceModifiers: {
-      gold: 0.9,   // -10% gold
-      wood: 1.2,   // +20% wood
-      food: 1.1    // +10% food
+      gold: 1.3,
+      wood: 1.2,
+      stone: 1.0,
+      coal: 1.0,
+      food: 1.3
     },
-    resourceIcons: ['🌿']
+    resourceIcons: ['🌿'],
+    unique: false,
+    description: 'Balanced wood and food, but reduces gold'
+  },
+  tundra: {
+    name: 'tundra',
+    label: 'Tundra',
+    baseColor: '#e5e7eb', // Light gray
+    cost: 0,
+    resourceModifiers: {
+      gold: 1.2,
+      wood: 1,
+      stone: 1.2,
+      coal: 1.2,
+      food: 1
+    },
+    resourceIcons: ['❄️'],
+    unique: false,
+    description: 'High gold but low food and wood'
+  },
+  lake: {
+    name: 'lake',
+    label: 'Lake',
+    baseColor: '#0369a1', // Blue
+    cost: 0,
+    resourceModifiers: {
+      gold: 1.25,
+      wood: 1.0,
+      stone: 1.0,
+      coal: 1.0,
+      food: 1.4
+    },
+    resourceIcons: ['💧'],
+    unique: false,
+    description: 'Excellent gold and food production'
   }
 } as const;

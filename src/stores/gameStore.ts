@@ -1,12 +1,13 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { BIOMES, CASTLE_BASE_RATES, CASTLE_UPGRADE, GRID_SIZE, INITIAL_RESOURCES, BASE_GENERATION_RATES } from '@/config/gameConfig';
+import { BIOMES, CASTLE_BASE_RATES, CASTLE_UPGRADE, GRID_SIZE, GRID_HEIGHT, INITIAL_RESOURCES, BASE_GENERATION_RATES, TILE_PURCHASE_COST } from '@/config/gameConfig';
 import type { BiomeType, GameState, Resources, ResourceRates, Tile } from '@/types/game';
 
-const GRID_CENTER = Math.floor(GRID_SIZE / 2);
+const GRID_CENTER_X = Math.floor(GRID_SIZE / 2);
+const GRID_CENTER_Y = Math.floor(GRID_HEIGHT / 2);
 
 const createInitialGrid = (): Tile[][] => {
-  const grid = Array(GRID_SIZE).fill(null).map(() => 
+  const grid = Array(GRID_HEIGHT).fill(null).map(() => 
     Array(GRID_SIZE).fill(null).map(() => ({
       biome: 'empty' as BiomeType,
       isOwned: false
@@ -14,7 +15,7 @@ const createInitialGrid = (): Tile[][] => {
   );
 
   // Place castle at center
-  grid[GRID_CENTER][GRID_CENTER] = {
+  grid[GRID_CENTER_Y][GRID_CENTER_X] = {
     biome: 'castle',
     isOwned: true,
     level: 1,
@@ -30,7 +31,7 @@ const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
   const modifiers = { gold: 1, wood: 1, stone: 1, coal: 1, food: 1 };
 
   // Find castle and apply its base rates and level multiplier
-  for (let y = 0; y < GRID_SIZE; y++) {
+  for (let y = 0; y < GRID_HEIGHT; y++) {
     for (let x = 0; x < GRID_SIZE; x++) {
       const tile = tiles[y][x];
       if (tile.isOwned && tile.biome === 'castle') {
@@ -47,7 +48,7 @@ const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
   }
 
   // Calculate modifiers from all owned tiles
-  for (let y = 0; y < GRID_SIZE; y++) {
+  for (let y = 0; y < GRID_HEIGHT; y++) {
     for (let x = 0; x < GRID_SIZE; x++) {
       const tile = tiles[y][x];
       if (tile.isOwned) {
@@ -73,7 +74,7 @@ const isAdjacentToOwned = (tiles: GameState['tiles'], x: number, y: number): boo
     const newX = x + dx;
     const newY = y + dy;
     return newX >= 0 && newX < GRID_SIZE && 
-           newY >= 0 && newY < GRID_SIZE && 
+           newY >= 0 && newY < GRID_HEIGHT && 
            tiles[newY][newX].isOwned;
   });
 };
@@ -93,30 +94,33 @@ export const useGameStore = create(
     resources: { ...INITIAL_RESOURCES },
     resourceRates: calculateResourceRates(createInitialGrid()),
 
-    buyTile: (biome: BiomeType, x: number, y: number): boolean => {
+    buyTile: (x: number, y: number): boolean => {
       const state = get();
       const tile = state.tiles[y][x];
-      const biomeInfo = BIOMES[biome];
 
       // Check if tile can be purchased
-      if (tile.isOwned || 
-          !isAdjacentToOwned(state.tiles, x, y) || 
-          (biomeInfo.unique && state.tiles.some(row => 
-            row.some(t => t.biome === biome && t.isOwned)
-          ))) {
+      if (tile.isOwned || !isAdjacentToOwned(state.tiles, x, y)) {
         return false;
       }
 
       // Check if can afford
-      if (!canAffordCost(state.resources, biomeInfo.cost)) {
+      if (state.resources.gold < TILE_PURCHASE_COST) {
         return false;
       }
+
+      // Get available biomes (excluding empty, castle, and grounds for now)
+      const availableBiomes = Object.entries(BIOMES)
+        .filter(([biome]) => !['empty', 'castle', 'grounds'].includes(biome))
+        .map(([biome]) => biome as BiomeType);
+
+      // Randomly select a biome
+      const randomBiome = availableBiomes[Math.floor(Math.random() * availableBiomes.length)];
 
       // Update tile and resources
       const newTiles = [...state.tiles];
       newTiles[y] = [...newTiles[y]];
       newTiles[y][x] = {
-        biome,
+        biome: randomBiome,
         isOwned: true
       };
 
@@ -124,7 +128,7 @@ export const useGameStore = create(
         tiles: newTiles,
         resources: {
           ...state.resources,
-          gold: state.resources.gold - biomeInfo.cost
+          gold: state.resources.gold - TILE_PURCHASE_COST
         },
         resourceRates: calculateResourceRates(newTiles)
       });
@@ -139,7 +143,7 @@ export const useGameStore = create(
       let castle: Tile | null = null;
       let castleX = -1, castleY = -1;
       
-      for (let y = 0; y < GRID_SIZE; y++) {
+      for (let y = 0; y < GRID_HEIGHT; y++) {
         for (let x = 0; x < GRID_SIZE; x++) {
           if (state.tiles[y][x].biome === 'castle') {
             castle = state.tiles[y][x];
