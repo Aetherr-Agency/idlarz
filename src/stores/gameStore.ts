@@ -191,6 +191,20 @@ const getRandomBiome = (): BiomeType => {
 	return availableBiomes[randomIndex];
 };
 
+// XP calculation constants
+const BASE_XP_PER_TILE = 100;
+const XP_PER_LEVEL = 1000; // Linear XP scaling
+
+const calculateLevel = (xp: number): { level: number; progress: number } => {
+	const level = Math.floor(xp / XP_PER_LEVEL) + 1;
+	const progress = (xp % XP_PER_LEVEL) / XP_PER_LEVEL;
+	return { level, progress };
+};
+
+const calculateXpGain = (ownedTiles: number): number => {
+	return BASE_XP_PER_TILE * ownedTiles;
+};
+
 const createGameSlice = (
 	set: (
 		partial: Partial<GameState> | ((state: GameState) => Partial<GameState>)
@@ -238,6 +252,8 @@ const createGameSlice = (
 		// Recalculate resource rates with the new tile
 		const newRates = calculateResourceRates(newTiles);
 
+		const xpGain = calculateXpGain(ownedTilesCount + 1);
+
 		set({
 			tiles: newTiles,
 			resources: {
@@ -246,6 +262,8 @@ const createGameSlice = (
 			},
 			resourceRates: newRates,
 			resourceModifiers: newRates.modifiers,
+			xp: state.xp + xpGain,
+			level: calculateLevel(state.xp + xpGain),
 		});
 
 		return true;
@@ -321,6 +339,8 @@ const createGameSlice = (
 		resources: { ...INITIAL_RESOURCES },
 		resourceRates: initialRates,
 		resourceModifiers: initialRates.modifiers,
+		xp: 0,
+		level: calculateLevel(0),
 		buyTile,
 		upgradeCastle,
 		tick,
@@ -329,7 +349,7 @@ const createGameSlice = (
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'idle-explorer-storage-v001',
+		name: 'idle-explorer-storage-v002',
 		version: 2,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {
@@ -343,6 +363,8 @@ export const useGameStore = create(
 					resources: { ...INITIAL_RESOURCES },
 					resourceRates: initialRates,
 					resourceModifiers: initialRates.modifiers,
+					xp: 0,
+					level: calculateLevel(0),
 					buyTile: state?.buyTile,
 					upgradeCastle: state?.upgradeCastle,
 					tick: state?.tick,

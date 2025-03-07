@@ -17,6 +17,8 @@ const ResourceDisplay: React.FC = () => {
   const resources = useGameStore(state => state.resources);
   const resourceRates = useGameStore(state => state.resourceRates);
   const tiles = useGameStore(state => state.tiles);
+  const level = useGameStore(state => state.level);
+  const xp = useGameStore(state => state.xp);
 
   // Find castle level
   const castleLevel = React.useMemo(() => {
@@ -38,16 +40,24 @@ const ResourceDisplay: React.FC = () => {
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-gray-900 bg-opacity-90 border-b border-gray-800">
       <div className="max-w-6xl mx-auto px-4 py-2">
-        <div className="grid grid-cols-8 gap-4 md:gap-8">
-        <div className="flex justify-start items-center gap-4">
+        <div className="grid grid-cols-9 gap-4 md:gap-8">
+          <div className="flex justify-start items-center gap-4 mr-4 col-span-2">
             <Image src="/fella.png" width={65} height={120} alt="Your character" className="w-fit h-12" />
             <div className="flex flex-col text-white items-start justify-center h-full">
-              <p className='font-bold text-sm'>
-                Ziomeczek
-              </p>
-              <p className="text-xs">
-                lvl: chujcieto
-              </p>
+              <div className="flex items-center gap-2 mb-1">
+                <p className="font-bold text-sm">Ziomeczek</p>
+                <span className="px-2 py-0.5 bg-blue-600 rounded-full text-xs font-semibold">
+                  {level.level}
+                </span>
+              </div>
+
+              <div className="w-full h-1.5 bg-gray-700 rounded-full mt-1">
+                <div 
+                  className="h-full bg-blue-500 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${level.progress * 100}%` }}
+                  title={`XP: ${formatNumber(xp)} / ${formatNumber((level.level) * 1000)}`}
+                />
+              </div>
             </div>
           </div>
           {(Object.keys(RESOURCE_INFO) as (keyof Resources)[]).map(resource => {
@@ -108,7 +118,7 @@ const ResourceDisplay: React.FC = () => {
               </div>
             );
           })}
-          <div className="flex items-center justify-center text-white text-xs">
+          <div className="col-span-2 flex items-center justify-center text-white text-xs">
             Additionals
           </div>
         </div>

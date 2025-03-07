@@ -41,6 +41,11 @@ export interface GameState {
   resources: Resources;
   resourceRates: ResourceRates;
   resourceModifiers: Resources;
+  xp: number;
+  level: {
+    level: number;
+    progress: number;
+  };
   buyTile: (x: number, y: number) => boolean;
   upgradeCastle: () => boolean;
   tick: (deltaTime: number) => void;
