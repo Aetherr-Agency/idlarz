@@ -94,18 +94,23 @@ const BiomeTooltip = memo(
 
 					if (baseRate === 0) return null;
 
+					// Get modifier percentage for castle tiles
+					const castleModifier = level ? level * 0.2 : 0; // 20% per level based on the new system
+
 					return (
 						<div key={resource} className='flex flex-col gap-1'>
-							<div className='flex gap-2'>
+							<div className='flex items-center gap-2'>
 								<span className='text-gray-400'>
 									{RESOURCE_ICONS[resource]}
 								</span>
-								<span
-									className={
-										effectiveRate > 0 ? 'text-green-400' : 'text-red-400'
-									}>
-									{formatRate(effectiveRate)}
+								<span className='text-gray-300'>
+									{formatRate(baseRate)}
 								</span>
+								{biome === 'castle' && castleModifier > 0 && (
+									<span className='text-green-400 text-xs'>
+										+{Math.round(castleModifier * 100)}%
+									</span>
+								)}
 							</div>
 						</div>
 					);
