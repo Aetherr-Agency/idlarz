@@ -109,15 +109,15 @@ const countAdjacentSameBiomes = (
 
 const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
 	const base = { ...BASE_GENERATION_RATES };
-	const total = { ...base };
 	const modifiers: Record<keyof Resources, number> = {
-		gold: 1,
-		wood: 1,
-		stone: 1,
-		coal: 1,
-		food: 1,
-		xp: 1,
+		gold: 0,
+		wood: 0,
+		stone: 0,
+		coal: 0,
+		food: 0,
+		xp: 0,
 	};
+	const total = { ...base };
 
 	// Find castle and its level
 	let castleLevel = 1;
@@ -131,21 +131,19 @@ const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
 		}
 	}
 
-	// Calculate castle multiplier
-	const castleMultiplier = Math.pow(1.5, castleLevel - 1);
-
-	// First add castle base rates to base generation
+	// Calculate castle modifier (20% per level)
+	const castleModifier = (castleLevel - 1) * CASTLE_UPGRADE.resourceMultiplier;
+	
+	// Add castle base rates to base generation
 	Object.entries(CASTLE_BASE_RATES).forEach(([resource, rate]) => {
 		const key = resource as keyof Resources;
 		base[key] += rate;
-		// For XP, apply special castle level bonus
-		if (key === 'xp') {
-			// Base XP from castle + additional XP from castle level bonus
-			total[key] += rate + (castleLevel - 1) * CASTLE_UPGRADE.xpBonus;
-		} else {
-			// Regular resources use the castle multiplier
-			total[key] += rate * castleMultiplier;
-		}
+	});
+
+	// Add the castle modifier to all resources (starting from level 1)
+	Object.keys(modifiers).forEach((resource) => {
+		const key = resource as keyof Resources;
+		modifiers[key] += castleLevel * CASTLE_UPGRADE.resourceMultiplier; // 20% per level including level 1
 	});
 
 	// Add flat generation rates from all owned tiles with adjacency bonuses
@@ -155,8 +153,7 @@ const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
 			if (tile.isOwned) {
 				const biome = BIOMES[tile.biome];
 				const adjacentCount = countAdjacentSameBiomes(tiles, x, y, tile.biome);
-				const adjacencyMultiplier =
-					1 + SCALING_CONFIG.adjacencyBonus * adjacentCount;
+				const adjacencyMultiplier = 1 + SCALING_CONFIG.adjacencyBonus * adjacentCount;
 
 				Object.entries(biome.resourceGeneration).forEach(([resource, rate]) => {
 					// Skip castle base rates since we already added them
@@ -167,24 +164,19 @@ const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
 						return;
 					}
 
-					if (rate && rate > 0) {
-						// Apply castle multiplier to castle tile
-						const effectiveRate =
-							tile.biome === 'castle' ? rate * castleMultiplier : rate;
-						total[resource as keyof Resources] +=
-							effectiveRate * adjacencyMultiplier;
-					} else {
-						total[resource as keyof Resources] += rate || 0;
+					if (rate) {
+						// Add to base rate with adjacency bonus
+						base[resource as keyof Resources] += rate * adjacencyMultiplier;
 					}
 				});
 			}
 		}
 	}
 
-	// Calculate modifiers based on total vs base rates
-	Object.keys(modifiers).forEach((resource) => {
+	// Apply all modifiers to calculate total rates
+	Object.keys(total).forEach((resource) => {
 		const key = resource as keyof Resources;
-		modifiers[key] = base[key] === 0 ? 1 : total[key] / base[key];
+		total[key] = base[key] * (1 + modifiers[key]);
 	});
 
 	return { base, modifiers, total };
@@ -428,8 +420,8 @@ const createGameSlice = (
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'giorgio-explorer-game-v3',
-		version: 2,
+		name: 'giorgio-explorer-game-v4',
+		version: 4,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {
 			// Set hydration state to true

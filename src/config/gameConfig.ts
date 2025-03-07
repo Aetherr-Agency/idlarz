@@ -85,7 +85,8 @@ export const CASTLE_BASE_RATES = {
 // Exponential castle upgrade system
 export const CASTLE_UPGRADE = {
 	maxLevel: 10, // Increased from 5
-	levelMultiplier: 1.75, // Increased from 1.5 for more impact
+	resourceMultiplier: 0.2, // 20% bonus per level
+	xpBonus: 0.5, // Additional flat XP per castle level
 	upgradeCosts: [
 		{ gold: 5000, wood: 500, stone: 500 },
 		{ gold: 25000, wood: 2500, stone: 2500 },
@@ -97,7 +98,6 @@ export const CASTLE_UPGRADE = {
 		{ gold: 250000000, wood: 25000000, stone: 25000000 },
 		{ gold: 1000000000, wood: 100000000, stone: 100000000 },
 	],
-	xpBonus: 2.0, // Increased XP bonus per castle level
 };
 
 // Biome Configuration - rebalanced for longer gameplay

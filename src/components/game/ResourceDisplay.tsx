@@ -137,9 +137,10 @@ const ResourceDisplay: React.FC = () => {
 						(resource) => {
 							const baseRate = resourceRates.base[resource];
 							const totalRate = resourceRates.total[resource];
+							const modifier = resourceRates.modifiers[resource];
 
-							// Calculate the additional income by comparing total to base
-							const additionalIncome = +(totalRate - baseRate).toFixed(4);
+							// Format modifier as percentage
+							const modifierPercent = Math.round(modifier * 100);
 
 							if (resource === 'xp') {
 								return null;
@@ -183,32 +184,10 @@ const ResourceDisplay: React.FC = () => {
 														{formatNumber(baseRate)}/s
 													</span>
 												</div>
-												{castleBonus && (
-													<div className='flex justify-between gap-4'>
-														<span className='text-purple-400'>
-															Castle Bonus:
-														</span>
-														<span className='text-purple-400'>
-															{castleBonus}
-														</span>
-													</div>
-												)}
-												{additionalIncome !== 0 && (
-													<div className='flex justify-between gap-4'>
-														<span className='text-gray-400'>
-															Additional Income:
-														</span>
-														<span
-															className={`${
-																additionalIncome > 0
-																	? 'text-green-400'
-																	: 'text-red-400'
-															}`}>
-															{additionalIncome > 0 ? '+' : ''}
-															{formatNumber(additionalIncome)}/s
-														</span>
-													</div>
-												)}
+												<div className='flex justify-between gap-4 border-t border-gray-700 mt-2 pt-2'>
+													<span className='text-gray-400'>Modifier:</span>
+													<span className='text-white'>{modifierPercent}%</span>
+												</div>
 												<div className='flex justify-between gap-4 border-t border-gray-700 mt-2 pt-2'>
 													<span className='text-gray-400'>Total Rate:</span>
 													<span
