@@ -25,8 +25,7 @@ const LevelUpTimer: React.FC<{
 
 			// Calculate remaining XP to level up
 			const xpForNextLevel = Math.floor(1000 * Math.pow(1.1, level.level - 1));
-			const currentLevelXp = resources.xp % xpForNextLevel;
-			const remainingXp = xpForNextLevel - currentLevelXp;
+			const remainingXp = xpForNextLevel * (1 - level.progress);
 
 			// Calculate time in seconds
 			const timeInSeconds = remainingXp / xpRate;
@@ -39,7 +38,7 @@ const LevelUpTimer: React.FC<{
 		updateTimer();
 		const timer = setInterval(updateTimer, 1000);
 		return () => clearInterval(timer);
-	}, [resourceRates, resources.xp, level.level]);
+	}, [resourceRates, resources.xp, level.level, level.progress]);
 
 	return (
 		<div className='mt-2 text-center'>
@@ -53,8 +52,8 @@ const LevelDetails: React.FC = () => {
 	const { resources, level, resourceRates } = useGameStore();
 
 	// Calculate XP needed for next level using the exponential formula
-	const xpToNextLevel = Math.floor(1000 * Math.pow(1.1, level.level - 1));
-	const currentXp = Math.floor(resources.xp % xpToNextLevel);
+	const xpForNextLevel = Math.floor(1000 * Math.pow(1.1, level.level - 1));
+	const currentXp = Math.floor(xpForNextLevel * level.progress);
 
 	return (
 		<div className='flex flex-col space-y-4'>
@@ -101,7 +100,7 @@ const LevelDetails: React.FC = () => {
 							</div>
 						</div>
 						<div className='text-gray-600 text-xs scale-75'>
-							{formatNumber(currentXp)} / {formatNumber(xpToNextLevel)}
+							{formatNumber(currentXp)} / {formatNumber(xpForNextLevel)}
 						</div>
 					</div>
 				</div>
