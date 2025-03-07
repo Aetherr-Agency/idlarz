@@ -101,4 +101,5 @@ export interface GameState {
 	toggleStatisticsWindow: () => void;
 	addStatPoint: (stat: keyof CharacterStats) => void;
 	setPlayerName: (name: string) => void;
+	addResources: (resourceToAdd: Partial<Resources>) => void;
 }

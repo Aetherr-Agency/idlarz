@@ -437,6 +437,20 @@ const createGameSlice = (
 				set({ playerName: trimmedName });
 			}
 		},
+		addResources: (resourceToAdd: Partial<Resources>) => {
+			set((state) => ({
+				resources: {
+					...state.resources,
+					...Object.keys(resourceToAdd).reduce(
+						(acc, key) => ({
+							...acc,
+							[key]: state.resources[key as keyof Resources] + (resourceToAdd[key as keyof Resources] || 0)
+						}),
+						{} as Partial<Resources>
+					)
+				}
+			}));
+		},
 		toggleCharacterWindow: () =>
 			set((state) => ({ showCharacterWindow: !state.showCharacterWindow })),
 		toggleStatisticsWindow: () =>
