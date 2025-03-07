@@ -444,11 +444,13 @@ const createGameSlice = (
 					...Object.keys(resourceToAdd).reduce(
 						(acc, key) => ({
 							...acc,
-							[key]: state.resources[key as keyof Resources] + (resourceToAdd[key as keyof Resources] || 0)
+							[key]:
+								state.resources[key as keyof Resources] +
+								(resourceToAdd[key as keyof Resources] || 0),
 						}),
 						{} as Partial<Resources>
-					)
-				}
+					),
+				},
 			}));
 		},
 		toggleCharacterWindow: () =>
@@ -460,12 +462,12 @@ const createGameSlice = (
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'giorgio-explorer-game-v6',
-		version: 6,
+		name: 'giorgio-explorer-game-v7',
+		version: 7,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {
 			// Set hydration state to true
-			set({ isHydrated: true });
+			// set({ isHydrated: true });
 
 			// Validate and fix state if needed
 			if (!state || !validateGrid(state.tiles)) {
@@ -497,7 +499,7 @@ export const useGameStore = create(
 );
 
 // Selector to check if name needs to be set
-export const useNeedsNameInput = () => 
+export const useNeedsNameInput = () =>
 	useGameStore((state) => state.isHydrated && state.playerName === 'Explorer');
 
 // Selector for game resources
