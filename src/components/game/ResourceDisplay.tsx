@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useGameStore } from '@/stores/gameStore';
 import { Resources } from '@/types/game';
@@ -49,6 +49,20 @@ const ResourceDisplay: React.FC = () => {
 	const toggleStatisticsWindow = useGameStore(
 		(state) => state.toggleStatisticsWindow
 	);
+	const characterStats = useGameStore((state) => state.characterStats);
+
+	const [levelUpActive, setLevelUpActive] = useState(false);
+	const [prevAvailablePoints, setPrevAvailablePoints] = useState(0);
+
+	// Detect level up based on available points
+	useEffect(() => {
+		if (characterStats.availablePoints > prevAvailablePoints) {
+			setLevelUpActive(true);
+		} else if (characterStats.availablePoints === 0 && levelUpActive) {
+			setLevelUpActive(false);
+		}
+		setPrevAvailablePoints(characterStats.availablePoints);
+	}, [characterStats.availablePoints, prevAvailablePoints, levelUpActive]);
 
 	// Find castle level
 	const castleLevel = React.useMemo(() => {
@@ -78,7 +92,9 @@ const ResourceDisplay: React.FC = () => {
 				<div className='grid grid-cols-9 gap-4 md:gap-8'>
 					<div className='flex items-center gap-2 col-span-3'>
 						<div
-							className='flex justify-start items-center gap-4 mr-2 cursor-pointer hover:opacity-80 transition-opacity duration-200 hover:border-blue-800 border-2 border-transparent py-1.5 px-2 rounded-xl hover:bg-blue-950'
+							className={`border-transparent hover:border-blue-800  hover:bg-blue-950 flex justify-start items-center gap-4 mr-2 cursor-pointer hover:opacity-80 transition-opacity duration-200 border-2 py-1.5 px-2 rounded-xl ${
+								levelUpActive && 'wiggle-animation'
+							}`}
 							onClick={toggleStatisticsWindow}>
 							<Image
 								src='/fella.png'
@@ -90,8 +106,11 @@ const ResourceDisplay: React.FC = () => {
 							<div className='flex flex-col text-white items-start justify-center h-full select-none'>
 								<div className='flex items-center gap-2 mb-1'>
 									<p className='font-bold text-sm'>Giorgio</p>
-									<span className='px-1.5 p-0.5 bg-blue-700 rounded-sm text-[10px] font-semibold'>
-										{level.level}
+									<span
+										className={`px-1.5 p-0.5 ${
+											levelUpActive ? 'bg-green-800/50' : 'bg-blue-700'
+										} rounded-sm text-[10px] font-semibold`}>
+										{levelUpActive ? '⭐' : level.level}
 									</span>
 								</div>
 
@@ -106,6 +125,7 @@ const ResourceDisplay: React.FC = () => {
 								</div>
 							</div>
 						</div>
+
 						<div
 							onClick={toggleCharacterWindow}
 							className='select-none flex items-center justify-center border-2 border-blue-900/20 p-1.5 rounded-xl hover:bg-blue-950 hover:border-blue-800 cursor-pointer hover:opacity-80 transition-opacity duration-200'>

@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import LevelDetails from './LevelDetails';
 import { CharacterStats } from '@/types/game';
 import { countOwnedTiles, getStatDescription } from '@/utils/gameUtils';
 import { formatNumber, formatRate } from '@/utils/formatters';
+import audioManager from '@/utils/audioManager';
 
 const StatisticsOverlay: React.FC = () => {
 	const {
@@ -16,6 +17,25 @@ const StatisticsOverlay: React.FC = () => {
 		resources,
 		characterStats,
 	} = useGameStore();
+
+	// Store previous level to detect level ups
+	const prevLevelRef = useRef(level.level);
+
+	// Check for level up and play sound
+	useEffect(() => {
+		if (level.level > prevLevelRef.current) {
+			audioManager.playSound('fanfare');
+		}
+		prevLevelRef.current = level.level;
+	}, [level.level]);
+
+	// Custom stat point allocation with sound
+	const handleAddStatPoint = (stat: keyof CharacterStats) => {
+		if (characterStats.availablePoints > 0) {
+			addStatPoint(stat);
+			audioManager.playSound('click');
+		}
+	};
 
 	if (!showStatisticsWindow) return null;
 
@@ -86,7 +106,7 @@ const StatisticsOverlay: React.FC = () => {
 												</span>
 											</div>
 											<button
-												onClick={() => addStatPoint(stat)}
+												onClick={() => handleAddStatPoint(stat)}
 												disabled={characterStats.availablePoints <= 0}
 												className={`ml-2 w-5 h-5 rounded-full flex items-center justify-center text-xl 
                                     ${
@@ -102,9 +122,10 @@ const StatisticsOverlay: React.FC = () => {
 								})}
 							</div>
 
-							<div className='mt-6 text-center text-gray-400 text-sm'>
-								<p>Hover over a stat name to see its description.</p>
-								<p>You gain 3 stat points with each level up.</p>
+							<div className='mt-4 text-xs text-gray-400 italic'>
+								Hover over a stat name to see its description.
+								<br />
+								You gain 3 stat points with each level up.
 							</div>
 						</div>
 					</div>

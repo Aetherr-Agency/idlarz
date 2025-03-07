@@ -71,6 +71,8 @@ export const audioManager = AudioManager.getInstance();
 if (typeof window !== 'undefined') {
   audioManager.loadSound('purchase', '/purchase.mp3');
   audioManager.loadSound('wrong', '/wrong.mp3');
+  audioManager.loadSound('click', '/click.mp3');
+  audioManager.loadSound('fanfare', '/fanfare.mp3');
 }
 
 export default audioManager;
