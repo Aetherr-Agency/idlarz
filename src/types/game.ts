@@ -21,11 +21,12 @@ export interface BiomeInfo {
   label: string;
   baseColor: string;
   cost: number;
-  resourceModifiers: Partial<Resources>;
+  resourceGeneration: Partial<Resources>;
   resourceIcons: string[];
   unique?: boolean;
   upgradeable?: boolean;
   maxLevel?: number;
+  description?: string;
 }
 
 export interface Tile {

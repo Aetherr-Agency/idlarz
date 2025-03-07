@@ -1,16 +1,25 @@
 import { BiomeInfo } from '@/types/game';
 
 // Grid Configuration
-export const GRID_SIZE = 48; // Width of the grid
-export const GRID_HEIGHT = 26; // Height of the grid (half of width)
+export const GRID_SIZE = 50; // Width of the grid
+export const GRID_HEIGHT = 50; // Height of the grid (half of width)
 export const TILE_SIZE = 48; // Balanced for visibility
 export const VIEWPORT_SIZE = 25; // 12 tiles in each direction from center
 
 // Game Constants
 export const TICK_RATE = 100; // 10 times per second
-export const TILE_PURCHASE_COST = 100; // Increased to make early expansion more meaningful
+export const BASE_TILE_COST = 100; // Base cost for first tile purchase
+export const COST_SCALING_FACTOR = 1.1; // Each tile increases cost by 10%
+export const ADJACENCY_BONUS = 0.15; // 15% bonus for adjacent same biomes
+
+// Resource scaling configuration
+export const SCALING_CONFIG = {
+  costFormula: (ownedTiles: number) => Math.floor(100 * Math.pow(1.1, ownedTiles)),
+  adjacencyBonus: 0.15, // 15% bonus for each adjacent same biome
+};
+
 export const INITIAL_RESOURCES = {
-  gold: 500,  // Reduced for slower early game
+  gold: 150,  // Increased to allow first tile purchase
   wood: 0,
   stone: 0,
   coal: 0,
@@ -51,145 +60,103 @@ export const BIOMES: Record<string, BiomeInfo> = {
   empty: {
     name: 'empty',
     label: 'Empty',
-    baseColor: '#1f2937',
+    baseColor: '#1a1a1a',
     cost: 0,
-    resourceModifiers: {
-      gold: 1.0,
-      wood: 1.0,
-      stone: 1.0,
-      coal: 1.0,
-      food: 1.0
-    },
-    resourceIcons: ['❔'],
-    unique: false
+    resourceGeneration: {},
+    resourceIcons: ['⬛'],
+    description: 'An empty void'
   },
   castle: {
     name: 'castle',
     label: 'Castle',
-    baseColor: '#7209b7',
+    baseColor: '#9333ea',
     cost: 0,
-    resourceModifiers: {
-      gold: 1.5,
-      wood: 1.1,
-      stone: 1.1,
-      coal: 1.1,
-      food: 1.1
+    resourceGeneration: {
+      gold: 1,
+      wood: 1,
+      stone: 1,
+      coal: 1,
+      food: 1
     },
     resourceIcons: ['🏰'],
     unique: true,
     upgradeable: true,
-    maxLevel: CASTLE_UPGRADE.maxLevel
-  },
-  grounds: {
-    name: 'grounds',
-    label: 'Grounds',
-    baseColor: '#78350f', // Brown
-    cost: 0,
-    resourceModifiers: {
-      gold: 1.0,
-      wood: 1.0,
-      stone: 1.0,
-      coal: 1.0,
-      food: 1.0
-    },
-    resourceIcons: ['🏗️'],
-    unique: false,
-    description: 'Buildable grounds for future structures'
+    maxLevel: 10,
+    description: 'Your central castle, the heart of your empire'
   },
   forest: {
     name: 'forest',
     label: 'Forest',
-    baseColor: '#386641',
-    cost: 0,
-    resourceModifiers: {
-      gold: 1.15,
-      wood: 1.20,    // +20% wood bonus
-      stone: 1.0,
-      coal: 1.0,
-      food: 1.1      // +10% food from berries
+    baseColor: '#166534',
+    cost: 100,
+    resourceGeneration: {
+      gold: 0.15,
+      wood: 2
     },
     resourceIcons: ['🌲'],
-    unique: false,
-    description: 'Rich in wood, with some food from wild berries'
+    description: 'A dense forest teeming with valuable wood. Mysterious creatures lurk in the shadows.'
   },
   plains: {
     name: 'plains',
     label: 'Plains',
-    baseColor: '#90a955',
-    cost: 0,
-    resourceModifiers: {
-      gold: 1.1,     // +10% gold
-      wood: 1.0,
-      stone: 1.0,
-      coal: 1.0,
-      food: 1.2      // +20% food
+    baseColor: '#65a30d',
+    cost: 100,
+    resourceGeneration: {
+      gold: 0.1,
+      food: 2
     },
     resourceIcons: ['🌾'],
-    unique: false,
-    description: 'Excellent for food production'
+    description: 'Fertile grasslands perfect for farming. The wind whispers tales of distant lands.'
   },
   hills: {
     name: 'hills',
     label: 'Hills',
-    baseColor: '#6d6875',
-    cost: 0,
-    resourceModifiers: {
-      gold: 1.05,    // +5% gold
-      wood: 1.0,
-      stone: 1.2,    // +20% stone
-      coal: 1.2,     // +20% coal
-      food: 1.0      // No food penalty
+    baseColor: '#92400e',
+    cost: 100,
+    resourceGeneration: {
+      gold: 0.05,
+      stone: 1.5,
+      coal: 1
     },
     resourceIcons: ['⛰️'],
-    unique: false,
-    description: 'Rich in stone and coal'
+    description: 'Rolling hills rich with minerals. Ancient tunnels hint at forgotten treasures.'
   },
   swamp: {
     name: 'swamp',
     label: 'Swamp',
-    baseColor: '#4a4e69',
-    cost: 0,
-    resourceModifiers: {
-      gold: 1.0,     // No gold penalty
-      wood: 1.2,     // +20% wood
-      stone: 1.0,
-      coal: 1.0,
-      food: 1.1      // +10% food
+    baseColor: '#365314',
+    cost: 100,
+    resourceGeneration: {
+      gold: -0.1,
+      food: 1,
+      wood: 0.5
     },
     resourceIcons: ['🌿'],
-    unique: false,
-    description: 'Good for wood and food'
+    description: 'A treacherous swamp with unique resources. The mist conceals both danger and opportunity.'
   },
   tundra: {
     name: 'tundra',
     label: 'Tundra',
-    baseColor: '#a4c3d2',
-    cost: 0,
-    resourceModifiers: {
-      gold: 1.2,     // +20% gold
-      wood: 1.0,     // No wood penalty
-      stone: 1.1,    // +10% stone
-      coal: 1.1,     // +10% coal
-      food: 1.0      // No food penalty
+    baseColor: '#94a3b8',
+    cost: 100,
+    resourceGeneration: {
+      gold: 0.2,
+      food: -0.5,
+      coal: 2
     },
     resourceIcons: ['❄️'],
-    unique: false,
-    description: 'Rich in gold and minerals'
+    description: 'A harsh frozen wasteland. Only the bravest explorers venture here, but the rewards are great.'
   },
   lake: {
     name: 'lake',
     label: 'Lake',
-    baseColor: '#184e77',
-    cost: 0,
-    resourceModifiers: {
-      gold: 1.2,     // +20% gold
-      wood: 1.0,     // No wood penalty
-      stone: 1.0,    // No stone penalty
-      coal: 1.0,     // No coal penalty
-      food: 1.2      // +20% food
+    baseColor: '#0ea5e9',
+    cost: 100,
+    resourceGeneration: {
+      gold: 0.25,
+      food: 1.5
     },
     resourceIcons: ['💧'],
-    unique: false,
-    description: 'Excellent for gold and food'
+    description: 'A pristine lake full of fish. The clear waters reflect untold possibilities.'
   }
 } as const;

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import Tile from './Tile';
-import { GRID_SIZE, GRID_HEIGHT, TILE_SIZE, VIEWPORT_SIZE, TILE_PURCHASE_COST } from '@/config/gameConfig';
+import { GRID_SIZE, GRID_HEIGHT, TILE_SIZE, VIEWPORT_SIZE } from '@/config/gameConfig';
 
 const MIN_VELOCITY = 1;
 const VELOCITY_SCALE = 1;
@@ -19,8 +19,6 @@ interface Velocity {
 
 const Grid: React.FC = () => {
   const tiles = useGameStore(state => state.tiles);
-  const buyTile = useGameStore(state => state.buyTile);
-  const resources = useGameStore(state => state.resources);
   const gridRef = useRef<HTMLDivElement>(null);
   const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
   const [velocity, setVelocity] = useState<Velocity>({ x: 0, y: 0 });
@@ -48,9 +46,6 @@ const Grid: React.FC = () => {
     const centerY = Math.floor(GRID_HEIGHT / 2);
     
     // Adjust initial position to center the viewport
-    const viewportWidth = VIEWPORT_SIZE * TILE_SIZE;
-    const viewportHeight = VIEWPORT_SIZE * TILE_SIZE;
-    
     setPosition({
       x: (window.innerWidth / 2) - (centerX * TILE_SIZE),
       y: (window.innerHeight / 2) - (centerY * TILE_SIZE)
@@ -152,128 +147,57 @@ const Grid: React.FC = () => {
     };
   }, [animate]);
 
-  const getTileCoordinates = useCallback((clientX: number, clientY: number) => {
-    const rect = gridRef.current?.getBoundingClientRect();
-    if (!rect) return { x: -1, y: -1 };
-
-    const x = Math.floor((clientX - rect.left - position.x) / TILE_SIZE);
-    const y = Math.floor((clientY - rect.top - position.y) / TILE_SIZE);
-
-    return { x, y };
-  }, [position.x, position.y]);
-
-  const isAdjacentToOwned = useCallback((x: number, y: number, tiles: any[][]) => {
-    if (x < 0 || x >= GRID_SIZE || y < 0 || y >= GRID_HEIGHT) return false;
-
-    // Check only orthogonal adjacency (not diagonal)
-    const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
-    return directions.some(([dx, dy]) => {
-      const nx = x + dx;
-      const ny = y + dy;
-      return nx >= 0 && nx < GRID_SIZE && 
-             ny >= 0 && ny < GRID_HEIGHT && 
-             tiles[ny][nx]?.isOwned;
-    });
-  }, []);
-
-  const handleClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    if (isDragging) return;
-
-    const pos = 'touches' in e ? e.touches[0] : e;
-    const { x, y } = getTileCoordinates(pos.clientX, pos.clientY);
-    
-    if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_HEIGHT && tiles?.[y]?.[x]) {
-      const tile = tiles[y][x];
-      if (!tile.isOwned && isAdjacentToOwned(x, y, tiles)) {
-        if (resources.gold >= TILE_PURCHASE_COST) {
-          buyTile(x, y);
-        } else {
-          // Add shake animation for can't afford
-          const element = e.currentTarget;
-          element.classList.add('shake');
-          setTimeout(() => element.classList.remove('shake'), 500);
-        }
-      }
-    }
-  }, [isDragging, getTileCoordinates, tiles, isAdjacentToOwned, buyTile, resources.gold]);
-
   const visibleTiles = useMemo(() => {
-    const startX = Math.floor(-position.x / TILE_SIZE);
-    const startY = Math.floor(-position.y / TILE_SIZE);
-    const tilesX = Math.ceil(windowSize.x / TILE_SIZE) + VISIBLE_PADDING * 2;
-    const tilesY = Math.ceil(windowSize.y / TILE_SIZE) + VISIBLE_PADDING * 2;
+    const startX = Math.max(0, Math.floor(-position.x / TILE_SIZE) - VISIBLE_PADDING);
+    const endX = Math.min(GRID_SIZE, Math.ceil((-position.x + windowSize.x) / TILE_SIZE) + VISIBLE_PADDING);
+    const startY = Math.max(0, Math.floor(-position.y / TILE_SIZE) - VISIBLE_PADDING);
+    const endY = Math.min(GRID_HEIGHT, Math.ceil((-position.y + windowSize.y) / TILE_SIZE) + VISIBLE_PADDING);
 
-    const visibleArea = {
-      startX: Math.max(0, startX - VISIBLE_PADDING),
-      startY: Math.max(0, startY - VISIBLE_PADDING),
-      endX: Math.min(GRID_SIZE, startX + tilesX),
-      endY: Math.min(GRID_HEIGHT, startY + tilesY)
-    };
-
-    const result = [];
-    for (let y = visibleArea.startY; y < visibleArea.endY; y++) {
-      for (let x = visibleArea.startX; x < visibleArea.endX; x++) {
-        if (tiles[y] && tiles[y][x]) {
-          result.push({
-            tile: tiles[y][x],
-            x,
-            y
-          });
-        }
-      }
-    }
-    return result;
-  }, [position.x, position.y, windowSize, tiles]);
-
-  return (
-    <div 
-      ref={gridRef}
-      className="fixed inset-0 overflow-hidden bg-gray-900 select-none touch-none"
-    >
-      <style jsx>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          25% { transform: translateX(-5px); }
-          75% { transform: translateX(5px); }
-        }
-        .shake {
-          animation: shake 0.2s ease-in-out 0s 3;
-        }
-      `}</style>
-      <div 
-        className="relative w-full h-full cursor-grab active:cursor-grabbing"
-        style={{
-          transform: `translate3d(${position.x}px, ${position.y}px, 0)`,
-          willChange: 'transform',
-        }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onClick={handleClick}
-        onTouchStart={handleMouseDown}
-        onTouchMove={handleMouseMove}
-        onTouchEnd={handleMouseUp}
-        onTouchCancel={handleMouseUp}
-      >
-        {visibleTiles.map(({ tile, x, y }) => (
+    const visible: JSX.Element[] = [];
+    for (let y = startY; y < endY; y++) {
+      for (let x = startX; x < endX; x++) {
+        const tile = tiles[y][x];
+        visible.push(
           <Tile
-            key={`${x}-${y}`}
+            key={`${x},${y}`}
             biome={tile.biome}
             isOwned={tile.isOwned}
             x={x}
             y={y}
             level={tile.level}
-            upgradeCost={tile.upgradeCost}
             style={{
-              position: 'absolute',
-              left: x * TILE_SIZE,
-              top: y * TILE_SIZE,
               width: TILE_SIZE,
               height: TILE_SIZE,
+              transform: `translate(${x * TILE_SIZE}px, ${y * TILE_SIZE}px)`
             }}
           />
-        ))}
+        );
+      }
+    }
+    return visible;
+  }, [position.x, position.y, windowSize, tiles]);
+
+  return (
+    <div 
+      ref={gridRef}
+      className="fixed inset-0 overflow-hidden bg-gray-950"
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
+      onTouchStart={handleMouseDown}
+      onTouchMove={handleMouseMove}
+      onTouchEnd={handleMouseUp}
+    >
+      <div 
+        className="absolute"
+        style={{
+          transform: `translate(${position.x}px, ${position.y}px)`,
+          width: GRID_SIZE * TILE_SIZE,
+          height: GRID_HEIGHT * TILE_SIZE
+        }}
+      >
+        {visibleTiles}
       </div>
     </div>
   );
