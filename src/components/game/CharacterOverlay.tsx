@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { EQUIPMENT_SLOT_INFO } from '@/config/gameConfig';
 import { EquipmentSlot, Item } from '@/types/game';
@@ -71,7 +71,7 @@ const CharacterOverlay: React.FC = () => {
 	const currentXp = Math.floor(resources.xp % 1000);
 
 	return (
-		<div className='fixed inset-[8vh] inset-x-[20vw] bg-black bg-opacity-90 rounded-3xl z-50 flex items-start justify-center overflow-y-auto'>
+		<div className='fixed inset-[8vh] inset-x-[17vw] bg-black bg-opacity-90 rounded-3xl z-50 flex items-start justify-center overflow-y-auto'>
 			<div className='absolute top-4 right-4'>
 				<button
 					onClick={toggleCharacterWindow}
@@ -84,7 +84,7 @@ const CharacterOverlay: React.FC = () => {
 			<div className='w-full h-full p-8 flex flex-col'>
 				<div className='grid grid-cols-4 gap-6 h-full'>
 					{/* Character Stats Section */}
-					<div className='col-span-1 bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-700'>
+					<div className='col-span-1 bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-700 min-w-[200px]'>
 						<div className='flex flex-col space-y-4'>
 							<div>
 								<div className='relative w-44 h-44 mx-auto'>
@@ -96,8 +96,7 @@ const CharacterOverlay: React.FC = () => {
 											cx='50'
 											cy='50'
 											r='40'
-											fill='transparent'
-										></circle>
+											fill='transparent'></circle>
 										{/* Radial progress indicator */}
 										<circle
 											className='text-green-500 stroke-current'
@@ -109,15 +108,18 @@ const CharacterOverlay: React.FC = () => {
 											fill='transparent'
 											strokeDasharray={`${level.progress * 251.2} 251.2`}
 											strokeDashoffset='0'
-											transform='rotate(-90 50 50)'
-										></circle>
+											transform='rotate(-90 50 50)'></circle>
 									</svg>
 									{/* Percentage text */}
 									<div className='absolute inset-0 flex flex-col items-center justify-center'>
-									<div className="flex items-start gap-1">
-									<span className='text-gray-400 text-xs leading-0 mt-4'>LV</span>
-									<span className='text-white text-xl font-bold'>{level.level}</span>
-								</div>
+										<div className='flex items-start gap-1'>
+											<span className='text-gray-400 text-xs leading-0 mt-4'>
+												LV
+											</span>
+											<span className='text-white text-xl font-bold'>
+												{level.level}
+											</span>
+										</div>
 										<div className='text-gray-300 text-3xl font-bold'>
 											{Math.floor(level.progress * 100)}%
 										</div>
@@ -126,7 +128,7 @@ const CharacterOverlay: React.FC = () => {
 										</div>
 									</div>
 								</div>
-								
+
 								{/* Time estimation until level up */}
 								<LevelUpTimer />
 							</div>
