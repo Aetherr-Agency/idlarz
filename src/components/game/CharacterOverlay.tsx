@@ -39,29 +39,13 @@ const CharacterOverlay: React.FC = () => {
 		toggleCharacterWindow,
 		equipment,
 		inventory,
-		equipItem,
 		resources,
 		level,
 	} = useGameStore();
 
 	const [hoveredItem, setHoveredItem] = useState<Item | null>(null);
-	const [draggedItem, setDraggedItem] = useState<Item | null>(null);
-	const [draggedSlot, setDraggedSlot] = useState<EquipmentSlot | null>(null);
 
 	if (!showCharacterWindow) return null;
-
-	const handleDragStart = (item: Item, slot?: EquipmentSlot) => {
-		setDraggedItem(item);
-		setDraggedSlot(slot || null);
-	};
-
-	const handleDrop = (targetSlot: EquipmentSlot) => {
-		if (draggedItem && draggedItem.slot === targetSlot) {
-			equipItem(draggedItem, draggedSlot || undefined);
-			setDraggedItem(null);
-			setDraggedSlot(null);
-		}
-	};
 
 	// Calculate total equipment bonuses
 	const totalEquipmentBonus: Record<string, number> = {};
@@ -159,28 +143,12 @@ const CharacterOverlay: React.FC = () => {
 								return (
 									<div
 										key={slot}
-										className='bg-gray-700 p-2 rounded border border-gray-600 transition-colors duration-150'
-										onDragOver={(e) => {
-											e.preventDefault();
-											if (draggedItem?.slot === slot) {
-												e.currentTarget.classList.add('border-green-500');
-											}
-										}}
-										onDragLeave={(e) => {
-											e.currentTarget.classList.remove('border-green-500');
-										}}
-										onDrop={(e) => {
-											e.preventDefault();
-											e.currentTarget.classList.remove('border-green-500');
-											handleDrop(slot);
-										}}>
+										className='bg-gray-700 p-2 rounded border border-gray-600 transition-colors duration-150'>
 										<div className='text-xs text-gray-400 mb-1'>
 											{info.label}
 										</div>
 										{item ? (
 											<div
-												draggable
-												onDragStart={() => handleDragStart(item, slot)}
 												onMouseEnter={() => setHoveredItem(item)}
 												onMouseLeave={() => setHoveredItem(null)}
 												className={`flex items-center p-1 rounded cursor-grab relative ${
@@ -211,8 +179,6 @@ const CharacterOverlay: React.FC = () => {
 							{inventory.map((item) => (
 								<div
 									key={item.id}
-									draggable
-									onDragStart={() => handleDragStart(item)}
 									onMouseEnter={() => setHoveredItem(item)}
 									onMouseLeave={() => setHoveredItem(null)}
 									className={`p-2 bg-gray-700 rounded border relative cursor-grab ${
