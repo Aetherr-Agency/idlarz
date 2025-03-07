@@ -19,6 +19,7 @@ const ResourceDisplay: React.FC = () => {
   const tiles = useGameStore(state => state.tiles);
   const level = useGameStore(state => state.level);
   const xp = useGameStore(state => state.xp);
+  const toggleCharacterWindow = useGameStore(state => state.toggleCharacterWindow);
 
   // Find castle level
   const castleLevel = React.useMemo(() => {
@@ -41,7 +42,10 @@ const ResourceDisplay: React.FC = () => {
     <div className="fixed top-0 left-0 right-0 z-50 bg-gray-900 bg-opacity-90 border-b border-gray-800">
       <div className="max-w-6xl mx-auto px-4 py-2">
         <div className="grid grid-cols-9 gap-4 md:gap-8">
-          <div className="flex justify-start items-center gap-4 mr-4 col-span-2">
+          <div 
+            className="flex justify-start items-center gap-4 mr-4 col-span-2 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={toggleCharacterWindow}
+          >
             <Image src="/fella.png" width={65} height={120} alt="Your character" className="w-fit h-12" />
             <div className="flex flex-col text-white items-start justify-center h-full">
               <div className="flex items-center gap-2 mb-1">

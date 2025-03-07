@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import Grid from '@/components/game/Grid';
 import ResourceDisplay from '@/components/game/ResourceDisplay';
+import CharacterOverlay from '@/components/game/CharacterOverlay';
 import { TICK_RATE } from '@/config/gameConfig';
 
 export default function Home() {
@@ -29,6 +30,7 @@ export default function Home() {
         <ResourceDisplay />
       </div>
       <Grid />
+      <CharacterOverlay />
     </main>
   );
 }

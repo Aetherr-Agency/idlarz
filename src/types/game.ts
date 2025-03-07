@@ -36,6 +36,22 @@ export interface Tile {
   upgradeCost?: Resources;
 }
 
+export type EquipmentSlot = 'head' | 'neck' | 'chest' | 'mainHand' | 'offHand' | 'legs' | 'feet' | 'ring1' | 'ring2';
+
+export type Equipment = {
+  [key in EquipmentSlot]?: Item;
+};
+
+export interface Item {
+  id: string;
+  name: string;
+  icon: string;
+  slot: EquipmentSlot;
+  stats: Partial<Resources>;
+  description?: string;
+  rarity?: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+}
+
 export interface GameState {
   tiles: Tile[][];
   resources: Resources;
@@ -46,7 +62,13 @@ export interface GameState {
     level: number;
     progress: number;
   };
+  equipment: Equipment;
+  inventory: Item[];
+  showCharacterWindow: boolean;
   buyTile: (x: number, y: number) => boolean;
   upgradeCastle: () => boolean;
   tick: (deltaTime: number) => void;
+  toggleCharacterWindow: () => void;
+  equipItem: (item: Item, fromSlot?: EquipmentSlot) => void;
+  unequipItem: (slot: EquipmentSlot) => void;
 }

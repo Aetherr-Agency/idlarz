@@ -9,6 +9,7 @@ import {
 	INITIAL_RESOURCES,
 	BASE_GENERATION_RATES,
 	SCALING_CONFIG,
+	INITIAL_INVENTORY_ITEMS,
 } from '@/config/gameConfig';
 import type {
 	BiomeType,
@@ -341,9 +342,82 @@ const createGameSlice = (
 		resourceModifiers: initialRates.modifiers,
 		xp: 0,
 		level: calculateLevel(0),
+		equipment: {},
+		inventory: INITIAL_INVENTORY_ITEMS,
+		showCharacterWindow: false,
 		buyTile,
 		upgradeCastle,
 		tick,
+		toggleCharacterWindow: () =>
+			set((state) => ({ showCharacterWindow: !state.showCharacterWindow })),
+		equipItem: (item, fromSlot) =>
+			set((state) => {
+				const newEquipment = { ...state.equipment };
+				const newInventory = [...state.inventory];
+
+				// If item is from inventory, remove it
+				if (!fromSlot) {
+					const itemIndex = newInventory.findIndex((i) => i.id === item.id);
+					if (itemIndex !== -1) {
+						newInventory.splice(itemIndex, 1);
+					}
+				}
+
+				// If there's an item in the target slot, move it to inventory
+				if (newEquipment[item.slot]) {
+					newInventory.push(newEquipment[item.slot]!);
+				}
+
+				// If item is from another equipment slot, remove it
+				if (fromSlot) {
+					newEquipment[fromSlot] = undefined;
+				}
+
+				// Equip the item
+				newEquipment[item.slot] = item;
+
+				// Recalculate resource rates with new equipment bonuses
+				const newRates = calculateResourceRates(state.tiles);
+				Object.values(newEquipment).forEach((equippedItem) => {
+					if (equippedItem) {
+						Object.entries(equippedItem.stats).forEach(([resource, value]) => {
+							newRates.total[resource as keyof Resources] += value;
+						});
+					}
+				});
+
+				return {
+					equipment: newEquipment,
+					inventory: newInventory,
+					resourceRates: newRates,
+					resourceModifiers: newRates.modifiers,
+				};
+			}),
+		unequipItem: (slot) =>
+			set((state) => {
+				const item = state.equipment[slot];
+				if (!item) return state;
+
+				const newEquipment = { ...state.equipment };
+				delete newEquipment[slot];
+
+				// Recalculate resource rates without this item's bonuses
+				const newRates = calculateResourceRates(state.tiles);
+				Object.values(newEquipment).forEach((equippedItem) => {
+					if (equippedItem) {
+						Object.entries(equippedItem.stats).forEach(([resource, value]) => {
+							newRates.total[resource as keyof Resources] += value;
+						});
+					}
+				});
+
+				return {
+					equipment: newEquipment,
+					inventory: [...state.inventory, item],
+					resourceRates: newRates,
+					resourceModifiers: newRates.modifiers,
+				};
+			}),
 	};
 };
 
@@ -365,6 +439,9 @@ export const useGameStore = create(
 					resourceModifiers: initialRates.modifiers,
 					xp: 0,
 					level: calculateLevel(0),
+					equipment: {},
+					inventory: INITIAL_INVENTORY_ITEMS,
+					showCharacterWindow: false,
 					buyTile: state?.buyTile,
 					upgradeCastle: state?.upgradeCastle,
 					tick: state?.tick,

@@ -188,3 +188,73 @@ export const BIOMES: Record<string, BiomeInfo> = {
     description: 'A pristine lake full of fish. The clear waters reflect untold possibilities.'
   }
 } as const;
+
+// Equipment and items configuration
+export const EQUIPMENT_SLOT_INFO = {
+  head: { label: 'Head', icon: '🪖' },
+  neck: { label: 'Neck', icon: '📿' },
+  chest: { label: 'Chest', icon: '👕' },
+  mainHand: { label: 'Main Hand', icon: '🗡️' },
+  offHand: { label: 'Off Hand', icon: '🛡️' },
+  legs: { label: 'Legs', icon: '👖' },
+  feet: { label: 'Feet', icon: '👢' },
+  ring1: { label: 'Ring 1', icon: '💍' },
+  ring2: { label: 'Ring 2', icon: '💍' },
+};
+
+export const INITIAL_INVENTORY_ITEMS = [
+  {
+    id: 'wooden-sword',
+    name: 'Wooden Sword',
+    icon: '🗡️',
+    slot: 'mainHand',
+    stats: { gold: 0.05 },
+    description: 'A simple training sword',
+    rarity: 'common',
+  },
+  {
+    id: 'leather-cap',
+    name: 'Leather Cap',
+    icon: '🪖',
+    slot: 'head',
+    stats: { wood: 0.1 },
+    description: 'Basic head protection',
+    rarity: 'common',
+  },
+  {
+    id: 'steel-breastplate',
+    name: 'Steel Breastplate',
+    icon: '👕',
+    slot: 'chest',
+    stats: { gold: 0.1, stone: 0.2 },
+    description: 'Solid protection for your torso',
+    rarity: 'uncommon',
+  },
+  {
+    id: 'gold-ring',
+    name: 'Gold Ring',
+    icon: '💍',
+    slot: 'ring1',
+    stats: { gold: 0.2 },
+    description: 'Increases gold generation',
+    rarity: 'rare',
+  },
+  {
+    id: 'leather-boots',
+    name: 'Leather Boots',
+    icon: '👢',
+    slot: 'feet',
+    stats: { food: 0.1 },
+    description: 'Comfortable footwear',
+    rarity: 'common',
+  },
+  {
+    id: 'wooden-shield',
+    name: 'Wooden Shield',
+    icon: '🛡️',
+    slot: 'offHand',
+    stats: { wood: 0.15 },
+    description: 'Simple defensive gear',
+    rarity: 'common',
+  }
+];
