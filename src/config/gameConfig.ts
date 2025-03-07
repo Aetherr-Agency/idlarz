@@ -24,15 +24,76 @@ export const BASE_GENERATION_RATES = {
   food: 0.1   // Base: 0.1/s
 };
 
+// Castle Configuration
+export const CASTLE_BASE_RATES = {
+  gold: 1.0,   // Base: 1.0/s
+  wood: 0.25,  // Base: 0.25/s
+  stone: 0.25, // Base: 0.25/s
+  coal: 0.25,  // Base: 0.25/s
+  food: 0.25   // Base: 0.25/s
+};
+
+export const CASTLE_UPGRADE = {
+  maxLevel: 5,
+  levelMultiplier: 1.5, // Each level increases base rates by 50%
+  upgradeCosts: [
+    {
+      gold: 1000,
+      wood: 100,
+      stone: 100,
+      coal: 50,
+      food: 100
+    },
+    {
+      gold: 2500,
+      wood: 250,
+      stone: 250,
+      coal: 125,
+      food: 250
+    },
+    {
+      gold: 5000,
+      wood: 500,
+      stone: 500,
+      coal: 250,
+      food: 500
+    },
+    {
+      gold: 10000,
+      wood: 1000,
+      stone: 1000,
+      coal: 500,
+      food: 1000
+    }
+  ]
+};
+
 // Biome Configuration
 export const BIOMES: Record<string, BiomeInfo> = {
   empty: {
     name: 'empty',
     label: 'Empty',
-    baseColor: '#ffffff',
+    baseColor: '#1a1b26',
     cost: 0,
     resourceModifiers: {},
     resourceIcons: []
+  },
+  castle: {
+    name: 'castle',
+    label: 'Castle',
+    baseColor: '#4c1d95', // Royal purple
+    cost: 0,
+    resourceModifiers: {
+      gold: 2.0,    // +100% gold
+      wood: 1.5,    // +50% wood
+      stone: 1.5,   // +50% stone
+      coal: 1.5,    // +50% coal
+      food: 1.5     // +50% food
+    },
+    resourceIcons: ['🏰'],
+    unique: true,
+    upgradeable: true,
+    maxLevel: CASTLE_UPGRADE.maxLevel
   },
   plains: {
     name: 'plains',

@@ -1,7 +1,7 @@
 import React, { useState, memo, useCallback, useMemo } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { BiomeType } from '@/types/game';
-import { BIOMES } from '@/config/gameConfig';
+import { BIOMES, CASTLE_UPGRADE } from '@/config/gameConfig';
 
 interface TileProps {
   biome: BiomeType;
@@ -9,6 +9,8 @@ interface TileProps {
   x: number;
   y: number;
   style?: React.CSSProperties;
+  level?: number;
+  upgradeCost?: Record<string, number>;
 }
 
 const formatModifier = (modifier: number) => {
@@ -17,18 +19,28 @@ const formatModifier = (modifier: number) => {
   return `${sign}${percentage}%`;
 };
 
-const BiomeTooltip = memo(({ biomeInfo }: { biomeInfo: typeof BIOMES[BiomeType] }) => (
-  <div className="space-y-1 text-sm">
-    {Object.entries(biomeInfo.resourceModifiers).map(([resource, modifier]) => (
-      <div key={resource} className="flex justify-between gap-4">
-        <span className="text-gray-400">{resource}:</span>
-        <span className={modifier >= 1 ? 'text-green-400' : 'text-red-400'}>
-          {formatModifier(modifier)}
-        </span>
-      </div>
-    ))}
-  </div>
-));
+const BiomeTooltip = memo(({ biomeInfo, level }: { biomeInfo: typeof BIOMES[BiomeType]; level?: number }) => {
+  const multiplier = level ? Math.pow(CASTLE_UPGRADE.levelMultiplier, level - 1) : 1;
+  
+  return (
+    <div className="space-y-1 text-sm">
+      {biomeInfo.unique && level && (
+        <div className="mb-2 text-purple-400">Level {level} Castle</div>
+      )}
+      {Object.entries(biomeInfo.resourceModifiers).map(([resource, modifier]) => {
+        const effectiveModifier = biomeInfo.unique ? modifier * multiplier : modifier;
+        return (
+          <div key={resource} className="flex justify-between gap-4">
+            <span className="text-gray-400">{resource}:</span>
+            <span className={effectiveModifier >= 1 ? 'text-green-400' : 'text-red-400'}>
+              {formatModifier(effectiveModifier)}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+});
 
 const BiomeButton = memo(({ 
   biome, 
@@ -40,6 +52,12 @@ const BiomeButton = memo(({
   onSelect: (biome: BiomeType) => void;
 }) => {
   const biomeInfo = BIOMES[biome];
+  const tiles = useGameStore(state => state.tiles);
+  
+  // Check if this biome type is already owned (for unique tiles)
+  const isUniqueTileOwned = biomeInfo.unique && tiles.some(row => 
+    row.some(tile => tile.biome === biome && tile.isOwned)
+  );
   
   return (
     <button
@@ -50,10 +68,10 @@ const BiomeButton = memo(({
       className={`
         group/biome relative p-2 rounded flex flex-col items-center gap-1 
         transition-all duration-200 ease-in-out
-        ${canPurchase ? 'hover:bg-gray-700 hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed'}
+        ${!isUniqueTileOwned && canPurchase ? 'hover:bg-gray-700 hover:scale-105 active:scale-95' : 'opacity-50 cursor-not-allowed'}
       `}
-      disabled={!canPurchase}
-      aria-label={`Select ${biomeInfo.label} biome${!canPurchase ? ' (Cannot afford)' : ''}`}
+      disabled={isUniqueTileOwned || !canPurchase}
+      aria-label={`Select ${biomeInfo.label} biome${!canPurchase ? ' (Cannot afford)' : isUniqueTileOwned ? ' (Already owned)' : ''}`}
     >
       <div className="text-xl" role="img" aria-hidden="true">
         {biomeInfo.resourceIcons[0]}
@@ -61,7 +79,7 @@ const BiomeButton = memo(({
       <div className="text-xs font-medium">
         {biomeInfo.label}
       </div>
-      <div className={`text-xs flex items-center gap-1 ${canPurchase ? 'text-gray-400' : 'text-red-400'}`}>
+      <div className={`text-xs flex items-center gap-1 ${canPurchase && !isUniqueTileOwned ? 'text-gray-400' : 'text-red-400'}`}>
         <span role="img" aria-label="gold cost">💰</span>
         {biomeInfo.cost}
       </div>
@@ -75,14 +93,17 @@ const BiomeButton = memo(({
   );
 });
 
-const TileStatus = memo(({ biome, isOwned, isAdjacent }: { biome: BiomeType; isOwned: boolean; isAdjacent: boolean }) => {
+const TileStatus = memo(({ biome, isOwned, isAdjacent, level }: { biome: BiomeType; isOwned: boolean; isAdjacent: boolean; level?: number }) => {
   if (isOwned) {
     const biomeInfo = BIOMES[biome];
     return (
       <div className="space-y-1">
-        <div className="font-medium">{biomeInfo.label}</div>
+        <div className="font-medium flex items-center gap-2">
+          {biomeInfo.label}
+          {level && <span className="text-purple-400 text-sm">(Level {level})</span>}
+        </div>
         <div className="text-sm text-gray-400">Resource Modifiers:</div>
-        <BiomeTooltip biomeInfo={biomeInfo} />
+        <BiomeTooltip biomeInfo={biomeInfo} level={level} />
       </div>
     );
   }
@@ -104,7 +125,7 @@ const TileStatus = memo(({ biome, isOwned, isAdjacent }: { biome: BiomeType; isO
   );
 });
 
-const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style }) => {
+const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level, upgradeCost }) => {
   const [showBiomeSelector, setShowBiomeSelector] = useState(false);
   const [canAfford, setCanAfford] = useState(true);
   const buyTile = useGameStore(state => state.buyTile);
@@ -135,7 +156,16 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style }) => {
   }, [isOwned, isAdjacent]);
 
   const handleBiomeSelect = useCallback((selectedBiome: BiomeType) => {
-    if (resources.gold >= BIOMES[selectedBiome].cost) {
+    const biomeInfo = BIOMES[selectedBiome];
+    
+    // Check if this is a unique tile that's already owned
+    if (biomeInfo.unique && tiles.some(row => 
+      row.some(tile => tile.biome === selectedBiome && tile.isOwned)
+    )) {
+      return;
+    }
+    
+    if (resources.gold >= biomeInfo.cost) {
       if (buyTile(selectedBiome, x, y)) {
         setShowBiomeSelector(false);
         setCanAfford(true);
@@ -144,7 +174,7 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style }) => {
       setCanAfford(false);
       setTimeout(() => setCanAfford(true), 200);
     }
-  }, [resources.gold, buyTile, x, y]);
+  }, [resources.gold, buyTile, x, y, tiles]);
 
   const backgroundColor = useMemo(() => {
     const baseColor = BIOMES[biome].baseColor;
@@ -162,6 +192,7 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style }) => {
         ${!isOwned && isAdjacent && 'hover:scale-[1.02] hover:z-10 cursor-pointer'}
         ${showBiomeSelector && 'ring-2 ring-blue-500 animate-pulse-ring'}
         ${!canAfford && 'animate-shake'}
+        ${BIOMES[biome].unique && 'ring-2 ring-purple-500'}
         border border-gray-800 hover:border-gray-600
         rounded-sm
       `}
@@ -180,11 +211,16 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style }) => {
             {icon}
           </span>
         ))}
+        {level && (
+          <span className="absolute top-0 right-0 text-xs bg-purple-500 text-white px-1 rounded-bl">
+            {level}
+          </span>
+        )}
       </div>
 
       <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 pointer-events-none z-40 transition-opacity duration-200">
         <div className="bg-gray-800 rounded-lg shadow-xl p-3 whitespace-nowrap border border-gray-700">
-          <TileStatus biome={biome} isOwned={isOwned} isAdjacent={isAdjacent} />
+          <TileStatus biome={biome} isOwned={isOwned} isAdjacent={isAdjacent} level={level} />
         </div>
       </div>
 
@@ -197,7 +233,7 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style }) => {
           <div className="bg-gray-800 rounded-lg shadow-xl p-2 border border-gray-700">
             <div className="grid grid-cols-3 gap-2">
               {(Object.keys(BIOMES) as BiomeType[])
-                .filter(biomeName => biomeName !== 'empty')
+                .filter(biomeName => biomeName !== 'empty' && biomeName !== 'castle')
                 .map(biomeName => (
                   <BiomeButton
                     key={biomeName}
@@ -212,6 +248,6 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style }) => {
       )}
     </div>
   );
-};
+});
 
 export default memo(Tile);

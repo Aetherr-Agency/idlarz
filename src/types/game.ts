@@ -23,11 +23,16 @@ export interface BiomeInfo {
   cost: number;
   resourceModifiers: Partial<Resources>;
   resourceIcons: string[];
+  unique?: boolean;
+  upgradeable?: boolean;
+  maxLevel?: number;
 }
 
 export interface Tile {
   biome: BiomeType;
   isOwned: boolean;
+  level?: number;
+  upgradeCost?: Resources;
 }
 
 export interface GameState {

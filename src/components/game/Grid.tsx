@@ -206,13 +206,14 @@ const Grid: React.FC = () => {
             isOwned={tile.isOwned}
             x={x}
             y={y}
+            level={tile.level}
+            upgradeCost={tile.upgradeCost}
             style={{
               position: 'absolute',
               left: x * TILE_SIZE,
               top: y * TILE_SIZE,
               width: TILE_SIZE,
               height: TILE_SIZE,
-              willChange: 'transform',
             }}
           />
         ))}
