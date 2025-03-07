@@ -46,6 +46,9 @@ const ResourceDisplay: React.FC = () => {
 	const toggleCharacterWindow = useGameStore(
 		(state) => state.toggleCharacterWindow
 	);
+	const toggleStatisticsWindow = useGameStore(
+		(state) => state.toggleStatisticsWindow
+	);
 
 	// Find castle level
 	const castleLevel = React.useMemo(() => {
@@ -74,25 +77,27 @@ const ResourceDisplay: React.FC = () => {
 			<div className='max-w-6xl mx-auto px-4 py-2'>
 				<div className='grid grid-cols-9 gap-4 md:gap-8'>
 					<div className='flex items-center gap-2 col-span-3'>
-						<div className='flex justify-start items-center gap-4 mr-4'>
+						<div
+							className='flex justify-start items-center gap-4 mr-2 cursor-pointer hover:opacity-80 transition-opacity duration-200 hover:border-blue-800 border-2 border-transparent py-1.5 px-2 rounded-xl hover:bg-blue-950'
+							onClick={toggleStatisticsWindow}>
 							<Image
 								src='/fella.png'
 								width={65}
 								height={120}
 								alt='Your character'
-								className='w-fit h-12'
+								className='w-fit h-9'
 							/>
 							<div className='flex flex-col text-white items-start justify-center h-full select-none'>
 								<div className='flex items-center gap-2 mb-1'>
 									<p className='font-bold text-sm'>Giorgio</p>
-									<span className='px-2 py-0.5 bg-blue-600 rounded-full text-xs font-semibold'>
+									<span className='px-1.5 p-0.5 bg-blue-700 rounded-sm text-[10px] font-semibold'>
 										{level.level}
 									</span>
 								</div>
 
 								<div className='w-full h-1.5 bg-gray-700 rounded-full mt-1'>
 									<div
-										className='h-full bg-blue-500 rounded-full transition-all duration-300 ease-out'
+										className='h-full bg-green-500 rounded-full transition-all duration-300 ease-out'
 										style={{ width: `${level.progress * 100}%` }}
 										title={`XP: ${formatNumber(resources.xp)} / ${formatNumber(
 											level.level * 1000
@@ -103,7 +108,7 @@ const ResourceDisplay: React.FC = () => {
 						</div>
 						<div
 							onClick={toggleCharacterWindow}
-							className='select-none flex items-center justify-center border-2 border-amber-900 p-1.5 rounded-xl hover:border-amber-700 cursor-pointer hover:opacity-80 transition-opacity duration-200'>
+							className='select-none flex items-center justify-center border-2 border-blue-900/20 p-1.5 rounded-xl hover:bg-blue-950 hover:border-blue-800 cursor-pointer hover:opacity-80 transition-opacity duration-200'>
 							⚔️
 						</div>
 					</div>

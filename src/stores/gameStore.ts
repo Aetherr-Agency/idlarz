@@ -386,17 +386,20 @@ const createGameSlice = (
 		equipment: {},
 		inventory: INITIAL_INVENTORY_ITEMS,
 		showCharacterWindow: false,
+		showStatisticsWindow: false,
 		buyTile,
 		upgradeCastle,
 		tick,
 		toggleCharacterWindow: () =>
 			set((state) => ({ showCharacterWindow: !state.showCharacterWindow })),
+		toggleStatisticsWindow: () =>
+			set((state) => ({ showStatisticsWindow: !state.showStatisticsWindow })),
 	};
 };
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'idle-explorer-storage-v13237-tests-local',
+		name: 'idle-explorer-storage-v13237-tests-local111',
 		version: 2,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {

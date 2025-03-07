@@ -81,8 +81,10 @@ export interface GameState {
 	equipment: Equipment;
 	inventory: Item[];
 	showCharacterWindow: boolean;
+	showStatisticsWindow: boolean;
 	buyTile: (x: number, y: number) => boolean;
 	upgradeCastle: () => boolean;
 	tick: (deltaTime: number) => void;
 	toggleCharacterWindow: () => void;
+	toggleStatisticsWindow: () => void;
 }
