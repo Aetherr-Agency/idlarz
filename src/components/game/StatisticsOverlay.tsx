@@ -131,11 +131,7 @@ const StatisticsOverlay: React.FC = () => {
 					</div>
 
 					<div className='col-span-4 bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-700 flex flex-col'>
-						<h2 className='text-white font-semibold mb-4 text-center border-b border-gray-700 pb-2'>
-							Statistics
-						</h2>
-
-						<div className='bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-700 text-sm mb-4'>
+						<div className='bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-700 text-sm mb-8'>
 							<h2 className='text-white font-semibold mb-4 text-center border-b border-gray-700 pb-2'>
 								Resource Generation
 							</h2>
