@@ -207,7 +207,7 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
         'absolute transition-all duration-200 ease-in-out select-none',
         isOwned ? 'opacity-100' : isAdjacent ? 'opacity-75 hover:opacity-100' : 'opacity-25',
         !isOwned && isAdjacent && 'hover:z-10 cursor-pointer border border-gray-900 hover:border-gray-800',
-        biome === 'castle' && 'ring-1 ring-purple-500',
+        biome === 'castle' && 'border border-purple-400',
         'group hover:z-20'
       )}
       style={{ 
