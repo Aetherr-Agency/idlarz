@@ -69,6 +69,12 @@ const CharacterOverlay: React.FC = () => {
 					{/* Character Stats Section */}
 					<div className='col-span-1 bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-700 min-w-[200px]'>
 						<LevelDetails />
+						<div className='mt-4 border-t border-gray-700 pt-4'>
+							<div className='text-gray-400 text-sm mb-2'>
+								Equipment Bonuses
+							</div>
+							<div className='text-gray-500 text-sm'>No bonuses yet</div>
+						</div>
 					</div>
 
 					{/* Equipment Section */}

@@ -91,7 +91,7 @@ const LevelDetails: React.FC = () => {
 								{level.level}
 							</span>
 						</div>
-						<div className='text-gray-300 text-3xl font-bold group relative'>
+						<div className='text-gray-300 text-3xl font-bold group relative cursor-pointer'>
 							{Math.floor(level.progress * 100)}%
 							<div className='absolute invisible group-hover:visible bg-gray-800 p-2 rounded -top-10 left-1/2 transform -translate-x-1/2 whitespace-nowrap text-sm border border-gray-700 z-10'>
 								<span className='text-green-400'>
