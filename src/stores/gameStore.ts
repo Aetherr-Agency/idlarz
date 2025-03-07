@@ -131,19 +131,29 @@ const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
 		}
 	}
 
-	// Calculate castle modifier (20% per level)
-	const castleModifier = (castleLevel - 1) * CASTLE_UPGRADE.resourceMultiplier;
-	
 	// Add castle base rates to base generation
 	Object.entries(CASTLE_BASE_RATES).forEach(([resource, rate]) => {
 		const key = resource as keyof Resources;
 		base[key] += rate;
 	});
 
-	// Add the castle modifier to all resources (starting from level 1)
+	// Calculate castle modifier (exponential growth - doubles each level after level 1)
+	let castleModifier = 0;
+	if (castleLevel > 0) {
+		if (CASTLE_UPGRADE.doublePerLevel) {
+			// Base is 20% at level 1, doubles with each level
+			// Level 1 = 0.2, Level 2 = 0.4, Level 3 = 0.8, Level 4 = 1.6, etc.
+			castleModifier = CASTLE_UPGRADE.baseResourceMultiplier * Math.pow(2, castleLevel - 1);
+		} else {
+			// Fallback to linear growth (20% per level)
+			castleModifier = castleLevel * CASTLE_UPGRADE.baseResourceMultiplier;
+		}
+	}
+
+	// Add the castle modifier to all resources
 	Object.keys(modifiers).forEach((resource) => {
 		const key = resource as keyof Resources;
-		modifiers[key] += castleLevel * CASTLE_UPGRADE.resourceMultiplier; // 20% per level including level 1
+		modifiers[key] += castleModifier;
 	});
 
 	// Add flat generation rates from all owned tiles with adjacency bonuses
@@ -153,7 +163,8 @@ const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
 			if (tile.isOwned) {
 				const biome = BIOMES[tile.biome];
 				const adjacentCount = countAdjacentSameBiomes(tiles, x, y, tile.biome);
-				const adjacencyMultiplier = 1 + SCALING_CONFIG.adjacencyBonus * adjacentCount;
+				const adjacencyMultiplier =
+					1 + SCALING_CONFIG.adjacencyBonus * adjacentCount;
 
 				Object.entries(biome.resourceGeneration).forEach(([resource, rate]) => {
 					// Skip castle base rates since we already added them
@@ -402,7 +413,10 @@ const createGameSlice = (
 		},
 		addStatPoint: (stat: keyof CharacterStats) => {
 			const state = get();
-			if (stat === 'availablePoints' || state.characterStats.availablePoints <= 0)
+			if (
+				stat === 'availablePoints' ||
+				state.characterStats.availablePoints <= 0
+			)
 				return;
 
 			const newStats = { ...state.characterStats };

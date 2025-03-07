@@ -7,6 +7,7 @@ import {
 	SCALING_CONFIG,
 	BIOME_ICONS,
 	RESOURCE_ICONS,
+	CASTLE_UPGRADE,
 } from '@/config/gameConfig';
 import { useGameStore } from '@/stores/gameStore';
 import { countOwnedTiles } from '@/utils/gameUtils';
@@ -76,7 +77,9 @@ const BiomeTooltip = memo(
 		return (
 			<div className='space-y-1 text-sm'>
 				{biome === 'castle' && level && (
-					<div className='mb-2 text-purple-400'>Level {level} Castle</div>
+					<div className='mb-2 text-purple-400 font-semibold text-[11px]'>
+						Level {level} Castle
+					</div>
 				)}
 				{(
 					Object.entries(biomeInfo.resourceGeneration) as [
@@ -95,20 +98,25 @@ const BiomeTooltip = memo(
 					if (baseRate === 0) return null;
 
 					// Get modifier percentage for castle tiles
-					const castleModifier = level ? level * 0.2 : 0; // 20% per level based on the new system
+					const castleModifier =
+						biome === 'castle' && level
+							? CASTLE_UPGRADE.baseResourceMultiplier * Math.pow(2, level - 1)
+							: 0; // Exponential growth
 
 					return (
 						<div key={resource} className='flex flex-col gap-1'>
-							<div className='flex items-center gap-2'>
+							<div className='flex items-center gap-1'>
 								<span className='text-gray-400'>
 									{RESOURCE_ICONS[resource]}
 								</span>
-								<span className='text-gray-300'>
+								<span className='text-gray-300 font-semibold'>
 									{formatRate(baseRate)}
 								</span>
+								<span className='text-[9px] text-gray-500 mt-0.5'>(base)</span>
+
 								{biome === 'castle' && castleModifier > 0 && (
-									<span className='text-green-400 text-xs'>
-										+{Math.round(castleModifier * 100)}%
+									<span className='text-green-400 text-xs text-[9px] mt-0.5'>
+										+{Math.round(castleModifier * 100)}% modifier
 									</span>
 								)}
 							</div>
@@ -117,8 +125,13 @@ const BiomeTooltip = memo(
 				})}
 				{biome === 'castle' && level && level > 1 && (
 					<div className='mt-2 text-purple-400 text-xs'>
-						Castle Bonus: {((multiplier - 1) * 100).toFixed(0)}% increased
-						resource generation
+						Castle Bonus:{' '}
+						{Math.round(
+							CASTLE_UPGRADE.baseResourceMultiplier *
+								Math.pow(2, level - 1) *
+								100
+						)}
+						% resource generation
 					</div>
 				)}
 				{adjacentCount > 0 && (
@@ -158,7 +171,7 @@ const TileStatus = memo(
 		const tiles = useGameStore((state) => state.tiles);
 		const resources = useGameStore((state) => state.resources);
 
-		const { cost, scalingInfo } = useMemo(() => {
+		const { cost } = useMemo(() => {
 			const ownedTilesCount = countOwnedTiles(tiles);
 			const tier = Math.floor(
 				ownedTilesCount / SCALING_CONFIG.scalingIncreasePer
@@ -185,7 +198,7 @@ const TileStatus = memo(
 			const biomeInfo = BIOMES[biome];
 			return (
 				<div className='space-y-1'>
-					<div className='font-bold flex items-center gap-2 text-white'>
+					<div className='font-bold flex items-center gap-2 text-white text-[13px] uppercase'>
 						<p>{biomeInfo.label}</p>
 					</div>
 					<BiomeTooltip biome={biome} level={level} x={x} y={y} />
@@ -197,27 +210,17 @@ const TileStatus = memo(
 			const canAfford = resources.gold >= cost;
 			return (
 				<div className='space-y-1'>
-					<div className='font-medium text-gray-500'>Unexplored Land</div>
-					<div className='text-sm'>
+					<div className='font-semibold text-gray-400 text-[13px] uppercase leading-4'>
+						Unexplored Land
+					</div>
+					<div className='text-sm font-bold text-[12px] mb-3'>
 						<span className={canAfford ? 'text-green-400' : 'text-red-400'}>
 							Cost: {cost} gold
 						</span>
 					</div>
-					<div className='text-xs text-gray-500'>
-						Scaling Tier: {scalingInfo.tier + 1}
-						<br />
-						Current Factor: {scalingInfo.currentScalingFactor.toFixed(2)}x
-						{scalingInfo.tilesUntilIncrease > 0 && (
-							<>
-								<br />
-								<span className='text-yellow-500'>
-									{scalingInfo.tilesUntilIncrease} tiles until next scaling
-									increase
-								</span>
-							</>
-						)}
+					<div className='text-sm text-gray-400 text-[12px]'>
+						Click to explore
 					</div>
-					<div className='text-sm text-gray-400'>Click to explore</div>
 				</div>
 			);
 		}

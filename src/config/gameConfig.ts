@@ -85,7 +85,8 @@ export const CASTLE_BASE_RATES = {
 // Exponential castle upgrade system
 export const CASTLE_UPGRADE = {
 	maxLevel: 10, // Increased from 5
-	resourceMultiplier: 0.2, // 20% bonus per level
+	baseResourceMultiplier: 0.2, // 20% base modifier at level 1
+	doublePerLevel: true, // Multiply by 2 for each level
 	xpBonus: 0.5, // Additional flat XP per castle level
 	upgradeCosts: [
 		{ gold: 5000, wood: 500, stone: 500 },

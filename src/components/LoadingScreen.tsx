@@ -1,12 +1,10 @@
 import React, { useEffect } from 'react';
 import { useHydration } from '@/hooks/useHydration';
-import { useGameStore } from '@/stores/gameStore';
 import '@/styles/LoadingScreen.css';
 
 const LoadingScreen: React.FC = () => {
 	const isHydrated = useHydration();
 	// Get some game state for debugging
-	const tiles = useGameStore((state) => state.tiles);
 
 	// Force show game after 5 seconds regardless of hydration status
 	useEffect(() => {
