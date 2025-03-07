@@ -87,6 +87,7 @@ export interface GameState {
 		level: number;
 		progress: number;
 	};
+	playerName: string;
 	characterStats: CharacterStats;
 	equipment: Equipment;
 	inventory: Item[];
@@ -99,4 +100,5 @@ export interface GameState {
 	toggleCharacterWindow: () => void;
 	toggleStatisticsWindow: () => void;
 	addStatPoint: (stat: keyof CharacterStats) => void;
+	setPlayerName: (name: string) => void;
 }

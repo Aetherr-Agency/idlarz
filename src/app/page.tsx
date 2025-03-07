@@ -8,6 +8,8 @@ import CharacterOverlay from '@/components/game/CharacterOverlay';
 import StatisticsOverlay from '@/components/game/StatisticsOverlay';
 import LevelUpNotification from '@/components/game/LevelUpNotification';
 import LoadingScreen from '@/components/LoadingScreen';
+import NamePrompt from '@/components/game/NamePrompt';
+import GameDebug from '@/components/game/GameDebug';
 import { TICK_RATE } from '@/config/gameConfig';
 
 export default function Home() {
@@ -37,6 +39,8 @@ export default function Home() {
 			<StatisticsOverlay />
 			<LevelUpNotification />
 			<LoadingScreen />
+			<NamePrompt />
+			<GameDebug />
 		</main>
 	);
 }

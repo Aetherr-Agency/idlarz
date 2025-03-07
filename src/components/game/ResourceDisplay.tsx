@@ -42,6 +42,7 @@ const ResourceDisplay: React.FC = () => {
 	const resources = useGameStore((state) => state.resources);
 	const resourceRates = useGameStore((state) => state.resourceRates);
 	const level = useGameStore((state) => state.level);
+	const playerName = useGameStore((state) => state.playerName);
 	const toggleCharacterWindow = useGameStore(
 		(state) => state.toggleCharacterWindow
 	);
@@ -82,7 +83,7 @@ const ResourceDisplay: React.FC = () => {
 							/>
 							<div className='flex flex-col text-white items-start justify-center h-full select-none'>
 								<div className='flex items-center gap-2 mb-1'>
-									<p className='font-bold text-sm'>Giorgio</p>
+									<p className='font-bold text-sm'>{playerName}</p>
 									<span
 										className={`px-1.5 p-0.5 ${
 											levelUpActive ? 'bg-green-800/50' : 'bg-blue-700'

@@ -34,6 +34,9 @@ const INITIAL_CHARACTER_STATS: CharacterStats = {
 	availablePoints: 0,
 };
 
+// Default player name
+const DEFAULT_PLAYER_NAME = 'Explorer';
+
 const createInitialGrid = (): Tile[][] => {
 	const grid = Array(GRID_HEIGHT)
 		.fill(null)
@@ -270,6 +273,7 @@ const createGameSlice = (
 		resourceRates: initialRates,
 		resourceModifiers: initialRates.modifiers,
 		level: calculateLevel(0),
+		playerName: DEFAULT_PLAYER_NAME,
 		characterStats: INITIAL_CHARACTER_STATS,
 		equipment: {},
 		inventory: INITIAL_INVENTORY_ITEMS,
@@ -426,6 +430,13 @@ const createGameSlice = (
 
 			set({ characterStats: newStats });
 		},
+		setPlayerName: (name: string) => {
+			// Ensure name is not empty and within length limits
+			if (name && name.trim().length > 0) {
+				const trimmedName = name.trim().substring(0, 9); // Max 9 characters
+				set({ playerName: trimmedName });
+			}
+		},
 		toggleCharacterWindow: () =>
 			set((state) => ({ showCharacterWindow: !state.showCharacterWindow })),
 		toggleStatisticsWindow: () =>
@@ -435,8 +446,8 @@ const createGameSlice = (
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'giorgio-explorer-game-v444',
-		version: 4,
+		name: 'giorgio-explorer-game-v6',
+		version: 6,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {
 			// Set hydration state to true
@@ -454,6 +465,7 @@ export const useGameStore = create(
 					resourceModifiers: initialRates.modifiers,
 					xp: 0,
 					level: calculateLevel(0),
+					playerName: DEFAULT_PLAYER_NAME,
 					characterStats: INITIAL_CHARACTER_STATS,
 					equipment: {},
 					inventory: INITIAL_INVENTORY_ITEMS,
@@ -469,3 +481,10 @@ export const useGameStore = create(
 		},
 	})
 );
+
+// Selector to check if name needs to be set
+export const useNeedsNameInput = () => 
+	useGameStore((state) => state.isHydrated && state.playerName === 'Explorer');
+
+// Selector for game resources
+export const useGameResources = () => useGameStore((state) => state.resources);
