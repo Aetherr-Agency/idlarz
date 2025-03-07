@@ -143,7 +143,8 @@ const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
 		if (CASTLE_UPGRADE.doublePerLevel) {
 			// Base is 20% at level 1, doubles with each level
 			// Level 1 = 0.2, Level 2 = 0.4, Level 3 = 0.8, Level 4 = 1.6, etc.
-			castleModifier = CASTLE_UPGRADE.baseResourceMultiplier * Math.pow(2, castleLevel - 1);
+			castleModifier =
+				CASTLE_UPGRADE.baseResourceMultiplier * Math.pow(2, castleLevel - 1);
 		} else {
 			// Fallback to linear growth (20% per level)
 			castleModifier = castleLevel * CASTLE_UPGRADE.baseResourceMultiplier;
@@ -434,7 +435,7 @@ const createGameSlice = (
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'giorgio-explorer-game-v4',
+		name: 'giorgio-explorer-game-v444',
 		version: 4,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {

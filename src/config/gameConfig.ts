@@ -8,16 +8,15 @@ export const VIEWPORT_SIZE = 25; // 12 tiles in each direction from center
 
 // Game Constants
 export const TICK_RATE = 100; // 10 times per second
-export const BASE_TILE_COST = 100; // Base cost for first tile purchase
-export const COST_SCALING_FACTOR = 1.75; // Each tile increases cost by 15%
+export const BASE_TILE_COST = 87; // Base cost for first tile purchase
 export const ADJACENCY_BONUS = 0.25; // 25% bonus for adjacent same biomes
 
 // Resource scaling configuration
 export const SCALING_CONFIG = {
 	// Base scaling factor that increases exponentially
-	baseScalingFactor: 1.25,
-	scalingIncreasePer: 17, // Increase scaling every X tiles
-	scalingIncreaseAmount: 0.15, // 15% increase in scaling factor
+	baseScalingFactor: 1.62,
+	scalingIncreasePer: 16, // Increase scaling every X tiles
+	scalingIncreaseAmount: 0.22, // 22% increase in scaling factor
 
 	// Exponential cost scaling formula
 	costFormula: (ownedTiles: number) => {
@@ -29,7 +28,7 @@ export const SCALING_CONFIG = {
 			BASE_TILE_COST * Math.pow(currentScalingFactor, ownedTiles)
 		);
 	},
-	adjacencyBonus: 0.25, // 25% bonus for each adjacent same biome
+	adjacencyBonus: ADJACENCY_BONUS,
 };
 
 export const RESOURCE_ICONS = {
