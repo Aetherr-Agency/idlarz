@@ -6,6 +6,8 @@ import Grid from '@/components/game/Grid';
 import ResourceDisplay from '@/components/game/ResourceDisplay';
 import CharacterOverlay from '@/components/game/CharacterOverlay';
 import StatisticsOverlay from '@/components/game/StatisticsOverlay';
+import LevelUpNotification from '@/components/game/LevelUpNotification';
+import LoadingScreen from '@/components/LoadingScreen';
 import { TICK_RATE } from '@/config/gameConfig';
 
 export default function Home() {
@@ -33,6 +35,8 @@ export default function Home() {
 			<Grid />
 			<CharacterOverlay />
 			<StatisticsOverlay />
+			<LevelUpNotification />
+			<LoadingScreen />
 		</main>
 	);
 }

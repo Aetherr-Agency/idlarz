@@ -92,6 +92,7 @@ export interface GameState {
 	inventory: Item[];
 	showCharacterWindow: boolean;
 	showStatisticsWindow: boolean;
+	isHydrated: boolean; // Flag to track if store is rehydrated from localStorage
 	buyTile: (x: number, y: number) => boolean;
 	upgradeCastle: () => boolean;
 	tick: (deltaTime: number) => void;

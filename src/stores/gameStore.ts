@@ -260,176 +260,169 @@ const createGameSlice = (
 	const initialGrid = createInitialGrid();
 	const initialRates = calculateResourceRates(initialGrid);
 
-	const buyTile = (x: number, y: number) => {
-		const state = get();
-		const ownedTilesCount = countOwnedTiles(state.tiles);
-		const cost = SCALING_CONFIG.costFormula(ownedTilesCount);
-
-		if (state.resources.gold < cost) {
-			return false;
-		}
-
-		const isAdjacent = [
-			[x - 1, y],
-			[x + 1, y],
-			[x, y - 1],
-			[x, y + 1],
-		].some(
-			([adjX, adjY]) =>
-				adjX >= 0 &&
-				adjX < GRID_SIZE &&
-				adjY >= 0 &&
-				adjY < GRID_HEIGHT &&
-				state.tiles[adjY]?.[adjX]?.isOwned
-		);
-
-		if (!isAdjacent) {
-			return false;
-		}
-
-		const newTiles = state.tiles.map((row) => [...row]);
-		const randomBiome = getRandomBiome();
-		newTiles[y][x] = {
-			...newTiles[y][x],
-			biome: randomBiome,
-			isOwned: true,
-		};
-
-		// Recalculate resource rates with the new tile
-		const newRates = calculateResourceRates(newTiles);
-
-		// Calculate XP gain based on new owned tiles count
-		const newOwnedTilesCount = ownedTilesCount + 1;
-		const xpGain = calculateXpGain(newOwnedTilesCount);
-
-		set({
-			tiles: newTiles,
-			resources: {
-				...state.resources,
-				gold: state.resources.gold - cost,
-				xp: state.resources.xp + xpGain,
-			},
-			resourceRates: newRates,
-			resourceModifiers: newRates.modifiers,
-			level: calculateLevel(state.resources.xp + xpGain),
-		});
-
-		return true;
-	};
-
-	const upgradeCastle = () => {
-		const state = get();
-
-		// Find castle
-		let castle: Tile | null = null;
-		let castleX = -1,
-			castleY = -1;
-
-		for (let y = 0; y < GRID_HEIGHT; y++) {
-			for (let x = 0; x < GRID_SIZE; x++) {
-				if (state.tiles[y][x].biome === 'castle') {
-					castle = state.tiles[y][x];
-					castleX = x;
-					castleY = y;
-					break;
-				}
-			}
-			if (castle) break;
-		}
-
-		if (!castle || !castle.upgradeCost || !castle.level) return false;
-		if (castle.level >= CASTLE_UPGRADE.maxLevel) return false;
-		if (!canAffordCost(state.resources, castle.upgradeCost)) return false;
-
-		const newTiles = state.tiles.map((row) => [...row]);
-		newTiles[castleY][castleX] = {
-			...castle,
-			level: castle.level + 1,
-			upgradeCost: CASTLE_UPGRADE.upgradeCosts[castle.level] || null,
-		} as Tile;
-
-		// Deduct resources
-		const newResources = { ...state.resources };
-		Object.entries(castle.upgradeCost).forEach(([resource, amount]) => {
-			newResources[resource as keyof Resources] -= amount;
-		});
-
-		const newRates = calculateResourceRates(newTiles);
-
-		set({
-			tiles: newTiles,
-			resources: newResources,
-			resourceRates: newRates,
-			resourceModifiers: newRates.modifiers,
-		});
-
-		return true;
-	};
-
-	const tick = (deltaTime: number) => {
-		const state = get();
-		if (!state?.resourceRates?.total) return;
-
-		const secondsElapsed = deltaTime / 1000;
-		const newResources = { ...state.resources };
-
-		Object.entries(state.resourceRates.total).forEach(([resource, rate]) => {
-			if (typeof rate === 'number' && !isNaN(rate)) {
-				newResources[resource as keyof Resources] += rate * secondsElapsed;
-			}
-		});
-
-		// Calculate new level based on XP
-		const newLevel = calculateLevel(newResources.xp);
-
-		// Add stat points if level increased
-		const currentLevel = state.level.level;
-		const newCharacterStats = { ...state.characterStats };
-
-		if (newLevel.level > currentLevel) {
-			// Add 3 stat points per level gained
-			const levelsGained = newLevel.level - currentLevel;
-			newCharacterStats.availablePoints += levelsGained * 3;
-		}
-
-		set({
-			resources: newResources,
-			level: newLevel,
-			characterStats: newCharacterStats,
-		});
-	};
-
-	const addStatPoint = (stat: keyof CharacterStats) => {
-		const state = get();
-		if (stat === 'availablePoints' || state.characterStats.availablePoints <= 0)
-			return;
-
-		const newStats = { ...state.characterStats };
-		newStats[stat]++;
-		newStats.availablePoints--;
-
-		set({ characterStats: newStats });
-	};
-
 	return {
 		tiles: initialGrid,
 		resources: { ...INITIAL_RESOURCES },
 		resourceRates: initialRates,
 		resourceModifiers: initialRates.modifiers,
 		level: calculateLevel(0),
-		characterStats: { ...INITIAL_CHARACTER_STATS },
+		characterStats: INITIAL_CHARACTER_STATS,
 		equipment: {},
 		inventory: INITIAL_INVENTORY_ITEMS,
 		showCharacterWindow: false,
 		showStatisticsWindow: false,
-		buyTile,
-		upgradeCastle,
-		tick,
+		isHydrated: false, // Start with false, set to true on rehydration
+		buyTile: (x: number, y: number) => {
+			const state = get();
+			const ownedTilesCount = countOwnedTiles(state.tiles);
+			const cost = SCALING_CONFIG.costFormula(ownedTilesCount);
+
+			if (state.resources.gold < cost) {
+				return false;
+			}
+
+			const isAdjacent = [
+				[x - 1, y],
+				[x + 1, y],
+				[x, y - 1],
+				[x, y + 1],
+			].some(
+				([adjX, adjY]) =>
+					adjX >= 0 &&
+					adjX < GRID_SIZE &&
+					adjY >= 0 &&
+					adjY < GRID_HEIGHT &&
+					state.tiles[adjY]?.[adjX]?.isOwned
+			);
+
+			if (!isAdjacent) {
+				return false;
+			}
+
+			const newTiles = state.tiles.map((row) => [...row]);
+			const randomBiome = getRandomBiome();
+			newTiles[y][x] = {
+				...newTiles[y][x],
+				biome: randomBiome,
+				isOwned: true,
+			};
+
+			// Recalculate resource rates with the new tile
+			const newRates = calculateResourceRates(newTiles);
+
+			// Calculate XP gain based on new owned tiles count
+			const newOwnedTilesCount = ownedTilesCount + 1;
+			const xpGain = calculateXpGain(newOwnedTilesCount);
+
+			set({
+				tiles: newTiles,
+				resources: {
+					...state.resources,
+					gold: state.resources.gold - cost,
+					xp: state.resources.xp + xpGain,
+				},
+				resourceRates: newRates,
+				resourceModifiers: newRates.modifiers,
+				level: calculateLevel(state.resources.xp + xpGain),
+			});
+
+			return true;
+		},
+		upgradeCastle: () => {
+			const state = get();
+
+			// Find castle
+			let castle: Tile | null = null;
+			let castleX = -1,
+				castleY = -1;
+
+			for (let y = 0; y < GRID_HEIGHT; y++) {
+				for (let x = 0; x < GRID_SIZE; x++) {
+					if (state.tiles[y][x].biome === 'castle') {
+						castle = state.tiles[y][x];
+						castleX = x;
+						castleY = y;
+						break;
+					}
+				}
+				if (castle) break;
+			}
+
+			if (!castle || !castle.upgradeCost || !castle.level) return false;
+			if (castle.level >= CASTLE_UPGRADE.maxLevel) return false;
+			if (!canAffordCost(state.resources, castle.upgradeCost)) return false;
+
+			const newTiles = state.tiles.map((row) => [...row]);
+			newTiles[castleY][castleX] = {
+				...castle,
+				level: castle.level + 1,
+				upgradeCost: CASTLE_UPGRADE.upgradeCosts[castle.level] || null,
+			} as Tile;
+
+			// Deduct resources
+			const newResources = { ...state.resources };
+			Object.entries(castle.upgradeCost).forEach(([resource, amount]) => {
+				newResources[resource as keyof Resources] -= amount;
+			});
+
+			const newRates = calculateResourceRates(newTiles);
+
+			set({
+				tiles: newTiles,
+				resources: newResources,
+				resourceRates: newRates,
+				resourceModifiers: newRates.modifiers,
+			});
+
+			return true;
+		},
+		tick: (deltaTime: number) => {
+			const state = get();
+			if (!state?.resourceRates?.total) return;
+
+			const secondsElapsed = deltaTime / 1000;
+			const newResources = { ...state.resources };
+
+			Object.entries(state.resourceRates.total).forEach(([resource, rate]) => {
+				if (typeof rate === 'number' && !isNaN(rate)) {
+					newResources[resource as keyof Resources] += rate * secondsElapsed;
+				}
+			});
+
+			// Calculate new level based on XP
+			const newLevel = calculateLevel(newResources.xp);
+
+			// Add stat points if level increased
+			const currentLevel = state.level.level;
+			const newCharacterStats = { ...state.characterStats };
+
+			if (newLevel.level > currentLevel) {
+				// Add 3 stat points per level gained
+				const levelsGained = newLevel.level - currentLevel;
+				newCharacterStats.availablePoints += levelsGained * 3;
+			}
+
+			set({
+				resources: newResources,
+				level: newLevel,
+				characterStats: newCharacterStats,
+			});
+		},
+		addStatPoint: (stat: keyof CharacterStats) => {
+			const state = get();
+			if (stat === 'availablePoints' || state.characterStats.availablePoints <= 0)
+				return;
+
+			const newStats = { ...state.characterStats };
+			newStats[stat]++;
+			newStats.availablePoints--;
+
+			set({ characterStats: newStats });
+		},
 		toggleCharacterWindow: () =>
 			set((state) => ({ showCharacterWindow: !state.showCharacterWindow })),
 		toggleStatisticsWindow: () =>
 			set((state) => ({ showStatisticsWindow: !state.showStatisticsWindow })),
-		addStatPoint,
 	};
 };
 
@@ -439,6 +432,9 @@ export const useGameStore = create(
 		version: 2,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {
+			// Set hydration state to true
+			set({ isHydrated: true });
+
 			// Validate and fix state if needed
 			if (!state || !validateGrid(state.tiles)) {
 				const initialGrid = createInitialGrid();
@@ -455,6 +451,8 @@ export const useGameStore = create(
 					equipment: {},
 					inventory: INITIAL_INVENTORY_ITEMS,
 					showCharacterWindow: false,
+					showStatisticsWindow: false,
+					isHydrated: true,
 					buyTile: state?.buyTile,
 					upgradeCastle: state?.upgradeCastle,
 					tick: state?.tick,
