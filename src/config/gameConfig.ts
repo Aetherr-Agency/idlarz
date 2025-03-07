@@ -9,7 +9,7 @@ export const VIEWPORT_SIZE = 25; // 12 tiles in each direction from center
 // Game Constants
 export const TICK_RATE = 100; // 10 times per second
 export const BASE_TILE_COST = 100; // Base cost for first tile purchase
-export const COST_SCALING_FACTOR = 1.15; // Each tile increases cost by 15%
+export const COST_SCALING_FACTOR = 1.75; // Each tile increases cost by 15%
 export const ADJACENCY_BONUS = 0.25; // 25% bonus for adjacent same biomes
 
 // Resource scaling configuration
@@ -50,7 +50,7 @@ export const BIOME_ICONS = {
 	tundra: '❄️',
 	lake: '💧',
 	empty: '⬛',
-	grounds: '🛠️', 
+	grounds: '🛠️',
 };
 
 export const INITIAL_RESOURCES = {
@@ -130,7 +130,7 @@ export const BIOMES: Record<string, BiomeInfo> = {
 	grounds: {
 		name: 'grounds',
 		label: 'Grounds',
-		baseColor: '#c0c0c0',
+		baseColor: '#371c00',
 		cost: 100,
 		resourceGeneration: {
 			gold: 0,
@@ -157,7 +157,7 @@ export const BIOMES: Record<string, BiomeInfo> = {
 	plains: {
 		name: 'plains',
 		label: 'Plains',
-		baseColor: '#65a30d',
+		baseColor: '#2f8123',
 		cost: 100,
 		resourceGeneration: {
 			gold: 0.1,
@@ -169,7 +169,7 @@ export const BIOMES: Record<string, BiomeInfo> = {
 	hills: {
 		name: 'hills',
 		label: 'Hills',
-		baseColor: '#a16207',
+		baseColor: '#3d3d3d',
 		cost: 100,
 		resourceGeneration: {
 			gold: 0.05,
@@ -182,7 +182,7 @@ export const BIOMES: Record<string, BiomeInfo> = {
 	swamp: {
 		name: 'swamp',
 		label: 'Swamp',
-		baseColor: '#365314',
+		baseColor: '#929706',
 		cost: 100,
 		resourceGeneration: {
 			food: 0.1,
@@ -194,7 +194,7 @@ export const BIOMES: Record<string, BiomeInfo> = {
 	tundra: {
 		name: 'tundra',
 		label: 'Tundra',
-		baseColor: '#d1d5db',
+		baseColor: '#0f53b9',
 		cost: 100,
 		resourceGeneration: {
 			gold: 0.1,
