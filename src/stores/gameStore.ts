@@ -105,6 +105,7 @@ const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
 		stone: 1,
 		coal: 1,
 		food: 1,
+		xp: 1,
 	};
 
 	// Find castle and its level
@@ -126,7 +127,14 @@ const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
 	Object.entries(CASTLE_BASE_RATES).forEach(([resource, rate]) => {
 		const key = resource as keyof Resources;
 		base[key] += rate;
-		total[key] += rate * castleMultiplier;
+		// For XP, apply special castle level bonus
+		if (key === 'xp') {
+			// Base XP from castle + additional XP from castle level bonus
+			total[key] += rate + ((castleLevel - 1) * CASTLE_UPGRADE.xpBonus);
+		} else {
+			// Regular resources use the castle multiplier
+			total[key] += rate * castleMultiplier;
+		}
 	});
 
 	// Add flat generation rates from all owned tiles with adjacency bonuses
@@ -197,13 +205,13 @@ const BASE_XP_PER_TILE = 100;
 const XP_PER_LEVEL = 1000; // Linear XP scaling
 
 const calculateLevel = (xp: number): { level: number; progress: number } => {
-	const level = Math.floor(xp / XP_PER_LEVEL) + 1;
-	const progress = (xp % XP_PER_LEVEL) / XP_PER_LEVEL;
-	return { level, progress };
+  const level = Math.floor(xp / XP_PER_LEVEL) + 1;
+  const progress = (xp % XP_PER_LEVEL) / XP_PER_LEVEL;
+  return { level, progress };
 };
 
 const calculateXpGain = (ownedTiles: number): number => {
-	return BASE_XP_PER_TILE * ownedTiles;
+	return BASE_XP_PER_TILE * (ownedTiles / 2);
 };
 
 const createGameSlice = (
@@ -253,18 +261,20 @@ const createGameSlice = (
 		// Recalculate resource rates with the new tile
 		const newRates = calculateResourceRates(newTiles);
 
-		const xpGain = calculateXpGain(ownedTilesCount + 1);
+		// Calculate XP gain based on new owned tiles count
+		const newOwnedTilesCount = ownedTilesCount + 1;
+		const xpGain = calculateXpGain(newOwnedTilesCount);
 
 		set({
 			tiles: newTiles,
 			resources: {
 				...state.resources,
 				gold: state.resources.gold - cost,
+				xp: state.resources.xp + xpGain,
 			},
 			resourceRates: newRates,
 			resourceModifiers: newRates.modifiers,
-			xp: state.xp + xpGain,
-			level: calculateLevel(state.xp + xpGain),
+			level: calculateLevel(state.resources.xp + xpGain),
 		});
 
 		return true;
@@ -332,7 +342,13 @@ const createGameSlice = (
 			}
 		});
 
-		set({ resources: newResources });
+		// Calculate new level based on XP
+		const newLevel = calculateLevel(newResources.xp);
+
+		set({
+			resources: newResources,
+			level: newLevel,
+		});
 	};
 
 	return {
@@ -340,7 +356,6 @@ const createGameSlice = (
 		resources: { ...INITIAL_RESOURCES },
 		resourceRates: initialRates,
 		resourceModifiers: initialRates.modifiers,
-		xp: 0,
 		level: calculateLevel(0),
 		equipment: {},
 		inventory: INITIAL_INVENTORY_ITEMS,
@@ -423,7 +438,7 @@ const createGameSlice = (
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'idle-explorer-storage-v002',
+		name: 'idle-explorer-storage-v0sss011',
 		version: 2,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {

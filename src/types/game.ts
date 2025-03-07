@@ -8,6 +8,7 @@ export interface Resources {
   stone: number;
   coal: number;
   food: number;
+  xp: number;
 }
 
 export interface ResourceRates {
@@ -57,7 +58,6 @@ export interface GameState {
   resources: Resources;
   resourceRates: ResourceRates;
   resourceModifiers: Resources;
-  xp: number;
   level: {
     level: number;
     progress: number;

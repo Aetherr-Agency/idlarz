@@ -32,7 +32,8 @@ export const RESOURCE_ICONS = {
   wood: '🪵',
   stone: '🪨',
   coal: '⛏️',
-  food: '🌾'
+  food: '🌾',
+  xp: '✨',
 }
 
 export const BIOME_ICONS = {
@@ -51,7 +52,8 @@ export const INITIAL_RESOURCES = {
   wood: 0,
   stone: 0,
   coal: 0,
-  food: 0
+  food: 0,
+  xp: 0,
 };
 
 // Base resource generation (per second)
@@ -60,7 +62,8 @@ export const BASE_GENERATION_RATES = {
   wood: 0,
   stone: 0,
   coal: 0,
-  food: 0
+  food: 0,
+  xp: 1, // Base XP generation rate
 };
 
 // Castle Configuration
@@ -69,7 +72,8 @@ export const CASTLE_BASE_RATES = {
   wood: 0,
   stone: 0,
   coal: 0,
-  food: 0.01
+  food: 0.01,
+  xp: 2, // Castle provides base XP
 };
 
 export const CASTLE_UPGRADE = {
@@ -80,7 +84,8 @@ export const CASTLE_UPGRADE = {
     { gold: 2500, wood: 250, stone: 250 },
     { gold: 5000, wood: 500, stone: 500 },
     { gold: 10000, wood: 1000, stone: 1000 }
-  ]
+  ],
+  xpBonus: 2 // Extra XP per castle level
 };
 
 // Biome Configuration
