@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 import { useGameStore } from '@/stores/gameStore';
 import { Resources } from '@/types/game';
 import { formatNumber } from '@/utils/formatters';
@@ -37,7 +38,18 @@ const ResourceDisplay: React.FC = () => {
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-gray-900 bg-opacity-90 border-b border-gray-800">
       <div className="max-w-6xl mx-auto px-4 py-2">
-        <div className="grid grid-cols-5 gap-4 md:gap-8">
+        <div className="grid grid-cols-8 gap-4 md:gap-8">
+        <div className="flex justify-start items-center gap-4">
+            <Image src="/fella.png" width={65} height={120} alt="Your character" className="w-fit h-12" />
+            <div className="flex flex-col text-white items-start justify-center h-full">
+              <p className='font-bold text-sm'>
+                Ziomeczek
+              </p>
+              <p className="text-xs">
+                lvl: chujcieto
+              </p>
+            </div>
+          </div>
           {(Object.keys(RESOURCE_INFO) as (keyof Resources)[]).map(resource => {
             const baseRate = resourceRates.base[resource];
             const totalRate = resourceRates.total[resource];
@@ -96,6 +108,9 @@ const ResourceDisplay: React.FC = () => {
               </div>
             );
           })}
+          <div className="flex items-center justify-center text-white text-xs">
+            Additionals
+          </div>
         </div>
       </div>
     </div>
