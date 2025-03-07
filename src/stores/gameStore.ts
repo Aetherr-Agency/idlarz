@@ -17,11 +17,22 @@ import type {
 	Resources,
 	ResourceRates,
 	Tile,
+	CharacterStats,
 } from '@/types/game';
 import { countOwnedTiles } from '@/utils/gameUtils';
 
 const GRID_CENTER_X = Math.floor(GRID_SIZE / 2);
 const GRID_CENTER_Y = Math.floor(GRID_HEIGHT / 2);
+
+// Character stats initial values
+const INITIAL_CHARACTER_STATS: CharacterStats = {
+	strength: 5,
+	dexterity: 5,
+	intelligence: 5,
+	vitality: 5,
+	charisma: 5,
+	availablePoints: 0,
+};
 
 const createInitialGrid = (): Tile[][] => {
 	const grid = Array(GRID_HEIGHT)
@@ -371,10 +382,33 @@ const createGameSlice = (
 		// Calculate new level based on XP
 		const newLevel = calculateLevel(newResources.xp);
 
+		// Add stat points if level increased
+		const currentLevel = state.level.level;
+		const newCharacterStats = { ...state.characterStats };
+
+		if (newLevel.level > currentLevel) {
+			// Add 3 stat points per level gained
+			const levelsGained = newLevel.level - currentLevel;
+			newCharacterStats.availablePoints += levelsGained * 3;
+		}
+
 		set({
 			resources: newResources,
 			level: newLevel,
+			characterStats: newCharacterStats,
 		});
+	};
+
+	const addStatPoint = (stat: keyof CharacterStats) => {
+		const state = get();
+		if (stat === 'availablePoints' || state.characterStats.availablePoints <= 0)
+			return;
+
+		const newStats = { ...state.characterStats };
+		newStats[stat]++;
+		newStats.availablePoints--;
+
+		set({ characterStats: newStats });
 	};
 
 	return {
@@ -383,6 +417,7 @@ const createGameSlice = (
 		resourceRates: initialRates,
 		resourceModifiers: initialRates.modifiers,
 		level: calculateLevel(0),
+		characterStats: { ...INITIAL_CHARACTER_STATS },
 		equipment: {},
 		inventory: INITIAL_INVENTORY_ITEMS,
 		showCharacterWindow: false,
@@ -394,12 +429,13 @@ const createGameSlice = (
 			set((state) => ({ showCharacterWindow: !state.showCharacterWindow })),
 		toggleStatisticsWindow: () =>
 			set((state) => ({ showStatisticsWindow: !state.showStatisticsWindow })),
+		addStatPoint,
 	};
 };
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'idle-explorer-storage-v13237-tests-local111',
+		name: 'giorgio-explorer-game',
 		version: 2,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {
@@ -415,6 +451,7 @@ export const useGameStore = create(
 					resourceModifiers: initialRates.modifiers,
 					xp: 0,
 					level: calculateLevel(0),
+					characterStats: INITIAL_CHARACTER_STATS,
 					equipment: {},
 					inventory: INITIAL_INVENTORY_ITEMS,
 					showCharacterWindow: false,

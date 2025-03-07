@@ -11,6 +11,15 @@ export interface Resources {
 	xp: number;
 }
 
+export interface CharacterStats {
+	strength: number;
+	dexterity: number;
+	intelligence: number;
+	vitality: number;
+	charisma: number;
+	availablePoints: number;
+}
+
 export interface ResourceRates {
 	base: Resources;
 	modifiers: Resources;
@@ -78,6 +87,7 @@ export interface GameState {
 		level: number;
 		progress: number;
 	};
+	characterStats: CharacterStats;
 	equipment: Equipment;
 	inventory: Item[];
 	showCharacterWindow: boolean;
@@ -87,4 +97,5 @@ export interface GameState {
 	tick: (deltaTime: number) => void;
 	toggleCharacterWindow: () => void;
 	toggleStatisticsWindow: () => void;
+	addStatPoint: (stat: keyof CharacterStats) => void;
 }
