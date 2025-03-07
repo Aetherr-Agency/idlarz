@@ -9,8 +9,8 @@ export const VIEWPORT_SIZE = 25; // 12 tiles in each direction from center
 // Game Constants
 export const TICK_RATE = 100; // 10 times per second
 export const BASE_TILE_COST = 100; // Base cost for first tile purchase
-export const COST_SCALING_FACTOR = 1.1; // Each tile increases cost by 10%
-export const ADJACENCY_BONUS = 0.15; // 15% bonus for adjacent same biomes
+export const COST_SCALING_FACTOR = 1.15; // Each tile increases cost by 15%
+export const ADJACENCY_BONUS = 0.25; // 25% bonus for adjacent same biomes
 
 // Resource scaling configuration
 export const SCALING_CONFIG = {
@@ -26,7 +26,7 @@ export const SCALING_CONFIG = {
 			(1 + SCALING_CONFIG.scalingIncreaseAmount * tier);
 		return Math.floor(100 * Math.pow(currentScalingFactor, ownedTiles));
 	},
-	adjacencyBonus: 0.15, // 15% bonus for each adjacent same biome
+	adjacencyBonus: 0.25, // 25% bonus for each adjacent same biome
 };
 
 export const RESOURCE_ICONS = {
@@ -65,7 +65,7 @@ export const BASE_GENERATION_RATES = {
 	stone: 0,
 	coal: 0,
 	food: 0,
-	xp: 1, // Base XP generation rate
+	xp: 0.25, // Base XP generation rate
 };
 
 // Castle Configuration
@@ -75,19 +75,19 @@ export const CASTLE_BASE_RATES = {
 	stone: 0,
 	coal: 0,
 	food: 0.01,
-	xp: 2, // Castle provides base XP
+	xp: 0.5, // Castle provides base XP
 };
 
 export const CASTLE_UPGRADE = {
 	maxLevel: 5,
 	levelMultiplier: 1.5,
 	upgradeCosts: [
-		{ gold: 1000, wood: 100, stone: 100 },
-		{ gold: 2500, wood: 250, stone: 250 },
-		{ gold: 5000, wood: 500, stone: 500 },
 		{ gold: 10000, wood: 1000, stone: 1000 },
+		{ gold: 25000, wood: 2500, stone: 2500 },
+		{ gold: 50000, wood: 5000, stone: 5000 },
+		{ gold: 100000, wood: 10000, stone: 10000 },
 	],
-	xpBonus: 2, // Extra XP per castle level
+	xpBonus: 1.5, // Extra XP per castle level
 };
 
 // Biome Configuration

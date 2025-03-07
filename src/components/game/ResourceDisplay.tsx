@@ -106,7 +106,9 @@ const ResourceDisplay: React.FC = () => {
 						(resource) => {
 							const baseRate = resourceRates.base[resource];
 							const totalRate = resourceRates.total[resource];
-							const additionalIncome = totalRate - baseRate;
+							
+							// Calculate the additional income by comparing total to base
+							const additionalIncome = +(totalRate - baseRate).toFixed(4);
 
 							return (
 								<div
