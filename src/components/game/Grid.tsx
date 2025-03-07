@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import Tile from './Tile';
-import { GRID_SIZE, GRID_HEIGHT, TILE_SIZE, VIEWPORT_SIZE } from '@/config/gameConfig';
+import { GRID_SIZE, GRID_HEIGHT, TILE_SIZE } from '@/config/gameConfig';
 
 const MIN_VELOCITY = 1;
 const VELOCITY_SCALE = 1;
@@ -148,6 +148,8 @@ const Grid: React.FC = () => {
   }, [animate]);
 
   const visibleTiles = useMemo(() => {
+    if (!tiles) return [];
+
     const startX = Math.max(0, Math.floor(-position.x / TILE_SIZE) - VISIBLE_PADDING);
     const endX = Math.min(GRID_SIZE, Math.ceil((-position.x + windowSize.x) / TILE_SIZE) + VISIBLE_PADDING);
     const startY = Math.max(0, Math.floor(-position.y / TILE_SIZE) - VISIBLE_PADDING);
@@ -156,6 +158,7 @@ const Grid: React.FC = () => {
     const visible: JSX.Element[] = [];
     for (let y = startY; y < endY; y++) {
       for (let x = startX; x < endX; x++) {
+        if (!tiles[y] || !tiles[y][x]) continue;
         const tile = tiles[y][x];
         visible.push(
           <Tile
@@ -176,6 +179,14 @@ const Grid: React.FC = () => {
     }
     return visible;
   }, [position.x, position.y, windowSize, tiles]);
+
+  if (!tiles) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-950">
+        <div className="text-white text-lg">Loading world...</div>
+      </div>
+    );
+  }
 
   return (
     <div 

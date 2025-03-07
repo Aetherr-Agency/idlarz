@@ -2,13 +2,14 @@ import React from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { Resources } from '@/types/game';
 import { formatNumber, formatModifier } from '@/utils/formatters';
+import { RESOURCE_ICONS } from '@/config/gameConfig';
 
 const RESOURCE_INFO = {
-  gold: { icon: '💰', label: 'Gold', description: 'Used to purchase new tiles' },
-  wood: { icon: '🪵', label: 'Wood', description: 'Basic construction material' },
-  stone: { icon: '🪨', label: 'Stone', description: 'Durable building material' },
-  coal: { icon: '⚫', label: 'Coal', description: 'Advanced fuel source' },
-  food: { icon: '🌾', label: 'Food', description: 'Sustains population growth' }
+  gold: { icon: RESOURCE_ICONS.gold, label: 'Gold', description: 'Used to purchase new tiles' },
+  wood: { icon: RESOURCE_ICONS.wood, label: 'Wood', description: 'Basic construction material' },
+  stone: { icon: RESOURCE_ICONS.stone, label: 'Stone', description: 'Durable building material' },
+  coal: { icon: RESOURCE_ICONS.coal, label: 'Coal', description: 'Advanced fuel source' },
+  food: { icon: RESOURCE_ICONS.food, label: 'Food', description: 'Sustains population growth' }
 } as const;
 
 const ResourceDisplay: React.FC = () => {

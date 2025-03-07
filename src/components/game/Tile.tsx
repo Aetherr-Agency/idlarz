@@ -3,6 +3,9 @@ import { BiomeType } from '@/types/game';
 import { BIOMES, GRID_SIZE, GRID_HEIGHT, SCALING_CONFIG } from '@/config/gameConfig';
 import { useGameStore } from '@/stores/gameStore';
 import { cn } from '@/lib/utils';
+import { countOwnedTiles } from '@/utils/gameUtils';
+
+// Utility functions
 
 interface TileProps {
   biome: BiomeType;
@@ -18,9 +21,28 @@ const formatRate = (rate: number) => {
   return `${rate.toFixed(2)}/s`;
 };
 
-const BiomeTooltip = memo(({ biome, level }: { biome: BiomeType; level?: number }) => {
+const BiomeTooltip = memo(({ biome, level, x, y }: { biome: BiomeType; level?: number; x?: number; y?: number }) => {
   const biomeInfo = BIOMES[biome];
   const multiplier = level ? Math.pow(1.5, level - 1) : 1;
+  const tiles = useGameStore(state => state.tiles);
+  
+  const adjacentCount = useMemo(() => {
+    if (x === undefined || y === undefined) return 0;
+    const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+    return directions.reduce((count, [dx, dy]) => {
+      const newX = x + dx;
+      const newY = y + dy;
+      if (newX >= 0 && newX < GRID_SIZE && 
+          newY >= 0 && newY < GRID_HEIGHT && 
+          tiles[newY][newX].isOwned &&
+          tiles[newY][newX].biome === biome) {
+        return count + 1;
+      }
+      return count;
+    }, 0);
+  }, [x, y, biome, tiles]);
+
+  const adjacencyMultiplier = 1 + (SCALING_CONFIG.adjacencyBonus * adjacentCount);
   
   return (
     <div className="space-y-1 text-sm">
@@ -28,17 +50,34 @@ const BiomeTooltip = memo(({ biome, level }: { biome: BiomeType; level?: number 
         <div className="mb-2 text-purple-400">Level {level} Castle</div>
       )}
       {Object.entries(biomeInfo.resourceGeneration).map(([resource, rate]) => {
-        const effectiveRate = biome === 'castle' ? (rate || 0) * multiplier : (rate || 0);
-        if (effectiveRate === 0) return null;
+        const baseRate = rate || 0;
+        let effectiveRate = biome === 'castle' ? baseRate * multiplier : baseRate;
+        // Only apply adjacency bonus to positive rates
+        if (effectiveRate > 0 && x !== undefined) {
+          effectiveRate *= adjacencyMultiplier;
+        }
+        if (baseRate === 0) return null;
         return (
-          <div key={resource} className="flex justify-between gap-4">
-            <span className="text-gray-400">{resource}:</span>
-            <span className="text-green-400">
-              {formatRate(effectiveRate)}
-            </span>
+          <div key={resource} className="flex flex-col gap-1">
+            <div className="flex justify-between gap-4">
+              <span className="text-gray-400">{resource}:</span>
+              <span className={effectiveRate > 0 ? 'text-green-400' : 'text-red-400'}>
+                {formatRate(effectiveRate)}
+              </span>
+            </div>
           </div>
         );
       })}
+      {biome === 'castle' && level && level > 1 && (
+        <div className="mt-2 text-purple-400 text-xs">
+          Castle Bonus: {((multiplier - 1) * 100).toFixed(0)}% increased resource generation
+        </div>
+      )}
+      {adjacentCount > 0 && (
+        <div className="mt-2 text-yellow-500 text-xs">
+          +{(adjacencyMultiplier - 1).toFixed(2)}x bonus from {adjacentCount} adjacent {biomeInfo.label}
+        </div>
+      )}
       {biomeInfo.description && (
         <div className="mt-2 text-gray-400 text-xs">{biomeInfo.description}</div>
       )}
@@ -46,35 +85,41 @@ const BiomeTooltip = memo(({ biome, level }: { biome: BiomeType; level?: number 
   );
 });
 
-const TileStatus = memo(({ biome, isOwned, isAdjacent, level }: { biome: BiomeType; isOwned: boolean; isAdjacent: boolean; level?: number }) => {
+BiomeTooltip.displayName = 'BiomeTooltip';
+
+const TileStatus = memo(({ biome, isOwned, isAdjacent, level, x, y }: { biome: BiomeType; isOwned: boolean; isAdjacent: boolean; level?: number; x: number; y: number }) => {
   const tiles = useGameStore(state => state.tiles);
   const resources = useGameStore(state => state.resources);
 
-  const ownedTilesCount = useMemo(() => {
-    let count = 0;
-    for (let y = 0; y < GRID_HEIGHT; y++) {
-      for (let x = 0; x < GRID_SIZE; x++) {
-        if (tiles[y][x].isOwned) count++;
+  const { cost, scalingInfo } = useMemo(() => {
+    const ownedTilesCount = countOwnedTiles(tiles);
+    const tier = Math.floor(ownedTilesCount / SCALING_CONFIG.scalingIncreasePer);
+    const currentScalingFactor = SCALING_CONFIG.baseScalingFactor * (1 + (SCALING_CONFIG.scalingIncreaseAmount * tier));
+    const nextTileForTierIncrease = (tier + 1) * SCALING_CONFIG.scalingIncreasePer;
+    const tilesUntilIncrease = nextTileForTierIncrease - ownedTilesCount;
+    
+    return {
+      cost: SCALING_CONFIG.costFormula(ownedTilesCount),
+      scalingInfo: {
+        tier,
+        currentScalingFactor,
+        tilesUntilIncrease,
+        nextTileForTierIncrease
       }
-    }
-    return count;
+    };
   }, [tiles]);
-
-  const cost = useMemo(() => {
-    return SCALING_CONFIG.costFormula(ownedTilesCount);
-  }, [ownedTilesCount]);
 
   if (isOwned) {
     const biomeInfo = BIOMES[biome];
     return (
       <div className="space-y-1">
-        <div className="font-medium flex items-center gap-2">
+        <div className="font-medium flex items-center gap-2 text-white">
           {biomeInfo.label}
           {biomeInfo.resourceIcons.map((icon, i) => (
             <span key={i} className="text-lg">{icon}</span>
           ))}
         </div>
-        <BiomeTooltip biome={biome} level={level} />
+        <BiomeTooltip biome={biome} level={level} x={x} y={y} />
       </div>
     );
   }
@@ -89,6 +134,19 @@ const TileStatus = memo(({ biome, isOwned, isAdjacent, level }: { biome: BiomeTy
             Cost: {cost} gold
           </span>
         </div>
+        <div className="text-xs text-gray-500">
+          Scaling Tier: {scalingInfo.tier + 1}
+          <br />
+          Current Factor: {scalingInfo.currentScalingFactor.toFixed(2)}x
+          {scalingInfo.tilesUntilIncrease > 0 && (
+            <>
+              <br />
+              <span className="text-yellow-500">
+                {scalingInfo.tilesUntilIncrease} tiles until next scaling increase
+              </span>
+            </>
+          )}
+        </div>
         <div className="text-sm text-gray-400">Click to explore</div>
       </div>
     );
@@ -97,8 +155,9 @@ const TileStatus = memo(({ biome, isOwned, isAdjacent, level }: { biome: BiomeTy
   return null;
 });
 
+TileStatus.displayName = 'TileStatus';
+
 const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
-  const [isShaking, setIsShaking] = useState(false);
   const tiles = useGameStore(state => state.tiles);
   const buyTile = useGameStore(state => state.buyTile);
   const resources = useGameStore(state => state.resources);
@@ -128,15 +187,7 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
     return isAdjacent ? `${baseColor}BF` : `${baseColor}40`; // 75% opacity for available, 25% for unavailable
   }, [biome, isOwned, isAdjacent]);
 
-  const ownedTilesCount = useMemo(() => {
-    let count = 0;
-    for (let y = 0; y < GRID_HEIGHT; y++) {
-      for (let x = 0; x < GRID_SIZE; x++) {
-        if (tiles[y][x].isOwned) count++;
-      }
-    }
-    return count;
-  }, [tiles]);
+  const ownedTilesCount = useMemo(() => countOwnedTiles(tiles), [tiles]);
 
   const cost = useMemo(() => {
     return SCALING_CONFIG.costFormula(ownedTilesCount);
@@ -146,9 +197,6 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
     if (isAdjacent && !isOwned) {
       if (resources.gold >= cost) {
         buyTile(x, y);
-      } else {
-        setIsShaking(true);
-        setTimeout(() => setIsShaking(false), 200);
       }
     }
   };
@@ -160,7 +208,6 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
         isOwned ? 'opacity-100' : isAdjacent ? 'opacity-75 hover:opacity-100' : 'opacity-25',
         !isOwned && isAdjacent && 'hover:z-10 cursor-pointer border border-gray-900 hover:border-gray-800',
         biome === 'castle' && 'ring-1 ring-purple-500',
-        isShaking && 'animate-shake',
         'group'
       )}
       style={{ 
@@ -178,12 +225,14 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
       {(isOwned || isAdjacent) && (
         <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 pointer-events-none z-50 transition-opacity duration-200">
           <div className="bg-gray-900 rounded-lg shadow-xl p-2 whitespace-nowrap border border-gray-700">
-            <TileStatus biome={biome} isOwned={isOwned} isAdjacent={isAdjacent} level={level} />
+            <TileStatus biome={biome} isOwned={isOwned} isAdjacent={isAdjacent} level={level} x={x} y={y} />
           </div>
         </div>
       )}
     </div>
   );
 };
+
+Tile.displayName = 'Tile';
 
 export default memo(Tile);

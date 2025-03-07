@@ -1,7 +1,8 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { BIOMES, CASTLE_BASE_RATES, CASTLE_UPGRADE, GRID_SIZE, GRID_HEIGHT, INITIAL_RESOURCES, BASE_GENERATION_RATES, SCALING_CONFIG } from '@/config/gameConfig';
 import type { BiomeType, GameState, Resources, ResourceRates, Tile } from '@/types/game';
+import { countOwnedTiles } from '@/utils/gameUtils';
 
 const GRID_CENTER_X = Math.floor(GRID_SIZE / 2);
 const GRID_CENTER_Y = Math.floor(GRID_HEIGHT / 2);
@@ -25,14 +26,25 @@ const createInitialGrid = (): Tile[][] => {
   return grid;
 };
 
-const countOwnedTiles = (tiles: GameState['tiles']): number => {
-  let count = 0;
+// Validate grid state to ensure it matches our expectations
+const validateGrid = (grid: any): grid is Tile[][] => {
+  if (!Array.isArray(grid) || grid.length !== GRID_HEIGHT) return false;
+  
   for (let y = 0; y < GRID_HEIGHT; y++) {
+    if (!Array.isArray(grid[y]) || grid[y].length !== GRID_SIZE) return false;
     for (let x = 0; x < GRID_SIZE; x++) {
-      if (tiles[y][x].isOwned) count++;
+      const tile = grid[y][x];
+      if (!tile || typeof tile !== 'object') return false;
+      if (typeof tile.isOwned !== 'boolean') return false;
+      if (!Object.keys(BIOMES).includes(tile.biome)) return false;
     }
   }
-  return count;
+
+  // Ensure castle exists at center
+  const centerTile = grid[GRID_CENTER_Y][GRID_CENTER_X];
+  if (!centerTile.isOwned || centerTile.biome !== 'castle') return false;
+
+  return true;
 };
 
 const countAdjacentSameBiomes = (tiles: GameState['tiles'], x: number, y: number, biome: BiomeType): number => {
@@ -79,7 +91,7 @@ const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
       if (tile.isOwned) {
         const biome = BIOMES[tile.biome];
         const adjacentCount = countAdjacentSameBiomes(tiles, x, y, tile.biome);
-        const adjacencyMultiplier = SCALING_CONFIG.adjacencyMultiplier(adjacentCount);
+        const adjacencyMultiplier = 1 + (SCALING_CONFIG.adjacencyBonus * adjacentCount);
         
         Object.entries(biome.resourceGeneration).forEach(([resource, rate]) => {
           if (rate && rate > 0) {
@@ -93,17 +105,6 @@ const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
   }
 
   return { base, modifiers, total };
-};
-
-const isAdjacentToOwned = (tiles: GameState['tiles'], x: number, y: number): boolean => {
-  const directions = [[-1, 0], [1, 0], [0, -1], [0, 1]];
-  return directions.some(([dx, dy]) => {
-    const newX = x + dx;
-    const newY = y + dy;
-    return newX >= 0 && newX < GRID_SIZE && 
-           newY >= 0 && newY < GRID_HEIGHT && 
-           tiles[newY][newX].isOwned;
-  });
 };
 
 const canAffordCost = (resources: Resources, cost: number | Resources): boolean => {
@@ -124,134 +125,158 @@ const getRandomBiome = (): BiomeType => {
   return availableBiomes[randomIndex];
 };
 
-export const useGameStore = create(
-  persist<GameState>((set, get) => {
-    const initialGrid = createInitialGrid();
-    const initialRates = calculateResourceRates(initialGrid);
-    
-    return {
-      tiles: initialGrid,
-      resources: { ...INITIAL_RESOURCES },
-      resourceRates: initialRates,
-      resourceModifiers: initialRates.modifiers,
+const createGameSlice = (set: any, get: any) => {
+  const initialGrid = createInitialGrid();
+  const initialRates = calculateResourceRates(initialGrid);
 
-      buyTile: (x: number, y: number) => {
-        const state = get();
-        const ownedTilesCount = countOwnedTiles(state.tiles);
-        const cost = SCALING_CONFIG.costFormula(ownedTilesCount);
+  const buyTile = (x: number, y: number) => {
+    const state = get();
+    const ownedTilesCount = countOwnedTiles(state.tiles);
+    const cost = SCALING_CONFIG.costFormula(ownedTilesCount);
 
-        if (state.resources.gold < cost) {
-          return false;
-        }
+    if (state.resources.gold < cost) {
+      return false;
+    }
 
-        const isAdjacent = [
-          [x - 1, y],
-          [x + 1, y],
-          [x, y - 1],
-          [x, y + 1]
-        ].some(([adjX, adjY]) => 
-          adjX >= 0 && adjX < GRID_SIZE && 
-          adjY >= 0 && adjY < GRID_HEIGHT && 
-          state.tiles[adjY]?.[adjX]?.isOwned
-        );
+    const isAdjacent = [
+      [x - 1, y],
+      [x + 1, y],
+      [x, y - 1],
+      [x, y + 1]
+    ].some(([adjX, adjY]) => 
+      adjX >= 0 && adjX < GRID_SIZE && 
+      adjY >= 0 && adjY < GRID_HEIGHT && 
+      state.tiles[adjY]?.[adjX]?.isOwned
+    );
 
-        if (!isAdjacent) {
-          return false;
-        }
+    if (!isAdjacent) {
+      return false;
+    }
 
-        const newTiles = [...state.tiles];
-        const randomBiome = getRandomBiome();
-        newTiles[y][x] = {
-          ...newTiles[y][x],
-          biome: randomBiome,
-          isOwned: true
-        };
-
-        // Recalculate resource rates with the new tile
-        const newRates = calculateResourceRates(newTiles);
-
-        set({
-          tiles: newTiles,
-          resources: {
-            ...state.resources,
-            gold: state.resources.gold - cost
-          },
-          resourceRates: newRates,
-          resourceModifiers: newRates.modifiers
-        });
-
-        return true;
-      },
-
-      upgradeCastle: (): boolean => {
-        const state = get();
-        
-        // Find castle
-        let castle: Tile | null = null;
-        let castleX = -1, castleY = -1;
-        
-        for (let y = 0; y < GRID_HEIGHT; y++) {
-          for (let x = 0; x < GRID_SIZE; x++) {
-            if (state.tiles[y][x].biome === 'castle') {
-              castle = state.tiles[y][x];
-              castleX = x;
-              castleY = y;
-              break;
-            }
-          }
-          if (castle) break;
-        }
-
-        if (!castle || !castle.upgradeCost || !castle.level) return false;
-
-        // Check if max level reached
-        if (castle.level >= CASTLE_UPGRADE.maxLevel) return false;
-
-        // Check if can afford upgrade
-        if (!canAffordCost(state.resources, castle.upgradeCost)) return false;
-
-        // Update castle and resources
-        const newTiles = [...state.tiles];
-        newTiles[castleY] = [...newTiles[castleY]];
-        newTiles[castleY][castleX] = {
-          ...castle,
-          level: castle.level + 1,
-          upgradeCost: CASTLE_UPGRADE.upgradeCosts[castle.level] || null
-        };
-
-        // Deduct resources
-        const newResources = { ...state.resources };
-        Object.entries(castle.upgradeCost).forEach(([resource, amount]) => {
-          newResources[resource as keyof Resources] -= amount;
-        });
-
-        const newRates = calculateResourceRates(newTiles);
-
-        set({
-          tiles: newTiles,
-          resources: newResources,
-          resourceRates: newRates,
-          resourceModifiers: newRates.modifiers
-        });
-
-        return true;
-      },
-
-      tick: (deltaTime: number): void => {
-        const state = get();
-        const secondsElapsed = deltaTime / 1000;
-
-        // Update resources based on rates
-        const newResources = { ...state.resources };
-        Object.entries(state.resourceRates.total).forEach(([resource, rate]) => {
-          newResources[resource as keyof Resources] += rate * secondsElapsed;
-        });
-
-        set({ resources: newResources });
-      }
+    const newTiles = state.tiles.map(row => [...row]);
+    const randomBiome = getRandomBiome();
+    newTiles[y][x] = {
+      ...newTiles[y][x],
+      biome: randomBiome,
+      isOwned: true
     };
-  }), {
-    name: 'idle-game-storage-v101',
-    version: 2
-  }
+
+    // Recalculate resource rates with the new tile
+    const newRates = calculateResourceRates(newTiles);
+
+    set({
+      tiles: newTiles,
+      resources: {
+        ...state.resources,
+        gold: state.resources.gold - cost
+      },
+      resourceRates: newRates,
+      resourceModifiers: newRates.modifiers
+    });
+
+    return true;
+  };
+
+  const upgradeCastle = () => {
+    const state = get();
+    
+    // Find castle
+    let castle: Tile | null = null;
+    let castleX = -1, castleY = -1;
+    
+    for (let y = 0; y < GRID_HEIGHT; y++) {
+      for (let x = 0; x < GRID_SIZE; x++) {
+        if (state.tiles[y][x].biome === 'castle') {
+          castle = state.tiles[y][x];
+          castleX = x;
+          castleY = y;
+          break;
+        }
+      }
+      if (castle) break;
+    }
+
+    if (!castle || !castle.upgradeCost || !castle.level) return false;
+    if (castle.level >= CASTLE_UPGRADE.maxLevel) return false;
+    if (!canAffordCost(state.resources, castle.upgradeCost)) return false;
+
+    const newTiles = state.tiles.map(row => [...row]);
+    newTiles[castleY][castleX] = {
+      ...castle,
+      level: castle.level + 1,
+      upgradeCost: CASTLE_UPGRADE.upgradeCosts[castle.level] || null
+    };
+
+    // Deduct resources
+    const newResources = { ...state.resources };
+    Object.entries(castle.upgradeCost).forEach(([resource, amount]) => {
+      newResources[resource as keyof Resources] -= amount;
+    });
+
+    const newRates = calculateResourceRates(newTiles);
+
+    set({
+      tiles: newTiles,
+      resources: newResources,
+      resourceRates: newRates,
+      resourceModifiers: newRates.modifiers
+    });
+
+    return true;
+  };
+
+  const tick = (deltaTime: number) => {
+    const state = get();
+    if (!state?.resourceRates?.total) return;
+    
+    const secondsElapsed = deltaTime / 1000;
+    const newResources = { ...state.resources };
+    
+    Object.entries(state.resourceRates.total).forEach(([resource, rate]) => {
+      if (typeof rate === 'number' && !isNaN(rate)) {
+        newResources[resource as keyof Resources] += rate * secondsElapsed;
+      }
+    });
+
+    set({ resources: newResources });
+  };
+
+  return {
+    tiles: initialGrid,
+    resources: { ...INITIAL_RESOURCES },
+    resourceRates: initialRates,
+    resourceModifiers: initialRates.modifiers,
+    buyTile,
+    upgradeCastle,
+    tick
+  };
+};
+
+export const useGameStore = create(
+  persist<GameState>(
+    (set, get) => createGameSlice(set, get),
+    {
+      name: 'idle-explorer-storage',
+      version: 2,
+      storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        // Validate and fix state if needed
+        if (!state || !validateGrid(state.tiles)) {
+          const initialGrid = createInitialGrid();
+          const initialRates = calculateResourceRates(initialGrid);
+          
+          return {
+            tiles: initialGrid,
+            resources: { ...INITIAL_RESOURCES },
+            resourceRates: initialRates,
+            resourceModifiers: initialRates.modifiers,
+            buyTile: state?.buyTile,
+            upgradeCastle: state?.upgradeCastle,
+            tick: state?.tick
+          };
+        }
+        return state;
+      }
+    }
+  )
 );
