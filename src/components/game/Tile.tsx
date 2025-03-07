@@ -210,15 +210,15 @@ const TileStatus = memo(
 			const canAfford = resources.gold >= cost;
 			return (
 				<div className='space-y-1'>
-					<div className='font-semibold text-gray-400 text-[13px] uppercase leading-4'>
-						Unexplored Land
+					<div className='text-blue-300 text-[12px] uppercase leading-4'>
+						🔎 Unexplored Land
 					</div>
 					<div className='text-sm font-bold text-[12px] mb-3'>
 						<span className={canAfford ? 'text-green-400' : 'text-red-400'}>
-							Cost: {cost} gold
+							{RESOURCE_ICONS.gold} Cost: {cost} gold
 						</span>
 					</div>
-					<div className='text-sm text-gray-400 text-[12px]'>
+					<div className='text-sm text-gray-400 text-[12px] text-center'>
 						Click to explore
 					</div>
 				</div>
@@ -294,12 +294,12 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 				isOwned
 					? 'opacity-100'
 					: isAdjacent
-					? 'opacity-75 hover:opacity-100'
-					: 'opacity-25',
+					? 'opacity-50 hover:opacity-100'
+					: 'opacity-75',
 				!isOwned &&
 					isAdjacent && [
 						'hover:z-10 cursor-pointer',
-						'border border-gray-900',
+						'border border-gray-800',
 						canAfford ? 'hover:border-green-800' : 'hover:border-red-800',
 						!canAfford && 'cursor-not-allowed',
 					],
@@ -310,6 +310,11 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 			style={{
 				...style,
 				backgroundColor,
+				...(!isOwned &&
+					!isAdjacent && {
+						background: `url('/fow.jpg') no-repeat`,
+						backgroundSize: '50px',
+					}),
 			}}
 			onClick={handleClick}
 			role='button'
@@ -325,7 +330,7 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 					? BIOME_ICONS[BIOMES[biome].name as keyof typeof BIOME_ICONS]
 					: isAdjacent
 					? '❔'
-					: '☁️'}
+					: ''}
 			</div>
 
 			{(isOwned || isAdjacent) && (

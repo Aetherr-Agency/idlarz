@@ -41,7 +41,6 @@ const RESOURCE_INFO = {
 const ResourceDisplay: React.FC = () => {
 	const resources = useGameStore((state) => state.resources);
 	const resourceRates = useGameStore((state) => state.resourceRates);
-	const tiles = useGameStore((state) => state.tiles);
 	const level = useGameStore((state) => state.level);
 	const toggleCharacterWindow = useGameStore(
 		(state) => state.toggleCharacterWindow
@@ -63,28 +62,6 @@ const ResourceDisplay: React.FC = () => {
 		}
 		setPrevAvailablePoints(characterStats.availablePoints);
 	}, [characterStats.availablePoints, prevAvailablePoints, levelUpActive]);
-
-	// Find castle level
-	const castleLevel = React.useMemo(() => {
-		for (let y = 0; y < tiles.length; y++) {
-			for (let x = 0; x < tiles[y].length; x++) {
-				const tile = tiles[y][x];
-				if (tile.isOwned && tile.biome === 'castle' && tile.level) {
-					return tile.level;
-				}
-			}
-		}
-		return 1;
-	}, [tiles]);
-
-	const castleBonus = React.useMemo(() => {
-		return castleLevel > 1
-			? `Castle Level ${castleLevel} (+${(
-					(Math.pow(1.5, castleLevel - 1) - 1) *
-					100
-			  ).toFixed(0)}%)`
-			: null;
-	}, [castleLevel]);
 
 	return (
 		<div className='fixed top-0 left-0 right-0 z-50 bg-gray-900 bg-opacity-90 border-b border-gray-800'>
