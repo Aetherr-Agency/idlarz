@@ -28,7 +28,7 @@ const createInitialGrid = (): Tile[][] => {
 const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
   const base = { ...BASE_GENERATION_RATES };
   const total = { ...base };
-  const modifiers = { gold: 1, wood: 1, stone: 1, coal: 1, food: 1 };
+  const modifiers = { gold: 0.1, wood: 0.1, stone: 0.1, coal: 0.1, food: 0.1 };
 
   // Find castle and apply its base rates and level multiplier
   for (let y = 0; y < GRID_HEIGHT; y++) {
@@ -200,7 +200,7 @@ export const useGameStore = create(
       set({ resources: newResources });
     }
   }), {
-    name: 'idle-game-storage',
+    name: 'idle-game-storage-v4',
     version: 1
   })
 );

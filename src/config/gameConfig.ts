@@ -8,31 +8,31 @@ export const VIEWPORT_SIZE = 25; // 12 tiles in each direction from center
 
 // Game Constants
 export const TICK_RATE = 100; // 10 times per second
-export const TILE_PURCHASE_COST = 100; // Cost to reveal a new tile
+export const TILE_PURCHASE_COST = 100; // Increased to make early expansion more meaningful
 export const INITIAL_RESOURCES = {
-  gold: 500, // Starting currency
+  gold: 500, // Starting currency - reduced to make early game more challenging
   wood: 0,
   stone: 0,
   coal: 0,
   food: 0
 };
 
-// Resource Generation (per second)
+// Base resource generation (per second)
 export const BASE_GENERATION_RATES = {
-  gold: 0,
-  wood: 0,
-  stone: 0,
-  coal: 0,
-  food: 0
+  gold: 0.03,  // Reduced for slower early game
+  wood: 0.02,
+  stone: 0.015,
+  coal: 0.01,
+  food: 0.02
 };
 
 // Castle Configuration
 export const CASTLE_BASE_RATES = {
-  gold: 1,   // Base: 0.5/s
-  wood: 0.25,  // Base: 0.25/s
-  stone: 0.25, // Base: 0.25/s
-  coal: 0.25,  // Base: 0.25/s
-  food: 0.25   // Base: 0.25/s
+  gold: 0.08,   // Reduced but still meaningful
+  wood: 0.04,
+  stone: 0.04,
+  coal: 0.03,
+  food: 0.05
 };
 
 export const CASTLE_UPGRADE = {
@@ -66,14 +66,14 @@ export const BIOMES: Record<string, BiomeInfo> = {
   castle: {
     name: 'castle',
     label: 'Castle',
-    baseColor: '#4c1d95', // Royal purple
+    baseColor: '#7209b7',
     cost: 0,
     resourceModifiers: {
-      gold: 2,
-      wood: 1.5,
-      stone: 1.5,
-      coal: 1.5,
-      food: 1.5
+      gold: 1.5,
+      wood: 1.1,
+      stone: 1.1,
+      coal: 1.1,
+      food: 1.1
     },
     resourceIcons: ['🏰'],
     unique: true,
@@ -99,97 +99,97 @@ export const BIOMES: Record<string, BiomeInfo> = {
   forest: {
     name: 'forest',
     label: 'Forest',
-    baseColor: '#064e3b', // Dark green
+    baseColor: '#386641',
     cost: 0,
     resourceModifiers: {
       gold: 1.15,
-      wood: 2.0,
+      wood: 1.5,    // Significant wood bonus
       stone: 1.0,
       coal: 1.0,
-      food: 1.2
+      food: 1.1     // Small food bonus from berries
     },
     resourceIcons: ['🌲'],
     unique: false,
-    description: 'Rich in wood and minor food bonus'
+    description: 'Rich in wood, with some food from wild berries'
   },
   plains: {
     name: 'plains',
     label: 'Plains',
-    baseColor: '#3f6212', // Light green
+    baseColor: '#90a955',
     cost: 0,
     resourceModifiers: {
       gold: 1.1,
       wood: 1.0,
       stone: 1.0,
       coal: 1.0,
-      food: 1.5
+      food: 1.2     // Strong food production
     },
     resourceIcons: ['🌾'],
     unique: false,
-    description: 'Good food production'
+    description: 'Excellent for food production'
   },
   hills: {
     name: 'hills',
     label: 'Hills',
-    baseColor: '#854d0e', // Brown
+    baseColor: '#6d6875',
     cost: 0,
     resourceModifiers: {
       gold: 1.05,
       wood: 1.0,
-      stone: 1.5,
-      coal: 1.5,
-      food: 1.0
+      stone: 1.4,   // Strong stone bonus
+      coal: 1.3,    // Good coal bonus
+      food: 1     // Slight food penalty
     },
     resourceIcons: ['⛰️'],
     unique: false,
-    description: 'Rich in stone and coal'
+    description: 'Rich in stone and coal, but poor for farming'
   },
   swamp: {
     name: 'swamp',
     label: 'Swamp',
-    baseColor: '#365314', // Dark green-brown
+    baseColor: '#4a4e69',
     cost: 0,
     resourceModifiers: {
-      gold: 1.3,
-      wood: 1.2,
+      gold: 1,    // Gold penalty
+      wood: 1.2,    // Good wood bonus
       stone: 1.0,
       coal: 1.0,
-      food: 1.3
+      food: 1.1     // Small food bonus
     },
     resourceIcons: ['🌿'],
     unique: false,
-    description: 'Balanced wood and food, but reduces gold'
+    description: 'Good for wood, but poor for gold mining'
   },
   tundra: {
     name: 'tundra',
     label: 'Tundra',
-    baseColor: '#e5e7eb', // Light gray
+    baseColor: '#a4c3d2',
     cost: 0,
     resourceModifiers: {
-      gold: 1.2,
-      wood: 1,
-      stone: 1.2,
-      coal: 1.2,
-      food: 1
+      gold: 1.2,    // Strong gold bonus
+      wood: 1,    // Wood penalty
+      stone: 1.1,   // Small stone bonus
+      coal: 1.1,    // Small coal bonus
+      food: 1     // Significant food penalty
     },
     resourceIcons: ['❄️'],
     unique: false,
-    description: 'High gold but low food and wood'
+    description: 'Rich in gold and minerals, but harsh for farming'
   },
   lake: {
     name: 'lake',
     label: 'Lake',
-    baseColor: '#0369a1', // Blue
+    baseColor: '#184e77',
     cost: 0,
     resourceModifiers: {
-      gold: 1.25,
-      wood: 1.0,
-      stone: 1.0,
-      coal: 1.0,
-      food: 1.4
+      gold: 1.25,   // Best gold bonus
+      wood: 1,    // Small wood penalty
+      stone: 1,   // Small stone penalty
+      coal: 1,    // Coal penalty
+      food: 1.3     // Strong food bonus
     },
     resourceIcons: ['💧'],
     unique: false,
-    description: 'Excellent gold and food production'
+    description: 'Excellent for gold and food, poor for mining'
   }
 } as const;
