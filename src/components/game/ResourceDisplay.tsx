@@ -16,6 +16,24 @@ const ResourceDisplay: React.FC = () => {
   const resources = useGameStore(state => state.resources);
   const resourceRates = useGameStore(state => state.resourceRates);
   const modifiers = useGameStore(state => state.resourceModifiers);
+  const tiles = useGameStore(state => state.tiles);
+
+  // Find castle level
+  const castleLevel = React.useMemo(() => {
+    for (let y = 0; y < tiles.length; y++) {
+      for (let x = 0; x < tiles[y].length; x++) {
+        const tile = tiles[y][x];
+        if (tile.isOwned && tile.biome === 'castle' && tile.level) {
+          return tile.level;
+        }
+      }
+    }
+    return 1;
+  }, [tiles]);
+
+  const castleBonus = React.useMemo(() => {
+    return castleLevel > 1 ? `Castle Level ${castleLevel} (+${((Math.pow(1.5, castleLevel - 1) - 1) * 100).toFixed(0)}%)` : null;
+  }, [castleLevel]);
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-gray-900 bg-opacity-90 border-b border-gray-800">
@@ -48,12 +66,20 @@ const ResourceDisplay: React.FC = () => {
                       <span className="text-gray-400">Base Rate:</span>
                       <span className="text-white">{formatNumber(resourceRates.base[resource])}/s</span>
                     </div>
-                    <div className="flex justify-between gap-4">
-                      <span className="text-gray-400">Modifier:</span>
-                      <span className={`${modifiers[resource] > 1 ? 'text-green-400' : modifiers[resource] < 1 ? 'text-red-400' : 'text-white'}`}>
-                        {formatModifier(modifiers[resource])}
-                      </span>
-                    </div>
+                    {castleBonus && (
+                      <div className="flex justify-between gap-4">
+                        <span className="text-purple-400">Castle Bonus:</span>
+                        <span className="text-purple-400">{castleBonus}</span>
+                      </div>
+                    )}
+                    {modifiers[resource] !== 1 && (
+                      <div className="flex justify-between gap-4">
+                        <span className="text-gray-400">Total Modifier:</span>
+                        <span className={`${modifiers[resource] > 1 ? 'text-green-400' : modifiers[resource] < 1 ? 'text-red-400' : 'text-white'}`}>
+                          {formatModifier(modifiers[resource])}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex justify-between gap-4 border-t border-gray-700 mt-2 pt-2">
                       <span className="text-gray-400">Total Rate:</span>
                       <span className={`${resourceRates.total[resource] > 0 ? 'text-green-400' : 'text-gray-400'}`}>

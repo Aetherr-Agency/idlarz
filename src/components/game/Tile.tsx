@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useState } from 'react';
+import React, { memo, useMemo } from 'react';
 import { BiomeType } from '@/types/game';
 import { BIOMES, GRID_SIZE, GRID_HEIGHT, SCALING_CONFIG } from '@/config/gameConfig';
 import { useGameStore } from '@/stores/gameStore';
@@ -208,7 +208,7 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
         isOwned ? 'opacity-100' : isAdjacent ? 'opacity-75 hover:opacity-100' : 'opacity-25',
         !isOwned && isAdjacent && 'hover:z-10 cursor-pointer border border-gray-900 hover:border-gray-800',
         biome === 'castle' && 'ring-1 ring-purple-500',
-        'group'
+        'group hover:z-20'
       )}
       style={{ 
         ...style,

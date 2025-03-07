@@ -57,19 +57,19 @@ export const INITIAL_RESOURCES = {
 // Base resource generation (per second)
 export const BASE_GENERATION_RATES = {
   gold: 0.02,
-  wood: 0,
-  stone: 0,
-  coal: 0,
-  food: 0
+  wood: 0.01,
+  stone: 0.01,
+  coal: 0.01,
+  food: 0.01
 };
 
 // Castle Configuration
 export const CASTLE_BASE_RATES = {
-  gold: 0.1,
+  gold: 0.05,
   wood: 0,
   stone: 0,
   coal: 0,
-  food: 0
+  food: 0.05
 };
 
 export const CASTLE_UPGRADE = {
@@ -100,11 +100,11 @@ export const BIOMES: Record<string, BiomeInfo> = {
     baseColor: '#9333ea',
     cost: 0,
     resourceGeneration: {
-      gold: 0.25,
-      wood: 0.05,
-      stone: 0.05,
-      coal: 0.05,
-      food: 0
+      gold: 0.1,
+      wood: 0,
+      stone: 0,
+      coal: 0,
+      food: 0.05
     },
     resourceIcons: [BIOME_ICONS.castle],
     unique: true,
@@ -118,8 +118,8 @@ export const BIOMES: Record<string, BiomeInfo> = {
     baseColor: '#166534',
     cost: 100,
     resourceGeneration: {
-      gold: 0.15,
-      wood: 1
+      gold: 0.05,
+      wood: 0.1
     },
     resourceIcons: [BIOME_ICONS.forest],
     description: 'A dense forest teeming with valuable wood. Mysterious creatures lurk in the shadows.'
@@ -130,8 +130,8 @@ export const BIOMES: Record<string, BiomeInfo> = {
     baseColor: '#65a30d',
     cost: 100,
     resourceGeneration: {
-      gold: 0.1,
-      food: 1
+      gold: 0.05,
+      food: 0.1
     },
     resourceIcons: [BIOME_ICONS.plains],
     description: 'Fertile grasslands perfect for farming. The wind whispers tales of distant lands.'
@@ -143,8 +143,8 @@ export const BIOMES: Record<string, BiomeInfo> = {
     cost: 100,
     resourceGeneration: {
       gold: 0.05,
-      stone: 1.25,
-      coal: 1
+      stone: 0.15,
+      coal: 0.05
     },
     resourceIcons: [BIOME_ICONS.hills],
     description: 'Rolling hills rich with minerals. Ancient tunnels hint at forgotten treasures.'
@@ -156,8 +156,8 @@ export const BIOMES: Record<string, BiomeInfo> = {
     cost: 100,
     resourceGeneration: {
       gold: 0,
-      food: 1,
-      wood: 0.5
+      food: 0.1,
+      wood: 0.05
     },
     resourceIcons: [BIOME_ICONS.swamp],
     description: 'A treacherous swamp with unique resources. The mist conceals both danger and opportunity.'
@@ -168,9 +168,9 @@ export const BIOMES: Record<string, BiomeInfo> = {
     baseColor: '#94a3b8',
     cost: 100,
     resourceGeneration: {
-      gold: 0.2,
-      food: 0,
-      coal: 1.25
+      gold: 0.15,
+      food: 0.05,
+      coal: 0.25
     },
     resourceIcons: [BIOME_ICONS.tundra],
     description: 'A harsh frozen wasteland. Only the bravest explorers venture here, but the rewards are great.'
@@ -181,8 +181,8 @@ export const BIOMES: Record<string, BiomeInfo> = {
     baseColor: '#0ea5e9',
     cost: 100,
     resourceGeneration: {
-      gold: 0.25,
-      food: 1.25
+      gold: 0.05,
+      food: 0.15
     },
     resourceIcons: [BIOME_ICONS.lake],
     description: 'A pristine lake full of fish. The clear waters reflect untold possibilities.'

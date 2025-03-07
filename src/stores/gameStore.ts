@@ -65,24 +65,38 @@ const countAdjacentSameBiomes = (tiles: GameState['tiles'], x: number, y: number
 const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
   const base = { ...BASE_GENERATION_RATES };
   const total = { ...base };
-  const modifiers = { gold: 1.0, wood: 1.0, stone: 1.0, coal: 1.0, food: 1.0 };
+  const modifiers: Record<keyof Resources, number> = {
+    gold: 1,
+    wood: 1,
+    stone: 1,
+    coal: 1,
+    food: 1
+  };
 
-  // Find castle and apply its base rates and level multiplier
+  // Find castle and its level
+  let castleLevel = 1;
+  let castleX = -1, castleY = -1;
   for (let y = 0; y < GRID_HEIGHT; y++) {
     for (let x = 0; x < GRID_SIZE; x++) {
       const tile = tiles[y][x];
-      if (tile.isOwned && tile.biome === 'castle') {
-        const level = tile.level || 1;
-        const multiplier = Math.pow(CASTLE_UPGRADE.levelMultiplier, level - 1);
-        
-        // Apply castle base rates with level multiplier
-        Object.entries(CASTLE_BASE_RATES).forEach(([resource, rate]) => {
-          base[resource as keyof Resources] += rate * multiplier;
-        });
+      if (tile.isOwned && tile.biome === 'castle' && tile.level) {
+        castleLevel = tile.level;
+        castleX = x;
+        castleY = y;
         break;
       }
     }
   }
+
+  // Calculate castle multiplier
+  const castleMultiplier = Math.pow(1.5, castleLevel - 1);
+
+  // First add castle base rates to base generation
+  Object.entries(CASTLE_BASE_RATES).forEach(([resource, rate]) => {
+    const key = resource as keyof Resources;
+    base[key] += rate;
+    total[key] += rate * castleMultiplier;
+  });
 
   // Add flat generation rates from all owned tiles with adjacency bonuses
   for (let y = 0; y < GRID_HEIGHT; y++) {
@@ -94,8 +108,15 @@ const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
         const adjacencyMultiplier = 1 + (SCALING_CONFIG.adjacencyBonus * adjacentCount);
         
         Object.entries(biome.resourceGeneration).forEach(([resource, rate]) => {
+          // Skip castle base rates since we already added them
+          if (tile.biome === 'castle' && CASTLE_BASE_RATES[resource as keyof Resources]) {
+            return;
+          }
+          
           if (rate && rate > 0) {
-            total[resource as keyof Resources] += rate * adjacencyMultiplier;
+            // Apply castle multiplier to castle tile
+            const effectiveRate = tile.biome === 'castle' ? rate * castleMultiplier : rate;
+            total[resource as keyof Resources] += effectiveRate * adjacencyMultiplier;
           } else {
             total[resource as keyof Resources] += rate || 0;
           }
@@ -103,6 +124,12 @@ const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
       }
     }
   }
+
+  // Calculate modifiers based on total vs base rates
+  Object.keys(modifiers).forEach(resource => {
+    const key = resource as keyof Resources;
+    modifiers[key] = base[key] === 0 ? 1 : total[key] / base[key];
+  });
 
   return { base, modifiers, total };
 };
