@@ -7,8 +7,8 @@ import React, {
 	JSX,
 } from 'react';
 import { useGameStore } from '@/stores/gameStore';
-import Tile from './tile/Tile';
 import { GRID_SIZE, GRID_HEIGHT, TILE_SIZE } from '@/config/gameConfig';
+import Tile from './tile/Tile';
 
 interface Position {
 	x: number;
