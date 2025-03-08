@@ -31,6 +31,11 @@ const RESOURCE_INFO = {
 		label: 'Food',
 		description: 'Sustains population growth',
 	},
+	meat: {
+		icon: RESOURCE_ICONS.meat,
+		label: 'Meat',
+		description: 'Produced by farm animals',
+	},
 	xp: {
 		icon: RESOURCE_ICONS.xp,
 		label: 'XP',
@@ -75,7 +80,7 @@ const ResourceDisplay: React.FC = () => {
 		<div className='fixed top-0 left-0 right-0 z-50 bg-gray-900 bg-opacity-90 border-b border-gray-800'>
 			<div className='max-w-6xl mx-auto px-4 py-2'>
 				<div className='grid grid-cols-9 gap-2 md:gap-4'>
-					<div className='flex items-center gap-2 col-span-4 border-r border-gray-700 border-dotted'>
+					<div className='flex items-center gap-2 col-span-3 border-r border-gray-700 border-dotted'>
 						<div
 							className='max-w-56 border-transparent hover:border-blue-800  hover:bg-blue-950 flex justify-start items-center gap-4 mr-2 cursor-pointer hover:opacity-80 transition-opacity duration-200 border-2 py-1.5 px-2 rounded-xl'
 							onClick={toggleStatisticsWindow}>
@@ -143,8 +148,6 @@ const ResourceDisplay: React.FC = () => {
 							if (resource === 'xp') {
 								return null;
 							}
-
-							console.log('resource',resource)
 
 							return (
 								<div

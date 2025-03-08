@@ -6,8 +6,8 @@ import { RESOURCE_ICONS } from '@/config/gameConfig';
 // Resource pricing constants (gold per unit)
 const RESOURCE_PRICES = {
 	wood: 0.75,
-	stone: 1.25,
-	coal: 2.0,
+	stone: 0.75,
+	coal: 1.25,
 	food: 0.5,
 };
 
