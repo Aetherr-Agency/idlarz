@@ -2,6 +2,7 @@ import React from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { formatNumber } from '@/utils/formatters';
 import { RESOURCE_ICONS } from '@/config/gameConfig';
+import { countOwnedBiomeTypes } from '@/utils/gameUtils';
 import audioManager from '@/utils/audioManager';
 
 // Animal types and configurations
@@ -70,19 +71,12 @@ const calculateProduction = (animal: Animal, level: number) => {
 };
 
 // Farm Animal Card component for each animal
-interface FarmAnimalCardProps {
+const FarmAnimalCard: React.FC<{
 	animal: Animal;
 	level: number;
 	canAfford: boolean;
 	onPurchase: () => void;
-}
-
-const FarmAnimalCard: React.FC<FarmAnimalCardProps> = ({
-	animal,
-	level,
-	canAfford,
-	onPurchase,
-}) => {
+}> = ({ animal, level, canAfford, onPurchase }) => {
 	const nextLevelCost = calculateCost(animal, level);
 	const currentProduction = level > 0 ? calculateProduction(animal, level) : 0;
 	const nextLevelProduction = calculateProduction(animal, level + 1);
@@ -161,32 +155,32 @@ const FarmAnimalCard: React.FC<FarmAnimalCardProps> = ({
 	);
 };
 
-// Farm Stats component to show overall meat production
-const FarmStats: React.FC<{ totalProduction: number }> = ({
-	totalProduction,
-}) => {
+// Stats Component
+interface FarmStatsProps {
+	totalProduction: number;
+}
+
+const FarmStats: React.FC<FarmStatsProps> = ({ totalProduction }) => {
 	return (
 		<div className='p-4 bg-gray-800 rounded-lg border border-gray-700'>
 			<h3 className='text-white font-bold mb-2'>Farm Statistics</h3>
-			<div className='space-y-2'>
-				<div className='flex justify-between text-sm'>
-					<span className='text-gray-400'>Total Meat Production:</span>
-					<span className='text-red-400 font-medium'>
-						{formatNumber(totalProduction)}/s {RESOURCE_ICONS.meat}
-					</span>
-				</div>
-				<div className='flex justify-between text-sm'>
-					<span className='text-gray-400'>Per Minute:</span>
-					<span className='text-red-400 font-medium'>
-						{formatNumber(totalProduction * 60)}/min {RESOURCE_ICONS.meat}
-					</span>
-				</div>
-				<div className='flex justify-between text-sm'>
-					<span className='text-gray-400'>Per Hour:</span>
-					<span className='text-red-400 font-medium'>
-						{formatNumber(totalProduction * 60 * 60)}/hr {RESOURCE_ICONS.meat}
-					</span>
-				</div>
+			<div className='flex justify-between text-sm'>
+				<span className='text-gray-400'>Meat Production:</span>
+				<span className='text-red-400 font-medium'>
+					{formatNumber(totalProduction)}/s
+				</span>
+			</div>
+			<div className='flex justify-between text-sm mt-2'>
+				<span className='text-gray-400'>Per Minute:</span>
+				<span className='text-red-400 font-medium'>
+					{formatNumber(totalProduction * 60)}/min
+				</span>
+			</div>
+			<div className='flex justify-between text-sm mt-2'>
+				<span className='text-gray-400'>Per Hour:</span>
+				<span className='text-red-400 font-medium'>
+					{formatNumber(totalProduction * 60 * 60)}/hr
+				</span>
 			</div>
 		</div>
 	);
@@ -196,18 +190,24 @@ const FarmStats: React.FC<{ totalProduction: number }> = ({
 const FarmOverlay: React.FC = () => {
 	const resources = useGameStore((state) => state.resources);
 	const farmLevels = useGameStore((state) => state.farmLevels);
+	const tiles = useGameStore((state) => state.tiles);
 	const purchaseAnimal = useGameStore((state) => state.purchaseAnimal);
 	const showFarmWindow = useGameStore((state) => state.showFarmWindow);
 	const setShowFarmWindow = useGameStore((state) => state.setShowFarmWindow);
 
 	// Calculate total meat production
-	const totalMeatProduction = ANIMALS.reduce((total, animal) => {
+	const totalMeatProduction = ANIMALS.reduce((total: number, animal: Animal) => {
 		const level = farmLevels[animal.id] || 0;
 		if (level > 0) {
 			return total + calculateProduction(animal, level);
 		}
 		return total;
 	}, 0);
+
+	// Calculate Plains bonus
+	const plainsCount = countOwnedBiomeTypes(tiles, 'plains');
+	const plainsBonusPercentage = plainsCount * 5; // 5% per Plains tile
+	const hasPlainsBonus = plainsCount > 0;
 
 	// Check if player can afford an animal
 	const canAffordAnimal = (animal: Animal) => {
@@ -271,6 +271,19 @@ const FarmOverlay: React.FC = () => {
 								{formatNumber(resources.meat)} {RESOURCE_ICONS.meat}
 							</span>
 						</div>
+						{hasPlainsBonus && (
+							<div className='flex justify-between text-sm mt-2'>
+								<span className='text-gray-400'>Plains Bonus:</span>
+								<span className='text-yellow-400 font-medium'>
+									+{plainsBonusPercentage}% {RESOURCE_ICONS.meat}
+								</span>
+							</div>
+						)}
+						{hasPlainsBonus && (
+							<div className='mt-2 text-xs text-gray-500'>
+								Each Plains tile provides +5% meat production
+							</div>
+						)}
 					</div>
 				</div>
 

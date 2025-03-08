@@ -40,6 +40,25 @@ export const countOwnedTiles = (tiles: { isOwned: boolean }[][]): number => {
 };
 
 /**
+ * Counts the total number of owned tiles of a specific biome type
+ * @param tiles Grid of tiles to count ownership from
+ * @param biomeType The type of biome to count
+ * @returns Number of owned tiles of the specified biome type
+ */
+export const countOwnedBiomeTypes = (
+	tiles: Tile[][],
+	biomeType: BiomeType
+): number => {
+	let count = 0;
+	for (let y = 0; y < GRID_HEIGHT; y++) {
+		for (let x = 0; x < GRID_SIZE; x++) {
+			if (tiles[y][x].isOwned && tiles[y][x].biome === biomeType) count++;
+		}
+	}
+	return count;
+};
+
+/**
  * Gets the description for a character stat
  * @param stat The character stat key
  * @returns Description of what the stat does
@@ -325,6 +344,14 @@ export const calculateResourceRates = (
     const key = resource as keyof Resources;
     modifiers[key] += castleModifier;
   });
+
+  // Add Plains biome bonus for meat production
+  // Each owned Plains tile provides a 5% bonus to meat production
+  const plainsCount = countOwnedBiomeTypes(tiles, 'plains');
+  if (plainsCount > 0) {
+    // 5% per plains tile
+    modifiers.meat += plainsCount * 0.05;
+  }
 
   // Add flat generation rates from all owned tiles with adjacency bonuses
   for (let y = 0; y < GRID_HEIGHT; y++) {
