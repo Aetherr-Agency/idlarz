@@ -55,7 +55,7 @@ export const BASE_XP_PER_TILE = 125;
 export const XP_GROWTH_FACTOR = 1.4; // Exponential growth factor for XP needed per level (2x)
 export const BASE_XP_PER_LEVEL = 500; // Starting XP needed for level 1 to 2
 
-export const SPECIAL_SINGLE_TYPE_BIOMES: BiomeType[] = ['castle', 'grounds'];
+export const SPECIAL_SINGLE_TYPE_BIOMES: BiomeType[] = ['castle'];
 export const EMPTY_BIOMES: BiomeType[] = ['empty'];
 
 // Resource scaling configuration
@@ -162,10 +162,6 @@ export const BIOMES: Record<string, BiomeInfo> = {
 		unique: false,
 		upgradeable: false,
 		resourceGeneration: {
-			gold: 0,
-			wood: 0,
-			stone: 0,
-			food: 0,
 			xp: 0.15,
 		},
 		resourceIcons: [RESOURCE_ICONS.xp],

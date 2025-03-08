@@ -76,6 +76,7 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 
 	return (
 		<div
+			id={`tile-${x}-${y}`}
 			className={cn(
 				'absolute transition-all duration-200 ease-in-out select-none',
 				{

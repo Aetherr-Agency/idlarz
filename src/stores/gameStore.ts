@@ -10,6 +10,9 @@ import {
 	DEFAULT_PLAYER_NAME,
 	INITIAL_CHARACTER_STATS,
 	ANIMALS,
+	SPECIAL_SINGLE_TYPE_BIOMES,
+	EMPTY_BIOMES,
+	BIOMES,
 } from '@/config/gameConfig';
 import {
 	calculateLevel,
@@ -24,7 +27,7 @@ import {
 	calculateTotalMeatProduction,
 	calculateAnimalCost,
 } from '@/utils/gameUtils';
-import type { GameState, Resources, Tile, CharacterStats } from '@/types/game';
+import type { GameState, Resources, Tile, CharacterStats, BiomeType } from '@/types/game';
 
 // Helper to calculate cost at a specific level
 
@@ -59,6 +62,10 @@ const createGameSlice = (
 		showMerchantWindow: false,
 		showFarmWindow: false, // Initialize farm window visibility
 		isHydrated: false,
+		// Biome selection feature state
+		biomeSelectionActive: false,
+		pendingTileCoords: null,
+		selectableBiomes: null,
 
 		// Add a new method to purchase or upgrade an animal
 		purchaseAnimal: (animalId: string) => {
@@ -165,7 +172,26 @@ const createGameSlice = (
 			if (!isAdjacent) {
 				return false;
 			}
+			
+			// Check if this is the 4th tile purchase (tiles are 0-indexed)
+			// Every 4th tile (3, 7, 11, etc. - so we need to check if ownedTilesCount % 4 === 3)
+			if ((ownedTilesCount % 4) === 3) {
+				// Get available biomes for selection
+				const availableBiomes = Object.entries(BIOMES)
+					.filter(([name]) => !SPECIAL_SINGLE_TYPE_BIOMES.includes(name as BiomeType) && !EMPTY_BIOMES.includes(name as BiomeType))
+					.map(([name]) => name as BiomeType);
+					
+				// Activate biome selection mode
+				set({
+					biomeSelectionActive: true,
+					pendingTileCoords: { x, y },
+					selectableBiomes: availableBiomes,
+				});
+				
+				return true;
+			}
 
+			// Regular tile purchase - random biome
 			const newTiles = state.tiles.map((row) => [...row]);
 			const randomBiome = getRandomBiome();
 			newTiles[y][x] = {
@@ -203,6 +229,82 @@ const createGameSlice = (
 			});
 
 			return true;
+		},
+		
+		// New methods for biome selection
+		selectBiome: (biome: BiomeType) => {
+			const state = get();
+			
+			if (!state.biomeSelectionActive || !state.pendingTileCoords || !state.selectableBiomes) {
+				return false;
+			}
+			
+			const { x, y } = state.pendingTileCoords;
+			const ownedTilesCount = countOwnedTiles(state.tiles);
+			const baseCost = SCALING_CONFIG.costFormula(ownedTilesCount);
+			
+			// Apply tile cost discount from character stats
+			const discountMultiplier = 1 - state.characterStats.tileCostDiscount / 100;
+			const cost = Math.floor(baseCost * discountMultiplier);
+			
+			if (state.resources.gold < cost) {
+				// Reset biome selection state
+				set({
+					biomeSelectionActive: false,
+					pendingTileCoords: null,
+					selectableBiomes: null,
+				});
+				return false;
+			}
+			
+			// Create new tile with the selected biome
+			const newTiles = state.tiles.map((row) => [...row]);
+			newTiles[y][x] = {
+				...newTiles[y][x],
+				biome: biome,
+				isOwned: true,
+			};
+			
+			// Recalculate resource rates with the new tile and current stats
+			const newRates = calculateResourceRates(newTiles, state.characterStats);
+			
+			// Calculate XP gain based on new owned tiles count
+			const newOwnedTilesCount = ownedTilesCount + 1;
+			const xpGain = calculateXpGain(newOwnedTilesCount);
+			
+			// Apply XP gain multiplier from stats
+			const xpMultiplier = 1 + state.characterStats.xpGainMultiplier / 100;
+			const totalXpGain = xpGain * xpMultiplier;
+			
+			// Update character stats with new reputation
+			const newStats = { ...state.characterStats };
+			newStats.reputation += 100; // +100 reputation for each tile purchased
+			
+			set({
+				tiles: newTiles,
+				resources: {
+					...state.resources,
+					gold: state.resources.gold - cost,
+					xp: state.resources.xp + totalXpGain,
+				},
+				resourceRates: newRates,
+				resourceModifiers: newRates.modifiers,
+				level: calculateLevel(state.resources.xp + totalXpGain),
+				characterStats: newStats,
+				biomeSelectionActive: false,
+				pendingTileCoords: null,
+				selectableBiomes: null,
+			});
+			
+			return true;
+		},
+		
+		cancelBiomeSelection: () => {
+			set({
+				biomeSelectionActive: false,
+				pendingTileCoords: null,
+				selectableBiomes: null,
+			});
 		},
 
 		upgradeCastle: () => {
@@ -419,6 +521,9 @@ export const useGameStore = create(
 					buyTile: state?.buyTile,
 					upgradeCastle: state?.upgradeCastle,
 					tick: state?.tick,
+					biomeSelectionActive: false,
+					pendingTileCoords: null,
+					selectableBiomes: null,
 				};
 			}
 			return state;

@@ -139,27 +139,32 @@ export interface GameState {
 	};
 	playerName: string;
 	characterStats: CharacterStats;
-	equipment: Equipment;
+	equipment: Record<string, string>; // Slot -> Item ID
 	inventory: Item[];
-	farmLevels: Record<string, number>; // Track levels of each animal in the farm
+	farmLevels: Record<string, number>; // Animal ID -> Level
 	showCharacterWindow: boolean;
 	showStatisticsWindow: boolean;
 	showMerchantWindow: boolean;
-	showFarmWindow: boolean; // Control farm overlay visibility
-	isHydrated: boolean; // Flag to track if store is rehydrated from localStorage
+	showFarmWindow: boolean;
+	isHydrated: boolean;
+	// Biome selection feature
+	biomeSelectionActive: boolean;
+	pendingTileCoords: { x: number; y: number } | null;
+	selectableBiomes: BiomeType[] | null;
+
+	// Methods
 	buyTile: (x: number, y: number) => boolean;
+	selectBiome: (biome: BiomeType) => boolean;
+	cancelBiomeSelection: () => void;
 	upgradeCastle: () => boolean;
-	purchaseAnimal: (animalId: string) => boolean; // Buy/upgrade animals
+	purchaseAnimal: (animalId: string) => boolean;
 	tick: (deltaTime: number) => void;
 	toggleCharacterWindow: () => void;
 	toggleStatisticsWindow: () => void;
 	toggleMerchantWindow: () => void;
-	toggleFarmWindow: () => void; // Toggle farm overlay visibility
-	setShowFarmWindow: (show: boolean) => void; // Set farm overlay visibility
-	sellResources: (
-		resource: keyof Resources,
-		amount: number
-	) => number | undefined;
+	toggleFarmWindow: () => void;
+	setShowFarmWindow: (show: boolean) => void;
+	sellResources: (resource: keyof Resources, amount: number) => number | undefined;
 	addStatPoint: (stat: keyof CharacterStats) => void;
 	setPlayerName: (name: string) => void;
 	addResources: (resourceToAdd: Partial<Resources>) => void;
