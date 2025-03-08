@@ -20,13 +20,6 @@ const GameDebug: React.FC = () => {
 
 	const ownedTileCount = countOwnedTiles();
 
-	const handleReset = () => {
-		// Clear localStorage completely
-		localStorage.clear();
-		// Force a hard reload
-		window.location.href = window.location.href;
-	};
-
 	const handleSimulateFirstTile = () => {
 		// Set name back to Explorer to trigger the dialog
 		setPlayerName('Explorer');
@@ -38,6 +31,8 @@ const GameDebug: React.FC = () => {
 		addResources({ gold: 1000000 });
 	};
 
+	if (process.env.NODE_ENV !== 'development') return null;
+
 	return (
 		<div className='fixed bottom-4 left-4 z-50 bg-gray-800 p-4 rounded-md text-white text-xs'>
 			<div className='mb-2'>
@@ -45,19 +40,8 @@ const GameDebug: React.FC = () => {
 				<div>Player Name: {playerName}</div>
 				<div>Owned Tiles: {ownedTileCount}</div>
 				<div>Gold: {resources.gold.toFixed(0)}</div>
-				<div>
-					Name Prompt Conditions:{' '}
-					{ownedTileCount === 2 && playerName === 'Explorer'
-						? 'Met'
-						: 'Not Met'}
-				</div>
 			</div>
 			<div className='flex gap-2 flex-wrap'>
-				<button
-					onClick={handleReset}
-					className='bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded-md text-xs'>
-					Reset Game
-				</button>
 				<button
 					onClick={handleSimulateFirstTile}
 					className='bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded-md text-xs'>
@@ -66,7 +50,7 @@ const GameDebug: React.FC = () => {
 				<button
 					onClick={handleAddGold}
 					className='bg-yellow-600 hover:bg-yellow-700 text-white px-2 py-1 rounded-md text-xs'>
-					Add 10K Gold
+					Add 1M Gold
 				</button>
 			</div>
 		</div>

@@ -10,13 +10,17 @@ import {
 	DEFAULT_PLAYER_NAME,
 	INITIAL_CHARACTER_STATS,
 } from '@/config/gameConfig';
-import { calculateLevel, calculateResourceRates, calculateXpGain, canAffordCost, countOwnedTiles, createInitialGrid, getRandomBiome, validateGrid } from '@/utils/gameUtils';
-import type {
-	GameState,
-	Resources,
-	Tile,
-	CharacterStats,
-} from '@/types/game';
+import {
+	calculateLevel,
+	calculateResourceRates,
+	calculateXpGain,
+	canAffordCost,
+	countOwnedTiles,
+	createInitialGrid,
+	getRandomBiome,
+	validateGrid,
+} from '@/utils/gameUtils';
+import type { GameState, Resources, Tile, CharacterStats } from '@/types/game';
 
 const createGameSlice = (
 	set: (
@@ -45,9 +49,10 @@ const createGameSlice = (
 			const state = get();
 			const ownedTilesCount = countOwnedTiles(state.tiles);
 			const baseCost = SCALING_CONFIG.costFormula(ownedTilesCount);
-			
+
 			// Apply tile cost discount from character stats
-			const discountMultiplier = 1 - (state.characterStats.tileCostDiscount / 100);
+			const discountMultiplier =
+				1 - state.characterStats.tileCostDiscount / 100;
 			const cost = Math.floor(baseCost * discountMultiplier);
 
 			if (state.resources.gold < cost) {
@@ -161,8 +166,10 @@ const createGameSlice = (
 				if (typeof rate === 'number' && !isNaN(rate)) {
 					// Apply XP gain multiplier for XP resource
 					if (resource === 'xp') {
-						const xpMultiplier = 1 + (state.characterStats.xpGainMultiplier / 100);
-						newResources[resource as keyof Resources] += rate * secondsElapsed * xpMultiplier;
+						const xpMultiplier =
+							1 + state.characterStats.xpGainMultiplier / 100;
+						newResources[resource as keyof Resources] +=
+							rate * secondsElapsed * xpMultiplier;
 					} else {
 						newResources[resource as keyof Resources] += rate * secondsElapsed;
 					}
@@ -171,18 +178,18 @@ const createGameSlice = (
 
 			// Calculate new level based on XP
 			const newLevel = calculateLevel(newResources.xp);
-			
+
 			// Create new state update object
 			const stateUpdate: Partial<GameState> = {
 				resources: newResources,
-				level: newLevel
+				level: newLevel,
 			};
 
 			// Check for level up and add stat points if needed
 			if (newLevel.level > state.previousLevel) {
 				const levelsGained = newLevel.level - state.previousLevel;
 				const newPoints = levelsGained * 3;
-				
+
 				// Create a new stats object and add the points
 				const newCharacterStats = { ...state.characterStats };
 				newCharacterStats.availablePoints += newPoints;
@@ -239,8 +246,8 @@ const createGameSlice = (
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'giorgio-explorer-game-v15',
-		version: 15,
+		name: 'idle-explorer-v1',
+		version: 1,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {
 			// Validate and fix state if needed
@@ -272,4 +279,3 @@ export const useGameStore = create(
 		},
 	})
 );
-
