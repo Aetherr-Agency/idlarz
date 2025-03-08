@@ -214,93 +214,160 @@ export const canAffordCost = (
 	);
 };
 
+// Calculate stat-based resource modifiers
+export const calculateStatResourceModifiers = (stats: CharacterStats): Resources => {
+  const modifiers = {
+    gold: 0,
+    wood: 0,
+    stone: 0,
+    coal: 0,
+    food: 0,
+    xp: 0,
+  };
+
+  // Strength: Stone & Coal +2.5% per point
+  modifiers.stone += stats.strength * 0.025;
+  modifiers.coal += stats.strength * 0.025;
+
+  // Dexterity: Wood & Food +2.5% per point
+  modifiers.wood += stats.dexterity * 0.025;
+  modifiers.food += stats.dexterity * 0.025;
+
+  // Intelligence: Gold +2.5% per point, XP +0.2% per point
+  modifiers.gold += stats.intelligence * 0.025;
+  modifiers.xp += stats.intelligence * 0.002;
+
+  // Vitality: Food & Wood +2.5% per point
+  modifiers.food += stats.vitality * 0.025;
+  modifiers.wood += stats.vitality * 0.025;
+
+  // Charisma: Gold & Coal +2.5% per point, XP +0.25% per point
+  modifiers.gold += stats.charisma * 0.025;
+  modifiers.coal += stats.charisma * 0.025;
+  modifiers.xp += stats.charisma * 0.0025;
+
+  return modifiers;
+};
+
+// Calculate combat stats from base stats
+export const calculateCombatStats = (stats: CharacterStats): Partial<CharacterStats> => {
+  return {
+    physicalAtk: stats.strength,                                                   // +1 per strength
+    magicAtk: stats.intelligence,                                                  // +1 per intelligence
+    hp: stats.vitality * 3 + stats.charisma * 0.25,                              // +3 per vitality, +0.25 per charisma
+    mp: stats.intelligence * 2,                                                    // +2 per intelligence
+    def: stats.dexterity + stats.strength * 0.5 + stats.vitality * 0.5 + stats.charisma * 0.25,  // Base + dex + str/2 + vit/2 + cha/4
+    magicDef: stats.intelligence + stats.vitality * 0.5 + stats.charisma * 0.25,  // Base + int + vit/2 + cha/4
+    luck: stats.charisma,                                                         // +1 per charisma
+    critChance: stats.dexterity * 0.25 + stats.charisma * 0.5,                   // +0.25% per dex, +0.5% per cha
+    critDmgMultiplier: 100 + stats.strength + stats.dexterity * 0.5 + stats.charisma * 0.5,  // Base 100% + str + dex/2 + cha/2
+    atkSpeedIncrease: stats.dexterity * 0.25,                                    // +0.25% per dex
+    xpGainMultiplier: stats.intelligence * 0.2 + stats.charisma * 0.25,          // +0.2% per int, +0.25% per cha
+  };
+};
+
 export const calculateResourceRates = (
-	tiles: GameState['tiles']
+  tiles: Tile[][],
+  characterStats?: CharacterStats
 ): ResourceRates => {
-	const base = { ...BASE_GENERATION_RATES };
-	const modifiers: Record<keyof Resources, number> = {
-		gold: 0,
-		wood: 0,
-		stone: 0,
-		coal: 0,
-		food: 0,
-		xp: 0,
-	};
-	const total = { ...base };
+  const base = { ...BASE_GENERATION_RATES };
+  const modifiers = { ...BASE_GENERATION_RATES };
+  const total = { ...BASE_GENERATION_RATES };
 
-	// Find castle and its level
-	let castleLevel = 1;
-	for (let y = 0; y < GRID_HEIGHT; y++) {
-		for (let x = 0; x < GRID_SIZE; x++) {
-			const tile = tiles[y][x];
-			if (tile.isOwned && tile.biome === 'castle' && tile.level) {
-				castleLevel = tile.level;
-				break;
-			}
-		}
-	}
+  // Calculate base rates from tiles
+  for (let y = 0; y < tiles.length; y++) {
+    for (let x = 0; x < tiles[y].length; x++) {
+      const tile = tiles[y][x];
+      if (tile.isOwned) {
+        const biome = BIOMES[tile.biome];
+        if (biome?.resourceGeneration) {
+          Object.entries(biome.resourceGeneration).forEach(([resource, rate]) => {
+            base[resource as keyof Resources] += rate;
+          });
+        }
+      }
+    }
+  }
 
-	// Add castle base rates to base generation
-	Object.entries(CASTLE_BASE_RATES).forEach(([resource, rate]) => {
-		const key = resource as keyof Resources;
-		base[key] += rate;
-	});
+  // Add castle base rates to base generation
+  Object.entries(CASTLE_BASE_RATES).forEach(([resource, rate]) => {
+    const key = resource as keyof Resources;
+    base[key] += rate;
+  });
 
-	// Calculate castle modifier (exponential growth - doubles each level after level 1)
-	let castleModifier = 0;
-	if (castleLevel > 0) {
-		if (CASTLE_UPGRADE.doublePerLevel) {
-			// Base is 20% at level 1, doubles with each level
-			// Level 1 = 0.2, Level 2 = 0.4, Level 3 = 0.8, Level 4 = 1.6, etc.
-			castleModifier =
-				CASTLE_UPGRADE.baseResourceMultiplier * Math.pow(2, castleLevel - 1);
-		} else {
-			// Fallback to linear growth (20% per level)
-			castleModifier = castleLevel * CASTLE_UPGRADE.baseResourceMultiplier;
-		}
-	}
+  // Calculate castle modifier (exponential growth - doubles each level after level 1)
+  let castleLevel = 1;
+  for (let y = 0; y < GRID_HEIGHT; y++) {
+    for (let x = 0; x < GRID_SIZE; x++) {
+      const tile = tiles[y][x];
+      if (tile.isOwned && tile.biome === 'castle' && tile.level) {
+        castleLevel = tile.level;
+        break;
+      }
+    }
+  }
+  let castleModifier = 0;
+  if (castleLevel > 0) {
+    if (CASTLE_UPGRADE.doublePerLevel) {
+      // Base is 20% at level 1, doubles with each level
+      // Level 1 = 0.2, Level 2 = 0.4, Level 3 = 0.8, Level 4 = 1.6, etc.
+      castleModifier =
+        CASTLE_UPGRADE.baseResourceMultiplier * Math.pow(2, castleLevel - 1);
+    } else {
+      // Fallback to linear growth (20% per level)
+      castleModifier = castleLevel * CASTLE_UPGRADE.baseResourceMultiplier;
+    }
+  }
 
-	// Add the castle modifier to all resources
-	Object.keys(modifiers).forEach((resource) => {
-		const key = resource as keyof Resources;
-		modifiers[key] += castleModifier;
-	});
+  // Add the castle modifier to all resources
+  Object.keys(modifiers).forEach((resource) => {
+    const key = resource as keyof Resources;
+    modifiers[key] += castleModifier;
+  });
 
-	// Add flat generation rates from all owned tiles with adjacency bonuses
-	for (let y = 0; y < GRID_HEIGHT; y++) {
-		for (let x = 0; x < GRID_SIZE; x++) {
-			const tile = tiles[y][x];
-			if (tile.isOwned) {
-				const biome = BIOMES[tile.biome];
-				const adjacentCount = countAdjacentSameBiomes(tiles, x, y, tile.biome);
-				const adjacencyMultiplier =
-					1 + SCALING_CONFIG.adjacencyBonus * adjacentCount;
+  // Add flat generation rates from all owned tiles with adjacency bonuses
+  for (let y = 0; y < GRID_HEIGHT; y++) {
+    for (let x = 0; x < GRID_SIZE; x++) {
+      const tile = tiles[y][x];
+      if (tile.isOwned) {
+        const biome = BIOMES[tile.biome];
+        const adjacentCount = countAdjacentSameBiomes(tiles, x, y, tile.biome);
+        const adjacencyMultiplier =
+          1 + SCALING_CONFIG.adjacencyBonus * adjacentCount;
 
-				Object.entries(biome.resourceGeneration).forEach(([resource, rate]) => {
-					// Skip castle base rates since we already added them
-					if (
-						tile.biome === 'castle' &&
-						CASTLE_BASE_RATES[resource as keyof Resources]
-					) {
-						return;
-					}
+        Object.entries(biome.resourceGeneration).forEach(([resource, rate]) => {
+          // Skip castle base rates since we already added them
+          if (
+            tile.biome === 'castle' &&
+            CASTLE_BASE_RATES[resource as keyof Resources]
+          ) {
+            return;
+          }
 
-					if (rate) {
-						// Add to base rate with adjacency bonus
-						base[resource as keyof Resources] += rate * adjacencyMultiplier;
-					}
-				});
-			}
-		}
-	}
+          if (rate) {
+            // Add to base rate with adjacency bonus
+            base[resource as keyof Resources] += rate * adjacencyMultiplier;
+          }
+        });
+      }
+    }
+  }
 
-	// Apply all modifiers to calculate total rates
-	Object.keys(total).forEach((resource) => {
-		const key = resource as keyof Resources;
-		total[key] = base[key] * (1 + modifiers[key]);
-	});
+  // Apply stat-based resource modifiers if stats are provided
+  if (characterStats) {
+    const statModifiers = calculateStatResourceModifiers(characterStats);
+    Object.entries(statModifiers).forEach(([resource, modifier]) => {
+      modifiers[resource as keyof Resources] += modifier;
+    });
+  }
 
-	return { base, modifiers, total };
+  // Calculate total rates
+  Object.keys(total).forEach((resource) => {
+    const key = resource as keyof Resources;
+    total[key] = base[key] * (1 + modifiers[key]);
+  });
+
+  return { base, modifiers, total };
 };
 
 // Biome Generation

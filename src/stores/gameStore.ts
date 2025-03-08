@@ -19,6 +19,7 @@ import {
 	createInitialGrid,
 	getRandomBiome,
 	validateGrid,
+	calculateCombatStats,
 } from '@/utils/gameUtils';
 import type { GameState, Resources, Tile, CharacterStats } from '@/types/game';
 
@@ -29,7 +30,7 @@ const createGameSlice = (
 	get: () => GameState
 ) => {
 	const initialGrid = createInitialGrid();
-	const initialRates = calculateResourceRates(initialGrid);
+	const initialRates = calculateResourceRates(initialGrid, INITIAL_CHARACTER_STATS);
 
 	return {
 		tiles: initialGrid,
@@ -44,15 +45,38 @@ const createGameSlice = (
 		inventory: INITIAL_INVENTORY_ITEMS,
 		showCharacterWindow: false,
 		showStatisticsWindow: false,
-		isHydrated: false, // Start with false, set to true on rehydration
+		isHydrated: false,
+
+		addStatPoint: (stat: keyof CharacterStats) => {
+			const state = get();
+			if (state.characterStats.availablePoints <= 0) return;
+
+			// Create new stats object with incremented stat
+			const newStats = { ...state.characterStats };
+			newStats[stat]++;
+			newStats.availablePoints--;
+
+			// Recalculate combat stats
+			const combatStats = calculateCombatStats(newStats);
+			Object.assign(newStats, combatStats);
+
+			// Recalculate resource rates with new stats
+			const newRates = calculateResourceRates(state.tiles, newStats);
+
+			set({
+				characterStats: newStats,
+				resourceRates: newRates,
+				resourceModifiers: newRates.modifiers,
+			});
+		},
+
 		buyTile: (x: number, y: number) => {
 			const state = get();
 			const ownedTilesCount = countOwnedTiles(state.tiles);
 			const baseCost = SCALING_CONFIG.costFormula(ownedTilesCount);
 
 			// Apply tile cost discount from character stats
-			const discountMultiplier =
-				1 - state.characterStats.tileCostDiscount / 100;
+			const discountMultiplier = 1 - state.characterStats.tileCostDiscount / 100;
 			const cost = Math.floor(baseCost * discountMultiplier);
 
 			if (state.resources.gold < cost) {
@@ -85,27 +109,32 @@ const createGameSlice = (
 				isOwned: true,
 			};
 
-			// Recalculate resource rates with the new tile
-			const newRates = calculateResourceRates(newTiles);
+			// Recalculate resource rates with the new tile and current stats
+			const newRates = calculateResourceRates(newTiles, state.characterStats);
 
 			// Calculate XP gain based on new owned tiles count
 			const newOwnedTilesCount = ownedTilesCount + 1;
 			const xpGain = calculateXpGain(newOwnedTilesCount);
+
+			// Apply XP gain multiplier from stats
+			const xpMultiplier = 1 + state.characterStats.xpGainMultiplier / 100;
+			const totalXpGain = xpGain * xpMultiplier;
 
 			set({
 				tiles: newTiles,
 				resources: {
 					...state.resources,
 					gold: state.resources.gold - cost,
-					xp: state.resources.xp + xpGain,
+					xp: state.resources.xp + totalXpGain,
 				},
 				resourceRates: newRates,
 				resourceModifiers: newRates.modifiers,
-				level: calculateLevel(state.resources.xp + xpGain),
+				level: calculateLevel(state.resources.xp + totalXpGain),
 			});
 
 			return true;
 		},
+
 		upgradeCastle: () => {
 			const state = get();
 
@@ -143,7 +172,8 @@ const createGameSlice = (
 				newResources[resource as keyof Resources] -= amount;
 			});
 
-			const newRates = calculateResourceRates(newTiles);
+			// Recalculate resource rates with current stats
+			const newRates = calculateResourceRates(newTiles, state.characterStats);
 
 			set({
 				tiles: newTiles,
@@ -154,6 +184,7 @@ const createGameSlice = (
 
 			return true;
 		},
+
 		tick: (deltaTime: number) => {
 			const state = get();
 			if (!state?.resourceRates?.total) return;
@@ -161,15 +192,13 @@ const createGameSlice = (
 			const secondsElapsed = deltaTime / 1000;
 			const newResources = { ...state.resources };
 
-			// Apply resource generation
+			// Apply resource generation with stat modifiers
 			Object.entries(state.resourceRates.total).forEach(([resource, rate]) => {
 				if (typeof rate === 'number' && !isNaN(rate)) {
 					// Apply XP gain multiplier for XP resource
 					if (resource === 'xp') {
-						const xpMultiplier =
-							1 + state.characterStats.xpGainMultiplier / 100;
-						newResources[resource as keyof Resources] +=
-							rate * secondsElapsed * xpMultiplier;
+						const xpMultiplier = 1 + state.characterStats.xpGainMultiplier / 100;
+						newResources[resource as keyof Resources] += rate * secondsElapsed * xpMultiplier;
 					} else {
 						newResources[resource as keyof Resources] += rate * secondsElapsed;
 					}
@@ -188,11 +217,16 @@ const createGameSlice = (
 			// Check for level up and add stat points if needed
 			if (newLevel.level > state.previousLevel) {
 				const levelsGained = newLevel.level - state.previousLevel;
-				const newPoints = levelsGained * 3;
+				const newPoints = levelsGained * 3; // 3 stat points per level
 
 				// Create a new stats object and add the points
 				const newCharacterStats = { ...state.characterStats };
 				newCharacterStats.availablePoints += newPoints;
+
+				// Recalculate combat stats
+				const combatStats = calculateCombatStats(newCharacterStats);
+				Object.assign(newCharacterStats, combatStats);
+
 				stateUpdate.characterStats = newCharacterStats;
 				stateUpdate.previousLevel = newLevel.level;
 			}
@@ -200,20 +234,7 @@ const createGameSlice = (
 			// Update the state with all changes
 			set(stateUpdate);
 		},
-		addStatPoint: (stat: keyof CharacterStats) => {
-			const state = get();
-			if (
-				stat === 'availablePoints' ||
-				state.characterStats.availablePoints <= 0
-			)
-				return;
 
-			const newStats = { ...state.characterStats };
-			newStats[stat]++;
-			newStats.availablePoints--;
-
-			set({ characterStats: newStats });
-		},
 		setPlayerName: (name: string) => {
 			// Ensure name is not empty and within length limits
 			if (name && name.trim().length > 0) {
@@ -253,7 +274,7 @@ export const useGameStore = create(
 			// Validate and fix state if needed
 			if (!state || !validateGrid(state.tiles)) {
 				const initialGrid = createInitialGrid();
-				const initialRates = calculateResourceRates(initialGrid);
+				const initialRates = calculateResourceRates(initialGrid, INITIAL_CHARACTER_STATS);
 
 				return {
 					tiles: initialGrid,

@@ -19,20 +19,20 @@ export const INITIAL_CHARACTER_STATS: CharacterStats = {
 	charisma: 5,
 	// Points to spent
 	availablePoints: 0,
-	// Combat stats
-	physicalAtk: 7,
-	magicAtk: 8,
-	hp: 16,
-	mp: 12,
-	def: 10,
-	magicDef: 7,
-	luck: 5,
-	critChance: 5,
-	critDmgMultiplier: 110,
-	atkSpeedIncrease: 0,
-	xpGainMultiplier: 5,
-	tileCostDiscount: 0,
-	reputation: 1000,
+	// Combat stats - calculated from base stats
+	physicalAtk: 5,      // Base + Strength (5)
+	magicAtk: 5,         // Base + Intelligence (5)
+	hp: 15.25,           // Base + (Vitality * 3) + (Charisma * 0.25) = 0 + 15 + 0.25
+	mp: 10,              // Base + (Intelligence * 2) = 0 + 10
+	def: 8.75,           // Base + Dexterity + (Strength * 0.5) + (Vitality * 0.5) + (Charisma * 0.25) = 0 + 5 + 2.5 + 2.5 + 1.25
+	magicDef: 8.25,      // Base + Intelligence + (Vitality * 0.5) + (Charisma * 0.25) = 0 + 5 + 2.5 + 1.25
+	luck: 5,             // Base + Charisma (5)
+	critChance: 3.75,    // Base + (Dexterity * 0.25) + (Charisma * 0.5) = 0 + 1.25 + 2.5
+	critDmgMultiplier: 103, // Base 100% + Strength + (Dexterity * 0.5) + (Charisma * 0.5) = 100 + 5 + 2.5 + 2.5
+	atkSpeedIncrease: 1.25, // Base + (Dexterity * 0.25) = 0 + 1.25
+	xpGainMultiplier: 2.25, // Base + (Intelligence * 0.2) + (Charisma * 0.25) = 0 + 1 + 1.25
+	tileCostDiscount: 0,    // Base value
+	reputation: 1000,       // Base value
 };
 
 // Grid Configuration
