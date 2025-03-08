@@ -316,8 +316,9 @@ export const calculateTotalMeatProduction = (
 ): number => {
 	let totalProduction = 0;
 
-	Object.entries(ANIMALS).forEach(([animalId, animal]) => {
-		const level = farmLevels[animalId] || 0;
+	// ANIMALS is an array, not an object, so use forEach directly
+	ANIMALS.forEach((animal) => {
+		const level = farmLevels[animal.id] || 0;
 		if (level > 0) {
 			totalProduction += calculateAnimalProduction(animal, level);
 		}

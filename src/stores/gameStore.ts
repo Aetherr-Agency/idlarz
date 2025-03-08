@@ -70,7 +70,7 @@ const createGameSlice = (
 		// Add a new method to purchase or upgrade an animal
 		purchaseAnimal: (animalId: string) => {
 			const state = get();
-			const animal = ANIMALS[animalId as unknown as number];
+			const animal = ANIMALS.find((animal) => animal.id === animalId);
 
 			if (!animal) return false;
 
@@ -96,7 +96,14 @@ const createGameSlice = (
 
 			// Update resource rates with new meat production
 			const newRates = { ...state.resourceRates };
-			newRates.total = { ...newRates.total, meat: meatProductionRate };
+			newRates.base = { ...newRates.base, meat: meatProductionRate };
+			
+			// Calculate the total with modifiers
+			const meatModifier = newRates.modifiers.meat || 0;
+			newRates.total = { 
+				...newRates.total, 
+				meat: meatProductionRate * (1 + meatModifier) 
+			};
 
 			// Update state
 			set({
@@ -378,12 +385,6 @@ const createGameSlice = (
 					}
 				}
 			});
-
-			// Add meat from farm animals
-			const meatProductionRate = calculateTotalMeatProduction(state.farmLevels);
-			if (meatProductionRate > 0) {
-				newResources.meat += meatProductionRate * secondsElapsed;
-			}
 
 			// Calculate new level based on XP
 			const newLevel = calculateLevel(newResources.xp);
