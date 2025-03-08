@@ -30,7 +30,7 @@ const ItemTooltip: React.FC<{ item: Item }> = ({ item }) => {
 };
 
 const CharacterOverlay: React.FC = () => {
-	const { showCharacterWindow, toggleCharacterWindow, equipment, inventory } =
+	const { showCharacterWindow, toggleCharacterWindow, equipment } =
 		useGameStore();
 
 	const [hoveredItem, setHoveredItem] = useState<Item | null>(null);
@@ -38,15 +38,6 @@ const CharacterOverlay: React.FC = () => {
 	if (!showCharacterWindow) return null;
 
 	// Calculate total equipment bonuses
-	const totalEquipmentBonus: Record<string, number> = {};
-	Object.values(equipment).forEach((item) => {
-		if (item) {
-			Object.entries(item.stats).forEach(([resource, value]) => {
-				totalEquipmentBonus[resource] =
-					(totalEquipmentBonus[resource] || 0) + value;
-			});
-		}
-	});
 
 	return (
 		<div className='fixed inset-[8vh] inset-x-[17vw] bg-black bg-opacity-90 rounded-3xl z-50 flex items-start justify-center overflow-y-auto'>
@@ -81,7 +72,7 @@ const CharacterOverlay: React.FC = () => {
 						<div className='grid grid-cols-3 gap-2 mb-6'>
 							{Object.entries(EQUIPMENT_SLOT_INFO).map(([slotKey, info]) => {
 								const slot = slotKey as EquipmentSlot;
-								const item = equipment[slot];
+								const item = equipment[slot] as unknown as Item;
 
 								return (
 									<div
@@ -112,35 +103,6 @@ const CharacterOverlay: React.FC = () => {
 									</div>
 								);
 							})}
-						</div>
-
-						<h2 className='text-white font-semibold mb-4 text-center border-b border-gray-700 pb-2'>
-							Inventory
-						</h2>
-
-						<div className='grid grid-cols-5 gap-2 overflow-y-auto'>
-							{inventory.map((item) => (
-								<div
-									key={item.id}
-									onMouseEnter={() => setHoveredItem(item)}
-									onMouseLeave={() => setHoveredItem(null)}
-									className={`p-2 bg-gray-700 rounded border relative cursor-grab ${
-										item.rarity
-											? EQUIPMENT_RARITY_COLORS[item.rarity]
-											: 'border-gray-500'
-									}`}>
-									<div className='text-2xl mb-1 text-center'>{item.icon}</div>
-									<div className='text-xs text-center text-white'>
-										{item.name}
-									</div>
-									{hoveredItem === item && <ItemTooltip item={item} />}
-								</div>
-							))}
-							{inventory.length === 0 && (
-								<div className='col-span-5 text-gray-500 text-center p-4'>
-									Your inventory is empty
-								</div>
-							)}
 						</div>
 					</div>
 				</div>
