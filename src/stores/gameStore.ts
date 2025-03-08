@@ -278,8 +278,8 @@ const createGameSlice = (
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'idle-explorer-v1',
-		version: 1,
+		name: 'idle-explorer-v2',
+		version: 2,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {
 			// Validate and fix state if needed
