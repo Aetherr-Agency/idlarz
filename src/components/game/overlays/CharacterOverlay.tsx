@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { EQUIPMENT_SLOT_INFO } from '@/config/gameConfig';
 import { EquipmentSlot, Item } from '@/types/game';
-import LevelDetails from './LevelDetails';
+import LevelDetails from '../LevelDetails';
 
 const RARITY_COLORS = {
 	common: 'border-gray-500',

@@ -89,6 +89,44 @@ export const RESOURCE_ICONS = {
 	xp: '✨',
 };
 
+export const HEADER_DISPLAYED_RESOURCES_INFO = {
+	gold: {
+		icon: RESOURCE_ICONS.gold,
+		label: 'Gold',
+		description: 'Used to purchase new tiles',
+	},
+	wood: {
+		icon: RESOURCE_ICONS.wood,
+		label: 'Wood',
+		description: 'Basic construction material',
+	},
+	stone: {
+		icon: RESOURCE_ICONS.stone,
+		label: 'Stone',
+		description: 'Durable building material',
+	},
+	coal: {
+		icon: RESOURCE_ICONS.coal,
+		label: 'Coal',
+		description: 'Advanced fuel source',
+	},
+	food: {
+		icon: RESOURCE_ICONS.food,
+		label: 'Food',
+		description: 'Sustains population growth',
+	},
+	meat: {
+		icon: RESOURCE_ICONS.meat,
+		label: 'Meat',
+		description: 'Produced by farm animals',
+	},
+	xp: {
+		icon: RESOURCE_ICONS.xp,
+		label: 'XP',
+		description: 'Get bigger boi!',
+	},
+} as const;
+
 export const BIOMES: Record<string, BiomeInfo> = {
 	empty: {
 		name: 'empty',

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { CharacterStats } from '@/types/game';
-import LevelDetails from './LevelDetails';
+import LevelDetails from '../LevelDetails';
 import { countOwnedTiles, getStatDescription } from '@/utils/gameUtils';
 import { formatNumber, formatRate } from '@/utils/formatters';
 import audioManager from '@/utils/audioManager';
@@ -113,8 +113,7 @@ const StatisticsOverlay: React.FC = () => {
 											<div
 												key={stat}
 												className='flex items-center text-xs mb-1.5'>
-												<div
-													className='group relative flex-1 flex justify-between items-center cursor-help'>
+												<div className='group relative flex-1 flex justify-between items-center cursor-help'>
 													<span className='text-gray-300 capitalize'>
 														{stat}:
 													</span>
@@ -128,11 +127,15 @@ const StatisticsOverlay: React.FC = () => {
 																	{stat.charAt(0).toUpperCase() + stat.slice(1)}
 																</div>
 																<div className='space-y-0'>
-																	{getStatDescription(stat).split('/').map((bonus, index) => (
-																		<div key={index} className='text-[10px] text-gray-400'>
-																			{bonus.trim()}
-																		</div>
-																	))}
+																	{getStatDescription(stat)
+																		.split('/')
+																		.map((bonus, index) => (
+																			<div
+																				key={index}
+																				className='text-[10px] text-gray-400'>
+																				{bonus.trim()}
+																			</div>
+																		))}
 																</div>
 															</div>
 														</div>

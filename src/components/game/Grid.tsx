@@ -7,12 +7,8 @@ import React, {
 	JSX,
 } from 'react';
 import { useGameStore } from '@/stores/gameStore';
-import Tile from './Tile';
+import Tile from './Tile/Tile';
 import { GRID_SIZE, GRID_HEIGHT, TILE_SIZE } from '@/config/gameConfig';
-
-const MIN_VELOCITY = 1;
-const VELOCITY_SCALE = 1;
-const VISIBLE_PADDING = 2;
 
 interface Position {
 	x: number;
@@ -23,6 +19,10 @@ interface Velocity {
 	x: number;
 	y: number;
 }
+
+const MIN_VELOCITY = 1;
+const VELOCITY_SCALE = 1;
+const VISIBLE_PADDING = 2;
 
 const Grid: React.FC = () => {
 	const tiles = useGameStore((state) => state.tiles);
@@ -164,6 +164,7 @@ const Grid: React.FC = () => {
 
 	useEffect(() => {
 		animationFrameRef.current = requestAnimationFrame(animate);
+
 		return () => {
 			if (animationFrameRef.current) {
 				cancelAnimationFrame(animationFrameRef.current);

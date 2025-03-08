@@ -92,6 +92,15 @@ export interface Item {
 	rarity?: EquipmentRarity;
 }
 
+export interface TileProps {
+	biome: BiomeType;
+	isOwned: boolean;
+	x: number;
+	y: number;
+	style?: React.CSSProperties;
+	level?: number;
+}
+
 export interface GameState {
 	previousLevel: number;
 	tiles: Tile[][];
@@ -121,7 +130,10 @@ export interface GameState {
 	toggleMerchantWindow: () => void;
 	toggleFarmWindow: () => void; // Toggle farm overlay visibility
 	setShowFarmWindow: (show: boolean) => void; // Set farm overlay visibility
-	sellResources: (resource: keyof Resources, amount: number) => number | undefined;
+	sellResources: (
+		resource: keyof Resources,
+		amount: number
+	) => number | undefined;
 	addStatPoint: (stat: keyof CharacterStats) => void;
 	setPlayerName: (name: string) => void;
 	addResources: (resourceToAdd: Partial<Resources>) => void;
