@@ -2,6 +2,7 @@ import React from 'react';
 import type { FC } from 'react';
 import { BiomeType } from '@/types/game';
 import { BIOMES, BIOME_ICONS, RESOURCE_ICONS } from '@/config/gameConfig';
+import audioManager from '@/utils/audioManager';
 
 interface BiomeSelectionDialogProps {
   availableBiomes: BiomeType[];
@@ -45,7 +46,7 @@ const BiomeSelectionDialog: FC<BiomeSelectionDialogProps> = ({
           return (
             <button
               key={biome}
-              onClick={() => onSelect(biome)}
+              onClick={() => { onSelect(biome); audioManager.playSound('purchase'); }}
               className="cursor-pointer flex items-center p-2 rounded border border-gray-700 hover:border-green-500 hover:bg-gray-800 transition-all"
               style={{
                 backgroundColor: BIOMES[biome].baseColor + '20',

@@ -61,8 +61,12 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 	const handleClick = () => {
 		if (isAdjacent && !isOwned) {
 			if (canAfford) {
-				buyTile(x, y);
-				audioManager.playSound('purchase');
+				const result = buyTile(x, y);
+				// Only play the purchase sound if the tile was actually purchased
+				// (not when biome selection was triggered)
+				if (result && !useGameStore.getState().biomeSelectionActive) {
+					audioManager.playSound('purchase');
+				}
 			} else if (cost > 0) {
 				// Only play wrong sound and shake for adjacent unaffordable tiles
 				setIsShaking(true);
