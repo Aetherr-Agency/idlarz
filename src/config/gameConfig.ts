@@ -8,22 +8,24 @@ export const VIEWPORT_SIZE = 25; // 12 tiles in each direction from center
 
 // Game Constants
 export const TICK_RATE = 100; // 10 times per second
-export const BASE_TILE_COST = 87; // Base cost for first tile purchase
+export const BASE_TILE_COST = 70; // Base cost for first tile purchase
 export const ADJACENCY_BONUS = 0.25; // 25% bonus for adjacent same biomes
 
 // Resource scaling configuration
 export const SCALING_CONFIG = {
 	// Base scaling factor that increases exponentially
-	baseScalingFactor: 1.62,
-	scalingIncreasePer: 16, // Increase scaling every X tiles
-	scalingIncreaseAmount: 0.22, // 22% increase in scaling factor
+	baseScalingFactor: 1.26,
+	scalingIncreasePer: 11, // Increase scaling every X tiles
+	scalingIncreaseAmount: 0.03, // 3% increase in scaling factor
 
 	// Exponential cost scaling formula
 	costFormula: (ownedTiles: number) => {
 		const tier = Math.floor(ownedTiles / SCALING_CONFIG.scalingIncreasePer);
+		console.log('TIER:', tier);
 		const currentScalingFactor =
 			SCALING_CONFIG.baseScalingFactor *
-			(1 + SCALING_CONFIG.scalingIncreaseAmount * tier);
+			(1 +
+				SCALING_CONFIG.scalingIncreaseAmount * (tier > 20 ? tier : tier / 2));
 		return Math.floor(
 			BASE_TILE_COST * Math.pow(currentScalingFactor, ownedTiles)
 		);

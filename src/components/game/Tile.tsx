@@ -315,7 +315,7 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 				...(!isOwned &&
 					!isAdjacent && {
 						background: `url('/fow.jpg') no-repeat`,
-						backgroundSize: '50px',
+						backgroundSize: '128px',
 					}),
 			}}
 			onClick={handleClick}

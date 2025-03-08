@@ -255,7 +255,7 @@ const calculateLevel = (xp: number): { level: number; progress: number } => {
 const calculateXpGain = (ownedTiles: number): number => {
 	// Basic XP gain increases with the number of tiles owned
 	// Each tile contributes XP that increases slightly with more tiles
-	return BASE_XP_PER_TILE * Math.pow(1.02, ownedTiles - 1) * ownedTiles;
+	return BASE_XP_PER_TILE * Math.pow(1.02, ownedTiles - 1) * (ownedTiles / 4);
 };
 
 const createGameSlice = (
@@ -462,8 +462,8 @@ const createGameSlice = (
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'giorgio-explorer-game-v8',
-		version: 8,
+		name: 'giorgio-explorer-game-v112',
+		version: 9,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {
 			// Set hydration state to true
