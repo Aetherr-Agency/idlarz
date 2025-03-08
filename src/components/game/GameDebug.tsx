@@ -28,7 +28,27 @@ const GameDebug: React.FC = () => {
 	};
 
 	const handleAddGold = () => {
-		addResources({ gold: 1000000 });
+		addResources({ gold: 100000 });
+	};
+
+	const handleAddWood = () => {
+		addResources({ wood: 100000 });
+	};
+
+	const handleAddStone = () => {
+		addResources({ stone: 100000 });
+	};
+
+	const handleAddCoal = () => {
+		addResources({ coal: 100000 });
+	};
+
+	const handleAddFood = () => {
+		addResources({ food: 100000 });
+	};
+
+	const handleAddMeat = () => {
+		addResources({ meat: 100000 });
 	};
 
 	if (process.env.NODE_ENV !== 'development') return null;
@@ -50,7 +70,32 @@ const GameDebug: React.FC = () => {
 				<button
 					onClick={handleAddGold}
 					className='bg-yellow-600 hover:bg-yellow-700 text-white px-2 py-1 rounded-md text-xs'>
-					Add 1M Gold
+					Add 100k Gold
+				</button>
+				<button
+					onClick={handleAddWood}
+					className='bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded-md text-xs'>
+					Add 100k Wood
+				</button>
+				<button
+					onClick={handleAddStone}
+					className='bg-gray-600 hover:bg-gray-700 text-white px-2 py-1 rounded-md text-xs'>
+					Add 100k Stone
+				</button>
+				<button
+					onClick={handleAddCoal}
+					className='bg-black hover:bg-gray-900 text-white px-2 py-1 rounded-md text-xs border border-gray-700'>
+					Add 100k Coal
+				</button>
+				<button
+					onClick={handleAddFood}
+					className='bg-amber-600 hover:bg-amber-700 text-white px-2 py-1 rounded-md text-xs'>
+					Add 100k Food
+				</button>
+				<button
+					onClick={handleAddMeat}
+					className='bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded-md text-xs'>
+					Add 100k Meat
 				</button>
 			</div>
 		</div>
