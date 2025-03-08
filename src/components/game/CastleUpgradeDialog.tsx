@@ -21,11 +21,18 @@ const CastleUpgradeDialog: FC<CastleUpgradeDialogProps> = ({ onClose }) => {
   const castleLevel = tiles[centerY]?.[centerX]?.level || 1;
   
   const isMaxLevel = castleLevel >= CASTLE_UPGRADE.maxLevel;
+  const isNextToMaxLevel = castleLevel >= CASTLE_UPGRADE.maxLevel - 1;
   
   // Get the required resources for the next level
   const nextLevelIndex = castleLevel - 1;
   const nextLevelCosts = !isMaxLevel && nextLevelIndex < CASTLE_UPGRADE.upgradeCosts.length 
     ? CASTLE_UPGRADE.upgradeCosts[nextLevelIndex] 
+    : null;
+    
+  // Get the costs for the level after next (for preview)
+  const afterNextLevelIndex = castleLevel;
+  const afterNextLevelCosts = !isNextToMaxLevel && afterNextLevelIndex < CASTLE_UPGRADE.upgradeCosts.length 
+    ? CASTLE_UPGRADE.upgradeCosts[afterNextLevelIndex] 
     : null;
   
   // Check if player has enough resources
@@ -53,6 +60,11 @@ const CastleUpgradeDialog: FC<CastleUpgradeDialogProps> = ({ onClose }) => {
   const nextMultiplier = !isMaxLevel && CASTLE_UPGRADE.doublePerLevel
     ? CASTLE_UPGRADE.baseResourceMultiplier * Math.pow(2, castleLevel)
     : CASTLE_UPGRADE.baseResourceMultiplier * (castleLevel + 1);
+    
+  // After next level multiplier if applicable
+  const afterNextMultiplier = !isNextToMaxLevel && CASTLE_UPGRADE.doublePerLevel
+    ? CASTLE_UPGRADE.baseResourceMultiplier * Math.pow(2, castleLevel + 1)
+    : CASTLE_UPGRADE.baseResourceMultiplier * (castleLevel + 2);
 
   return (
     <div 
@@ -77,6 +89,11 @@ const CastleUpgradeDialog: FC<CastleUpgradeDialogProps> = ({ onClose }) => {
         <>
           <div className="text-xs text-gray-400 mb-3">
             Next level: <span className="text-green-400">+{(nextMultiplier * 100).toFixed(0)}%</span> to all resources
+            {!isNextToMaxLevel && afterNextLevelCosts && (
+              <div className="text-gray-500 text-[10px] mt-1">
+                Level {castleLevel + 2}: +{(afterNextMultiplier * 100).toFixed(0)}% to all resources
+              </div>
+            )}
           </div>
           
           <div className="mb-4 border border-gray-700 rounded p-2 bg-gray-800">
@@ -93,8 +110,25 @@ const CastleUpgradeDialog: FC<CastleUpgradeDialogProps> = ({ onClose }) => {
               </div>
             </div>
           </div>
+
+          {!isNextToMaxLevel && afterNextLevelCosts && (
+              <>
+                <h4 className="text-[11px] font-semibold text-gray-400 mt-3 mb-1">Next Upgrade Cost:</h4>
+                <div className="grid grid-cols-3 gap-2 text-gray-500">
+                  <div className="text-[10px]">
+                    {RESOURCE_ICONS.gold} {formatNumber(afterNextLevelCosts.gold)}
+                  </div>
+                  <div className="text-[10px]">
+                    {RESOURCE_ICONS.wood} {formatNumber(afterNextLevelCosts.wood)}
+                  </div>
+                  <div className="text-[10px]">
+                    {RESOURCE_ICONS.stone} {formatNumber(afterNextLevelCosts.stone)}
+                  </div>
+                </div>
+              </>
+            )}
           
-          <div className="flex justify-between">
+          <div className="flex justify-between mt-4">
             <button 
               onClick={onClose}
               className="px-3 py-1 text-xs text-white bg-red-800 hover:bg-red-700 rounded cursor-pointer"
