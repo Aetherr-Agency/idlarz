@@ -1,19 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useHydration } from '@/hooks/useHydration';
 import '@/styles/LoadingScreen.css';
 
 const LoadingScreen: React.FC = () => {
 	const isHydrated = useHydration();
 	// Get some game state for debugging
-
-	// Force show game after 5 seconds regardless of hydration status
-	useEffect(() => {
-		const forceTimer = setTimeout(() => {
-			document.getElementById('force-show-button')?.click();
-		}, 5000);
-
-		return () => clearTimeout(forceTimer);
-	}, []);
 
 	if (isHydrated) return null;
 

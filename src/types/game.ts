@@ -115,6 +115,18 @@ export interface MerchantTabInfo {
 	description: string;
 }
 
+// Farm
+export interface Animal {
+	id: string;
+	name: string;
+	icon: string;
+	description: string;
+	baseCost: number;
+	costScaling: number;
+	baseProduction: number;
+	productionScaling: number;
+}
+
 export interface GameState {
 	previousLevel: number;
 	tiles: Tile[][];

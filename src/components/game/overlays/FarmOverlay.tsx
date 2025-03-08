@@ -1,74 +1,14 @@
 import React from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { formatNumber } from '@/utils/formatters';
-import { RESOURCE_ICONS } from '@/config/gameConfig';
-import { countOwnedBiomeTypes } from '@/utils/gameUtils';
+import { ANIMALS, RESOURCE_ICONS } from '@/config/gameConfig';
+import {
+	calculateAnimalCost,
+	calculateAnimalProduction,
+	countOwnedBiomeTypes,
+} from '@/utils/gameUtils';
 import audioManager from '@/utils/audioManager';
-
-// Animal types and configurations
-interface Animal {
-	id: string;
-	name: string;
-	icon: string;
-	description: string;
-	baseCost: number;
-	costScaling: number;
-	baseProduction: number;
-	productionScaling: number;
-}
-
-const ANIMALS: Animal[] = [
-	{
-		id: 'chicken',
-		name: 'Chicken',
-		icon: '🐔',
-		description: 'A simple farm animal that produces a small amount of meat.',
-		baseCost: 10000, // Starting at 10k food as requested
-		costScaling: 1.5, // Each level costs 1.5x more
-		baseProduction: 0.05, // 0.05 meat per second (3 per minute)
-		productionScaling: 1.2, // Each level increases production by 20%
-	},
-	{
-		id: 'deer',
-		name: 'Deer',
-		icon: '🦌',
-		description: 'A wild animal that produces more meat than a chicken.',
-		baseCost: 50000,
-		costScaling: 1.6,
-		baseProduction: 0.2, // 0.2 meat per second (12 per minute)
-		productionScaling: 1.25,
-	},
-	{
-		id: 'pig',
-		name: 'Pig',
-		icon: '🐖',
-		description: 'A domestic animal that produces a good amount of meat.',
-		baseCost: 200000,
-		costScaling: 1.7,
-		baseProduction: 0.5, // 0.5 meat per second (30 per minute)
-		productionScaling: 1.3,
-	},
-	{
-		id: 'cow',
-		name: 'Cow',
-		icon: '🐄',
-		description: 'A large animal that produces a significant amount of meat.',
-		baseCost: 1000000,
-		costScaling: 1.8,
-		baseProduction: 1.5, // 1.5 meat per second (90 per minute)
-		productionScaling: 1.4,
-	},
-];
-
-// Helper to calculate cost at a specific level
-const calculateCost = (animal: Animal, level: number) => {
-	return Math.floor(animal.baseCost * Math.pow(animal.costScaling, level));
-};
-
-// Helper to calculate production at a specific level
-const calculateProduction = (animal: Animal, level: number) => {
-	return animal.baseProduction * Math.pow(animal.productionScaling, level - 1);
-};
+import { Animal } from '@/types/game';
 
 // Farm Animal Card component for each animal
 const FarmAnimalCard: React.FC<{
@@ -77,9 +17,10 @@ const FarmAnimalCard: React.FC<{
 	canAfford: boolean;
 	onPurchase: () => void;
 }> = ({ animal, level, canAfford, onPurchase }) => {
-	const nextLevelCost = calculateCost(animal, level);
-	const currentProduction = level > 0 ? calculateProduction(animal, level) : 0;
-	const nextLevelProduction = calculateProduction(animal, level + 1);
+	const nextLevelCost = calculateAnimalCost(animal, level);
+	const currentProduction =
+		level > 0 ? calculateAnimalProduction(animal, level) : 0;
+	const nextLevelProduction = calculateAnimalProduction(animal, level + 1);
 	const productionIncrease = nextLevelProduction - currentProduction;
 
 	return (
@@ -196,13 +137,16 @@ const FarmOverlay: React.FC = () => {
 	const setShowFarmWindow = useGameStore((state) => state.setShowFarmWindow);
 
 	// Calculate total meat production
-	const totalMeatProduction = ANIMALS.reduce((total: number, animal: Animal) => {
-		const level = farmLevels[animal.id] || 0;
-		if (level > 0) {
-			return total + calculateProduction(animal, level);
-		}
-		return total;
-	}, 0);
+	const totalMeatProduction = ANIMALS.reduce(
+		(total: number, animal: Animal) => {
+			const level = farmLevels[animal.id] || 0;
+			if (level > 0) {
+				return total + calculateAnimalProduction(animal, level);
+			}
+			return total;
+		},
+		0
+	);
 
 	// Calculate Plains bonus
 	const plainsCount = countOwnedBiomeTypes(tiles, 'plains');
@@ -212,7 +156,7 @@ const FarmOverlay: React.FC = () => {
 	// Check if player can afford an animal
 	const canAffordAnimal = (animal: Animal) => {
 		const level = farmLevels[animal.id] || 0;
-		const cost = calculateCost(animal, level);
+		const cost = calculateAnimalCost(animal, level);
 		return resources.food >= cost;
 	};
 

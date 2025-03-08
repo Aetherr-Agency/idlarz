@@ -9,6 +9,7 @@ import {
 	INITIAL_INVENTORY_ITEMS,
 	DEFAULT_PLAYER_NAME,
 	INITIAL_CHARACTER_STATS,
+	ANIMALS,
 } from '@/config/gameConfig';
 import {
 	calculateLevel,
@@ -20,73 +21,14 @@ import {
 	getRandomBiome,
 	validateGrid,
 	calculateCombatStats,
+	calculateTotalMeatProduction,
+	calculateAnimalCost,
 } from '@/utils/gameUtils';
 import type { GameState, Resources, Tile, CharacterStats } from '@/types/game';
 
-// Farm animal configurations
-interface Animal {
-	id: string;
-	baseCost: number;
-	costScaling: number;
-	baseProduction: number;
-	productionScaling: number;
-}
-
-const ANIMALS: Record<string, Animal> = {
-	chicken: {
-		id: 'chicken',
-		baseCost: 10000,
-		costScaling: 1.5,
-		baseProduction: 0.05,
-		productionScaling: 1.2,
-	},
-	deer: {
-		id: 'deer',
-		baseCost: 50000,
-		costScaling: 1.6,
-		baseProduction: 0.2,
-		productionScaling: 1.25,
-	},
-	pig: {
-		id: 'pig',
-		baseCost: 200000,
-		costScaling: 1.7,
-		baseProduction: 0.5,
-		productionScaling: 1.3,
-	},
-	cow: {
-		id: 'cow',
-		baseCost: 1000000,
-		costScaling: 1.8,
-		baseProduction: 1.5,
-		productionScaling: 1.4,
-	},
-};
-
 // Helper to calculate cost at a specific level
-const calculateAnimalCost = (animal: Animal, level: number): number => {
-	return Math.floor(animal.baseCost * Math.pow(animal.costScaling, level));
-};
-
-// Helper to calculate production at a specific level
-const calculateAnimalProduction = (animal: Animal, level: number): number => {
-	if (level <= 0) return 0;
-	return animal.baseProduction * Math.pow(animal.productionScaling, level - 1);
-};
 
 // Calculate total meat production from all animals
-const calculateTotalMeatProduction = (farmLevels: Record<string, number>): number => {
-	let totalProduction = 0;
-
-	Object.entries(ANIMALS).forEach(([animalId, animal]) => {
-		const level = farmLevels[animalId] || 0;
-		if (level > 0) {
-			totalProduction += calculateAnimalProduction(animal, level);
-		}
-	});
-
-	return totalProduction;
-};
 
 const createGameSlice = (
 	set: (
@@ -95,7 +37,10 @@ const createGameSlice = (
 	get: () => GameState
 ) => {
 	const initialGrid = createInitialGrid();
-	const initialRates = calculateResourceRates(initialGrid, INITIAL_CHARACTER_STATS);
+	const initialRates = calculateResourceRates(
+		initialGrid,
+		INITIAL_CHARACTER_STATS
+	);
 
 	return {
 		tiles: initialGrid,
@@ -118,7 +63,7 @@ const createGameSlice = (
 		// Add a new method to purchase or upgrade an animal
 		purchaseAnimal: (animalId: string) => {
 			const state = get();
-			const animal = ANIMALS[animalId];
+			const animal = ANIMALS[animalId as unknown as number];
 
 			if (!animal) return false;
 
@@ -422,7 +367,9 @@ const createGameSlice = (
 				food: 0.5,
 			};
 
-			const goldGained = Math.floor(amount * prices[resource as keyof typeof prices]);
+			const goldGained = Math.floor(
+				amount * prices[resource as keyof typeof prices]
+			);
 
 			set({
 				resources: {
