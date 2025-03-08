@@ -109,14 +109,16 @@ const BiomeTooltip = memo(
 								<span className='text-gray-400'>
 									{RESOURCE_ICONS[resource]}
 								</span>
-								<span className='text-gray-300 font-semibold'>
+
+								<span className='text-gray-400 font-semibold'>
 									{formatRate(baseRate)}
 								</span>
+
 								<span className='text-[9px] text-gray-500 mt-0.5'>(base)</span>
 
 								{biome === 'castle' && castleModifier > 0 && (
-									<span className='text-green-400 text-xs text-[9px] mt-0.5'>
-										+{Math.round(castleModifier * 100)}% modifier
+									<span className='text-green-400 text-xs text-[9px] mt-0.5 block ml-auto'>
+										x {Math.round(castleModifier * 100)}% castle lv bonus
 									</span>
 								)}
 							</div>
