@@ -8,7 +8,7 @@ const RESOURCE_PRICES = {
 	wood: 0.75,
 	stone: 1.25,
 	coal: 2.0,
-	food: 0.5
+	food: 0.5,
 };
 
 // Resource display information
@@ -17,25 +17,25 @@ const RESOURCE_INFO = {
 		icon: RESOURCE_ICONS.wood,
 		label: 'Wood',
 		description: 'A basic construction material, widely available in forests.',
-		priceDescription: 'Common but always in demand.'
+		priceDescription: 'Common but always in demand.',
 	},
 	stone: {
 		icon: RESOURCE_ICONS.stone,
 		label: 'Stone',
 		description: 'Durable and versatile building material from quarries.',
-		priceDescription: 'Premium quality building material.'
+		priceDescription: 'Premium quality building material.',
 	},
 	coal: {
 		icon: RESOURCE_ICONS.coal,
 		label: 'Coal',
 		description: 'Valuable fuel source used for advanced applications.',
-		priceDescription: 'Highly sought after for its energy properties.'
+		priceDescription: 'Highly sought after for its energy properties.',
 	},
 	food: {
 		icon: RESOURCE_ICONS.food,
 		label: 'Food',
 		description: 'Sustains population and enables growth.',
-		priceDescription: 'Plentiful but essential for survival.'
+		priceDescription: 'Plentiful but essential for survival.',
 	},
 };
 
@@ -54,32 +54,32 @@ const MERCHANT_TABS: MerchantTabInfo[] = [
 		id: 'exchange',
 		label: 'Exchange',
 		emoji: '💱',
-		description: 'Sell your resources for gold'
+		description: 'Sell your resources for gold',
 	},
 	{
 		id: 'buy',
 		label: 'Buy Items',
 		emoji: '🛒',
-		description: 'Purchase useful items and equipment'
+		description: 'Purchase useful items and equipment',
 	},
 	{
 		id: 'upgrade',
 		label: 'Upgrade Items',
 		emoji: '⚒️',
-		description: 'Enhance your existing items'
+		description: 'Enhance your existing items',
 	},
 	{
 		id: 'quests',
 		label: 'Quests',
 		emoji: '📜',
-		description: 'Take on special assignments for rewards'
+		description: 'Take on special assignments for rewards',
 	},
 	{
 		id: 'gambling',
 		label: 'Gambling',
 		emoji: '🎲',
-		description: 'Test your luck for a chance at riches'
-	}
+		description: 'Test your luck for a chance at riches',
+	},
 ];
 
 // Extracted component for the resource selling section
@@ -88,7 +88,10 @@ interface ResourceSellingSectionProps {
 	maxAmount: number;
 	currentAmount: number;
 	goldValue: number;
-	onAmountChange: (resource: keyof typeof RESOURCE_PRICES, amount: number) => void;
+	onAmountChange: (
+		resource: keyof typeof RESOURCE_PRICES,
+		amount: number
+	) => void;
 	onSell: (resource: keyof typeof RESOURCE_PRICES) => void;
 	onSellAll: (resource: keyof typeof RESOURCE_PRICES) => void;
 }
@@ -100,26 +103,34 @@ const ResourceSellingSection: React.FC<ResourceSellingSectionProps> = ({
 	goldValue,
 	onAmountChange,
 	onSell,
-	onSellAll
+	onSellAll,
 }) => {
 	const resourceInfo = RESOURCE_INFO[resource];
-	
+
 	return (
 		<div className='p-3 bg-gray-800 rounded-lg border border-gray-700'>
 			<div className='flex items-center justify-between mb-3'>
 				<div className='flex items-center'>
 					<span className='text-2xl mr-2'>{resourceInfo.icon}</span>
 					<div>
-						<h3 className='text-white font-bold text-sm'>{resourceInfo.label}</h3>
-						<p className='text-xs text-gray-400'>{resourceInfo.priceDescription}</p>
+						<h3 className='text-white font-bold text-sm'>
+							{resourceInfo.label}
+						</h3>
+						<p className='text-xs text-gray-400'>
+							{resourceInfo.priceDescription}
+						</p>
 					</div>
 				</div>
 				<div className='text-right'>
-					<div className='text-yellow-400 font-medium text-sm'>{RESOURCE_PRICES[resource]} 💰 each</div>
-					<div className='text-xs text-gray-400'>Available: {formatNumber(maxAmount)}</div>
+					<div className='text-yellow-400 font-medium text-sm'>
+						{RESOURCE_PRICES[resource]} 💰 each
+					</div>
+					<div className='text-xs text-gray-400'>
+						Available: {formatNumber(maxAmount)}
+					</div>
 				</div>
 			</div>
-			
+
 			<div className='flex items-center gap-4 mb-3'>
 				<input
 					type='range'
@@ -131,10 +142,15 @@ const ResourceSellingSection: React.FC<ResourceSellingSectionProps> = ({
 					className='flex-grow h-2 rounded-lg appearance-none bg-gray-700 disabled:opacity-50'
 				/>
 				<div className='w-20 text-center'>
-					<span className='text-white font-medium'>{formatNumber(currentAmount)}</span>
+					<span
+						className={`transition-all font-bold text-red-400 duration-500 ${
+							currentAmount <= 0 && 'opacity-0 select-none'
+						}`}>
+						{formatNumber(currentAmount)}
+					</span>
 				</div>
 			</div>
-			
+
 			<div className='flex justify-between items-center'>
 				<div className='text-yellow-400 text-sm'>
 					<span className='font-medium'>{formatNumber(goldValue)}</span> 💰
@@ -165,7 +181,11 @@ interface PlaceholderTabContentProps {
 	description: string;
 }
 
-const PlaceholderTabContent: React.FC<PlaceholderTabContentProps> = ({ title, emoji, description }) => {
+const PlaceholderTabContent: React.FC<PlaceholderTabContentProps> = ({
+	title,
+	emoji,
+	description,
+}) => {
 	return (
 		<>
 			<h2 className='text-white font-semibold mb-4 text-center border-b border-gray-700 pb-2'>
@@ -173,9 +193,7 @@ const PlaceholderTabContent: React.FC<PlaceholderTabContentProps> = ({ title, em
 			</h2>
 			<div className='flex flex-col items-center justify-center h-[60vh]'>
 				<div className='text-6xl mb-6'>{emoji}</div>
-				<p className='text-gray-400 text-center'>
-					{description}
-				</p>
+				<p className='text-gray-400 text-center'>{description}</p>
 			</div>
 		</>
 	);
@@ -185,11 +203,17 @@ const PlaceholderTabContent: React.FC<PlaceholderTabContentProps> = ({ title, em
 const MerchantPriceList: React.FC = () => {
 	return (
 		<div className='mt-auto w-full p-3 bg-gray-800 rounded-lg border border-amber-800'>
-			<h4 className='text-amber-400 text-xs text-center mb-2'>Prices (per unit)</h4>
+			<h4 className='text-amber-400 text-xs text-center mb-2'>
+				Prices (per unit)
+			</h4>
 			{Object.entries(RESOURCE_PRICES).map(([resource, price]) => (
-				<div key={resource} className='flex justify-between items-center mb-1 text-xs'>
+				<div
+					key={resource}
+					className='flex justify-between items-center mb-1 text-xs'>
 					<span className='text-gray-300 flex items-center'>
-						<span className='mr-1'>{RESOURCE_INFO[resource as keyof typeof RESOURCE_INFO].icon}</span>
+						<span className='mr-1'>
+							{RESOURCE_INFO[resource as keyof typeof RESOURCE_INFO].icon}
+						</span>
 						{RESOURCE_INFO[resource as keyof typeof RESOURCE_INFO].label}
 					</span>
 					<span className='text-yellow-400'>{price} 💰</span>
@@ -205,10 +229,12 @@ interface MerchantTabButtonsProps {
 	onTabChange: (tab: MerchantTab) => void;
 }
 
-const MerchantTabButtons: React.FC<MerchantTabButtonsProps> = ({ activeTab, onTabChange }) => {
+const MerchantTabButtons: React.FC<MerchantTabButtonsProps> = ({
+	activeTab,
+	onTabChange,
+}) => {
 	return (
 		<div className='bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-700'>
-			<h4 className='text-white text-sm font-medium mb-3 text-center'>Services</h4>
 			<div className='flex flex-col gap-2'>
 				{MERCHANT_TABS.map((tab) => (
 					<button
@@ -219,8 +245,7 @@ const MerchantTabButtons: React.FC<MerchantTabButtonsProps> = ({ activeTab, onTa
 								? 'bg-amber-800 text-white'
 								: 'hover:bg-gray-700 text-gray-300'
 						}`}
-						title={tab.description}
-					>
+						title={tab.description}>
 						<span className='mr-2'>{tab.emoji}</span>
 						<span className='text-sm'>{tab.label}</span>
 					</button>
@@ -231,21 +256,28 @@ const MerchantTabButtons: React.FC<MerchantTabButtonsProps> = ({ activeTab, onTa
 };
 
 const MerchantOverlay: React.FC = () => {
-	const { showMerchantWindow, toggleMerchantWindow, resources, sellResources } = useGameStore();
+	const { showMerchantWindow, toggleMerchantWindow, resources, sellResources } =
+		useGameStore();
 
 	// State for current merchant tab
 	const [activeTab, setActiveTab] = useState<MerchantTab>('exchange');
 
 	// State for the amount to sell for each resource
-	const [sellAmounts, setSellAmounts] = useState<Record<keyof typeof RESOURCE_PRICES, number>>({
+	const [sellAmounts, setSellAmounts] = useState<
+		Record<keyof typeof RESOURCE_PRICES, number>
+	>({
 		wood: 0,
 		stone: 0,
 		coal: 0,
-		food: 0
+		food: 0,
 	});
 
 	// For showing success message after selling
-	const [saleMessage, setSaleMessage] = useState<{resource: string, amount: number, gold: number} | null>(null);
+	const [saleMessage, setSaleMessage] = useState<{
+		resource: string;
+		amount: number;
+		gold: number;
+	} | null>(null);
 
 	if (!showMerchantWindow) return null;
 
@@ -254,28 +286,28 @@ const MerchantOverlay: React.FC = () => {
 		wood: resources.wood,
 		stone: resources.stone,
 		coal: resources.coal,
-		food: resources.food
+		food: resources.food,
 	};
 
 	// Handle selling the specified amount of a resource
 	const handleSell = (resource: keyof typeof RESOURCE_PRICES) => {
 		if (sellAmounts[resource] <= 0) return;
-		
+
 		const goldGained = sellResources(resource, sellAmounts[resource]);
 		if (goldGained) {
 			// Set success message
 			setSaleMessage({
 				resource: RESOURCE_INFO[resource].label,
 				amount: sellAmounts[resource],
-				gold: goldGained
+				gold: goldGained,
 			});
-			
+
 			// Reset the slider for this resource
-			setSellAmounts(prev => ({
+			setSellAmounts((prev) => ({
 				...prev,
-				[resource]: 0
+				[resource]: 0,
 			}));
-			
+
 			// Clear message after 3 seconds
 			setTimeout(() => {
 				setSaleMessage(null);
@@ -286,16 +318,16 @@ const MerchantOverlay: React.FC = () => {
 	// Handle selling all of a resource
 	const handleSellAll = (resource: keyof typeof RESOURCE_PRICES) => {
 		if (resources[resource] <= 0) return;
-		
+
 		const goldGained = sellResources(resource, resources[resource]);
 		if (goldGained) {
 			// Set success message
 			setSaleMessage({
 				resource: RESOURCE_INFO[resource].label,
 				amount: resources[resource],
-				gold: goldGained
+				gold: goldGained,
 			});
-			
+
 			// Clear message after 3 seconds
 			setTimeout(() => {
 				setSaleMessage(null);
@@ -304,15 +336,21 @@ const MerchantOverlay: React.FC = () => {
 	};
 
 	// Handle changing the amount of a resource to sell
-	const handleAmountChange = (resource: keyof typeof RESOURCE_PRICES, amount: number) => {
+	const handleAmountChange = (
+		resource: keyof typeof RESOURCE_PRICES,
+		amount: number
+	) => {
 		setSellAmounts({
 			...sellAmounts,
-			[resource]: amount
+			[resource]: amount,
 		});
 	};
 
 	// Calculate gold to be gained for the current selection
-	const calculateGold = (resource: keyof typeof RESOURCE_PRICES, amount: number) => {
+	const calculateGold = (
+		resource: keyof typeof RESOURCE_PRICES,
+		amount: number
+	) => {
 		return Math.floor(amount * RESOURCE_PRICES[resource]);
 	};
 
@@ -330,7 +368,8 @@ const MerchantOverlay: React.FC = () => {
 						{saleMessage && (
 							<div className='mb-4 p-3 bg-green-900 bg-opacity-50 border border-green-700 rounded-lg text-center'>
 								<p className='text-green-400'>
-									Sold {formatNumber(saleMessage.amount)} {saleMessage.resource} for {formatNumber(saleMessage.gold)} Gold!
+									Sold {formatNumber(saleMessage.amount)} {saleMessage.resource}{' '}
+									for {formatNumber(saleMessage.gold)} Gold!
 								</p>
 							</div>
 						)}
@@ -342,7 +381,7 @@ const MerchantOverlay: React.FC = () => {
 								const maxAmount = maxAmounts[typedResource];
 								const currentAmount = sellAmounts[typedResource];
 								const goldValue = calculateGold(typedResource, currentAmount);
-								
+
 								return (
 									<ResourceSellingSection
 										key={resource}
@@ -362,33 +401,33 @@ const MerchantOverlay: React.FC = () => {
 			case 'buy':
 				return (
 					<PlaceholderTabContent
-						title="Buy Items"
-						emoji="🛒"
-						description="Coming soon! Here you&#39;ll be able to purchase various items and equipment for your adventures."
+						title='Buy Items'
+						emoji='🛒'
+						description='Coming soon! Here you&#39;ll be able to purchase various items and equipment for your adventures.'
 					/>
 				);
 			case 'upgrade':
 				return (
 					<PlaceholderTabContent
-						title="Upgrade Items"
-						emoji="⚒️"
-						description="Coming soon! Enhance your weapons, armor, and other equipment to make them more powerful."
+						title='Upgrade Items'
+						emoji='⚒️'
+						description='Coming soon! Enhance your weapons, armor, and other equipment to make them more powerful.'
 					/>
 				);
 			case 'quests':
 				return (
 					<PlaceholderTabContent
-						title="Quests"
-						emoji="📜"
-						description="Coming soon! Take on special assignments from the merchant for valuable rewards and unique items."
+						title='Quests'
+						emoji='📜'
+						description='Coming soon! Take on special assignments from the merchant for valuable rewards and unique items.'
 					/>
 				);
 			case 'gambling':
 				return (
 					<PlaceholderTabContent
-						title="Gambling"
-						emoji="🎲"
-						description="Coming soon! Test your luck with various games of chance. Win big or lose it all!"
+						title='Gambling'
+						emoji='🎲'
+						description='Coming soon! Test your luck with various games of chance. Win big or lose it all!'
 					/>
 				);
 			default:
@@ -414,14 +453,16 @@ const MerchantOverlay: React.FC = () => {
 						{/* Merchant Avatar */}
 						<div className='bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-700 flex flex-col items-center'>
 							<div className='text-6xl mb-4'>🧙‍♂️</div>
-							<h3 className='text-white font-semibold text-center mb-2'>Merchant</h3>
+							<h3 className='text-white font-semibold text-center mb-2'>
+								Merchant
+							</h3>
 							<p className='text-gray-400 text-xs text-center mb-4'>
 								{`"I'll give you gold for your resources, traveler!"`}
 							</p>
-							
+
 							<MerchantPriceList />
 						</div>
-						
+
 						{/* Merchant Navigation Tabs */}
 						<MerchantTabButtons
 							activeTab={activeTab}
