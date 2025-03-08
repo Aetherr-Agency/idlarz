@@ -51,6 +51,11 @@ const StatisticsOverlay: React.FC = () => {
     };
   };
 
+  // Format percentage values
+  const formatPercentage = (value: number) => {
+    return `${value}%`;
+  };
+
   return (
     <div className='fixed inset-[8vh] inset-x-[17vw] bg-black bg-opacity-90 rounded-3xl z-50 flex items-start justify-center overflow-y-auto'>
       <div className='absolute top-4 right-4'>
@@ -70,9 +75,9 @@ const StatisticsOverlay: React.FC = () => {
             <div className='bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-700 mt-4'>
               {/* Available Points */}
               {characterStats.availablePoints > 0 && (
-                <div className='flex justify-between mb-4 bg-gray-700 bg-opacity-40 p-2 rounded-md'>
+                <div className='flex justify-between mb-4 bg-gray-700 bg-opacity-40 p-2 rounded-md text-sm'>
                   <span className='text-yellow-300 font-semibold'>
-                    Available Points:
+                    Available points
                   </span>
                   <span className='text-yellow-300 font-semibold'>
                     {characterStats.availablePoints}
@@ -80,47 +85,114 @@ const StatisticsOverlay: React.FC = () => {
                 </div>
               )}
 
-              {/* Stats with Add Buttons */}
-              <div className='space-y-3'>
-                {Object.entries(characterStats).map(([statKey, value]) => {
-                  if (statKey === 'availablePoints') return null;
+              {/* Base Stats with Add Buttons */}
+              <div className='space-y-3 mb-6'>
+                <h3 className='text-white text-sm font-semibold mb-2 border-b border-gray-700 pb-1'>Base Stats</h3>
+                {Object.entries(characterStats)
+                  .filter(([statKey]) => ['strength', 'dexterity', 'intelligence', 'vitality', 'charisma', 'availablePoints'].includes(statKey))
+                  .map(([statKey, value]) => {
+                    if (statKey === 'availablePoints') return null;
 
-                  const stat = statKey as keyof Omit<
-                    CharacterStats,
-                    'availablePoints'
-                  >;
+                    const stat = statKey as keyof Omit<
+                      CharacterStats,
+                      'availablePoints'
+                    >;
 
-                  return (
-                    <div key={stat} className='flex items-center text-sm'>
-                      <div
-                        className='flex-1 flex justify-between items-center cursor-help'
-                        title={getStatDescription(stat)}>
-                        <span className='text-gray-300 capitalize'>
-                          {stat}:
-                        </span>
-                        <span className='text-blue-400 font-medium'>
-                          {value}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => handleAddStatPoint(stat)}
-                        disabled={characterStats.availablePoints <= 0}
-                        className={`ml-2 w-5 h-5 rounded-full flex items-center justify-center text-xl 
+                    return (
+                      <div key={stat} className='flex items-center text-xs mb-1.5'>
+                        <div
+                          className='flex-1 flex justify-between items-center cursor-help'
+                          title={getStatDescription(stat)}>
+                          <span className='text-gray-300 capitalize'>
+                            {stat}:
+                          </span>
+                          <span className='text-blue-400 font-medium'>
+                            {value}
+                          </span>
+                        </div>
+                        <button
+                          onClick={() => handleAddStatPoint(stat)}
+                          disabled={characterStats.availablePoints <= 0}
+                          className={`ml-2 w-4 h-4 rounded-full flex items-center justify-center text-[14px] leading-0 font-bold 
                                   ${
                                     characterStats.availablePoints > 0
                                       ? 'bg-green-600 hover:bg-green-500 text-white cursor-pointer'
                                       : 'bg-gray-600 text-gray-400 cursor-not-allowed'
                                   }`}
-                        aria-label={`Add point to ${stat}`}>
-                        +
-                      </button>
-                    </div>
-                  );
-                })}
+                          aria-label={`Add point to ${stat}`}>
+                          +
+                        </button>
+                      </div>
+                    );
+                  })}
               </div>
 
-              <div className='mt-4 text-[9px] uppercase text-gray-400 italic text-center'>
-                You gain 3 stat points with each level up.
+              {/* Combat Stats */}
+              <div className='space-y-3 mb-6'>
+                <h3 className='text-white text-sm font-semibold mb-2 border-b border-gray-700 pb-1'>Combat Stats</h3>
+                <div className='grid grid-cols-2 gap-x-4 gap-y-2 text-xs'>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-gray-300'>Physical ATK:</span>
+                    <span className='text-red-400 font-medium'>{characterStats.physicalAtk}</span>
+                  </div>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-gray-300'>Magic ATK:</span>
+                    <span className='text-purple-400 font-medium'>{characterStats.magicAtk}</span>
+                  </div>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-gray-300'>HP:</span>
+                    <span className='text-green-400 font-medium'>{characterStats.hp}</span>
+                  </div>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-gray-300'>MP:</span>
+                    <span className='text-blue-400 font-medium'>{characterStats.mp}</span>
+                  </div>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-gray-300'>DEF:</span>
+                    <span className='text-yellow-400 font-medium'>{characterStats.def}</span>
+                  </div>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-gray-300'>Magic DEF:</span>
+                    <span className='text-indigo-400 font-medium'>{characterStats.magicDef}</span>
+                  </div>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-gray-300'>Luck:</span>
+                    <span className='text-green-300 font-medium'>{characterStats.luck}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bonus Stats */}
+              <div className='space-y-3'>
+                <h3 className='text-white text-sm font-semibold mb-2 border-b border-gray-700 pb-1'>Bonus Stats</h3>
+                <div className='grid grid-cols-2 gap-x-4 gap-y-2 text-xs'>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-gray-300'>Crit Chance:</span>
+                    <span className='text-yellow-300 font-medium'>{formatPercentage(characterStats.critChance)}</span>
+                  </div>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-gray-300'>Crit DMG:</span>
+                    <span className='text-orange-400 font-medium'>{formatPercentage(characterStats.critDmgMultiplier)}</span>
+                  </div>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-gray-300'>ATK Speed:</span>
+                    <span className='text-blue-300 font-medium'>{formatPercentage(characterStats.atkSpeedIncrease)}</span>
+                  </div>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-gray-300'>XP Gain:</span>
+                    <span className='text-green-400 font-medium'>{formatPercentage(characterStats.xpGainMultiplier)}</span>
+                  </div>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-gray-300'>Tile Discount:</span>
+                    <span className='text-blue-400 font-medium'>{formatPercentage(characterStats.tileCostDiscount)}</span>
+                  </div>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-gray-300'>Reputation:</span>
+                    <span className={`font-medium ${characterStats.reputation >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                      {characterStats.reputation}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -284,7 +356,7 @@ const StatisticsOverlay: React.FC = () => {
                             </span>
                           </div>
 
-                          <div className='mt-1 pt-1 border-t border-gray-700'>
+                          <div className='mt-1 pt-1 border-t border-gray-700 text-[11px]'>
                             <div className='flex justify-between'>
                               <span className='text-gray-400'>Modifier value:</span>
                               <span className='text-green-300'>
@@ -303,10 +375,10 @@ const StatisticsOverlay: React.FC = () => {
                           </div>
 
                           <div className='flex justify-between text-[10px] text-gray-500 border-t border-gray-700 pt-1 mt-1'>
-                            <span>Formula: Base × (1 + Modifiers)</span>
+                            <span>Formula:</span>
                             <span>
-                              {baseValue.toFixed(2)} × (1 +{' '}
-                              {modifier.toFixed(2)}) = {totalValue.toFixed(2)}
+                              {baseValue.toFixed(2)} (BASE) × 1 +{' '}
+                              {modifier.toFixed(2)} (MOD) = {totalValue.toFixed(2)} (TOTAL)
                             </span>
                           </div>
                         </div>

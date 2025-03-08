@@ -1,262 +1,22 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import {
-	BIOMES,
-	CASTLE_BASE_RATES,
 	CASTLE_UPGRADE,
 	GRID_SIZE,
 	GRID_HEIGHT,
 	INITIAL_RESOURCES,
-	BASE_GENERATION_RATES,
 	SCALING_CONFIG,
 	INITIAL_INVENTORY_ITEMS,
+	DEFAULT_PLAYER_NAME,
+	INITIAL_CHARACTER_STATS,
 } from '@/config/gameConfig';
+import { calculateLevel, calculateResourceRates, calculateXpGain, canAffordCost, countOwnedTiles, createInitialGrid, getRandomBiome, validateGrid } from '@/utils/gameUtils';
 import type {
-	BiomeType,
 	GameState,
 	Resources,
-	ResourceRates,
 	Tile,
 	CharacterStats,
 } from '@/types/game';
-import { countOwnedTiles } from '@/utils/gameUtils';
-
-const GRID_CENTER_X = Math.floor(GRID_SIZE / 2);
-const GRID_CENTER_Y = Math.floor(GRID_HEIGHT / 2);
-
-// Character stats initial values
-const INITIAL_CHARACTER_STATS: CharacterStats = {
-	strength: 5,
-	dexterity: 5,
-	intelligence: 5,
-	vitality: 5,
-	charisma: 5,
-	availablePoints: 0,
-};
-
-// Default player name
-const DEFAULT_PLAYER_NAME = 'Explorer';
-
-const createInitialGrid = (): Tile[][] => {
-	const grid = Array(GRID_HEIGHT)
-		.fill(null)
-		.map(() =>
-			Array(GRID_SIZE)
-				.fill(null)
-				.map(() => ({
-					biome: 'empty' as BiomeType,
-					isOwned: false,
-				}))
-		);
-
-	// Place castle at center
-	grid[GRID_CENTER_Y][GRID_CENTER_X] = {
-		biome: 'castle',
-		isOwned: true,
-		level: 1,
-		upgradeCost: CASTLE_UPGRADE.upgradeCosts[0],
-	} as Tile;
-
-	return grid;
-};
-
-// Validate grid state to ensure it matches our expectations
-const validateGrid = (grid: unknown): grid is Tile[][] => {
-	if (!Array.isArray(grid) || grid.length !== GRID_HEIGHT) return false;
-
-	for (let y = 0; y < GRID_HEIGHT; y++) {
-		if (!Array.isArray(grid[y]) || grid[y].length !== GRID_SIZE) return false;
-		for (let x = 0; x < GRID_SIZE; x++) {
-			const tile = grid[y][x];
-			if (!tile || typeof tile !== 'object') return false;
-			if (typeof tile.isOwned !== 'boolean') return false;
-			if (!Object.keys(BIOMES).includes(tile.biome)) return false;
-		}
-	}
-
-	// Ensure castle exists at center
-	const centerTile = grid[GRID_CENTER_Y][GRID_CENTER_X];
-	if (!centerTile.isOwned || centerTile.biome !== 'castle') return false;
-
-	return true;
-};
-
-const countAdjacentSameBiomes = (
-	tiles: GameState['tiles'],
-	x: number,
-	y: number,
-	biome: BiomeType
-): number => {
-	const directions = [
-		[-1, 0],
-		[1, 0],
-		[0, -1],
-		[0, 1],
-	];
-	return directions.reduce((count, [dx, dy]) => {
-		const newX = x + dx;
-		const newY = y + dy;
-		if (
-			newX >= 0 &&
-			newX < GRID_SIZE &&
-			newY >= 0 &&
-			newY < GRID_HEIGHT &&
-			tiles[newY][newX].isOwned &&
-			tiles[newY][newX].biome === biome
-		) {
-			return count + 1;
-		}
-		return count;
-	}, 0);
-};
-
-const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
-	const base = { ...BASE_GENERATION_RATES };
-	const modifiers: Record<keyof Resources, number> = {
-		gold: 0,
-		wood: 0,
-		stone: 0,
-		coal: 0,
-		food: 0,
-		xp: 0,
-	};
-	const total = { ...base };
-
-	// Find castle and its level
-	let castleLevel = 1;
-	for (let y = 0; y < GRID_HEIGHT; y++) {
-		for (let x = 0; x < GRID_SIZE; x++) {
-			const tile = tiles[y][x];
-			if (tile.isOwned && tile.biome === 'castle' && tile.level) {
-				castleLevel = tile.level;
-				break;
-			}
-		}
-	}
-
-	// Add castle base rates to base generation
-	Object.entries(CASTLE_BASE_RATES).forEach(([resource, rate]) => {
-		const key = resource as keyof Resources;
-		base[key] += rate;
-	});
-
-	// Calculate castle modifier (exponential growth - doubles each level after level 1)
-	let castleModifier = 0;
-	if (castleLevel > 0) {
-		if (CASTLE_UPGRADE.doublePerLevel) {
-			// Base is 20% at level 1, doubles with each level
-			// Level 1 = 0.2, Level 2 = 0.4, Level 3 = 0.8, Level 4 = 1.6, etc.
-			castleModifier =
-				CASTLE_UPGRADE.baseResourceMultiplier * Math.pow(2, castleLevel - 1);
-		} else {
-			// Fallback to linear growth (20% per level)
-			castleModifier = castleLevel * CASTLE_UPGRADE.baseResourceMultiplier;
-		}
-	}
-
-	// Add the castle modifier to all resources
-	Object.keys(modifiers).forEach((resource) => {
-		const key = resource as keyof Resources;
-		modifiers[key] += castleModifier;
-	});
-
-	// Add flat generation rates from all owned tiles with adjacency bonuses
-	for (let y = 0; y < GRID_HEIGHT; y++) {
-		for (let x = 0; x < GRID_SIZE; x++) {
-			const tile = tiles[y][x];
-			if (tile.isOwned) {
-				const biome = BIOMES[tile.biome];
-				const adjacentCount = countAdjacentSameBiomes(tiles, x, y, tile.biome);
-				const adjacencyMultiplier =
-					1 + SCALING_CONFIG.adjacencyBonus * adjacentCount;
-
-				Object.entries(biome.resourceGeneration).forEach(([resource, rate]) => {
-					// Skip castle base rates since we already added them
-					if (
-						tile.biome === 'castle' &&
-						CASTLE_BASE_RATES[resource as keyof Resources]
-					) {
-						return;
-					}
-
-					if (rate) {
-						// Add to base rate with adjacency bonus
-						base[resource as keyof Resources] += rate * adjacencyMultiplier;
-					}
-				});
-			}
-		}
-	}
-
-	// Apply all modifiers to calculate total rates
-	Object.keys(total).forEach((resource) => {
-		const key = resource as keyof Resources;
-		total[key] = base[key] * (1 + modifiers[key]);
-	});
-
-	return { base, modifiers, total };
-};
-
-const canAffordCost = (
-	resources: Resources,
-	cost: number | Resources
-): boolean => {
-	if (typeof cost === 'number') {
-		return resources.gold >= cost;
-	}
-	return Object.entries(cost).every(
-		([resource, amount]) => resources[resource as keyof Resources] >= amount
-	);
-};
-
-const getRandomBiome = (): BiomeType => {
-	const availableBiomes = Object.entries(BIOMES)
-		.filter(([name]) => !['empty', 'castle'].includes(name))
-		.map(([name]) => name as BiomeType);
-
-	const randomIndex = Math.floor(Math.random() * availableBiomes.length);
-	return availableBiomes[randomIndex];
-};
-
-// XP calculation constants - Exponential XP system
-const BASE_XP_PER_TILE = 125;
-const XP_GROWTH_FACTOR = 2.0; // Exponential growth factor for XP needed per level (2x)
-const BASE_XP_PER_LEVEL = 750; // Starting XP needed for level 1 to 2
-
-/**
- * Calculate level based on total XP using exponential scaling
- * Each level requires more XP than the previous one
- */
-const calculateLevel = (xp: number): { level: number; progress: number } => {
-	// Start at level 1, no XP needed for first level
-	let level = 1;
-	let xpForNextLevel = BASE_XP_PER_LEVEL;
-	let remainingXp = xp;
-
-	// Keep leveling up until we don't have enough XP
-	while (remainingXp >= xpForNextLevel) {
-		remainingXp -= xpForNextLevel;
-		level++;
-		xpForNextLevel = Math.floor(
-			BASE_XP_PER_LEVEL * Math.pow(XP_GROWTH_FACTOR, level - 1)
-		);
-	}
-
-	// Calculate progress to next level
-	const progress = xpForNextLevel > 0 ? remainingXp / xpForNextLevel : 0;
-
-	return { level, progress };
-};
-
-/**
- * Calculate XP gain scaling based on owned tiles
- * The more tiles owned, the more XP gained
- */
-const calculateXpGain = (ownedTiles: number): number => {
-	// Basic XP gain increases with the number of tiles owned
-	// Each tile contributes XP that increases slightly with more tiles
-	return BASE_XP_PER_TILE * Math.pow(1.02, ownedTiles - 1) * (ownedTiles / 4);
-};
 
 const createGameSlice = (
 	set: (
@@ -284,7 +44,11 @@ const createGameSlice = (
 		buyTile: (x: number, y: number) => {
 			const state = get();
 			const ownedTilesCount = countOwnedTiles(state.tiles);
-			const cost = SCALING_CONFIG.costFormula(ownedTilesCount);
+			const baseCost = SCALING_CONFIG.costFormula(ownedTilesCount);
+			
+			// Apply tile cost discount from character stats
+			const discountMultiplier = 1 - (state.characterStats.tileCostDiscount / 100);
+			const cost = Math.floor(baseCost * discountMultiplier);
 
 			if (state.resources.gold < cost) {
 				return false;
@@ -395,7 +159,13 @@ const createGameSlice = (
 			// Apply resource generation
 			Object.entries(state.resourceRates.total).forEach(([resource, rate]) => {
 				if (typeof rate === 'number' && !isNaN(rate)) {
-					newResources[resource as keyof Resources] += rate * secondsElapsed;
+					// Apply XP gain multiplier for XP resource
+					if (resource === 'xp') {
+						const xpMultiplier = 1 + (state.characterStats.xpGainMultiplier / 100);
+						newResources[resource as keyof Resources] += rate * secondsElapsed * xpMultiplier;
+					} else {
+						newResources[resource as keyof Resources] += rate * secondsElapsed;
+					}
 				}
 			});
 
@@ -416,12 +186,8 @@ const createGameSlice = (
 				// Create a new stats object and add the points
 				const newCharacterStats = { ...state.characterStats };
 				newCharacterStats.availablePoints += newPoints;
-				
-				// Add to the state update
 				stateUpdate.characterStats = newCharacterStats;
 				stateUpdate.previousLevel = newLevel.level;
-				
-				console.log(`Level up from ${state.previousLevel} to ${newLevel.level}! Added ${newPoints} stat points. New total: ${newCharacterStats.availablePoints}`);
 			}
 
 			// Update the state with all changes
@@ -473,13 +239,10 @@ const createGameSlice = (
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'giorgio-explorer-game-v1333',
-		version: 13,
+		name: 'giorgio-explorer-game-v15',
+		version: 15,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {
-			// Set hydration state to true
-			// set({ isHydrated: true });
-
 			// Validate and fix state if needed
 			if (!state || !validateGrid(state.tiles)) {
 				const initialGrid = createInitialGrid();
@@ -510,9 +273,3 @@ export const useGameStore = create(
 	})
 );
 
-// Selector to check if name needs to be set
-export const useNeedsNameInput = () =>
-	useGameStore((state) => state.isHydrated && state.playerName === 'Explorer');
-
-// Selector for game resources
-export const useGameResources = () => useGameStore((state) => state.resources);

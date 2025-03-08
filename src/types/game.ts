@@ -18,6 +18,20 @@ export interface CharacterStats {
 	vitality: number;
 	charisma: number;
 	availablePoints: number;
+	// Combat stats
+	physicalAtk: number;
+	magicAtk: number;
+	hp: number;
+	mp: number;
+	def: number;
+	magicDef: number;
+	luck: number;
+	critChance: number;
+	critDmgMultiplier: number;
+	atkSpeedIncrease: number;
+	xpGainMultiplier: number;
+	tileCostDiscount: number;
+	reputation: number;
 }
 
 export interface ResourceRates {
@@ -30,7 +44,6 @@ export interface BiomeInfo {
 	name: BiomeType;
 	label: string;
 	baseColor: string;
-	cost: number;
 	resourceGeneration: Partial<Resources>;
 	resourceIcons: string[];
 	unique?: boolean;
@@ -79,6 +92,7 @@ export interface Item {
 }
 
 export interface GameState {
+	previousLevel: number;
 	tiles: Tile[][];
 	resources: Resources;
 	resourceRates: ResourceRates;

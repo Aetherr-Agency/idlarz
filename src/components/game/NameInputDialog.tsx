@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useGameStore, useNeedsNameInput } from '@/stores/gameStore';
+import { useGameStore } from '@/stores/gameStore';
+import { useNeedsNameInput } from '@/utils/gameUtils';
 
 const NameInputDialog: React.FC = () => {
   const setPlayerName = useGameStore((state) => state.setPlayerName);

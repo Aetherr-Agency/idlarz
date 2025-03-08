@@ -1,8 +1,40 @@
-import { BiomeInfo, EquipmentRarity, EquipmentSlot } from '@/types/game';
+import { BiomeInfo, BiomeType, CharacterStats, EquipmentRarity, EquipmentSlot } from '@/types/game';
+
+// Default player name
+export const DEFAULT_PLAYER_NAME = 'Explorer';
+
+// Character stats initial values
+export const INITIAL_CHARACTER_STATS: CharacterStats = {
+	// Base Stats
+	strength: 5,
+	dexterity: 5,
+	intelligence: 5,
+	vitality: 5,
+	charisma: 5,
+	// Points to spent
+	availablePoints: 0,
+	// Combat stats
+	physicalAtk: 7,
+	magicAtk: 8,
+	hp: 16,
+	mp: 12,
+	def: 10,
+	magicDef: 7,
+	luck: 5,
+	critChance: 5,
+	critDmgMultiplier: 110,
+	atkSpeedIncrease: 0,
+	xpGainMultiplier: 5,
+	tileCostDiscount: 0,
+	reputation: 1000,
+};
 
 // Grid Configuration
 export const GRID_SIZE = 50; // Width of the grid
 export const GRID_HEIGHT = 50; // Height of the grid (half of width)
+export const GRID_CENTER_X = Math.floor(GRID_SIZE / 2);
+export const GRID_CENTER_Y = Math.floor(GRID_HEIGHT / 2);
+
 export const TILE_SIZE = 48; // Balanced for visibility
 export const VIEWPORT_SIZE = 25; // 12 tiles in each direction from center
 
@@ -10,6 +42,14 @@ export const VIEWPORT_SIZE = 25; // 12 tiles in each direction from center
 export const TICK_RATE = 100; // 10 times per second
 export const BASE_TILE_COST = 70; // Base cost for first tile purchase
 export const ADJACENCY_BONUS = 0.25; // 25% bonus for adjacent same biomes
+
+// XP calculation constants - Exponential XP system
+export const BASE_XP_PER_TILE = 125;
+export const XP_GROWTH_FACTOR = 2.0; // Exponential growth factor for XP needed per level (2x)
+export const BASE_XP_PER_LEVEL = 750; // Starting XP needed for level 1 to 2
+
+export const SPECIAL_SINGLE_TYPE_BIOMES: BiomeType[] = ['castle', 'grounds'];
+export const EMPTY_BIOMES: BiomeType[] = ['empty'];
 
 // Resource scaling configuration
 export const SCALING_CONFIG = {
@@ -32,6 +72,7 @@ export const SCALING_CONFIG = {
 	adjacencyBonus: ADJACENCY_BONUS,
 };
 
+// Biome Configuration
 export const RESOURCE_ICONS = {
 	gold: '💰',
 	wood: '🪵',
@@ -40,6 +81,130 @@ export const RESOURCE_ICONS = {
 	food: '🌾',
 	xp: '✨',
 };
+
+export const BIOMES: Record<string, BiomeInfo> = {
+	empty: {
+		name: 'empty',
+		label: 'Empty',
+		baseColor: '#1a1a1a',
+		unique: true,
+		upgradeable: false,
+		resourceGeneration: {},
+		resourceIcons: [RESOURCE_ICONS.coal],
+		description: 'Empty land, waiting to be claimed',
+	},
+	castle: {
+		name: 'castle',
+		label: 'Castle',
+		baseColor: '#6d28d9',
+		unique: true,
+		upgradeable: true,
+		resourceGeneration: {
+			gold: 0.2,
+			wood: 0.1,
+			stone: 0.1,
+			food: 0.1,
+			xp: 1.0,
+		},
+		resourceIcons: [RESOURCE_ICONS.gold, RESOURCE_ICONS.xp],
+		description: 'Your castle generates resources over time',
+	},
+	grounds: {
+		name: 'grounds',
+		label: 'Grounds',
+		baseColor: '#371c00',
+		unique: false,
+		upgradeable: false,
+		resourceGeneration: {
+			gold: 0,
+			wood: 0,
+			stone: 0,
+			food: 0,
+			xp: 0.15,
+		},
+		resourceIcons: [RESOURCE_ICONS.xp],
+		description: 'Allow you to build structures',
+	},
+	forest: {
+		name: 'forest',
+		label: 'Forest',
+		baseColor: '#166534',
+		unique: false,
+		upgradeable: false,
+		resourceGeneration: {
+			gold: 0.1,
+			wood: 0.3,
+		},
+		resourceIcons: [RESOURCE_ICONS.wood],
+		description: 'Forests provide wood and gold',
+	},
+	plains: {
+		name: 'plains',
+		label: 'Plains',
+		baseColor: '#2f8123',
+		unique: false,
+		upgradeable: false,
+		resourceGeneration: {
+			gold: 0.1,
+			food: 0.3,
+		},
+		resourceIcons: [RESOURCE_ICONS.food],
+		description: 'Plains provide food and gold',
+	},
+	hills: {
+		name: 'hills',
+		label: 'Hills',
+		baseColor: '#3d3d3d',
+		unique: false,
+		upgradeable: false,
+		resourceGeneration: {
+			gold: 0.05,
+			stone: 0.3,
+			coal: 0.2,
+		},
+		resourceIcons: [RESOURCE_ICONS.stone, RESOURCE_ICONS.coal],
+		description: 'Hills provide stone and coal',
+	},
+	swamp: {
+		name: 'swamp',
+		label: 'Swamp',
+		baseColor: '#929706',
+		unique: false,
+		upgradeable: false,
+		resourceGeneration: {
+			food: 0.1,
+			wood: 0.2,
+		},
+		resourceIcons: [RESOURCE_ICONS.food, RESOURCE_ICONS.wood],
+		description: 'Swamps provide food and wood',
+	},
+	tundra: {
+		name: 'tundra',
+		label: 'Tundra',
+		baseColor: '#0f53b9',
+		unique: false,
+		upgradeable: false,
+		resourceGeneration: {
+			gold: 0.1,
+			coal: 0.35,
+		},
+		resourceIcons: [RESOURCE_ICONS.gold, RESOURCE_ICONS.coal],
+		description: 'Tundras provide gold and coal',
+	},
+	lake: {
+		name: 'lake',
+		label: 'Lake',
+		baseColor: '#0ea5e9',
+		unique: false,
+		upgradeable: false,
+		resourceGeneration: {
+			gold: 0.05,
+			food: 0.25,
+		},
+		resourceIcons: [RESOURCE_ICONS.gold, RESOURCE_ICONS.food],
+		description: 'Lakes provide gold and food',
+	},
+} as const;
 
 export const BIOME_ICONS = {
 	castle: '🏰',
@@ -100,122 +265,6 @@ export const CASTLE_UPGRADE = {
 		{ gold: 1000000000, wood: 100000000, stone: 100000000 },
 	],
 };
-
-// Biome Configuration - rebalanced for longer gameplay
-export const BIOMES: Record<string, BiomeInfo> = {
-	empty: {
-		name: 'empty',
-		label: 'Empty',
-		baseColor: '#1a1a1a',
-		cost: 0,
-		resourceGeneration: {},
-		resourceIcons: [RESOURCE_ICONS.coal],
-		description: 'Empty land, waiting to be claimed',
-	},
-	castle: {
-		name: 'castle',
-		label: 'Castle',
-		baseColor: '#6d28d9',
-		cost: 0,
-		resourceGeneration: {
-			gold: 0.2,
-			wood: 0.1,
-			stone: 0.1,
-			food: 0.1,
-			xp: 1.0,
-		},
-		resourceIcons: [RESOURCE_ICONS.gold, RESOURCE_ICONS.xp],
-		description: 'Your castle generates resources over time',
-	},
-	grounds: {
-		name: 'grounds',
-		label: 'Grounds',
-		baseColor: '#371c00',
-		cost: 100,
-		resourceGeneration: {
-			gold: 0,
-			wood: 0,
-			stone: 0,
-			food: 0,
-			xp: 0.15,
-		},
-		resourceIcons: [RESOURCE_ICONS.xp],
-		description: 'Allow you to build structures',
-	},
-	forest: {
-		name: 'forest',
-		label: 'Forest',
-		baseColor: '#166534',
-		cost: 100,
-		resourceGeneration: {
-			gold: 0.1,
-			wood: 0.3,
-		},
-		resourceIcons: [RESOURCE_ICONS.wood],
-		description: 'Forests provide wood and gold',
-	},
-	plains: {
-		name: 'plains',
-		label: 'Plains',
-		baseColor: '#2f8123',
-		cost: 100,
-		resourceGeneration: {
-			gold: 0.1,
-			food: 0.3,
-		},
-		resourceIcons: [RESOURCE_ICONS.food],
-		description: 'Plains provide food and gold',
-	},
-	hills: {
-		name: 'hills',
-		label: 'Hills',
-		baseColor: '#3d3d3d',
-		cost: 100,
-		resourceGeneration: {
-			gold: 0.05,
-			stone: 0.3,
-			coal: 0.2,
-		},
-		resourceIcons: [RESOURCE_ICONS.stone, RESOURCE_ICONS.coal],
-		description: 'Hills provide stone and coal',
-	},
-	swamp: {
-		name: 'swamp',
-		label: 'Swamp',
-		baseColor: '#929706',
-		cost: 100,
-		resourceGeneration: {
-			food: 0.1,
-			wood: 0.2,
-		},
-		resourceIcons: [RESOURCE_ICONS.food, RESOURCE_ICONS.wood],
-		description: 'Swamps provide food and wood',
-	},
-	tundra: {
-		name: 'tundra',
-		label: 'Tundra',
-		baseColor: '#0f53b9',
-		cost: 100,
-		resourceGeneration: {
-			gold: 0.1,
-			coal: 0.35,
-		},
-		resourceIcons: [RESOURCE_ICONS.gold, RESOURCE_ICONS.coal],
-		description: 'Tundras provide gold and coal',
-	},
-	lake: {
-		name: 'lake',
-		label: 'Lake',
-		baseColor: '#0ea5e9',
-		cost: 100,
-		resourceGeneration: {
-			gold: 0.05,
-			food: 0.25,
-		},
-		resourceIcons: [RESOURCE_ICONS.gold, RESOURCE_ICONS.food],
-		description: 'Lakes provide gold and food',
-	},
-} as const;
 
 // Equipment and items configuration
 export const EQUIPMENT_SLOT_INFO = {

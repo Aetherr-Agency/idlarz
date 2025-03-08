@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 
+const NAME_MAX_LENGTH = 9;
+
 const NamePrompt = () => {
 	const [name, setName] = useState('');
 	const [showPrompt, setShowPrompt] = useState(false);
@@ -41,12 +43,13 @@ const NamePrompt = () => {
 	return (
 		<div className='fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center'>
 			<div className='bg-gray-900 border-2 border-blue-700 rounded-lg p-6 w-full max-w-md'>
-				<h2 className='text-xl font-bold mb-4 text-center'>
+				<h2 className='text-md font-bold mb-4 text-center text-white'>
 					Your Journey Begins!
 				</h2>
-				<p className='mb-4 text-gray-300'>
-					You have taken your first step into the vast unknown. Now, what shall
-					history remember you as?
+				<p className='mb-4 text-xs text-center text-gray-400'>
+					You have taken your first step into the vast unknown.
+					<br/>
+					Now, what shall history remember you as?
 				</p>
 
 				<form onSubmit={handleSubmit}>
@@ -55,13 +58,13 @@ const NamePrompt = () => {
 							type='text'
 							value={name}
 							onChange={(e) => setName(e.target.value)}
-							maxLength={9}
+							maxLength={NAME_MAX_LENGTH}
 							className='w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
-							placeholder='Your name (9 chars max)'
+							placeholder={`Your name (${NAME_MAX_LENGTH} chars max)`}
 							autoFocus
 						/>
-						<div className='text-xs text-gray-400 mt-1'>
-							{9 - name.length} characters remaining
+						<div className='text-xs text-gray-400 mt-1 text-right'>
+							{NAME_MAX_LENGTH - name.length} characters remaining
 						</div>
 					</div>
 
@@ -74,7 +77,7 @@ const NamePrompt = () => {
 									? 'bg-blue-600 hover:bg-blue-700 text-white'
 									: 'bg-gray-700 text-gray-400 cursor-not-allowed'
 							}`}>
-							Claim Your Legacy
+							Begin Your Journey
 						</button>
 					</div>
 				</form>

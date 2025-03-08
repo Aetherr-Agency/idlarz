@@ -67,12 +67,10 @@ const ResourceDisplay: React.FC = () => {
 	return (
 		<div className='fixed top-0 left-0 right-0 z-50 bg-gray-900 bg-opacity-90 border-b border-gray-800'>
 			<div className='max-w-6xl mx-auto px-4 py-2'>
-				<div className='grid grid-cols-9 gap-4 md:gap-8'>
-					<div className='flex items-center gap-2 col-span-3'>
+				<div className='grid grid-cols-9 gap-2 md:gap-4'>
+					<div className='flex items-center gap-2 col-span-4 border-r border-gray-700 border-dotted'>
 						<div
-							className={`border-transparent hover:border-blue-800  hover:bg-blue-950 flex justify-start items-center gap-4 mr-2 cursor-pointer hover:opacity-80 transition-opacity duration-200 border-2 py-1.5 px-2 rounded-xl ${
-								levelUpActive && 'wiggle-animation'
-							}`}
+							className='max-w-56 border-transparent hover:border-blue-800  hover:bg-blue-950 flex justify-start items-center gap-4 mr-2 cursor-pointer hover:opacity-80 transition-opacity duration-200 border-2 py-1.5 px-2 rounded-xl'
 							onClick={toggleStatisticsWindow}>
 							<Image
 								src='/fella.png'
@@ -83,7 +81,7 @@ const ResourceDisplay: React.FC = () => {
 							/>
 							<div className='flex flex-col text-white items-start justify-center h-full select-none'>
 								<div className='flex items-center gap-2 mb-1'>
-									<p className='font-bold text-sm'>{playerName}</p>
+									<p className='font-bold text-sm overflow-hidden text-ellipsis max-w-30 truncate'>{playerName}</p>
 									<span
 										className={`px-1.5 p-0.5 ${
 											levelUpActive ? 'bg-green-800/50' : 'bg-blue-700'

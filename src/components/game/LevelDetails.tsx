@@ -41,8 +41,9 @@ const LevelUpTimer: React.FC<{
 	}, [resourceRates, resources.xp, level.level, level.progress]);
 
 	return (
-		<div className='mt-2 text-center'>
-			<div className='text-gray-400 text-xs'>Time until level up</div>
+		<div className='mt-0 text-center text-xs'>
+			<span className='text-green-400 mb-3 block'>{formatRate(resourceRates?.total?.xp || 0)} (XP)</span>
+			<div className='text-gray-400 mb-0.5 block'>Time until level up</div>
 			<div className='text-yellow-400 text-sm font-medium'>{timeRemaining}</div>
 		</div>
 	);
@@ -57,8 +58,8 @@ const LevelDetails: React.FC = () => {
 
 	return (
 		<div className='flex flex-col space-y-4'>
-			<div>
-				<div className='relative w-44 h-44 mx-auto'>
+			<div className='flex flex-row gap-0 items-center justify-center'>
+				<div className='relative w-40 h-40 mx-auto'>
 					{/* Radial progress background */}
 					<svg className='w-full h-full' viewBox='0 0 100 100'>
 						<circle
@@ -92,11 +93,12 @@ const LevelDetails: React.FC = () => {
 						</div>
 						<div className='text-gray-300 text-3xl font-bold group relative cursor-pointer'>
 							{Math.floor(level.progress * 100)}%
-							<div className='absolute invisible group-hover:visible bg-gray-800 p-2 rounded -top-10 left-1/2 transform -translate-x-1/2 whitespace-nowrap text-sm border border-gray-700 z-10'>
-								<span className='text-green-400'>
-									{formatRate(resourceRates?.total?.xp || 0)}
-								</span>{' '}
-								XP
+							<div className='absolute invisible shadow-md group-hover:visible bg-gray-800 p-2 rounded top-1/2 -translate-y-1/2 left-1/2 transform -translate-x-1/2 whitespace-nowrap text-sm border border-gray-700 z-10'>
+								<LevelUpTimer
+									resourceRates={resourceRates}
+									resources={resources}
+									level={level}
+								/>
 							</div>
 						</div>
 						<div className='text-gray-600 text-xs scale-75'>
@@ -105,11 +107,7 @@ const LevelDetails: React.FC = () => {
 					</div>
 				</div>
 
-				<LevelUpTimer
-					resourceRates={resourceRates}
-					resources={resources}
-					level={level}
-				/>
+
 			</div>
 		</div>
 	);
