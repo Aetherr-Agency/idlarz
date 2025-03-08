@@ -6,6 +6,7 @@ const NAME_MAX_LENGTH = 9;
 const NamePrompt = () => {
 	const [name, setName] = useState('');
 	const [showPrompt, setShowPrompt] = useState(false);
+	const [showIntroduction, setShowIntroduction] = useState(false);
 	const { playerName, setPlayerName, tiles } = useGameStore();
 
 	// Count owned tiles to determine if we should show the name prompt
@@ -33,11 +34,163 @@ const NamePrompt = () => {
 		if (name.trim()) {
 			setPlayerName(name);
 			setShowPrompt(false);
+			setShowIntroduction(true);
 		}
 	};
 
-	if (!showPrompt) {
+	const handleCloseIntroduction = () => {
+		setShowIntroduction(false);
+	};
+
+	if (!showPrompt && !showIntroduction) {
 		return null;
+	}
+
+	if (showIntroduction) {
+		return (
+			<div className='fixed inset-0 bg-black bg-opacity-70 z-50 flex items-center justify-center'>
+				<div className='bg-gray-900 border-2 border-blue-700 rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto'>
+					<h2 className='text-xl font-bold mb-4 text-center text-blue-400'>
+						Welcome to Your Adventure, {playerName}!
+					</h2>
+
+					<div className='space-y-5 text-sm'>
+						<section>
+							<h3 className='text-lg font-semibold text-yellow-400 mb-2'>Game Basics</h3>
+							<p className='text-gray-300'>
+								This is an idle territory expansion game where you&apos;ll grow your realm by purchasing tiles,
+								upgrading your castle, and allocating character points to boost your production.
+							</p>
+						</section>
+
+						<section>
+							<h3 className='text-lg font-semibold text-yellow-400 mb-2'>Resource Generation</h3>
+							<p className='text-gray-300 mb-2'>Each tile you own generates resources based on its biome type:</p>
+							<div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-purple-400 font-medium mb-1'>Castle 🏰</h4>
+									<p className='text-gray-300 text-xs'>Provides balanced +1.0 to all resources</p>
+									<p className='text-gray-400 text-xs mt-1'>Also provides global 20% production bonus per level</p>
+								</div>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-green-400 font-medium mb-1'>Forest 🌲</h4>
+									<p className='text-gray-300 text-xs'>+0.1 gold/s, +0.3 wood/s</p>
+									<p className='text-gray-400 text-xs mt-1'>Great for early wood production</p>
+								</div>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-yellow-400 font-medium mb-1'>Plains 🌾</h4>
+									<p className='text-gray-300 text-xs'>+0.1 gold/s, +0.3 food/s</p>
+									<p className='text-gray-400 text-xs mt-1'>Balanced production for food</p>
+								</div>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-gray-400 font-medium mb-1'>Hills ⛰️</h4>
+									<p className='text-gray-300 text-xs'>+0.05 gold/s, +0.3 stone/s, +0.2 coal/s</p>
+									<p className='text-gray-400 text-xs mt-1'>Essential for stone and coal</p>
+								</div>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-green-700 font-medium mb-1'>Swamp 🦆</h4>
+									<p className='text-gray-300 text-xs'>0 gold/s, +0.1 food/s, +0.2 wood/s</p>
+									<p className='text-gray-400 text-xs mt-1'>Lower yields but diverse resources</p>
+								</div>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-blue-200 font-medium mb-1'>Tundra ❄️</h4>
+									<p className='text-gray-300 text-xs'>+0.1 gold/s, 0 food/s, +0.35 coal/s</p>
+									<p className='text-gray-400 text-xs mt-1'>Best for coal production</p>
+								</div>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-blue-500 font-medium mb-1'>Lake 💧</h4>
+									<p className='text-gray-300 text-xs'>+0.25 gold/s, +0.25 food/s</p>
+									<p className='text-gray-400 text-xs mt-1'>Strong gold and food production</p>
+								</div>
+							</div>
+						</section>
+
+						<section>
+							<h3 className='text-lg font-semibold text-yellow-400 mb-2'>Biome Strategy</h3>
+							<p className='text-gray-300 mb-2'>Every 4th tile purchase allows you to choose a biome instead of getting a random one.</p>
+							<p className='text-gray-300'>Adjacent tiles of the same biome provide a +15% production bonus per adjacent tile, allowing for strategic placement.</p>
+						</section>
+
+						<section>
+							<h3 className='text-lg font-semibold text-yellow-400 mb-2'>Tile Purchase Formula</h3>
+							<p className='text-gray-300 mb-1'>Tile costs scale exponentially as you own more territory:</p>
+							<p className='text-gray-300 text-xs bg-gray-800 p-2 rounded font-mono'>Cost = 25 × 1.1^(owned tiles)</p>
+							<p className='text-gray-300 mb-1 mt-2'>Character stats can reduce this cost:</p>
+							<p className='text-gray-300 text-xs bg-gray-800 p-2 rounded font-mono'>Final Cost = Base Cost × (1 - charisma discount)</p>
+							<p className='text-gray-400 text-xs mt-1'>Each point of Charisma provides 0.5% discount (max 25%)</p>
+						</section>
+
+						<section>
+							<h3 className='text-lg font-semibold text-yellow-400 mb-2'>Resource Generation System</h3>
+							<p className='text-gray-300 mb-1'>Resources are generated using a formula with base rates and multipliers:</p>
+							<p className='text-gray-300 text-xs bg-gray-800 p-2 rounded font-mono'>Total Rate = Base Rate × (1 + Sum of All Modifiers)</p>
+							<div className='mt-2 space-y-1'>
+								<p className='text-gray-300 text-xs'>🏰 Castle Level 1: +20% to all resource generation</p>
+								<p className='text-gray-300 text-xs'>🏰 Each castle level: Additional +20% to all resources</p>
+								<p className='text-gray-300 text-xs'>🌲 Adjacent same biomes: +15% per adjacent tile</p>
+								<p className='text-gray-300 text-xs'>📊 Character stats: Various % bonuses per resource</p>
+							</div>
+						</section>
+
+						<section>
+							<h3 className='text-lg font-semibold text-yellow-400 mb-2'>Character Stats</h3>
+							<p className='text-gray-300 mb-2'>As you level up, you&apos;ll earn stat points to allocate:</p>
+							<div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-red-400 font-medium mb-1'>Strength</h4>
+									<p className='text-gray-300 text-xs'>+2.5% Stone & Coal production per point</p>
+								</div>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-green-400 font-medium mb-1'>Dexterity</h4>
+									<p className='text-gray-300 text-xs'>+2.5% Wood & Food production per point</p>
+								</div>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-blue-400 font-medium mb-1'>Intelligence</h4>
+									<p className='text-gray-300 text-xs'>+2.5% Gold production, +0.2% XP gain per point</p>
+								</div>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-yellow-400 font-medium mb-1'>Vitality</h4>
+									<p className='text-gray-300 text-xs'>+2.5% Food & Wood production per point</p>
+								</div>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3 col-span-1 md:col-span-2'>
+									<h4 className='text-pink-400 font-medium mb-1'>Charisma</h4>
+									<p className='text-gray-300 text-xs'>+2.5% Gold & Coal production, +0.25% XP gain, +0.5% tile cost discount per point</p>
+								</div>
+							</div>
+						</section>
+
+						<section>
+							<h3 className='text-lg font-semibold text-yellow-400 mb-2'>Leveling System</h3>
+							<p className='text-gray-300 mb-1'>XP requirements scale exponentially:</p>
+							<p className='text-gray-300 text-xs bg-gray-800 p-2 rounded font-mono'>XP for level N = 750 × 2^(N-1)</p>
+							<p className='text-gray-300 mb-1 mt-2'>XP gained from tile purchases:</p>
+							<p className='text-gray-300 text-xs bg-gray-800 p-2 rounded font-mono'>XP Gain = BASE_XP_PER_TILE × (1 + owned tiles / 10)</p>
+							<p className='text-gray-400 text-xs mt-1'>Intelligence and Charisma increase XP gain</p>
+						</section>
+
+						<section>
+							<h3 className='text-lg font-semibold text-yellow-400 mb-2'>Progression Tips</h3>
+							<ul className='list-disc pl-5 text-gray-300 text-xs space-y-1'>
+								<li>Focus on gold production early to buy more tiles faster</li>
+								<li>Place similar biomes adjacent to each other for +15% bonus per neighbor</li>
+								<li>Upgrade your castle when possible for global +20% production per level</li>
+								<li>Balance your character stats based on resource needs</li>
+								<li>Use every 4th tile purchase strategically to optimize territory</li>
+								<li>Intelligence and Charisma provide excellent long-term benefits</li>
+							</ul>
+						</section>
+					</div>
+
+					<div className='flex justify-center mt-6'>
+						<button
+							onClick={handleCloseIntroduction}
+							className='px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded font-medium transition'>
+							Start Your Adventure
+						</button>
+					</div>
+				</div>
+			</div>
+		);
 	}
 
 	return (
