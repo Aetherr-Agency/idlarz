@@ -12,6 +12,7 @@ import { countOwnedTiles } from '@/utils/gameUtils';
 import { cn } from '@/lib/utils';
 import audioManager from '@/utils/audioManager';
 import { TileStatus } from './TileStatus';
+import CastleUpgradeDialog from './CastleUpgradeDialog';
 
 const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 	const tiles = useGameStore((state) => state.tiles);
@@ -19,6 +20,7 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 	const resources = useGameStore((state) => state.resources);
 	const characterStats = useGameStore((state) => state.characterStats);
 	const [isShaking, setIsShaking] = useState(false);
+	const [showCastleDialog, setShowCastleDialog] = useState(false);
 
 	const isAdjacent = useMemo(() => {
 		if (isOwned || !tiles) return false;
@@ -59,6 +61,13 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 	const canAfford = resources.gold >= cost;
 
 	const handleClick = () => {
+		// Check if this is a castle tile and it's owned
+		if (isOwned && biome === 'castle') {
+			audioManager.playSound('click');
+			setShowCastleDialog(true);
+			return;
+		}
+
 		if (isAdjacent && !isOwned) {
 			if (canAfford) {
 				const result = buyTile(x, y);
@@ -79,56 +88,63 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 	const farAwayTile = !isOwned && !isAdjacent;
 
 	return (
-		<div
-			id={`tile-${x}-${y}`}
-			className={cn(
-				'absolute transition-all duration-200 ease-in-out select-none',
-				{
-					'opacity-100': isOwned,
-					'opacity-50 hover:opacity-100': !isOwned && isAdjacent,
-					'opacity-75': farAwayTile,
-					'hover:z-10 cursor-pointer border border-gray-800':
-						!isOwned && isAdjacent,
-					'hover:border-green-800': !isOwned && isAdjacent && canAfford,
-					'hover:border-red-800 cursor-not-allowed':
-						!isOwned && isAdjacent && !canAfford,
-					'border border-purple-400': biome === 'castle',
-					'group hover:z-20': true,
-					'opacity-75 border-2 border-red-500': isShaking,
-				}
-			)}
-			style={{
-				...style,
-				backgroundColor,
-				...(farAwayTile && {
-					backgroundColor: '#090c13',
-					backgroundImage:
-						'linear-gradient(45deg, #0b0d14 25%, transparent 25%, transparent 75%, #0b0d14 75%, #0b0d14), linear-gradient(-45deg, #0b0d14 25%, transparent 25%, transparent 75%, #0b0d14 75%, #0b0d14)',
-					backgroundSize: '48px 48px',
-				}),
-			}}
-			onClick={handleClick}
-			role='button'>
-			<div className='w-full h-full flex items-center justify-center'>
-				{isOwned && BIOME_ICONS[BIOMES[biome].name as keyof typeof BIOME_ICONS]}
-				{!isOwned && isAdjacent && '❔'}
+		<>
+			<div
+				id={`tile-${x}-${y}`}
+				className={cn(
+					'absolute transition-all duration-200 ease-in-out select-none',
+					{
+						'opacity-100': isOwned,
+						'opacity-50 hover:opacity-100': !isOwned && isAdjacent,
+						'opacity-75': farAwayTile,
+						'hover:z-10 cursor-pointer border border-gray-800':
+							!isOwned && isAdjacent,
+						'hover:border-green-800': !isOwned && isAdjacent && canAfford,
+						'hover:border-red-800 cursor-not-allowed':
+							!isOwned && isAdjacent && !canAfford,
+						'border border-purple-400': biome === 'castle',
+						'group hover:z-20': true,
+						'opacity-75 border-2 border-red-500': isShaking,
+						'cursor-pointer': isOwned && biome === 'castle',
+					}
+				)}
+				style={{
+					...style,
+					backgroundColor,
+					...(farAwayTile && {
+						backgroundColor: '#090c13',
+						backgroundImage:
+							'linear-gradient(45deg, #0b0d14 25%, transparent 25%, transparent 75%, #0b0d14 75%, #0b0d14), linear-gradient(-45deg, #0b0d14 25%, transparent 25%, transparent 75%, #0b0d14 75%, #0b0d14)',
+						backgroundSize: '48px 48px',
+					}),
+				}}
+				onClick={handleClick}
+				role='button'>
+				<div className='w-full h-full flex items-center justify-center'>
+					{isOwned && BIOME_ICONS[BIOMES[biome].name as keyof typeof BIOME_ICONS]}
+					{!isOwned && isAdjacent && '❔'}
+				</div>
+
+				{(isOwned || isAdjacent) && (
+					<div className='absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 pointer-events-none z-50 transition-opacity duration-200'>
+						<div className='bg-gray-900 rounded-lg shadow-xl p-2 whitespace-nowrap border border-gray-700'>
+							<TileStatus
+								biome={biome}
+								isOwned={isOwned}
+								isAdjacent={isAdjacent}
+								level={level}
+								x={x}
+								y={y}
+							/>
+						</div>
+					</div>
+				)}
 			</div>
 
-			{(isOwned || isAdjacent) && (
-				<div className='absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 pointer-events-none z-50 transition-opacity duration-200'>
-					<div className='bg-gray-900 rounded-lg shadow-xl p-2 whitespace-nowrap border border-gray-700'>
-						<TileStatus
-							biome={biome}
-							isOwned={isOwned}
-							isAdjacent={isAdjacent}
-							level={level}
-							x={x}
-							y={y}
-						/>
-					</div>
-				</div>
+			{showCastleDialog && (
+				<CastleUpgradeDialog onClose={() => setShowCastleDialog(false)} />
 			)}
-		</div>
+		</>
 	);
 };
 
