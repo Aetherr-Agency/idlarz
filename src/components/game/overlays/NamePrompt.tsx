@@ -69,7 +69,7 @@ const NamePrompt = () => {
 							<div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
 								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
 									<h4 className='text-purple-400 font-medium mb-1'>Castle 🏰</h4>
-									<p className='text-gray-300 text-xs'>Provides balanced +1.0 to all resources</p>
+									<p className='text-gray-300 text-xs'>Provides balanced +1.0 to all resources except meat</p>
 									<p className='text-gray-400 text-xs mt-1'>Also provides global 20% production bonus per level</p>
 								</div>
 								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>

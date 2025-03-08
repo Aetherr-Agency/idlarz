@@ -5,6 +5,7 @@ import { useGameStore } from '@/stores/gameStore';
 import { countOwnedTiles } from '@/utils/gameUtils';
 import { formatNumber } from '@/utils/formatters';
 import { BiomeTooltip } from './BiomeTooltip';
+import { cn } from '@/lib/utils';
 
 export const TileStatus = memo(
 	({
@@ -26,14 +27,18 @@ export const TileStatus = memo(
 		const resources = useGameStore((state) => state.resources);
 		const characterStats = useGameStore((state) => state.characterStats);
 
-		const { cost } = useMemo(() => {
+		const { cost, tilesUntilManualSelection, canManuallySelect } = useMemo(() => {
 			const ownedTilesCount = countOwnedTiles(tiles);
 			const baseCost = SCALING_CONFIG.costFormula(ownedTilesCount);
 			const discountMultiplier = 1 - characterStats.tileCostDiscount / 100;
 			const discountedCost = baseCost * discountMultiplier;
+			const tilesUntilManualSelection = (3 - (ownedTilesCount % 4)) % 4;
+			const canManuallySelect = tilesUntilManualSelection === 0;
 
 			return {
 				cost: discountedCost,
+				tilesUntilManualSelection,
+				canManuallySelect,
 			};
 		}, [tiles, characterStats.tileCostDiscount]);
 
@@ -65,6 +70,15 @@ export const TileStatus = memo(
 								(-{characterStats.tileCostDiscount.toFixed(2)}%)
 							</span>
 						)}
+					</div>
+					<div className={cn('text-sm text-gray-300 text-[12px] mb-1', {
+						'text-amber-300': canManuallySelect,
+						'text-white': tilesUntilManualSelection === 1,
+						'text-gray-500': tilesUntilManualSelection > 1,
+					})}>
+						{canManuallySelect && '✨ This tile can be selected upon purchase'}
+						{tilesUntilManualSelection === 1 && '🔄 Next tile will be selectable'}
+						{tilesUntilManualSelection > 1 && `🔄 ${tilesUntilManualSelection} tiles until manual selection`}
 					</div>
 					<div className='text-sm text-gray-400 text-[12px] text-center'>
 						Click to explore
