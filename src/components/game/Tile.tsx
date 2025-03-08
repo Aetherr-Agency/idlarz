@@ -312,8 +312,10 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 				backgroundColor,
 				...(!isOwned &&
 					!isAdjacent && {
-						background: `url('/fow.jpg') no-repeat`,
-						backgroundSize: '128px',
+						backgroundColor: '#090c13',
+						backgroundImage:
+							'linear-gradient(45deg, #0b0d14 25%, transparent 25%, transparent 75%, #0b0d14 75%, #0b0d14), linear-gradient(-45deg, #0b0d14 25%, transparent 25%, transparent 75%, #0b0d14 75%, #0b0d14)',
+						backgroundSize: '48px 48px',
 					}),
 			}}
 			onClick={handleClick}
