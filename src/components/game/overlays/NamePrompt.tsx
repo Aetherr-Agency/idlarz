@@ -80,7 +80,7 @@ const NamePrompt = () => {
 								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
 									<h4 className='text-yellow-400 font-medium mb-1'>Plains 🌾</h4>
 									<p className='text-gray-300 text-xs'>+0.1 gold/s, +0.3 food/s</p>
-									<p className='text-gray-400 text-xs mt-1'>Balanced production for food</p>
+									<p className='text-gray-400 text-xs mt-1'>Balanced production for food and +5% meat bonus per tile</p>
 								</div>
 								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
 									<h4 className='text-gray-400 font-medium mb-1'>Hills ⛰️</h4>
@@ -109,6 +109,67 @@ const NamePrompt = () => {
 							<h3 className='text-lg font-semibold text-yellow-400 mb-2'>Biome Strategy</h3>
 							<p className='text-gray-300 mb-2'>Every 4th tile purchase allows you to choose a biome instead of getting a random one.</p>
 							<p className='text-gray-300'>Adjacent tiles of the same biome provide a +15% production bonus per adjacent tile, allowing for strategic placement.</p>
+						</section>
+
+						<section>
+							<h3 className='text-lg font-semibold text-yellow-400 mb-2'>Farm System 🧑‍🌾</h3>
+							<p className='text-gray-300 mb-2'>The Farm allows you to produce meat by purchasing and upgrading animals:</p>
+							<div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-yellow-300 font-medium mb-1'>Chicken 🐔</h4>
+									<p className='text-gray-300 text-xs'>Base Cost: 10,000 food</p>
+									<p className='text-gray-300 text-xs'>Production: 0.05 meat/s (3/min)</p>
+									<p className='text-gray-400 text-xs mt-1'>Each level: +20% production, 1.5× cost</p>
+								</div>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-yellow-300 font-medium mb-1'>Deer 🦌</h4>
+									<p className='text-gray-300 text-xs'>Base Cost: 50,000 food</p>
+									<p className='text-gray-300 text-xs'>Production: 0.2 meat/s (12/min)</p>
+									<p className='text-gray-400 text-xs mt-1'>Each level: +25% production, 1.6× cost</p>
+								</div>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-yellow-300 font-medium mb-1'>Pig 🐖</h4>
+									<p className='text-gray-300 text-xs'>Base Cost: 200,000 food</p>
+									<p className='text-gray-300 text-xs'>Production: 0.5 meat/s (30/min)</p>
+									<p className='text-gray-400 text-xs mt-1'>Each level: +30% production, 1.7× cost</p>
+								</div>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-yellow-300 font-medium mb-1'>Cow 🐄</h4>
+									<p className='text-gray-300 text-xs'>Base Cost: 1,000,000 food</p>
+									<p className='text-gray-300 text-xs'>Production: 1.5 meat/s (90/min)</p>
+									<p className='text-gray-400 text-xs mt-1'>Each level: +40% production, 1.8× cost</p>
+								</div>
+							</div>
+							<p className='text-gray-300 text-xs mt-2'>💡 Tip: Each Plains tile provides +5% bonus to all meat production. Focus on Plains tiles if raising animals!</p>
+						</section>
+
+						<section>
+							<h3 className='text-lg font-semibold text-yellow-400 mb-2'>Merchant System 🛒</h3>
+							<p className='text-gray-300 mb-2'>The Merchant allows you to convert resources to gold at the following rates:</p>
+							<div className='grid grid-cols-2 md:grid-cols-5 gap-2'>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-green-400 font-medium mb-1'>Wood</h4>
+									<p className='text-gray-300 text-xs'>0.75 gold per unit</p>
+								</div>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-gray-400 font-medium mb-1'>Stone</h4>
+									<p className='text-gray-300 text-xs'>0.75 gold per unit</p>
+								</div>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-gray-600 font-medium mb-1'>Coal</h4>
+									<p className='text-gray-300 text-xs'>1.25 gold per unit</p>
+								</div>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-yellow-500 font-medium mb-1'>Food</h4>
+									<p className='text-gray-300 text-xs'>0.5 gold per unit</p>
+								</div>
+								<div className='bg-gray-800 bg-opacity-50 rounded p-3'>
+									<h4 className='text-red-400 font-medium mb-1'>Meat</h4>
+									<p className='text-gray-300 text-xs'>3.0 gold per unit</p>
+									<p className='text-gray-400 text-xs mt-1'>Best gold value!</p>
+								</div>
+							</div>
+							<p className='text-gray-300 text-xs mt-2'>💡 Tip: Meat has the highest gold conversion rate, making the Farm an excellent source of income!</p>
 						</section>
 
 						<section>
@@ -177,6 +238,8 @@ const NamePrompt = () => {
 								<li>Balance your character stats based on resource needs</li>
 								<li>Use every 4th tile purchase strategically to optimize territory</li>
 								<li>Intelligence and Charisma provide excellent long-term benefits</li>
+								<li>Get Plains tiles for food, then invest in farm animals for meat production</li>
+								<li>Sell meat to the Merchant for the best gold conversion rate (3.0 gold per meat)</li>
 							</ul>
 						</section>
 					</div>
