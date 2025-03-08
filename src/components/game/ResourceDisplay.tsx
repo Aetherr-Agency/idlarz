@@ -57,10 +57,8 @@ const ResourceDisplay: React.FC = () => {
 	const toggleMerchantWindow = useGameStore(
 		(state) => state.toggleMerchantWindow
 	);
-	const toggleFarmWindow = useGameStore(
-		(state) => state.toggleFarmWindow
-	);
-	
+	const toggleFarmWindow = useGameStore((state) => state.toggleFarmWindow);
+
 	const characterStats = useGameStore((state) => state.characterStats);
 
 	const [levelUpActive, setLevelUpActive] = useState(false);
@@ -78,7 +76,7 @@ const ResourceDisplay: React.FC = () => {
 
 	return (
 		<div className='fixed top-0 left-0 right-0 z-50 bg-gray-900 bg-opacity-90 border-b border-gray-800'>
-			<div className='max-w-6xl mx-auto px-4 py-2'>
+			<div className='max-w-8/10 mx-auto px-4 py-2'>
 				<div className='grid grid-cols-9 gap-2 md:gap-4'>
 					<div className='flex items-center gap-2 col-span-3 border-r border-gray-700 border-dotted'>
 						<div
@@ -121,17 +119,17 @@ const ResourceDisplay: React.FC = () => {
 							className='select-none flex items-center justify-center border-2 border-blue-900/20 p-1.5 rounded-xl hover:bg-blue-950 hover:border-blue-800 cursor-pointer hover:opacity-80 transition-opacity duration-200'>
 							⚔️
 						</div>
-						
+
 						<div
 							onClick={toggleMerchantWindow}
 							className='select-none flex items-center justify-center border-2 border-amber-900/20 p-1.5 rounded-xl hover:bg-amber-950 hover:border-amber-800 cursor-pointer hover:opacity-80 transition-opacity duration-200'
-							title="Merchant">
+							title='Merchant'>
 							💰
 						</div>
 						<div
 							onClick={toggleFarmWindow}
 							className='select-none flex items-center justify-center border-2 border-green-900/20 p-1.5 rounded-xl hover:bg-green-950 hover:border-green-800 cursor-pointer hover:opacity-80 transition-opacity duration-200'
-							title="Farm">
+							title='Farm'>
 							🌾
 						</div>
 					</div>

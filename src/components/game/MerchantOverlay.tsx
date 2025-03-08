@@ -9,6 +9,7 @@ const RESOURCE_PRICES = {
 	stone: 0.75,
 	coal: 1.25,
 	food: 0.5,
+	meat: 3.0,
 };
 
 // Resource display information
@@ -36,6 +37,12 @@ const RESOURCE_INFO = {
 		label: 'Food',
 		description: 'Sustains population and enables growth.',
 		priceDescription: 'Plentiful but essential for survival.',
+	},
+	meat: {
+		icon: RESOURCE_ICONS.meat,
+		label: 'Meat',
+		description: 'A source of protein for a healthy diet.',
+		priceDescription: 'High demand for a nutritious meal.',
 	},
 };
 
@@ -270,6 +277,7 @@ const MerchantOverlay: React.FC = () => {
 		stone: 0,
 		coal: 0,
 		food: 0,
+		meat: 0,
 	});
 
 	// For showing success message after selling
@@ -287,6 +295,7 @@ const MerchantOverlay: React.FC = () => {
 		stone: resources.stone,
 		coal: resources.coal,
 		food: resources.food,
+		meat: resources.meat,
 	};
 
 	// Handle selling the specified amount of a resource
