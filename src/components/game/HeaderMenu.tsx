@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useGameStore } from '@/stores/gameStore';
 import { formatNumber } from '@/utils/formatters';
+import { BASE_XP_PER_LEVEL } from '@/config/gameConfig';
 
 const HeaderMenu: React.FC = () => {
 	const resources = useGameStore((state) => state.resources);
@@ -63,7 +64,7 @@ const HeaderMenu: React.FC = () => {
 							className='h-full bg-green-500 rounded-full transition-all duration-300 ease-out'
 							style={{ width: `${level.progress * 100}%` }}
 							title={`XP: ${formatNumber(resources.xp)} / ${formatNumber(
-								Math.floor(750 * Math.pow(2.0, level.level - 1))
+								Math.floor(BASE_XP_PER_LEVEL * Math.pow(2.0, level.level - 1))
 							)}`}
 						/>
 					</div>

@@ -313,7 +313,59 @@ export const CASTLE_UPGRADE = {
 	],
 };
 
+// Merchant
+// Resource pricing constants (gold per unit)
+export const MERCHANT_RESOURCE_PRICES = {
+	wood: 0.75,
+	stone: 0.75,
+	coal: 1.25,
+	food: 0.5,
+	meat: 3.0,
+};
+
+// Resource display information
+export const MERCHANT_RESOURCE_INFO = {
+	wood: {
+		icon: RESOURCE_ICONS.wood,
+		label: 'Wood',
+		description: 'A basic construction material, widely available in forests.',
+		priceDescription: 'Common but always in demand.',
+	},
+	stone: {
+		icon: RESOURCE_ICONS.stone,
+		label: 'Stone',
+		description: 'Durable and versatile building material from quarries.',
+		priceDescription: 'Premium quality building material.',
+	},
+	coal: {
+		icon: RESOURCE_ICONS.coal,
+		label: 'Coal',
+		description: 'Valuable fuel source used for advanced applications.',
+		priceDescription: 'Highly sought after for its energy properties.',
+	},
+	food: {
+		icon: RESOURCE_ICONS.food,
+		label: 'Food',
+		description: 'Sustains population and enables growth.',
+		priceDescription: 'Plentiful but essential for survival.',
+	},
+	meat: {
+		icon: RESOURCE_ICONS.meat,
+		label: 'Meat',
+		description: 'A source of protein for a healthy diet.',
+		priceDescription: 'High demand for a nutritious meal.',
+	},
+};
+
 // Equipment and items configuration
+export const EQUIPMENT_RARITY_COLORS = {
+	common: 'border-gray-500',
+	uncommon: 'border-green-500',
+	rare: 'border-blue-500',
+	epic: 'border-purple-500',
+	legendary: 'border-orange-500',
+};
+
 export const EQUIPMENT_SLOT_INFO = {
 	head: { label: 'Head', icon: '🪖' },
 	neck: { label: 'Neck', icon: '📿' },

@@ -10,7 +10,7 @@ import LoadingScreen from '@/components/game/overlays/LoadingScreen';
 import NamePrompt from '@/components/game/overlays/NamePrompt';
 import GameDebug from '@/components/game/GameDebug';
 import { TICK_RATE } from '@/config/gameConfig';
-import MerchantOverlay from '@/components/game/overlays/MerchantOverlay';
+import MerchantOverlay from '@/components/game/overlays/Merchant/MerchantOverlay';
 import FarmOverlay from '@/components/game/overlays/FarmOverlay';
 import GameHeader from '@/components/game/GameHeader';
 

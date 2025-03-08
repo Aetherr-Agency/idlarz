@@ -72,52 +72,41 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 		}
 	};
 
+	const farAwayTile = !isOwned && !isAdjacent;
+
 	return (
 		<div
 			className={cn(
 				'absolute transition-all duration-200 ease-in-out select-none',
-				isOwned
-					? 'opacity-100'
-					: isAdjacent
-					? 'opacity-50 hover:opacity-100'
-					: 'opacity-75',
-				!isOwned &&
-					isAdjacent && [
-						'hover:z-10 cursor-pointer',
-						'border border-gray-800',
-						canAfford ? 'hover:border-green-800' : 'hover:border-red-800',
-						!canAfford && 'cursor-not-allowed',
-					],
-				biome === 'castle' && 'border border-purple-400',
-				'group hover:z-20',
-				isShaking && 'opacity-75 border-2 border-red-500'
+				{
+					'opacity-100': isOwned,
+					'opacity-50 hover:opacity-100': !isOwned && isAdjacent,
+					'opacity-75': farAwayTile,
+					'hover:z-10 cursor-pointer border border-gray-800':
+						!isOwned && isAdjacent,
+					'hover:border-green-800': !isOwned && isAdjacent && canAfford,
+					'hover:border-red-800 cursor-not-allowed':
+						!isOwned && isAdjacent && !canAfford,
+					'border border-purple-400': biome === 'castle',
+					'group hover:z-20': true,
+					'opacity-75 border-2 border-red-500': isShaking,
+				}
 			)}
 			style={{
 				...style,
 				backgroundColor,
-				...(!isOwned &&
-					!isAdjacent && {
-						backgroundColor: '#090c13',
-						backgroundImage:
-							'linear-gradient(45deg, #0b0d14 25%, transparent 25%, transparent 75%, #0b0d14 75%, #0b0d14), linear-gradient(-45deg, #0b0d14 25%, transparent 25%, transparent 75%, #0b0d14 75%, #0b0d14)',
-						backgroundSize: '48px 48px',
-					}),
+				...(farAwayTile && {
+					backgroundColor: '#090c13',
+					backgroundImage:
+						'linear-gradient(45deg, #0b0d14 25%, transparent 25%, transparent 75%, #0b0d14 75%, #0b0d14), linear-gradient(-45deg, #0b0d14 25%, transparent 25%, transparent 75%, #0b0d14 75%, #0b0d14)',
+					backgroundSize: '48px 48px',
+				}),
 			}}
 			onClick={handleClick}
-			role='button'
-			aria-label={`${
-				isOwned
-					? BIOMES[biome].label
-					: isAdjacent
-					? 'Unexplored land'
-					: 'Unknown territory'
-			} tile`}>
+			role='button'>
 			<div className='w-full h-full flex items-center justify-center'>
-				{isOwned
-					? BIOME_ICONS[BIOMES[biome].name as keyof typeof BIOME_ICONS]
-					: isAdjacent
-					? '❔'
-					: ''}
+				{isOwned && BIOME_ICONS[BIOMES[biome].name as keyof typeof BIOME_ICONS]}
+				{!isOwned && isAdjacent && '❔'}
 			</div>
 
 			{(isOwned || isAdjacent) && (

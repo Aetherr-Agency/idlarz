@@ -101,6 +101,20 @@ export interface TileProps {
 	level?: number;
 }
 
+export type MerchantTab =
+	| 'exchange'
+	| 'buy'
+	| 'upgrade'
+	| 'quests'
+	| 'gambling';
+
+export interface MerchantTabInfo {
+	id: MerchantTab;
+	label: string;
+	emoji: string;
+	description: string;
+}
+
 export interface GameState {
 	previousLevel: number;
 	tiles: Tile[][];

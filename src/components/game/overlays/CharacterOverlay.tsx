@@ -1,16 +1,11 @@
 import React, { useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
-import { EQUIPMENT_SLOT_INFO } from '@/config/gameConfig';
+import {
+	EQUIPMENT_RARITY_COLORS,
+	EQUIPMENT_SLOT_INFO,
+} from '@/config/gameConfig';
 import { EquipmentSlot, Item } from '@/types/game';
 import LevelDetails from '../LevelDetails';
-
-const RARITY_COLORS = {
-	common: 'border-gray-500',
-	uncommon: 'border-green-500',
-	rare: 'border-blue-500',
-	epic: 'border-purple-500',
-	legendary: 'border-orange-500',
-};
 
 const ItemTooltip: React.FC<{ item: Item }> = ({ item }) => {
 	return (
@@ -101,7 +96,7 @@ const CharacterOverlay: React.FC = () => {
 												onMouseLeave={() => setHoveredItem(null)}
 												className={`flex items-center p-1 rounded cursor-grab relative ${
 													item.rarity
-														? RARITY_COLORS[item.rarity]
+														? EQUIPMENT_RARITY_COLORS[item.rarity]
 														: 'border-gray-500'
 												} border`}>
 												<span className='text-2xl mr-2'>{item.icon}</span>
@@ -130,7 +125,9 @@ const CharacterOverlay: React.FC = () => {
 									onMouseEnter={() => setHoveredItem(item)}
 									onMouseLeave={() => setHoveredItem(null)}
 									className={`p-2 bg-gray-700 rounded border relative cursor-grab ${
-										item.rarity ? RARITY_COLORS[item.rarity] : 'border-gray-500'
+										item.rarity
+											? EQUIPMENT_RARITY_COLORS[item.rarity]
+											: 'border-gray-500'
 									}`}>
 									<div className='text-2xl mb-1 text-center'>{item.icon}</div>
 									<div className='text-xs text-center text-white'>

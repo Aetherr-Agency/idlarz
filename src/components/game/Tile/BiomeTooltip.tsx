@@ -75,6 +75,7 @@ export const BiomeTooltip = memo(
 					const baseRate = rate || 0;
 					let effectiveRate =
 						biome === 'castle' ? baseRate * multiplier : baseRate;
+
 					// Only apply adjacency bonus to positive rates
 					if (effectiveRate > 0 && x !== undefined) {
 						effectiveRate *= adjacencyMultiplier;
@@ -103,7 +104,7 @@ export const BiomeTooltip = memo(
 
 								{biome === 'castle' && castleModifier > 0 && (
 									<span className='text-green-400 text-xs text-[9px] mt-0.5 block ml-auto'>
-										x {Math.round(castleModifier * 100)}% castle lv bonus
+										+ {Math.round(castleModifier * 100)}% mod castle bonus
 									</span>
 								)}
 							</div>
