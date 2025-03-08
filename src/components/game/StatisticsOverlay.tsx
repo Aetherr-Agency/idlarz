@@ -53,7 +53,7 @@ const StatisticsOverlay: React.FC = () => {
 
 	// Format percentage values
 	const formatPercentage = (value: number) => {
-		return `${value}%`;
+		return `${value.toFixed(2)}%`;
 	};
 
 	return (

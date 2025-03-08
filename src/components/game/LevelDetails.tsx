@@ -42,7 +42,9 @@ const LevelUpTimer: React.FC<{
 
 	return (
 		<div className='mt-0 text-center text-xs'>
-			<span className='text-green-400 mb-3 block'>{formatRate(resourceRates?.total?.xp || 0)} (XP)</span>
+			<span className='text-green-400 mb-3 block'>
+				{formatRate(resourceRates?.total?.xp || 0)} (XP)
+			</span>
 			<div className='text-gray-400 mb-0.5 block'>Time until level up</div>
 			<div className='text-yellow-400 text-sm font-medium'>{timeRemaining}</div>
 		</div>
@@ -59,7 +61,7 @@ const LevelDetails: React.FC = () => {
 	return (
 		<div className='flex flex-col space-y-4'>
 			<div className='flex flex-row gap-0 items-center justify-center'>
-				<div className='relative w-40 h-40 mx-auto'>
+				<div className='relative w-48 h-48 mx-auto'>
 					{/* Radial progress background */}
 					<svg className='w-full h-full' viewBox='0 0 100 100'>
 						<circle
@@ -106,8 +108,6 @@ const LevelDetails: React.FC = () => {
 						</div>
 					</div>
 				</div>
-
-
 			</div>
 		</div>
 	);

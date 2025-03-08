@@ -81,7 +81,9 @@ const ResourceDisplay: React.FC = () => {
 							/>
 							<div className='flex flex-col text-white items-start justify-center h-full select-none'>
 								<div className='flex items-center gap-2 mb-1'>
-									<p className='font-bold text-sm overflow-hidden text-ellipsis max-w-30 truncate'>{playerName}</p>
+									<p className='font-bold text-sm overflow-hidden text-ellipsis max-w-30 truncate'>
+										{playerName}
+									</p>
 									<span
 										className={`px-1.5 p-0.5 ${
 											levelUpActive ? 'bg-green-800/50' : 'bg-blue-700'
@@ -145,31 +147,30 @@ const ResourceDisplay: React.FC = () => {
 									</div>
 
 									{/* Enhanced Tooltip */}
-									<div className='absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 pointer-events-none z-50 transition-opacity duration-200'>
+									<div className='absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 pointer-events-none z-50 transition-opacity duration-200 text-xs'>
 										<div className='bg-gray-800 rounded-lg shadow-xl p-3 whitespace-nowrap border border-gray-700'>
 											<div className='font-medium mb-1 text-white'>
 												{RESOURCE_INFO[resource].label}
 											</div>
-											<div className='text-sm text-gray-400 mb-2'>
+											<div className='text-xs text-gray-400 mb-1 text-[11px]'>
 												{RESOURCE_INFO[resource].description}
 											</div>
-											<div className='space-y-1 text-sm'>
+											<div className='space-y-1 text-[11px]'>
 												<div className='flex justify-between gap-4'>
 													<span className='text-gray-400'>Base Rate:</span>
-													<span className='text-white'>
+													<span className='text-gray-400'>
 														{formatNumber(baseRate)}/s
 													</span>
 												</div>
-												<div className='flex justify-between gap-4 border-t border-gray-700 mt-2 pt-2'>
+												<div className='flex justify-between gap-4 mt-1'>
 													<span className='text-gray-400'>Modifier:</span>
-													<span className='text-white'>{modifierPercent}%</span>
+													<span className='text-green-400'>
+														{modifierPercent}%
+													</span>
 												</div>
-												<div className='flex justify-between gap-4 border-t border-gray-700 mt-2 pt-2'>
-													<span className='text-gray-400'>Total Rate:</span>
-													<span
-														className={`${
-															totalRate > 0 ? 'text-green-400' : 'text-gray-400'
-														}`}>
+												<div className='flex justify-between gap-4 mt-1'>
+													<span className='text-white'>Total Rate:</span>
+													<span className='text-white'>
 														{formatNumber(totalRate)}/s
 													</span>
 												</div>

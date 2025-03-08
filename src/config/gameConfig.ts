@@ -20,19 +20,19 @@ export const INITIAL_CHARACTER_STATS: CharacterStats = {
 	// Points to spent
 	availablePoints: 0,
 	// Combat stats - calculated from base stats
-	physicalAtk: 5,      // Base + Strength (5)
-	magicAtk: 5,         // Base + Intelligence (5)
-	hp: 15.25,           // Base + (Vitality * 3) + (Charisma * 0.25) = 0 + 15 + 0.25
-	mp: 10,              // Base + (Intelligence * 2) = 0 + 10
-	def: 8.75,           // Base + Dexterity + (Strength * 0.5) + (Vitality * 0.5) + (Charisma * 0.25) = 0 + 5 + 2.5 + 2.5 + 1.25
-	magicDef: 8.25,      // Base + Intelligence + (Vitality * 0.5) + (Charisma * 0.25) = 0 + 5 + 2.5 + 1.25
-	luck: 5,             // Base + Charisma (5)
-	critChance: 3.75,    // Base + (Dexterity * 0.25) + (Charisma * 0.5) = 0 + 1.25 + 2.5
+	physicalAtk: 5, // Base + Strength (5)
+	magicAtk: 5, // Base + Intelligence (5)
+	hp: 15.25, // Base + (Vitality * 3) + (Charisma * 0.25) = 0 + 15 + 0.25
+	mp: 10, // Base + (Intelligence * 2) = 0 + 10
+	def: 8.75, // Base + Dexterity + (Strength * 0.5) + (Vitality * 0.5) + (Charisma * 0.25) = 0 + 5 + 2.5 + 2.5 + 1.25
+	magicDef: 8.25, // Base + Intelligence + (Vitality * 0.5) + (Charisma * 0.25) = 0 + 5 + 2.5 + 1.25
+	luck: 5, // Base + Charisma (5)
+	critChance: 3.75, // Base + (Dexterity * 0.25) + (Charisma * 0.5) = 0 + 1.25 + 2.5
 	critDmgMultiplier: 103, // Base 100% + Strength + (Dexterity * 0.5) + (Charisma * 0.5) = 100 + 5 + 2.5 + 2.5
 	atkSpeedIncrease: 1.25, // Base + (Dexterity * 0.25) = 0 + 1.25
 	xpGainMultiplier: 2.25, // Base + (Intelligence * 0.2) + (Charisma * 0.25) = 0 + 1 + 1.25
-	tileCostDiscount: 0,    // Base value
-	reputation: 1000,       // Base value
+	tileCostDiscount: Math.min(5 * 0.001, 0.25) * 100, // +0.1% per charisma point, capped at 25%
+	reputation: 1000, // Base reputation value
 };
 
 // Grid Configuration

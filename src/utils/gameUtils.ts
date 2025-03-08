@@ -60,7 +60,7 @@ export const getStatDescription = (
 		vitality:
 			'Increases HP (+3 per point) / Food & Wood Modifier (2.5% per point). / DEF (+0.5 per point) / Magic DEF & DEF (+0.5 per point)',
 		charisma:
-			'Increases HP/DEF/Magic DEF (+0.25 per point) / Gold & Coal Modifier (2.5% per point). / Luck (+1 per point) / Crit Chance & Crit DMG (+0.5% per point) / XP Modifier (+0.25% per point)',
+			'Increases HP/DEF/Magic DEF (+0.25 per point) / Gold & Coal Modifier (2.5% per point). / Luck (+1 per point) / Crit Chance & Crit DMG (+0.5% per point) / XP Modifier (+0.25% per point) / Tile Cost Discount (+0.1% per point, max 25%)',
 		// Combat stats
 		physicalAtk:
 			'Your physical attack power. Determines damage dealt with physical attacks.',
@@ -263,6 +263,7 @@ export const calculateCombatStats = (stats: CharacterStats): Partial<CharacterSt
     critDmgMultiplier: 100 + stats.strength + stats.dexterity * 0.5 + stats.charisma * 0.5,  // Base 100% + str + dex/2 + cha/2
     atkSpeedIncrease: stats.dexterity * 0.25,                                    // +0.25% per dex
     xpGainMultiplier: stats.intelligence * 0.2 + stats.charisma * 0.25,          // +0.2% per int, +0.25% per cha
+    tileCostDiscount: Math.min(stats.charisma * 0.001, 0.25) * 100,             // +0.1% per cha, capped at 25%, convert to percentage
   };
 };
 

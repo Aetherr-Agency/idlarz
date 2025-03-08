@@ -173,29 +173,18 @@ const TileStatus = memo(
 	}) => {
 		const tiles = useGameStore((state) => state.tiles);
 		const resources = useGameStore((state) => state.resources);
+		const characterStats = useGameStore((state) => state.characterStats);
 
 		const { cost } = useMemo(() => {
 			const ownedTilesCount = countOwnedTiles(tiles);
-			const tier = Math.floor(
-				ownedTilesCount / SCALING_CONFIG.scalingIncreasePer
-			);
-			const currentScalingFactor =
-				SCALING_CONFIG.baseScalingFactor *
-				(1 + SCALING_CONFIG.scalingIncreaseAmount * tier);
-			const nextTileForTierIncrease =
-				(tier + 1) * SCALING_CONFIG.scalingIncreasePer;
-			const tilesUntilIncrease = nextTileForTierIncrease - ownedTilesCount;
+			const baseCost = SCALING_CONFIG.costFormula(ownedTilesCount);
+			const discountMultiplier = 1 - characterStats.tileCostDiscount / 100;
+			const discountedCost = baseCost * discountMultiplier;
 
 			return {
-				cost: SCALING_CONFIG.costFormula(ownedTilesCount),
-				scalingInfo: {
-					tier,
-					currentScalingFactor,
-					tilesUntilIncrease,
-					nextTileForTierIncrease,
-				},
+				cost: discountedCost,
 			};
-		}, [tiles]);
+		}, [tiles, characterStats.tileCostDiscount]);
 
 		if (isOwned) {
 			const biomeInfo = BIOMES[biome];
@@ -220,6 +209,11 @@ const TileStatus = memo(
 						<span className={canAfford ? 'text-green-400' : 'text-red-400'}>
 							{RESOURCE_ICONS.gold} Cost: {formatNumber(cost)} gold
 						</span>
+						{characterStats.tileCostDiscount > 0 && (
+							<span className='text-amber-400 text-[10px] ml-1'>
+								(-{characterStats.tileCostDiscount.toFixed(2)}%)
+							</span>
+						)}
 					</div>
 					<div className='text-sm text-gray-400 text-[12px] text-center'>
 						Click to explore
@@ -238,6 +232,7 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 	const tiles = useGameStore((state) => state.tiles);
 	const buyTile = useGameStore((state) => state.buyTile);
 	const resources = useGameStore((state) => state.resources);
+	const characterStats = useGameStore((state) => state.characterStats);
 	const [isShaking, setIsShaking] = useState(false);
 
 	const isAdjacent = useMemo(() => {
@@ -271,8 +266,10 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 	const ownedTilesCount = useMemo(() => countOwnedTiles(tiles), [tiles]);
 
 	const cost = useMemo(() => {
-		return SCALING_CONFIG.costFormula(ownedTilesCount);
-	}, [ownedTilesCount]);
+		const baseCost = SCALING_CONFIG.costFormula(ownedTilesCount);
+		const discountMultiplier = 1 - characterStats.tileCostDiscount / 100;
+		return Math.floor(baseCost * discountMultiplier);
+	}, [ownedTilesCount, characterStats.tileCostDiscount]);
 
 	const canAfford = resources.gold >= cost;
 

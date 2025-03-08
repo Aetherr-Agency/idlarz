@@ -30,7 +30,10 @@ const createGameSlice = (
 	get: () => GameState
 ) => {
 	const initialGrid = createInitialGrid();
-	const initialRates = calculateResourceRates(initialGrid, INITIAL_CHARACTER_STATS);
+	const initialRates = calculateResourceRates(
+		initialGrid,
+		INITIAL_CHARACTER_STATS
+	);
 
 	return {
 		tiles: initialGrid,
@@ -76,7 +79,8 @@ const createGameSlice = (
 			const baseCost = SCALING_CONFIG.costFormula(ownedTilesCount);
 
 			// Apply tile cost discount from character stats
-			const discountMultiplier = 1 - state.characterStats.tileCostDiscount / 100;
+			const discountMultiplier =
+				1 - state.characterStats.tileCostDiscount / 100;
 			const cost = Math.floor(baseCost * discountMultiplier);
 
 			if (state.resources.gold < cost) {
@@ -120,6 +124,10 @@ const createGameSlice = (
 			const xpMultiplier = 1 + state.characterStats.xpGainMultiplier / 100;
 			const totalXpGain = xpGain * xpMultiplier;
 
+			// Update character stats with new reputation
+			const newStats = { ...state.characterStats };
+			newStats.reputation += 100; // +100 reputation for each tile purchased
+
 			set({
 				tiles: newTiles,
 				resources: {
@@ -130,6 +138,7 @@ const createGameSlice = (
 				resourceRates: newRates,
 				resourceModifiers: newRates.modifiers,
 				level: calculateLevel(state.resources.xp + totalXpGain),
+				characterStats: newStats,
 			});
 
 			return true;
@@ -197,8 +206,10 @@ const createGameSlice = (
 				if (typeof rate === 'number' && !isNaN(rate)) {
 					// Apply XP gain multiplier for XP resource
 					if (resource === 'xp') {
-						const xpMultiplier = 1 + state.characterStats.xpGainMultiplier / 100;
-						newResources[resource as keyof Resources] += rate * secondsElapsed * xpMultiplier;
+						const xpMultiplier =
+							1 + state.characterStats.xpGainMultiplier / 100;
+						newResources[resource as keyof Resources] +=
+							rate * secondsElapsed * xpMultiplier;
 					} else {
 						newResources[resource as keyof Resources] += rate * secondsElapsed;
 					}
@@ -274,7 +285,10 @@ export const useGameStore = create(
 			// Validate and fix state if needed
 			if (!state || !validateGrid(state.tiles)) {
 				const initialGrid = createInitialGrid();
-				const initialRates = calculateResourceRates(initialGrid, INITIAL_CHARACTER_STATS);
+				const initialRates = calculateResourceRates(
+					initialGrid,
+					INITIAL_CHARACTER_STATS
+				);
 
 				return {
 					tiles: initialGrid,
