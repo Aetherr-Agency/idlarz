@@ -83,12 +83,6 @@ export const BiomeTooltip = memo(
 
 					if (baseRate === 0) return null;
 
-					// Get modifier percentage for castle tiles
-					const castleModifier =
-						biome === 'castle' && level
-							? CASTLE_UPGRADE.baseResourceMultiplier * Math.pow(2, level - 1)
-							: 0; // Exponential growth
-
 					return (
 						<div key={resource} className='flex flex-col gap-1'>
 							<div className='flex items-center gap-1'>
@@ -101,26 +95,20 @@ export const BiomeTooltip = memo(
 								</span>
 
 								<span className='text-[9px] text-gray-500 mt-0.5'>(base)</span>
-
-								{biome === 'castle' && castleModifier > 0 && (
-									<span className='text-green-400 text-xs text-[9px] mt-0.5 block ml-auto'>
-										+ {Math.round(castleModifier * 100)}% mod castle bonus
-									</span>
-								)}
 							</div>
 						</div>
 					);
 				})}
 
 				{biome === 'castle' && level && level > 1 && (
-					<div className='mt-2 text-purple-400 text-xs'>
+					<div className='mt-2 text-purple-400 text-[9px]'>
 						Castle Bonus:{' '}
 						{Math.round(
 							CASTLE_UPGRADE.baseResourceMultiplier *
 								Math.pow(2, level - 1) *
 								100
 						)}
-						% resource generation
+						% all resource generation
 					</div>
 				)}
 				{adjacentCount > 0 && (

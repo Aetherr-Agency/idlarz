@@ -6,6 +6,8 @@ import {
 	GRID_HEIGHT,
 	SCALING_CONFIG,
 	BIOME_ICONS,
+	GRID_CENTER_X,
+	GRID_CENTER_Y,
 } from '@/config/gameConfig';
 import { useGameStore } from '@/stores/gameStore';
 import { countOwnedTiles } from '@/utils/gameUtils';
@@ -103,6 +105,9 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 						'hover:border-red-800 cursor-not-allowed':
 							!isOwned && isAdjacent && !canAfford,
 						'border border-purple-400': biome === 'castle',
+						'border-2 border-amber-300':
+							(tiles[GRID_CENTER_Y]?.[GRID_CENTER_X]?.level ?? 0) === 10 &&
+							biome === 'castle',
 						'group hover:z-20': true,
 						'opacity-75 border-2 border-red-500': isShaking,
 						'cursor-pointer': isOwned && biome === 'castle',
@@ -120,9 +125,15 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 				}}
 				onClick={handleClick}
 				role='button'>
-				<div className='w-full h-full flex items-center justify-center'>
-					{isOwned && BIOME_ICONS[BIOMES[biome].name as keyof typeof BIOME_ICONS]}
+				<div className='w-full h-full flex items-center justify-center relative'>
+					{isOwned &&
+						BIOME_ICONS[BIOMES[biome].name as keyof typeof BIOME_ICONS]}
 					{!isOwned && isAdjacent && '❔'}
+					{biome === 'castle' && (
+						<span className='absolute top-0.5 right-0.5 text-[8px] bg-amber-400 w-3 h-3 aspect-square flex items-center justify-center leading-0 font-bold text-purple-600 rounded-full'>
+							{tiles[GRID_CENTER_Y]?.[GRID_CENTER_X]?.level}
+						</span>
+					)}
 				</div>
 
 				{(isOwned || isAdjacent) && (

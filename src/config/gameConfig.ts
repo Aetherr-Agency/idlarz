@@ -299,15 +299,15 @@ export const CASTLE_UPGRADE = {
 	doublePerLevel: true, // Multiply by 2 for each level
 	xpBonus: 0.5, // Additional flat XP per castle level
 	upgradeCosts: [
-		{ gold: 10000, wood: 1000, stone: 1000 },
-		{ gold: 50000, wood: 5000, stone: 5000 },
-		{ gold: 250000, wood: 25000, stone: 25000 },
-		{ gold: 1000000, wood: 100000, stone: 100000, coal: 50000, food: 500000 },
-		{ gold: 5000000, wood: 500000, stone: 500000, coal: 250000, food: 2500000, meat: 100000 },
-		{ gold: 25000000, wood: 2500000, stone: 2500000, coal: 1000000, food: 10000000, meat: 500000 },
-		{ gold: 100000000, wood: 10000000, stone: 10000000, coal: 5000000, food: 50000000, meat: 2500000 },
-		{ gold: 500000000, wood: 50000000, stone: 50000000, coal: 25000000, food: 250000000, meat: 10000000 },
-		{ gold: 2500000000, wood: 250000000, stone: 250000000, coal: 100000000, food: 1000000000, meat: 50000000 },
+		{ gold: 25000, wood: 2500, stone: 2500 },
+		{ gold: 100000, wood: 10000, stone: 10000, coal: 5000 },
+		{ gold: 500000, wood: 50000, stone: 50000, coal: 25000, food: 100000 },
+		{ gold: 2000000, wood: 200000, stone: 200000, coal: 100000, food: 1000000, meat: 50000 },
+		{ gold: 10000000, wood: 1000000, stone: 1000000, coal: 500000, food: 5000000, meat: 250000 },
+		{ gold: 50000000, wood: 5000000, stone: 5000000, coal: 2500000, food: 25000000, meat: 1000000 },
+		{ gold: 250000000, wood: 25000000, stone: 25000000, coal: 10000000, food: 100000000, meat: 5000000 },
+		{ gold: 1000000000, wood: 100000000, stone: 100000000, coal: 50000000, food: 500000000, meat: 25000000 },
+		{ gold: 5000000000, wood: 500000000, stone: 500000000, coal: 250000000, food: 2500000000, meat: 100000000 },
 	],
 };
 
