@@ -32,7 +32,7 @@ export const INITIAL_CHARACTER_STATS: CharacterStats = {
 	critDmgMultiplier: 103, // Base 100% + Strength + (Dexterity * 0.5) + (Charisma * 0.5) = 100 + 5 + 2.5 + 2.5
 	atkSpeedIncrease: 1.25, // Base + (Dexterity * 0.25) = 0 + 1.25
 	xpGainMultiplier: 2.25, // Base + (Intelligence * 0.2) + (Charisma * 0.25) = 0 + 1 + 1.25
-	tileCostDiscount: Math.min(5 * 0.001, 0.25) * 100, // +0.1% per charisma point, capped at 25%
+	tileCostDiscount: Math.min(5 * 0.005, 0.25) * 100, // +0.5% per charisma point, capped at 25%
 	reputation: 1000, // Base reputation value
 };
 

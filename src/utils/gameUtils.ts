@@ -307,7 +307,7 @@ export const calculateCombatStats = (
 			100 + stats.strength + stats.dexterity * 0.5 + stats.charisma * 0.5, // Base 100% + str + dex/2 + cha/2
 		atkSpeedIncrease: stats.dexterity * 0.25, // +0.25% per dex
 		xpGainMultiplier: stats.intelligence * 0.2 + stats.charisma * 0.25, // +0.2% per int, +0.25% per cha
-		tileCostDiscount: Math.min(stats.charisma * 0.001, 0.25) * 100, // +0.1% per cha, capped at 25%, convert to percentage
+		tileCostDiscount: Math.min(stats.charisma * 0.005, 0.25) * 100, // +0.5% per cha, capped at 25%, convert to percentage
 	};
 };
 
