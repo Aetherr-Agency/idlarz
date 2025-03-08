@@ -114,14 +114,29 @@ const StatisticsOverlay: React.FC = () => {
 												key={stat}
 												className='flex items-center text-xs mb-1.5'>
 												<div
-													className='flex-1 flex justify-between items-center cursor-help'
-													title={getStatDescription(stat)}>
+													className='group relative flex-1 flex justify-between items-center cursor-help'>
 													<span className='text-gray-300 capitalize'>
 														{stat}:
 													</span>
 													<span className='text-blue-400 font-medium'>
 														{value}
 													</span>
+													<div className='absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 pointer-events-none z-50 transition-opacity duration-200'>
+														<div className='bg-gray-900 bg-opacity-95 rounded-lg p-3 shadow-xl border border-gray-700 min-w-[240px]'>
+															<div className='space-y-2'>
+																<div className='text-blue-400 text-[12px] uppercase font-medium'>
+																	{stat.charAt(0).toUpperCase() + stat.slice(1)}
+																</div>
+																<div className='space-y-0'>
+																	{getStatDescription(stat).split('/').map((bonus, index) => (
+																		<div key={index} className='text-[10px] text-gray-400'>
+																			{bonus.trim()}
+																		</div>
+																	))}
+																</div>
+															</div>
+														</div>
+													</div>
 												</div>
 												<button
 													onClick={() => handleAddStatPoint(stat)}

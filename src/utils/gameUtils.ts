@@ -52,15 +52,15 @@ export const getStatDescription = (
 		string
 	> = {
 		strength:
-			'Increases Physical ATK (+1 per point) / Stone & Coal Modifier (2.5% per point). / DEF (+0.5 per point) / Crit DMG (+1% per point)',
+			'+ 1 Physical ATK +1 per point / + 0.5 DEF per point / +1% Crit DMG per point / 2.5% Stone & Coal Modifier per point',
 		dexterity:
-			'Increases DEF (+1 per point) / Wood & Food Modifier (2.5% per point). / ATK Speed (+0.25% per point) / Crit Chance (+0.25% per point) / Crit DMG (+0.5% per point)',
+			'+ 1 DEF +1 per point / +0.25 ATK Speed per point / +0.25% Crit Chance per point / +0.5% Crit DMG per point / 2.5% Wood & Food Modifier per point',
 		intelligence:
-			'Increases Magic ATK (+1 per point) / Gold Modifier (2.5% per point). / Magic DEF (+1 per point) / MP (+2 per point) / XP Modifier (+0.2% per point)',
+			'+ 1 Magic ATK +1 per point / +1 Magic DEF per point / +2 MP per point / +0.2% XP Modifier per point / 2.5% Gold Modifier per point',
 		vitality:
-			'Increases HP (+3 per point) / Food & Wood Modifier (2.5% per point). / DEF (+0.5 per point) / Magic DEF & DEF (+0.5 per point)',
+			'+ 3 HP per point / +0.5 DEF per point / +0.5 Magic DEF per point / 2.5% Food & Wood Modifier per point',
 		charisma:
-			'Increases HP/DEF/Magic DEF (+0.25 per point) / Gold & Coal Modifier (2.5% per point). / Luck (+1 per point) / Crit Chance & Crit DMG (+0.5% per point) / XP Modifier (+0.25% per point) / Tile Cost Discount (+0.1% per point, max 25%)',
+			'+ 1 HP & DEF & Magic DEF +0.25 per point / +1 Luck per point / +0.5% Crit Chance & Crit DMG per point /  +0.1% Tile  Discount per point [max 25%] / +0.25% XP Modifier per point / 2.5% Gold & Coal Modifier per point',
 		// Combat stats
 		physicalAtk:
 			'Your physical attack power. Determines damage dealt with physical attacks.',
