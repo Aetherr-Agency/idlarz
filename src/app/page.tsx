@@ -11,6 +11,7 @@ import LoadingScreen from '@/components/LoadingScreen';
 import NamePrompt from '@/components/game/NamePrompt';
 import GameDebug from '@/components/game/GameDebug';
 import { TICK_RATE } from '@/config/gameConfig';
+import MerchantOverlay from '@/components/game/MerchantOverlay';
 
 export default function Home() {
 	const tick = useGameStore((state) => state.tick);
@@ -37,6 +38,7 @@ export default function Home() {
 			<Grid />
 			<CharacterOverlay />
 			<StatisticsOverlay />
+			<MerchantOverlay />
 			<LevelUpNotification />
 			<LoadingScreen />
 			<NamePrompt />

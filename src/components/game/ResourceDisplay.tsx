@@ -49,6 +49,9 @@ const ResourceDisplay: React.FC = () => {
 	const toggleStatisticsWindow = useGameStore(
 		(state) => state.toggleStatisticsWindow
 	);
+	const toggleMerchantWindow = useGameStore(
+		(state) => state.toggleMerchantWindow
+	);
 	const characterStats = useGameStore((state) => state.characterStats);
 
 	const [levelUpActive, setLevelUpActive] = useState(false);
@@ -108,6 +111,13 @@ const ResourceDisplay: React.FC = () => {
 							onClick={toggleCharacterWindow}
 							className='select-none flex items-center justify-center border-2 border-blue-900/20 p-1.5 rounded-xl hover:bg-blue-950 hover:border-blue-800 cursor-pointer hover:opacity-80 transition-opacity duration-200'>
 							⚔️
+						</div>
+						
+						<div
+							onClick={toggleMerchantWindow}
+							className='select-none flex items-center justify-center border-2 border-amber-900/20 p-1.5 rounded-xl hover:bg-amber-950 hover:border-amber-800 cursor-pointer hover:opacity-80 transition-opacity duration-200'
+							title="Merchant">
+							💰
 						</div>
 					</div>
 

@@ -48,6 +48,7 @@ const createGameSlice = (
 		inventory: INITIAL_INVENTORY_ITEMS,
 		showCharacterWindow: false,
 		showStatisticsWindow: false,
+		showMerchantWindow: false,
 		isHydrated: false,
 
 		addStatPoint: (stat: keyof CharacterStats) => {
@@ -273,6 +274,45 @@ const createGameSlice = (
 			set((state) => ({ showCharacterWindow: !state.showCharacterWindow })),
 		toggleStatisticsWindow: () =>
 			set((state) => ({ showStatisticsWindow: !state.showStatisticsWindow })),
+		toggleMerchantWindow: () => {
+			// Close other windows if merchant window is being opened
+			const isMerchantOpen = get().showMerchantWindow;
+			if (!isMerchantOpen) {
+				set({
+					showCharacterWindow: false,
+					showStatisticsWindow: false,
+					showMerchantWindow: true,
+				});
+			} else {
+				set({ showMerchantWindow: false });
+			}
+		},
+		sellResources: (resource: keyof Resources, amount: number) => {
+			if (resource === 'gold' || resource === 'xp') return; // Cannot sell gold or xp
+			
+			const state = get();
+			if (state.resources[resource] < amount) return; // Not enough resources
+			
+			// Resource pricing (different for each resource)
+			const prices = {
+				wood: 0.75,
+				stone: 1.25,
+				coal: 2.0,
+				food: 0.5
+			};
+			
+			const goldGained = Math.floor(amount * prices[resource as keyof typeof prices]);
+			
+			set({
+				resources: {
+					...state.resources,
+					[resource]: state.resources[resource] - amount,
+					gold: state.resources.gold + goldGained
+				}
+			});
+			
+			return goldGained;
+		},
 	};
 };
 
@@ -304,6 +344,7 @@ export const useGameStore = create(
 					inventory: INITIAL_INVENTORY_ITEMS,
 					showCharacterWindow: false,
 					showStatisticsWindow: false,
+					showMerchantWindow: false,
 					isHydrated: true,
 					buyTile: state?.buyTile,
 					upgradeCastle: state?.upgradeCastle,

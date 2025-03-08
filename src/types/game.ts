@@ -107,12 +107,15 @@ export interface GameState {
 	inventory: Item[];
 	showCharacterWindow: boolean;
 	showStatisticsWindow: boolean;
+	showMerchantWindow: boolean;
 	isHydrated: boolean; // Flag to track if store is rehydrated from localStorage
 	buyTile: (x: number, y: number) => boolean;
 	upgradeCastle: () => boolean;
 	tick: (deltaTime: number) => void;
 	toggleCharacterWindow: () => void;
 	toggleStatisticsWindow: () => void;
+	toggleMerchantWindow: () => void;
+	sellResources: (resource: keyof Resources, amount: number) => number | undefined;
 	addStatPoint: (stat: keyof CharacterStats) => void;
 	setPlayerName: (name: string) => void;
 	addResources: (resourceToAdd: Partial<Resources>) => void;
