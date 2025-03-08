@@ -1,4 +1,10 @@
-import { BiomeInfo, BiomeType, CharacterStats, EquipmentRarity, EquipmentSlot } from '@/types/game';
+import {
+	BiomeInfo,
+	BiomeType,
+	CharacterStats,
+	EquipmentRarity,
+	EquipmentSlot,
+} from '@/types/game';
 
 // Default player name
 export const DEFAULT_PLAYER_NAME = 'Explorer';
@@ -45,8 +51,8 @@ export const ADJACENCY_BONUS = 0.25; // 25% bonus for adjacent same biomes
 
 // XP calculation constants - Exponential XP system
 export const BASE_XP_PER_TILE = 125;
-export const XP_GROWTH_FACTOR = 2.0; // Exponential growth factor for XP needed per level (2x)
-export const BASE_XP_PER_LEVEL = 750; // Starting XP needed for level 1 to 2
+export const XP_GROWTH_FACTOR = 1.4; // Exponential growth factor for XP needed per level (2x)
+export const BASE_XP_PER_LEVEL = 500; // Starting XP needed for level 1 to 2
 
 export const SPECIAL_SINGLE_TYPE_BIOMES: BiomeType[] = ['castle', 'grounds'];
 export const EMPTY_BIOMES: BiomeType[] = ['empty'];

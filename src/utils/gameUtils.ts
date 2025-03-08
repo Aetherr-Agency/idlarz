@@ -1,6 +1,28 @@
-import { GRID_SIZE, GRID_HEIGHT, BASE_XP_PER_TILE, BASE_XP_PER_LEVEL, XP_GROWTH_FACTOR, BIOMES, SPECIAL_SINGLE_TYPE_BIOMES, BASE_GENERATION_RATES, CASTLE_BASE_RATES, CASTLE_UPGRADE, SCALING_CONFIG, GRID_CENTER_Y, GRID_CENTER_X, EMPTY_BIOMES } from '@/config/gameConfig';
+import {
+	GRID_SIZE,
+	GRID_HEIGHT,
+	BASE_XP_PER_TILE,
+	BASE_XP_PER_LEVEL,
+	XP_GROWTH_FACTOR,
+	BIOMES,
+	SPECIAL_SINGLE_TYPE_BIOMES,
+	BASE_GENERATION_RATES,
+	CASTLE_BASE_RATES,
+	CASTLE_UPGRADE,
+	SCALING_CONFIG,
+	GRID_CENTER_Y,
+	GRID_CENTER_X,
+	EMPTY_BIOMES,
+} from '@/config/gameConfig';
 import { useGameStore } from '@/stores/gameStore';
-import { BiomeType, CharacterStats, GameState, ResourceRates, Resources, Tile } from '@/types/game';
+import {
+	BiomeType,
+	CharacterStats,
+	GameState,
+	ResourceRates,
+	Resources,
+	Tile,
+} from '@/types/game';
 
 /**
  * Counts the total number of owned tiles in the grid
@@ -8,13 +30,13 @@ import { BiomeType, CharacterStats, GameState, ResourceRates, Resources, Tile } 
  * @returns Number of owned tiles
  */
 export const countOwnedTiles = (tiles: { isOwned: boolean }[][]): number => {
-  let count = 0;
-  for (let y = 0; y < GRID_HEIGHT; y++) {
-    for (let x = 0; x < GRID_SIZE; x++) {
-      if (tiles[y][x].isOwned) count++;
-    }
-  }
-  return count;
+	let count = 0;
+	for (let y = 0; y < GRID_HEIGHT; y++) {
+		for (let x = 0; x < GRID_SIZE; x++) {
+			if (tiles[y][x].isOwned) count++;
+		}
+	}
+	return count;
 };
 
 /**
@@ -22,30 +44,47 @@ export const countOwnedTiles = (tiles: { isOwned: boolean }[][]): number => {
  * @param stat The character stat key
  * @returns Description of what the stat does
  */
-export const getStatDescription = (stat: keyof Omit<CharacterStats, 'availablePoints'>): string => {
-  const descriptions: Record<keyof Omit<CharacterStats, 'availablePoints'>, string> = {
-    strength: 'Flex your muscles. Increases physical damage and carrying capacity.',
-    dexterity: 'Swift and agile movements. Improves attack speed and dodge chance.',
-    intelligence: 'Expand your mind. Enhances magic power and learning speed.',
-    vitality: 'Health and endurance. Boosts hit points and stamina recovery.',
-    charisma: 'Personal magnetism. Better prices from merchants and persuasion options.',
-    // Combat stats
-    physicalAtk: 'Your physical attack power. Determines damage dealt with physical attacks.',
-    magicAtk: 'Your magical attack power. Determines damage dealt with magical attacks.',
-    hp: 'Hit Points. Your health that determines how much damage you can take.',
-    mp: 'Mana Points. Resource used for casting spells and special abilities.',
-    def: 'Physical Defense. Reduces damage taken from physical attacks.',
-    magicDef: 'Magical Defense. Reduces damage taken from magical attacks.',
-    luck: 'Influences random events, critical hits, and rare item finds.',
-    critChance: 'Percentage chance to land a critical hit for increased damage.',
-    critDmgMultiplier: 'Percentage of additional damage dealt on critical hits.',
-    atkSpeedIncrease: 'Percentage increase to attack speed, allowing faster actions.',
-    xpGainMultiplier: 'Percentage increase to experience points gained from all sources.',
-    tileCostDiscount: 'Percentage discount when purchasing new tiles.',
-    reputation: 'Your standing in the world. Affects interactions with NPCs and factions.'
-  };
-  
-  return descriptions[stat];
+export const getStatDescription = (
+	stat: keyof Omit<CharacterStats, 'availablePoints'>
+): string => {
+	const descriptions: Record<
+		keyof Omit<CharacterStats, 'availablePoints'>,
+		string
+	> = {
+		strength:
+			'Increases Physical ATK (+1 per point) / Stone & Coal Modifier (2.5% per point). / DEF (+0.5 per point) / Crit DMG (+1% per point)',
+		dexterity:
+			'Increases DEF (+1 per point) / Wood & Food Modifier (2.5% per point). / ATK Speed (+0.25% per point) / Crit Chance (+0.25% per point) / Crit DMG (+0.5% per point)',
+		intelligence:
+			'Increases Magic ATK (+1 per point) / Gold Modifier (2.5% per point). / Magic DEF (+1 per point) / MP (+2 per point) / XP Modifier (+0.2% per point)',
+		vitality:
+			'Increases HP (+3 per point) / Food & Wood Modifier (2.5% per point). / DEF (+0.5 per point) / Magic DEF & DEF (+0.5 per point)',
+		charisma:
+			'Increases HP/DEF/Magic DEF (+0.25 per point) / Gold & Coal Modifier (2.5% per point). / Luck (+1 per point) / Crit Chance & Crit DMG (+0.5% per point) / XP Modifier (+0.25% per point)',
+		// Combat stats
+		physicalAtk:
+			'Your physical attack power. Determines damage dealt with physical attacks.',
+		magicAtk:
+			'Your magical attack power. Determines damage dealt with magical attacks.',
+		hp: 'Hit Points. Your health that determines how much damage you can take.',
+		mp: 'Mana Points. Resource used for casting spells and special abilities.',
+		def: 'Physical Defense. Reduces damage taken from physical attacks.',
+		magicDef: 'Magical Defense. Reduces damage taken from magical attacks.',
+		luck: 'Influences random events and rare item finds.',
+		critChance:
+			'Percentage chance to land a critical hit for increased damage.',
+		critDmgMultiplier:
+			'Percentage of additional damage dealt on critical hits.',
+		atkSpeedIncrease:
+			'Percentage increase to attack speed, allowing faster actions.',
+		xpGainMultiplier:
+			'Percentage increase to experience points gained from all sources.',
+		tileCostDiscount: 'Percentage discount when purchasing new tiles.',
+		reputation:
+			'Your standing in the world. Affects interactions with NPCs and factions.',
+	};
+
+	return descriptions[stat];
 };
 
 /**
@@ -62,7 +101,9 @@ export const calculateXpGain = (ownedTiles: number): number => {
  * Calculate level based on total XP using exponential scaling
  * Each level requires more XP than the previous one
  */
-export const calculateLevel = (xp: number): { level: number; progress: number } => {
+export const calculateLevel = (
+	xp: number
+): { level: number; progress: number } => {
 	// Start at level 1, no XP needed for first level
 	let level = 1;
 	let xpForNextLevel = BASE_XP_PER_LEVEL;
@@ -173,7 +214,9 @@ export const canAffordCost = (
 	);
 };
 
-export const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates => {
+export const calculateResourceRates = (
+	tiles: GameState['tiles']
+): ResourceRates => {
 	const base = { ...BASE_GENERATION_RATES };
 	const modifiers: Record<keyof Resources, number> = {
 		gold: 0,
@@ -262,7 +305,7 @@ export const calculateResourceRates = (tiles: GameState['tiles']): ResourceRates
 
 // Biome Generation
 export const getRandomBiome = (): BiomeType => {
-  const BIOMES_TO_EXCLUDE = [...SPECIAL_SINGLE_TYPE_BIOMES, ...EMPTY_BIOMES]
+	const BIOMES_TO_EXCLUDE = [...SPECIAL_SINGLE_TYPE_BIOMES, ...EMPTY_BIOMES];
 	const availableBiomes = Object.entries(BIOMES)
 		.filter(([name]) => !BIOMES_TO_EXCLUDE.includes(name))
 		.map(([name]) => name as BiomeType);
