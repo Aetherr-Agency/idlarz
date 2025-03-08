@@ -13,6 +13,7 @@ import { useGameStore } from '@/stores/gameStore';
 import { countOwnedTiles } from '@/utils/gameUtils';
 import { cn } from '@/lib/utils';
 import audioManager from '@/utils/audioManager';
+import { formatNumber } from '@/utils/formatters';
 
 // Utility functions
 
@@ -217,7 +218,7 @@ const TileStatus = memo(
 					</div>
 					<div className='text-sm font-bold text-[12px] mb-3'>
 						<span className={canAfford ? 'text-green-400' : 'text-red-400'}>
-							{RESOURCE_ICONS.gold} Cost: {cost} gold
+							{RESOURCE_ICONS.gold} Cost: {formatNumber(cost)} gold
 						</span>
 					</div>
 					<div className='text-sm text-gray-400 text-[12px] text-center'>

@@ -273,6 +273,7 @@ const createGameSlice = (
 		resourceRates: initialRates,
 		resourceModifiers: initialRates.modifiers,
 		level: calculateLevel(0),
+		previousLevel: 0,
 		playerName: DEFAULT_PLAYER_NAME,
 		characterStats: INITIAL_CHARACTER_STATS,
 		equipment: {},
@@ -391,6 +392,7 @@ const createGameSlice = (
 			const secondsElapsed = deltaTime / 1000;
 			const newResources = { ...state.resources };
 
+			// Apply resource generation
 			Object.entries(state.resourceRates.total).forEach(([resource, rate]) => {
 				if (typeof rate === 'number' && !isNaN(rate)) {
 					newResources[resource as keyof Resources] += rate * secondsElapsed;
@@ -399,22 +401,33 @@ const createGameSlice = (
 
 			// Calculate new level based on XP
 			const newLevel = calculateLevel(newResources.xp);
+			
+			// Create new state update object
+			const stateUpdate: Partial<GameState> = {
+				resources: newResources,
+				level: newLevel
+			};
+			console.log('OUTSIDE!',newLevel, state.level, state);
 
-			// Add stat points if level increased
-			const currentLevel = state.level.level;
-			const newCharacterStats = { ...state.characterStats };
-
-			if (newLevel.level > currentLevel) {
-				// Add 3 stat points per level gained
-				const levelsGained = newLevel.level - currentLevel;
-				newCharacterStats.availablePoints += levelsGained * 3;
+			// Check for level up and add stat points if needed
+			if (newLevel.level > state.previousLevel) {
+				console.log('INSIDE!')
+				const levelsGained = newLevel.level - state.previousLevel;
+				const newPoints = levelsGained * 3;
+				
+				// Create a new stats object and add the points
+				const newCharacterStats = { ...state.characterStats };
+				newCharacterStats.availablePoints += newPoints;
+				
+				// Add to the state update
+				stateUpdate.characterStats = newCharacterStats;
+				stateUpdate.previousLevel = newLevel.level;
+				
+				console.log(`Level up from ${state.previousLevel} to ${newLevel.level}! Added ${newPoints} stat points. New total: ${newCharacterStats.availablePoints}`);
 			}
 
-			set({
-				resources: newResources,
-				level: newLevel,
-				characterStats: newCharacterStats,
-			});
+			// Update the state with all changes
+			set(stateUpdate);
 		},
 		addStatPoint: (stat: keyof CharacterStats) => {
 			const state = get();
@@ -462,8 +475,8 @@ const createGameSlice = (
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'giorgio-explorer-game-v112',
-		version: 9,
+		name: 'giorgio-explorer-game-v13',
+		version: 13,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {
 			// Set hydration state to true
@@ -481,6 +494,7 @@ export const useGameStore = create(
 					resourceModifiers: initialRates.modifiers,
 					xp: 0,
 					level: calculateLevel(0),
+					previousLevel: 0,
 					playerName: DEFAULT_PLAYER_NAME,
 					characterStats: INITIAL_CHARACTER_STATS,
 					equipment: {},

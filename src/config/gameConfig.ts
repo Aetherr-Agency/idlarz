@@ -21,7 +21,6 @@ export const SCALING_CONFIG = {
 	// Exponential cost scaling formula
 	costFormula: (ownedTiles: number) => {
 		const tier = Math.floor(ownedTiles / SCALING_CONFIG.scalingIncreasePer);
-		console.log('TIER:', tier);
 		const currentScalingFactor =
 			SCALING_CONFIG.baseScalingFactor *
 			(1 +
