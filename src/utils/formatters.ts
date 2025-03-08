@@ -2,14 +2,14 @@ export const formatNumber = (num: number | undefined): string => {
   if (num === undefined || num === null) return '0';
   if (Math.abs(num) < 0.01) return '0';
   
-  // Format large numbers with suffix
+  // Format large numbers with suffix - only apply to numbers > 10,000
   if (Math.abs(num) >= 1_000_000_000_000) {
     return `${(num / 1_000_000_000_000).toFixed(2)}T`;
   } else if (Math.abs(num) >= 1_000_000_000) {
     return `${(num / 1_000_000_000).toFixed(2)}B`;
   } else if (Math.abs(num) >= 1_000_000) {
     return `${(num / 1_000_000).toFixed(2)}M`;
-  } else if (Math.abs(num) >= 1_000) {
+  } else if (Math.abs(num) >= 10_000) {
     return `${(num / 1_000).toFixed(2)}K`;
   }
   
@@ -21,14 +21,14 @@ export const formatNumber = (num: number | undefined): string => {
 export const formatRate = (rate: number): string => {
   if (Math.abs(rate) < 0.01) return '0/s';
   
-  // Format large rates with suffix
+  // Format large rates with suffix - only apply to rates > 10,000
   if (Math.abs(rate) >= 1_000_000_000_000) {
     return `${rate > 0 ? '+' : ''}${(rate / 1_000_000_000_000).toFixed(2)}T/s`;
   } else if (Math.abs(rate) >= 1_000_000_000) {
     return `${rate > 0 ? '+' : ''}${(rate / 1_000_000_000).toFixed(2)}B/s`;
   } else if (Math.abs(rate) >= 1_000_000) {
     return `${rate > 0 ? '+' : ''}${(rate / 1_000_000).toFixed(2)}M/s`;
-  } else if (Math.abs(rate) >= 1_000) {
+  } else if (Math.abs(rate) >= 10_000) {
     return `${rate > 0 ? '+' : ''}${(rate / 1_000).toFixed(2)}K/s`;
   }
   
