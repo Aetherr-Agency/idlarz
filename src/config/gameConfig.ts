@@ -85,6 +85,7 @@ export const RESOURCE_ICONS = {
 	stone: '🪨',
 	coal: '⛏️',
 	food: '🌾',
+	meat: '🥩',
 	xp: '✨',
 };
 
@@ -230,6 +231,7 @@ export const INITIAL_RESOURCES = {
 	stone: 0,
 	coal: 0,
 	food: 0,
+	meat: 0,
 	xp: 0,
 };
 
@@ -240,6 +242,7 @@ export const BASE_GENERATION_RATES = {
 	stone: 0,
 	coal: 0,
 	food: 0,
+	meat: 0, // Meat can only be generated through the farm
 	xp: 0.5, // Base XP generation rate increased
 };
 

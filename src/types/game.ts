@@ -8,6 +8,7 @@ export interface Resources {
 	stone: number;
 	coal: number;
 	food: number;
+	meat: number;
 	xp: number;
 }
 
@@ -105,16 +106,21 @@ export interface GameState {
 	characterStats: CharacterStats;
 	equipment: Equipment;
 	inventory: Item[];
+	farmLevels: Record<string, number>; // Track levels of each animal in the farm
 	showCharacterWindow: boolean;
 	showStatisticsWindow: boolean;
 	showMerchantWindow: boolean;
+	showFarmWindow: boolean; // Control farm overlay visibility
 	isHydrated: boolean; // Flag to track if store is rehydrated from localStorage
 	buyTile: (x: number, y: number) => boolean;
 	upgradeCastle: () => boolean;
+	purchaseAnimal: (animalId: string) => boolean; // Buy/upgrade animals
 	tick: (deltaTime: number) => void;
 	toggleCharacterWindow: () => void;
 	toggleStatisticsWindow: () => void;
 	toggleMerchantWindow: () => void;
+	toggleFarmWindow: () => void; // Toggle farm overlay visibility
+	setShowFarmWindow: (show: boolean) => void; // Set farm overlay visibility
 	sellResources: (resource: keyof Resources, amount: number) => number | undefined;
 	addStatPoint: (stat: keyof CharacterStats) => void;
 	setPlayerName: (name: string) => void;

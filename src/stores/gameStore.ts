@@ -23,6 +23,71 @@ import {
 } from '@/utils/gameUtils';
 import type { GameState, Resources, Tile, CharacterStats } from '@/types/game';
 
+// Farm animal configurations
+interface Animal {
+	id: string;
+	baseCost: number;
+	costScaling: number;
+	baseProduction: number;
+	productionScaling: number;
+}
+
+const ANIMALS: Record<string, Animal> = {
+	chicken: {
+		id: 'chicken',
+		baseCost: 10000,
+		costScaling: 1.5,
+		baseProduction: 0.05,
+		productionScaling: 1.2,
+	},
+	deer: {
+		id: 'deer',
+		baseCost: 50000,
+		costScaling: 1.6,
+		baseProduction: 0.2,
+		productionScaling: 1.25,
+	},
+	pig: {
+		id: 'pig',
+		baseCost: 200000,
+		costScaling: 1.7,
+		baseProduction: 0.5,
+		productionScaling: 1.3,
+	},
+	cow: {
+		id: 'cow',
+		baseCost: 1000000,
+		costScaling: 1.8,
+		baseProduction: 1.5,
+		productionScaling: 1.4,
+	},
+};
+
+// Helper to calculate cost at a specific level
+const calculateAnimalCost = (animal: Animal, level: number): number => {
+	return Math.floor(animal.baseCost * Math.pow(animal.costScaling, level));
+};
+
+// Helper to calculate production at a specific level
+const calculateAnimalProduction = (animal: Animal, level: number): number => {
+	if (level <= 0) return 0;
+	return animal.baseProduction * Math.pow(animal.productionScaling, level - 1);
+};
+
+// Calculate total meat production from all animals
+const calculateTotalMeatProduction = (farmLevels: Record<string, number>): number => {
+	let totalProduction = 0;
+
+	Object.entries(ANIMALS).forEach(([animalId, animal]) => {
+		const level = farmLevels[animalId] || 0;
+		if (level > 0) {
+			totalProduction += calculateAnimalProduction(animal, level);
+		}
+	});
+
+	return totalProduction;
+};
+
 const createGameSlice = (
 	set: (
 		partial: Partial<GameState> | ((state: GameState) => Partial<GameState>)
@@ -30,10 +95,7 @@ const createGameSlice = (
 	get: () => GameState
 ) => {
 	const initialGrid = createInitialGrid();
-	const initialRates = calculateResourceRates(
-		initialGrid,
-		INITIAL_CHARACTER_STATS
-	);
+	const initialRates = calculateResourceRates(initialGrid, INITIAL_CHARACTER_STATS);
 
 	return {
 		tiles: initialGrid,
@@ -46,10 +108,63 @@ const createGameSlice = (
 		characterStats: INITIAL_CHARACTER_STATS,
 		equipment: {},
 		inventory: INITIAL_INVENTORY_ITEMS,
+		farmLevels: {}, // Initialize farm levels (animal counts)
 		showCharacterWindow: false,
 		showStatisticsWindow: false,
 		showMerchantWindow: false,
+		showFarmWindow: false, // Initialize farm window visibility
 		isHydrated: false,
+
+		// Add a new method to purchase or upgrade an animal
+		purchaseAnimal: (animalId: string) => {
+			const state = get();
+			const animal = ANIMALS[animalId];
+
+			if (!animal) return false;
+
+			// Get current level of the animal (0 if not owned yet)
+			const currentLevel = state.farmLevels[animalId] || 0;
+
+			// Calculate cost to purchase/upgrade the animal
+			const cost = calculateAnimalCost(animal, currentLevel);
+
+			// Check if player can afford it
+			if (state.resources.food < cost) return false;
+
+			// Update farm levels and deduct cost
+			const newFarmLevels = { ...state.farmLevels };
+			newFarmLevels[animalId] = currentLevel + 1;
+
+			// Deduct food cost
+			const newResources = { ...state.resources };
+			newResources.food -= cost;
+
+			// Calculate new total meat production rate
+			const meatProductionRate = calculateTotalMeatProduction(newFarmLevels);
+
+			// Update resource rates with new meat production
+			const newRates = { ...state.resourceRates };
+			newRates.total = { ...newRates.total, meat: meatProductionRate };
+
+			// Update state
+			set({
+				farmLevels: newFarmLevels,
+				resources: newResources,
+				resourceRates: newRates,
+			});
+
+			return true;
+		},
+
+		// Add methods to control farm overlay visibility
+		toggleFarmWindow: () => {
+			const state = get();
+			set({ showFarmWindow: !state.showFarmWindow });
+		},
+
+		setShowFarmWindow: (show: boolean) => {
+			set({ showFarmWindow: show });
+		},
 
 		addStatPoint: (stat: keyof CharacterStats) => {
 			const state = get();
@@ -217,6 +332,12 @@ const createGameSlice = (
 				}
 			});
 
+			// Add meat from farm animals
+			const meatProductionRate = calculateTotalMeatProduction(state.farmLevels);
+			if (meatProductionRate > 0) {
+				newResources.meat += meatProductionRate * secondsElapsed;
+			}
+
 			// Calculate new level based on XP
 			const newLevel = calculateLevel(newResources.xp);
 
@@ -289,28 +410,28 @@ const createGameSlice = (
 		},
 		sellResources: (resource: keyof Resources, amount: number) => {
 			if (resource === 'gold' || resource === 'xp') return; // Cannot sell gold or xp
-			
+
 			const state = get();
 			if (state.resources[resource] < amount) return; // Not enough resources
-			
+
 			// Resource pricing (different for each resource)
 			const prices = {
 				wood: 0.75,
 				stone: 1.25,
 				coal: 2.0,
-				food: 0.5
+				food: 0.5,
 			};
-			
+
 			const goldGained = Math.floor(amount * prices[resource as keyof typeof prices]);
-			
+
 			set({
 				resources: {
 					...state.resources,
 					[resource]: state.resources[resource] - amount,
-					gold: state.resources.gold + goldGained
-				}
+					gold: state.resources.gold + goldGained,
+				},
 			});
-			
+
 			return goldGained;
 		},
 	};
@@ -342,9 +463,11 @@ export const useGameStore = create(
 					characterStats: INITIAL_CHARACTER_STATS,
 					equipment: {},
 					inventory: INITIAL_INVENTORY_ITEMS,
+					farmLevels: {}, // Initialize farm levels (animal counts)
 					showCharacterWindow: false,
 					showStatisticsWindow: false,
 					showMerchantWindow: false,
+					showFarmWindow: false, // Initialize farm window visibility
 					isHydrated: true,
 					buyTile: state?.buyTile,
 					upgradeCastle: state?.upgradeCastle,

@@ -52,6 +52,10 @@ const ResourceDisplay: React.FC = () => {
 	const toggleMerchantWindow = useGameStore(
 		(state) => state.toggleMerchantWindow
 	);
+	const toggleFarmWindow = useGameStore(
+		(state) => state.toggleFarmWindow
+	);
+	
 	const characterStats = useGameStore((state) => state.characterStats);
 
 	const [levelUpActive, setLevelUpActive] = useState(false);
@@ -119,6 +123,12 @@ const ResourceDisplay: React.FC = () => {
 							title="Merchant">
 							💰
 						</div>
+						<div
+							onClick={toggleFarmWindow}
+							className='select-none flex items-center justify-center border-2 border-green-900/20 p-1.5 rounded-xl hover:bg-green-950 hover:border-green-800 cursor-pointer hover:opacity-80 transition-opacity duration-200'
+							title="Farm">
+							🌾
+						</div>
 					</div>
 
 					{(Object.keys(RESOURCE_INFO) as (keyof Resources)[]).map(
@@ -133,6 +143,8 @@ const ResourceDisplay: React.FC = () => {
 							if (resource === 'xp') {
 								return null;
 							}
+
+							console.log('resource',resource)
 
 							return (
 								<div
