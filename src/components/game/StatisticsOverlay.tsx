@@ -68,10 +68,6 @@ const StatisticsOverlay: React.FC = () => {
             <LevelDetails />
 
             <div className='bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-700 mt-4'>
-              <h2 className='text-white font-semibold mb-4 text-center border-b border-gray-700 pb-2'>
-                Character Stats
-              </h2>
-
               {/* Available Points */}
               {characterStats.availablePoints > 0 && (
                 <div className='flex justify-between mb-4 bg-gray-700 bg-opacity-40 p-2 rounded-md'>
@@ -124,8 +120,6 @@ const StatisticsOverlay: React.FC = () => {
               </div>
 
               <div className='mt-4 text-[9px] uppercase text-gray-400 italic text-center'>
-                Hover over a stat name to see its description.
-                <br />
                 You gain 3 stat points with each level up.
               </div>
             </div>
