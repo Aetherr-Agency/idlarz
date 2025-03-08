@@ -407,11 +407,9 @@ const createGameSlice = (
 				resources: newResources,
 				level: newLevel
 			};
-			console.log('OUTSIDE!',newLevel, state.level, state);
 
 			// Check for level up and add stat points if needed
 			if (newLevel.level > state.previousLevel) {
-				console.log('INSIDE!')
 				const levelsGained = newLevel.level - state.previousLevel;
 				const newPoints = levelsGained * 3;
 				
@@ -475,7 +473,7 @@ const createGameSlice = (
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'giorgio-explorer-game-v13',
+		name: 'giorgio-explorer-game-v1333',
 		version: 13,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {

@@ -14,9 +14,9 @@ export const ADJACENCY_BONUS = 0.25; // 25% bonus for adjacent same biomes
 // Resource scaling configuration
 export const SCALING_CONFIG = {
 	// Base scaling factor that increases exponentially
-	baseScalingFactor: 1.26,
-	scalingIncreasePer: 11, // Increase scaling every X tiles
-	scalingIncreaseAmount: 0.03, // 3% increase in scaling factor
+	baseScalingFactor: 1.34,
+	scalingIncreasePer: 13, // Increase scaling every X tiles
+	scalingIncreaseAmount: 0.04, // 4% increase in scaling factor
 
 	// Exponential cost scaling formula
 	costFormula: (ownedTiles: number) => {
