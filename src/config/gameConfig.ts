@@ -48,7 +48,7 @@ export const VIEWPORT_SIZE = 25; // 12 tiles in each direction from center
 
 // Game Constants
 export const TICK_RATE = 100; // 10 times per second
-export const BASE_TILE_COST = 70; // Base cost for first tile purchase
+export const BASE_TILE_COST = 55; // Base cost for first tile purchase
 export const ADJACENCY_BONUS = 0.25; // 25% bonus for adjacent same biomes
 
 // XP calculation constants - Exponential XP system
@@ -62,9 +62,9 @@ export const EMPTY_BIOMES: BiomeType[] = ['empty'];
 // Resource scaling configuration
 export const SCALING_CONFIG = {
 	// Base scaling factor that increases exponentially
-	baseScalingFactor: 1.48,
-	scalingIncreasePer: 10, // Increase scaling every X tiles
-	scalingIncreaseAmount: 0.06, // 6% increase in scaling factor
+	baseScalingFactor: 1.42,
+	scalingIncreasePer: 12, // Increase scaling every X tiles
+	scalingIncreaseAmount: 0.045, // 4.5% increase in scaling factor
 
 	// Exponential cost scaling formula
 	costFormula: (ownedTiles: number) => {
