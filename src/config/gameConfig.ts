@@ -304,7 +304,14 @@ export const CASTLE_UPGRADE = {
 	upgradeCosts: [
 		{ gold: 35000, wood: 5000, stone: 5000 },
 		{ gold: 100000, wood: 15000, stone: 15000, coal: 10000 },
-		{ gold: 500000, wood: 50000, stone: 50000, coal: 25000, food: 100000, meat: 20000 },
+		{
+			gold: 500000,
+			wood: 50000,
+			stone: 50000,
+			coal: 25000,
+			food: 100000,
+			meat: 20000,
+		},
 		{
 			gold: 2000000,
 			wood: 200000,
@@ -445,83 +452,83 @@ export const MERCHANT_RESOURCE_INFO = {
 };
 
 // Buildings for grounds tiles
-export type BuildingType = 
-  'farm' | 
-  'mine' | 
-  'lumbermill' | 
-  'market' | 
-  'blacksmith' | 
-  'workshop';
+export type BuildingType =
+	| 'farm'
+	| 'mine'
+	| 'lumbermill'
+	| 'market'
+	| 'blacksmith'
+	| 'workshop';
 
 export interface Building {
-  name: BuildingType;
-  label: string;
-  icon: string;
-  description: string;
-  resourceGeneration: Partial<Resources>;
+	name: BuildingType;
+	label: string;
+	icon: string;
+	description: string;
+	resourceGeneration: Partial<Resources>;
 }
 
 // Buildings configuration
 export const BUILDINGS: Record<BuildingType, Building> = {
-  farm: {
-    name: 'farm',
-    label: 'Farm',
-    icon: '🌱',
-    description: 'Produces +0.2 food per second',
-    resourceGeneration: {
-      food: 0.2,
-    },
-  },
-  mine: {
-    name: 'mine',
-    label: 'Mine',
-    icon: '⚫',
-    description: 'Produces +0.2 stone and +0.2 coal per second',
-    resourceGeneration: {
-      stone: 0.2,
-      coal: 0.2,
-    }
-  },
-  lumbermill: {
-    name: 'lumbermill',
-    label: 'Lumber Mill',
-    icon: '🪓',
-    description: 'Produces +0.2 wood per second',
-    resourceGeneration: {
-      wood: 0.2,
-    }
-  },
-  market: {
-    name: 'market',
-    label: 'Market',
-    icon: '🏪',
-    description: 'Produces +0.2 gold per second',
-    resourceGeneration: {
-      gold: 0.2,
-    }
-  },
-  blacksmith: {
-    name: 'blacksmith',
-    label: 'Blacksmith',
-    icon: '🔨',
-    description: 'Produces +0.1 to all resources per second',
-    resourceGeneration: {
-      stone: 0.1,
-      coal: 0.1,
-      gold: 0.1,
-      food: 0.1,
-      wood: 0.1,
-    }
-  },
-  workshop: {
-    name: 'workshop',
-    label: 'Workshop',
-    icon: '🏭',
-    description: 'Produces +0.2 XP per second',
-    resourceGeneration: {
-      xp: 0.2,
-    }
-  }
+	farm: {
+		name: 'farm',
+		label: 'Farm',
+		icon: '🌱',
+		description: 'Produces +0.2 food per second',
+		resourceGeneration: {
+			food: 0.2,
+		},
+	},
+	mine: {
+		name: 'mine',
+		label: 'Mine',
+		icon: '⚫',
+		description: 'Produces +0.2 stone and coal per second',
+		resourceGeneration: {
+			stone: 0.2,
+			coal: 0.2,
+		},
+	},
+	lumbermill: {
+		name: 'lumbermill',
+		label: 'Lumber Mill',
+		icon: '🪓',
+		description: 'Produces +0.2 wood per second',
+		resourceGeneration: {
+			wood: 0.2,
+		},
+	},
+	market: {
+		name: 'market',
+		label: 'Market',
+		icon: '🏪',
+		description: 'Produces +0.2 gold per second',
+		resourceGeneration: {
+			gold: 0.2,
+		},
+	},
+	blacksmith: {
+		name: 'blacksmith',
+		label: 'Blacksmith',
+		icon: '🔨',
+		description: 'Produces +0.1 to all resources per second',
+		resourceGeneration: {
+			stone: 0.1,
+			coal: 0.1,
+			gold: 0.1,
+			food: 0.1,
+			wood: 0.1,
+		},
+	},
+	workshop: {
+		name: 'workshop',
+		label: 'Workshop',
+		icon: '🏭',
+		description: 'Produces +0.2 XP per second',
+		resourceGeneration: {
+			xp: 0.2,
+		},
+	},
 };
 
 // Equipment and items configuration
