@@ -58,6 +58,7 @@ export interface Tile {
 	isOwned: boolean;
 	level?: number;
 	upgradeCost?: Resources;
+	building?: string;
 }
 
 export type EquipmentSlot =
@@ -139,15 +140,14 @@ export interface GameState {
 	};
 	playerName: string;
 	characterStats: CharacterStats;
-	equipment: Record<string, string>; // Slot -> Item ID
+	equipment: Equipment;
 	inventory: Item[];
-	farmLevels: Record<string, number>; // Animal ID -> Level
+	farmLevels: Record<string, number>;
 	showCharacterWindow: boolean;
 	showStatisticsWindow: boolean;
 	showMerchantWindow: boolean;
 	showFarmWindow: boolean;
 	isHydrated: boolean;
-	// Biome selection feature
 	biomeSelectionActive: boolean;
 	pendingTileCoords: { x: number; y: number } | null;
 	selectableBiomes: BiomeType[] | null;
@@ -158,6 +158,7 @@ export interface GameState {
 	cancelBiomeSelection: () => void;
 	upgradeCastle: () => boolean;
 	purchaseAnimal: (animalId: string) => boolean;
+	upgradeGroundsTile: (x: number, y: number, buildingType: string) => void;
 	tick: (deltaTime: number) => void;
 	toggleCharacterWindow: () => void;
 	toggleStatisticsWindow: () => void;

@@ -111,6 +111,21 @@ export const BiomeTooltip = memo(
 						% all resource generation
 					</div>
 				)}
+				{biome === 'grounds' && (!level || level === 1) && (
+					<div className='mt-2'>
+						<div className='text-amber-400 text-[11px] mb-1'>
+							This grounds can be expanded with a building
+						</div>
+						<div className='text-gray-400 text-[9px]'>
+							Click on the tile to upgrade to Grounds Level 2
+						</div>
+					</div>
+				)}
+				{biome === 'grounds' && level && level > 1 && (
+					<div className='mt-2 text-purple-400 text-[9px]'>
+						Grounds Level {level} with building
+					</div>
+				)}
 				{adjacentCount > 0 && (
 					<div className='mt-2 text-yellow-500 text-xs'>
 						+{(adjacencyMultiplier - 1).toFixed(2)}x bonus from {adjacentCount}{' '}

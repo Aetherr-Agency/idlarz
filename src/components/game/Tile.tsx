@@ -15,14 +15,17 @@ import { cn } from '@/lib/utils';
 import audioManager from '@/utils/audioManager';
 import { TileStatus } from './TileStatus';
 import CastleUpgradeDialog from './CastleUpgradeDialog';
+import BuildingSelectionDialog from './BuildingSelectionDialog';
 
 const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 	const tiles = useGameStore((state) => state.tiles);
 	const buyTile = useGameStore((state) => state.buyTile);
 	const resources = useGameStore((state) => state.resources);
 	const characterStats = useGameStore((state) => state.characterStats);
+	const upgradeGroundsTile = useGameStore((state) => state.upgradeGroundsTile);
 	const [isShaking, setIsShaking] = useState(false);
 	const [showCastleDialog, setShowCastleDialog] = useState(false);
+	const [showBuildingDialog, setShowBuildingDialog] = useState(false);
 
 	const isAdjacent = useMemo(() => {
 		if (isOwned || !tiles) return false;
@@ -70,6 +73,13 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 			return;
 		}
 
+		// Check if this is a grounds tile and it's owned
+		if (isOwned && biome === 'grounds') {
+			audioManager.playSound('click');
+			setShowBuildingDialog(true);
+			return;
+		}
+
 		if (isAdjacent && !isOwned) {
 			if (canAfford) {
 				const result = buyTile(x, y);
@@ -85,6 +95,15 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 				setTimeout(() => setIsShaking(false), 300);
 			}
 		}
+	};
+
+	const handleBuildingSelect = (buildingType: string) => {
+		// Upgrade the grounds tile with the selected building
+		if (biome === 'grounds') {
+			upgradeGroundsTile(x, y, buildingType);
+			audioManager.playSound('purchase');
+		}
+		setShowBuildingDialog(false);
 	};
 
 	const farAwayTile = !isOwned && !isAdjacent;
@@ -110,7 +129,7 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 							biome === 'castle',
 						'group hover:z-20': true,
 						'opacity-75 border-2 border-red-500': isShaking,
-						'cursor-pointer': isOwned && biome === 'castle',
+						'cursor-pointer': isOwned && (biome === 'castle' || biome === 'grounds'),
 					}
 				)}
 				style={{
@@ -134,6 +153,11 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 							{tiles[GRID_CENTER_Y]?.[GRID_CENTER_X]?.level}
 						</span>
 					)}
+					{biome === 'grounds' && level && level > 1 && (
+						<span className='absolute top-0.5 right-0.5 text-[8px] bg-amber-400 w-3 h-3 aspect-square flex items-center justify-center leading-0 font-bold text-purple-600 rounded-full'>
+							{level}
+						</span>
+					)}
 				</div>
 
 				{(isOwned || isAdjacent) && (
@@ -152,8 +176,21 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 				)}
 			</div>
 
+			{/* Castle Upgrade Dialog */}
 			{showCastleDialog && (
-				<CastleUpgradeDialog onClose={() => setShowCastleDialog(false)} />
+				<CastleUpgradeDialog
+					onClose={() => setShowCastleDialog(false)}
+				/>
+			)}
+
+			{/* Building Selection Dialog */}
+			{showBuildingDialog && (
+				<BuildingSelectionDialog
+					onSelect={handleBuildingSelect}
+					onCancel={() => setShowBuildingDialog(false)}
+					tileX={x}
+					tileY={y}
+				/>
 			)}
 		</>
 	);

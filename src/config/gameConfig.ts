@@ -160,7 +160,7 @@ export const BIOMES: Record<string, BiomeInfo> = {
 		label: 'Grounds',
 		baseColor: '#371c00',
 		unique: false,
-		upgradeable: false,
+		upgradeable: true,
 		resourceGeneration: {
 			xp: 0.15,
 		},

@@ -379,6 +379,31 @@ const createGameSlice = (
 			return true;
 		},
 
+		upgradeGroundsTile: (x: number, y: number, buildingType: string) => {
+			set((state) => {
+				// Make sure the tile exists and is a grounds tile
+				const tile = state.tiles[y]?.[x];
+				if (!tile || tile.biome !== 'grounds') {
+					return state;
+				}
+
+				// Update the tile level to 2 and assign the building
+				const updatedTiles = [...state.tiles];
+				updatedTiles[y] = [...updatedTiles[y]];
+				updatedTiles[y][x] = {
+					...updatedTiles[y][x],
+					level: 2,
+					building: buildingType
+				};
+
+				// Return updated state
+				return {
+					...state,
+					tiles: updatedTiles
+				};
+			});
+		},
+
 		tick: (deltaTime: number) => {
 			const state = get();
 			if (!state?.resourceRates?.total) return;
