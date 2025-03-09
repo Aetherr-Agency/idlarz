@@ -52,8 +52,8 @@ export const ADJACENCY_BONUS = 0.25; // 25% bonus for adjacent same biomes
 
 // XP calculation constants - Exponential XP system
 export const BASE_XP_PER_TILE = 125;
-export const XP_GROWTH_FACTOR = 1.4; // Exponential growth factor for XP needed per level (2x)
-export const BASE_XP_PER_LEVEL = 500; // Starting XP needed for level 1 to 2
+export const XP_GROWTH_FACTOR = 1.3; // Exponential growth factor for XP needed per level (2x)
+export const BASE_XP_PER_LEVEL = 750; // Starting XP needed for level 1 to 2
 
 export const SPECIAL_SINGLE_TYPE_BIOMES: BiomeType[] = ['castle'];
 export const EMPTY_BIOMES: BiomeType[] = ['empty'];
@@ -61,9 +61,9 @@ export const EMPTY_BIOMES: BiomeType[] = ['empty'];
 // Resource scaling configuration
 export const SCALING_CONFIG = {
 	// Base scaling factor that increases exponentially
-	baseScalingFactor: 1.34,
-	scalingIncreasePer: 13, // Increase scaling every X tiles
-	scalingIncreaseAmount: 0.04, // 4% increase in scaling factor
+	baseScalingFactor: 1.48,
+	scalingIncreasePer: 10, // Increase scaling every X tiles
+	scalingIncreaseAmount: 0.06, // 6% increase in scaling factor
 
 	// Exponential cost scaling formula
 	costFormula: (ownedTiles: number) => {
@@ -71,7 +71,7 @@ export const SCALING_CONFIG = {
 		const currentScalingFactor =
 			SCALING_CONFIG.baseScalingFactor *
 			(1 +
-				SCALING_CONFIG.scalingIncreaseAmount * (tier > 20 ? tier : tier / 2));
+				SCALING_CONFIG.scalingIncreaseAmount * (tier > 20 ? tier : tier / 1.2));
 		return Math.floor(
 			BASE_TILE_COST * Math.pow(currentScalingFactor, ownedTiles)
 		);
@@ -82,9 +82,9 @@ export const SCALING_CONFIG = {
 // Biome Configuration
 export const RESOURCE_ICONS = {
 	gold: '💰',
-	wood: '🪵',
-	stone: '🪨',
-	coal: '⛏️',
+	wood: '🪓',
+	stone: '🧱',
+	coal: '⚫',
 	food: '🌾',
 	meat: '🥩',
 	xp: '✨',
@@ -163,6 +163,10 @@ export const BIOMES: Record<string, BiomeInfo> = {
 		upgradeable: true,
 		resourceGeneration: {
 			xp: 0.15,
+			gold: 0.05,
+			wood: 0.05,
+			stone: 0.05,
+			food: 0.05,
 		},
 		resourceIcons: [RESOURCE_ICONS.xp],
 		description: 'Allow you to build structures',
@@ -261,7 +265,7 @@ export const BIOME_ICONS = {
 };
 
 export const INITIAL_RESOURCES = {
-	gold: 150, // Increased starter gold to make early game smoother
+	gold: 1250, // Increased starter gold to make early game smoother
 	wood: 0,
 	stone: 0,
 	coal: 0,
@@ -278,14 +282,14 @@ export const BASE_GENERATION_RATES = {
 	coal: 0,
 	food: 0,
 	meat: 0, // Meat can only be generated through the farm
-	xp: 0.5, // Base XP generation rate increased
+	xp: 0.25, // Base XP generation rate increased
 };
 
 // Castle Configuration - improved to make upgrades more impactful
 export const CASTLE_BASE_RATES = {
 	gold: 0.1, // Increased from 0.05
 	wood: 0.05, // Added some base wood generation
-	stone: 0.05, // Added some base stone generation
+	stone: 0,
 	coal: 0,
 	food: 0.05, // Increased from 0.01
 	meat: 0,
@@ -294,30 +298,72 @@ export const CASTLE_BASE_RATES = {
 
 // Exponential castle upgrade system
 export const CASTLE_UPGRADE = {
-	maxLevel: 10, // Increased from 5
+	maxLevel: 6, // Increased from 5
 	baseResourceMultiplier: 0.2, // 20% base modifier at level 1
 	doublePerLevel: true, // Multiply by 2 for each level
 	xpBonus: 0.5, // Additional flat XP per castle level
 	upgradeCosts: [
-		{ gold: 25000, wood: 2500, stone: 2500 },
-		{ gold: 100000, wood: 10000, stone: 10000, coal: 5000 },
-		{ gold: 500000, wood: 50000, stone: 50000, coal: 25000, food: 100000 },
-		{ gold: 2000000, wood: 200000, stone: 200000, coal: 100000, food: 1000000, meat: 50000 },
-		{ gold: 10000000, wood: 1000000, stone: 1000000, coal: 500000, food: 5000000, meat: 250000 },
-		{ gold: 50000000, wood: 5000000, stone: 5000000, coal: 2500000, food: 25000000, meat: 1000000 },
-		{ gold: 250000000, wood: 25000000, stone: 25000000, coal: 10000000, food: 100000000, meat: 5000000 },
-		{ gold: 1000000000, wood: 100000000, stone: 100000000, coal: 50000000, food: 500000000, meat: 25000000 },
-		{ gold: 5000000000, wood: 500000000, stone: 500000000, coal: 250000000, food: 2500000000, meat: 100000000 },
+		{ gold: 35000, wood: 5000, stone: 5000 },
+		{ gold: 100000, wood: 15000, stone: 15000, coal: 10000 },
+		{ gold: 500000, wood: 50000, stone: 50000, coal: 25000, food: 100000, meat: 20000 },
+		{
+			gold: 2000000,
+			wood: 200000,
+			stone: 200000,
+			coal: 100000,
+			food: 1000000,
+			meat: 50000,
+		},
+		{
+			gold: 10000000,
+			wood: 1000000,
+			stone: 1000000,
+			coal: 500000,
+			food: 5000000,
+			meat: 250000,
+		},
+		{
+			gold: 50000000,
+			wood: 5000000,
+			stone: 5000000,
+			coal: 2500000,
+			food: 25000000,
+			meat: 1000000,
+		},
+		{
+			gold: 250000000,
+			wood: 25000000,
+			stone: 25000000,
+			coal: 10000000,
+			food: 100000000,
+			meat: 5000000,
+		},
+		{
+			gold: 1000000000,
+			wood: 100000000,
+			stone: 100000000,
+			coal: 50000000,
+			food: 500000000,
+			meat: 25000000,
+		},
+		{
+			gold: 5000000000,
+			wood: 500000000,
+			stone: 500000000,
+			coal: 250000000,
+			food: 2500000000,
+			meat: 100000000,
+		},
 	],
 };
 
 // Merchant
 // Resource pricing constants (gold per unit)
 export const MERCHANT_RESOURCE_PRICES = {
-	wood: 0.75,
-	stone: 0.75,
-	coal: 1.25,
-	food: 0.5,
+	wood: 0.5,
+	stone: 0.5,
+	coal: 1,
+	food: 0.75,
 	meat: 3.0,
 };
 

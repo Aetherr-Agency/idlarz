@@ -1,6 +1,7 @@
 import React from 'react';
 import type { FC } from 'react';
 import audioManager from '@/utils/audioManager';
+import { Resources } from '@/types/game';
 
 // Define building types
 export type BuildingType = 
@@ -16,7 +17,7 @@ interface BuildingInfo {
   label: string;
   icon: string;
   description: string;
-  resourceBonus?: string;
+  resourceGeneration: Partial<Resources>;
 }
 
 // Buildings configuration
@@ -26,42 +27,59 @@ const BUILDINGS: Record<BuildingType, BuildingInfo> = {
     label: 'Farm',
     icon: '🌱',
     description: 'Increases food production',
-    resourceBonus: '+20% food generation'
+    resourceGeneration: {
+			food: 0.2,
+		},
   },
   mine: {
     name: 'mine',
     label: 'Mine',
-    icon: '⛏️',
+    icon: '⚫',
     description: 'Extracts stone and coal resources',
-    resourceBonus: '+20% stone and coal generation'
+    resourceGeneration: {
+			stone: 0.2,
+			coal: 0.2,
+		}
   },
   lumbermill: {
     name: 'lumbermill',
     label: 'Lumber Mill',
     icon: '🪓',
     description: 'Processes wood more efficiently',
-    resourceBonus: '+20% wood generation'
+    resourceGeneration: {
+			wood: 0.2,
+		}
   },
   market: {
     name: 'market',
     label: 'Market',
     icon: '🏪',
     description: 'Generates additional gold',
-    resourceBonus: '+20% gold generation'
+    resourceGeneration: {
+			gold: 0.2,
+		}
   },
   blacksmith: {
     name: 'blacksmith',
     label: 'Blacksmith',
     icon: '🔨',
     description: 'Crafts tools and weapons',
-    resourceBonus: '+10% to all resource generation'
+    resourceGeneration: {
+			stone: 0.1,
+			coal: 0.1,
+			gold: 0.1,
+      food: 0.1,
+      wood: 0.1,
+		}
   },
   workshop: {
     name: 'workshop',
     label: 'Workshop',
     icon: '🏭',
     description: 'Allows crafting of advanced items',
-    resourceBonus: '+15% XP generation'
+    resourceGeneration: {
+      xp: 0.2,
+		}
   }
 };
 
@@ -93,7 +111,8 @@ const BuildingSelectionDialog: FC<BuildingSelectionDialogProps> = ({
     >
       <h3 className="text-sm font-semibold text-white mb-2">Choose a Building for Grounds (Level 2)</h3>
       <p className="text-xs text-gray-400 mb-3">
-        Buildings provide special bonuses to your resource generation.
+        {/* Buildings provide special bonuses to your resource generation. */}
+        Proof of concept, modifiers are not added, simply cosmetic feature for now.
       </p>
       
       <div className="grid grid-cols-2 gap-2 mb-3">
@@ -113,9 +132,6 @@ const BuildingSelectionDialog: FC<BuildingSelectionDialogProps> = ({
               <span className="text-xs font-bold block text-white">{building.label}</span>
               <div className="text-xs mt-1">
                 <div className="text-gray-400">{building.description}</div>
-                {building.resourceBonus && (
-                  <div className="text-green-400 mt-1">{building.resourceBonus}</div>
-                )}
               </div>
             </div>
           </button>

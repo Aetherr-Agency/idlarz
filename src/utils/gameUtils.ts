@@ -1,21 +1,20 @@
 import {
+	BIOMES,
+	CASTLE_UPGRADE,
+	CASTLE_BASE_RATES,
 	GRID_SIZE,
 	GRID_HEIGHT,
+	BASE_GENERATION_RATES,
+	SPECIAL_SINGLE_TYPE_BIOMES,
+	EMPTY_BIOMES,
+	ANIMALS,
 	BASE_XP_PER_TILE,
 	BASE_XP_PER_LEVEL,
 	XP_GROWTH_FACTOR,
-	BIOMES,
-	SPECIAL_SINGLE_TYPE_BIOMES,
-	BASE_GENERATION_RATES,
-	CASTLE_BASE_RATES,
-	CASTLE_UPGRADE,
 	SCALING_CONFIG,
 	GRID_CENTER_Y,
 	GRID_CENTER_X,
-	EMPTY_BIOMES,
-	ANIMALS,
 } from '@/config/gameConfig';
-import { useGameStore } from '@/stores/gameStore';
 import {
 	Animal,
 	BiomeType,
@@ -146,8 +145,9 @@ export const calculateLevel = (
 };
 
 // Selector to check if name needs to be set
-export const useNeedsNameInput = () =>
-	useGameStore((state) => state.isHydrated && state.playerName === 'Explorer');
+export const isDefaultPlayerName = (name: string): boolean => {
+	return name === 'Explorer';
+};
 
 export const countAdjacentSameBiomes = (
 	tiles: GameState['tiles'],
@@ -329,11 +329,16 @@ export const calculateTotalMeatProduction = (
 
 export const calculateResourceRates = (
 	tiles: Tile[][],
-	characterStats?: CharacterStats
+	characterStats?: CharacterStats,
+	farmLevels: Record<string, number> = {}
 ): ResourceRates => {
 	const base = { ...BASE_GENERATION_RATES };
 	const modifiers = { ...BASE_GENERATION_RATES };
 	const total = { ...BASE_GENERATION_RATES };
+
+	// Add meat production from animals to base rates
+	const meatProduction = calculateTotalMeatProduction(farmLevels);
+	base.meat = meatProduction;
 
 	// Calculate base rates from tiles
 	for (let y = 0; y < tiles.length; y++) {

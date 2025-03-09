@@ -48,7 +48,8 @@ const createGameSlice = (
 	const initialGrid = createInitialGrid();
 	const initialRates = calculateResourceRates(
 		initialGrid,
-		INITIAL_CHARACTER_STATS
+		INITIAL_CHARACTER_STATS,
+		{}
 	);
 
 	return {
@@ -145,7 +146,7 @@ const createGameSlice = (
 			Object.assign(newStats, combatStats);
 
 			// Recalculate resource rates with new stats
-			const newRates = calculateResourceRates(state.tiles, newStats);
+			const newRates = calculateResourceRates(state.tiles, newStats, state.farmLevels);
 
 			set({
 				characterStats: newStats,
@@ -218,7 +219,7 @@ const createGameSlice = (
 			};
 
 			// Recalculate resource rates with the new tile and current stats
-			const newRates = calculateResourceRates(newTiles, state.characterStats);
+			const newRates = calculateResourceRates(newTiles, state.characterStats, state.farmLevels);
 
 			// Calculate XP gain based on new owned tiles count
 			const newOwnedTilesCount = ownedTilesCount + 1;
@@ -288,7 +289,7 @@ const createGameSlice = (
 			};
 
 			// Recalculate resource rates with the new tile and current stats
-			const newRates = calculateResourceRates(newTiles, state.characterStats);
+			const newRates = calculateResourceRates(newTiles, state.characterStats, state.farmLevels);
 
 			// Calculate XP gain based on new owned tiles count
 			const newOwnedTilesCount = ownedTilesCount + 1;
@@ -366,8 +367,8 @@ const createGameSlice = (
 				newResources[resource as keyof Resources] -= amount;
 			});
 
-			// Recalculate resource rates with current stats
-			const newRates = calculateResourceRates(newTiles, state.characterStats);
+			// Recalculate resource rates with current stats and farm levels
+			const newRates = calculateResourceRates(newTiles, state.characterStats, state.farmLevels);
 
 			set({
 				tiles: newTiles,
@@ -529,8 +530,8 @@ const createGameSlice = (
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'idle-explorer-v4',
-		version: 4,
+		name: 'idle-explorer-v5',
+		version: 5,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {
 			// Validate and fix state if needed
@@ -538,7 +539,8 @@ export const useGameStore = create(
 				const initialGrid = createInitialGrid();
 				const initialRates = calculateResourceRates(
 					initialGrid,
-					INITIAL_CHARACTER_STATS
+					INITIAL_CHARACTER_STATS,
+					{}
 				);
 
 				return {
