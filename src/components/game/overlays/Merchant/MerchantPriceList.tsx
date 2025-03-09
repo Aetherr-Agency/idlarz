@@ -1,14 +1,5 @@
 import React from 'react';
-import { RESOURCE_ICONS } from '@/config/gameConfig';
-
-// Resource pricing constants (gold per unit)
-const RESOURCE_MERCHANT_PRICES = {
-	wood: 0.75,
-	stone: 0.75,
-	coal: 1.25,
-	food: 0.5,
-	meat: 3.0,
-};
+import { MERCHANT_RESOURCE_PRICES, RESOURCE_ICONS } from '@/config/gameConfig';
 
 // Resource display information
 const RESOURCE_MERCHANT_INFO = {
@@ -51,7 +42,7 @@ export const MerchantPriceList: React.FC = () => {
 			<h4 className='text-amber-400 text-xs text-center mb-2'>
 				Prices (per unit)
 			</h4>
-			{Object.entries(RESOURCE_MERCHANT_PRICES).map(([resource, price]) => (
+			{Object.entries(MERCHANT_RESOURCE_PRICES).map(([resource, price]) => (
 				<div
 					key={resource}
 					className='flex justify-between items-center mb-1 text-xs'>
