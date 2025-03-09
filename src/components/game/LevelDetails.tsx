@@ -1,7 +1,7 @@
 import React from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { formatNumber } from '@/utils/formatters';
-import { BASE_XP_PER_LEVEL } from '@/config/gameConfig';
+import { BASE_XP_PER_LEVEL, XP_GROWTH_FACTOR } from '@/config/gameConfig';
 import { LevelUpTimer } from './LevelUpTimer';
 
 // Level Up Timer Component that updates every second
@@ -11,7 +11,7 @@ const LevelDetails: React.FC = () => {
 
 	// Calculate XP needed for next level using the exponential formula
 	const xpForNextLevel = Math.floor(
-		BASE_XP_PER_LEVEL * Math.pow(2.0, level.level - 1)
+		BASE_XP_PER_LEVEL * Math.pow(XP_GROWTH_FACTOR, level.level - 1)
 	);
 	const currentXp = Math.floor(xpForNextLevel * level.progress);
 
