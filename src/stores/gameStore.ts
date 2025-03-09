@@ -13,6 +13,7 @@ import {
 	SPECIAL_SINGLE_TYPE_BIOMES,
 	EMPTY_BIOMES,
 	BIOMES,
+	MERCHANT_RESOURCE_PRICES,
 } from '@/config/gameConfig';
 import {
 	calculateLevel,
@@ -530,10 +531,11 @@ const createGameSlice = (
 
 			// Resource pricing (different for each resource)
 			const prices = {
-				wood: 0.75,
-				stone: 1.25,
-				coal: 2.0,
-				food: 0.5,
+				wood: MERCHANT_RESOURCE_PRICES.wood,
+				stone: MERCHANT_RESOURCE_PRICES.stone,
+				coal: MERCHANT_RESOURCE_PRICES.coal,
+				food: MERCHANT_RESOURCE_PRICES.food,
+				meat: MERCHANT_RESOURCE_PRICES.meat,
 			};
 
 			const goldGained = Math.floor(
