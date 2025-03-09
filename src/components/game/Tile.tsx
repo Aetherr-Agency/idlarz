@@ -8,6 +8,9 @@ import {
 	BIOME_ICONS,
 	GRID_CENTER_X,
 	GRID_CENTER_Y,
+	BUILDINGS,
+	RESOURCE_ICONS,
+	BuildingType,
 } from '@/config/gameConfig';
 import { useGameStore } from '@/stores/gameStore';
 import { countOwnedTiles } from '@/utils/gameUtils';
@@ -17,12 +20,15 @@ import { TileStatus } from './TileStatus';
 import CastleUpgradeDialog from './CastleUpgradeDialog';
 import BuildingSelectionDialog from './BuildingSelectionDialog';
 
-const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
+const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level, building }) => {
 	const tiles = useGameStore((state) => state.tiles);
 	const buyTile = useGameStore((state) => state.buyTile);
 	const resources = useGameStore((state) => state.resources);
 	const characterStats = useGameStore((state) => state.characterStats);
 	const upgradeGroundsTile = useGameStore((state) => state.upgradeGroundsTile);
+	const isBiomeSelectionActive = useGameStore((state) => state.biomeSelectionActive);
+	const pendingTileCoords = useGameStore((state) => state.pendingTileCoords);
+	const selectBiome = useGameStore((state) => state.selectBiome);
 	const [isShaking, setIsShaking] = useState(false);
 	const [showCastleDialog, setShowCastleDialog] = useState(false);
 	const [showBuildingDialog, setShowBuildingDialog] = useState(false);
@@ -66,17 +72,30 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 	const canAfford = resources.gold >= cost;
 
 	const handleClick = () => {
-		// Check if this is a castle tile and it's owned
-		if (isOwned && biome === 'castle') {
-			audioManager.playSound('click');
-			setShowCastleDialog(true);
+		// First priority: If in biome selection mode, handle selection
+		if (isBiomeSelectionActive && pendingTileCoords) {
+			selectBiome(biome);
 			return;
 		}
 
-		// Check if this is a grounds tile and it's owned
-		if (isOwned && biome === 'grounds') {
-			audioManager.playSound('click');
-			setShowBuildingDialog(true);
+		// Prioritize owned tiles for special interactions
+		if (isOwned) {
+			// Castle tile - show castle dialog
+			if (biome === 'castle') {
+				audioManager.playSound('click');
+				setShowCastleDialog(true);
+				return;
+			}
+
+			// Grounds tile - show building dialog ONLY if not already upgraded
+			if (biome === 'grounds' && (!level || level < 2) && !building) {
+				audioManager.playSound('click');
+				setShowBuildingDialog(true);
+				return;
+			}
+
+			// For any owned tile, show tooltip
+			// toggleTooltip(); // This function is not defined in the provided code
 			return;
 		}
 
@@ -154,9 +173,32 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 						</span>
 					)}
 					{biome === 'grounds' && level && level > 1 && (
-						<span className='absolute top-0.5 right-0.5 text-[8px] bg-amber-400 w-3 h-3 aspect-square flex items-center justify-center leading-0 font-bold text-purple-600 rounded-full'>
-							{level}
+						<>
+							{level > 1 && (
+							<span className='opacity-75 absolute top-0.5 right-0.5 text-[6px] bg-black w-3 h-3 aspect-square flex items-center justify-center leading-0 font-bold text-purple-600 rounded-full'>
+							⭐
 						</span>
+							)}
+
+							
+							{/* Building icon */}
+							<span className='absolute bottom-0.5 right-0.5 text-[10px]'>
+								{BUILDINGS[building as BuildingType]?.icon}
+							</span>
+							{/* Resource icons for building bonuses */}
+							<div className='absolute bottom-0.5 left-0.5 flex gap-0.5 text-[8px]'>
+								{BUILDINGS[building as BuildingType]?.resourceGeneration && 
+									Object.entries(BUILDINGS[building as BuildingType].resourceGeneration).map(([resource, rate]) => {
+										if (!rate) return null;
+										return (
+											<span key={resource} className='text-green-400'>
+												{RESOURCE_ICONS[resource as keyof typeof RESOURCE_ICONS]}
+											</span>
+										);
+									})
+								}
+							</div>
+						</>
 					)}
 				</div>
 
@@ -186,10 +228,9 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level }) => {
 			{/* Building Selection Dialog */}
 			{showBuildingDialog && (
 				<BuildingSelectionDialog
+					isOpen={showBuildingDialog}
+					onClose={() => setShowBuildingDialog(false)}
 					onSelect={handleBuildingSelect}
-					onCancel={() => setShowBuildingDialog(false)}
-					tileX={x}
-					tileY={y}
 				/>
 			)}
 		</>

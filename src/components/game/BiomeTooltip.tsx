@@ -7,6 +7,8 @@ import {
 	SCALING_CONFIG,
 	RESOURCE_ICONS,
 	CASTLE_UPGRADE,
+	BUILDINGS,
+	BuildingType,
 } from '@/config/gameConfig';
 import { useGameStore } from '@/stores/gameStore';
 
@@ -30,6 +32,10 @@ export const BiomeTooltip = memo(
 		const biomeInfo = BIOMES[biome];
 		const multiplier = level ? Math.pow(1.5, level - 1) : 1;
 		const tiles = useGameStore((state) => state.tiles);
+		const building = x !== undefined && y !== undefined ? tiles[y][x].building : undefined;
+		
+		// Get building info if we have one
+		const buildingInfo = building ? BUILDINGS[building as BuildingType] : undefined;
 
 		const adjacentCount = useMemo(() => {
 			if (x === undefined || y === undefined) return 0;
@@ -66,6 +72,16 @@ export const BiomeTooltip = memo(
 						Level {level} Castle
 					</div>
 				)}
+				
+				{/* Display building info for upgraded grounds */}
+				{biome === 'grounds' && level === 2 && buildingInfo && (
+					<div className='mb-2 text-purple-400 font-semibold text-[11px] flex items-center gap-1'>
+						<span>{buildingInfo.icon}</span>
+						<span>Grounds level 2 with {buildingInfo.label}</span>
+					</div>
+				)}
+				
+				{/* Display base resource generation */}
 				{(
 					Object.entries(biomeInfo.resourceGeneration) as [
 						keyof typeof RESOURCE_ICONS,
@@ -99,6 +115,37 @@ export const BiomeTooltip = memo(
 						</div>
 					);
 				})}
+				
+				{/* Display building resource bonuses */}
+				{biome === 'grounds' && level === 2 && buildingInfo && buildingInfo.resourceGeneration && (
+					<>
+						<div className='mt-2 mb-1 text-green-400 text-[11px]'>
+							Building Bonuses:
+						</div>
+						{Object.entries(buildingInfo.resourceGeneration).map(([resource, rate]) => {
+							if (!rate) return null;
+							
+							// Apply adjacency bonus to building resources
+							const effectiveRate = rate * adjacencyMultiplier;
+							
+							return (
+								<div key={`building-${resource}`} className='flex items-center gap-1 text-[9px]'>
+									<span className='text-green-400'>
+										{RESOURCE_ICONS[resource as keyof typeof RESOURCE_ICONS]}
+									</span>
+									<span className='text-green-400 font-semibold'>
+										+{formatRate(rate)}
+									</span>
+									{adjacentCount > 0 && (
+										<span className='text-yellow-500 mt-0.5'>
+											(with adjacency: +{formatRate(effectiveRate)})
+										</span>
+									)}
+								</div>
+							);
+						})}
+					</>
+				)}
 
 				{biome === 'castle' && level && level > 1 && (
 					<div className='mt-2 text-purple-400 text-[9px]'>
@@ -112,22 +159,12 @@ export const BiomeTooltip = memo(
 					</div>
 				)}
 				{biome === 'grounds' && (!level || level === 1) && (
-					<div className='mt-2'>
-						<div className='text-amber-400 text-[11px] mb-1'>
-							This grounds can be expanded with a building
-						</div>
-						<div className='text-gray-400 text-[9px]'>
-							Click on the tile to upgrade to Grounds Level 2
-						</div>
-					</div>
-				)}
-				{biome === 'grounds' && level && level > 1 && (
-					<div className='mt-2 text-purple-400 text-[9px]'>
-						Grounds Level {level} with building
-					</div>
+										<div className='text-amber-400 text-[11px]'>
+										This grounds can be expanded with a building
+									</div>
 				)}
 				{adjacentCount > 0 && (
-					<div className='mt-2 text-yellow-500 text-xs'>
+					<div className='mt-0.5 text-yellow-500 text-[11px]'>
 						+{(adjacencyMultiplier - 1).toFixed(2)}x bonus from {adjacentCount}{' '}
 						adjacent {biomeInfo.label}
 					</div>

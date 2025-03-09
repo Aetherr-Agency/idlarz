@@ -14,6 +14,8 @@ import {
 	SCALING_CONFIG,
 	GRID_CENTER_Y,
 	GRID_CENTER_X,
+	BUILDINGS,
+	BuildingType,
 } from '@/config/gameConfig';
 import {
 	Animal,
@@ -346,12 +348,37 @@ export const calculateResourceRates = (
 			const tile = tiles[y][x];
 			if (tile.isOwned) {
 				const biome = BIOMES[tile.biome];
-				if (biome?.resourceGeneration) {
-					Object.entries(biome.resourceGeneration).forEach(
-						([resource, rate]) => {
-							base[resource as keyof Resources] += rate;
-						}
-					);
+				const adjacentCount = countAdjacentSameBiomes(tiles, x, y, tile.biome);
+				const adjacencyMultiplier =
+					1 + SCALING_CONFIG.adjacencyBonus * adjacentCount;
+
+				Object.entries(biome.resourceGeneration).forEach(([resource, rate]) => {
+					// Skip castle base rates since we already added them
+					if (
+						tile.biome === 'castle' &&
+						CASTLE_BASE_RATES[resource as keyof Resources]
+					) {
+						return;
+					}
+
+					if (rate) {
+						// Add to base rate with adjacency bonus
+						base[resource as keyof Resources] += rate * adjacencyMultiplier;
+					}
+				});
+
+				// Add building resources if the tile is an upgraded grounds tile with a building
+				if (tile.biome === 'grounds' && tile.level === 2 && tile.building) {
+					const building = BUILDINGS[tile.building as BuildingType];
+					if (building && building.resourceGeneration) {
+						// Add building resource generation to the base rates
+						Object.entries(building.resourceGeneration).forEach(([resource, rate]) => {
+							if (rate && typeof rate === 'number') {
+								// Add to base rate with adjacency bonus
+								base[resource as keyof Resources] += rate * adjacencyMultiplier;
+							}
+						});
+					}
 				}
 			}
 		}
@@ -399,34 +426,6 @@ export const calculateResourceRates = (
 	if (plainsCount > 0) {
 		// 5% per plains tile
 		modifiers.meat += plainsCount * 0.05;
-	}
-
-	// Add flat generation rates from all owned tiles with adjacency bonuses
-	for (let y = 0; y < GRID_HEIGHT; y++) {
-		for (let x = 0; x < GRID_SIZE; x++) {
-			const tile = tiles[y][x];
-			if (tile.isOwned) {
-				const biome = BIOMES[tile.biome];
-				const adjacentCount = countAdjacentSameBiomes(tiles, x, y, tile.biome);
-				const adjacencyMultiplier =
-					1 + SCALING_CONFIG.adjacencyBonus * adjacentCount;
-
-				Object.entries(biome.resourceGeneration).forEach(([resource, rate]) => {
-					// Skip castle base rates since we already added them
-					if (
-						tile.biome === 'castle' &&
-						CASTLE_BASE_RATES[resource as keyof Resources]
-					) {
-						return;
-					}
-
-					if (rate) {
-						// Add to base rate with adjacency bonus
-						base[resource as keyof Resources] += rate * adjacencyMultiplier;
-					}
-				});
-			}
-		}
 	}
 
 	// Apply stat-based resource modifiers if stats are provided

@@ -98,8 +98,9 @@ export interface TileProps {
 	isOwned: boolean;
 	x: number;
 	y: number;
-	style?: React.CSSProperties;
+	style: React.CSSProperties;
 	level?: number;
+	building?: string;
 }
 
 export type MerchantTab =

@@ -397,10 +397,19 @@ const createGameSlice = (
 					building: buildingType
 				};
 
+				// Recalculate resource rates with the updated tiles and building
+				const newResourceRates = calculateResourceRates(
+					updatedTiles,
+					state.characterStats,
+					state.farmLevels
+				);
+
 				// Return updated state
 				return {
 					...state,
-					tiles: updatedTiles
+					tiles: updatedTiles,
+					resourceRates: newResourceRates,
+					resourceModifiers: newResourceRates.modifiers
 				};
 			});
 		},
