@@ -7,7 +7,7 @@ import { LevelUpTimer } from './LevelUpTimer';
 // Level Up Timer Component that updates every second
 
 const LevelDetails: React.FC = () => {
-	const { resources, level, resourceRates } = useGameStore();
+	const { resources, level, resourceRates, characterStats } = useGameStore();
 
 	// Calculate XP needed for next level using the exponential formula
 	const xpForNextLevel = Math.floor(
@@ -16,7 +16,7 @@ const LevelDetails: React.FC = () => {
 	const currentXp = Math.floor(xpForNextLevel * level.progress);
 
 	return (
-		<div className='flex flex-col space-y-4'>
+		<div className='flex flex-col space-y-1'>
 			<div className='flex flex-row gap-0 items-center justify-center'>
 				<div className='relative w-48 h-48 mx-auto'>
 					{/* Radial progress background */}
@@ -63,6 +63,29 @@ const LevelDetails: React.FC = () => {
 						<div className='text-gray-600 text-xs scale-75'>
 							{formatNumber(currentXp)} / {formatNumber(xpForNextLevel)}
 						</div>
+					</div>
+				</div>
+			</div>
+
+			<div className='flex flex-col gap-2 text-sm mx-auto w-8/10 min-w-32 text-[11px]'>
+				<div className='flex items-center'>
+					<div
+						className='w-full bg-red-500 border border-red-400 rounded-md flex items-center justify-between text-white cursor-help h-5 px-2'
+						title='HP'>
+						<span>HP</span>
+						<span>
+							{characterStats.hp} / {characterStats.hp}
+						</span>
+					</div>
+				</div>
+				<div className='flex items-center'>
+					<div
+						className='w-full bg-blue-500 border border-blue-400 rounded-md flex items-center justify-between text-white cursor-help h-5 px-2'
+						title='MP'>
+						<span>MP</span>
+						<span>
+							{characterStats.mp} / {characterStats.mp}
+						</span>
 					</div>
 				</div>
 			</div>

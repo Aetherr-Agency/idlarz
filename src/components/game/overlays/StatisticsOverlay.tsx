@@ -165,18 +165,6 @@ const StatisticsOverlay: React.FC = () => {
 								</h3>
 								<div className='grid grid-cols-2 gap-x-4 gap-y-2 text-xs'>
 									<div className='flex justify-between items-center'>
-										<span className='text-gray-300'>Physical ATK:</span>
-										<span className='text-red-400 font-medium'>
-											{characterStats.physicalAtk}
-										</span>
-									</div>
-									<div className='flex justify-between items-center'>
-										<span className='text-gray-300'>Magic ATK:</span>
-										<span className='text-purple-400 font-medium'>
-											{characterStats.magicAtk}
-										</span>
-									</div>
-									<div className='flex justify-between items-center'>
 										<span className='text-gray-300'>HP:</span>
 										<span className='text-green-400 font-medium'>
 											{characterStats.hp}
@@ -189,8 +177,21 @@ const StatisticsOverlay: React.FC = () => {
 										</span>
 									</div>
 									<div className='flex justify-between items-center'>
+										<span className='text-gray-300'>Physical ATK:</span>
+										<span className='text-amber-400 font-medium'>
+											{characterStats.physicalAtk}
+										</span>
+									</div>
+									<div className='flex justify-between items-center'>
+										<span className='text-gray-300'>Magic ATK:</span>
+										<span className='text-purple-400 font-medium'>
+											{characterStats.magicAtk}
+										</span>
+									</div>
+
+									<div className='flex justify-between items-center'>
 										<span className='text-gray-300'>DEF:</span>
-										<span className='text-yellow-400 font-medium'>
+										<span className='text-amber-200 font-medium'>
 											{characterStats.def}
 										</span>
 									</div>
@@ -202,7 +203,7 @@ const StatisticsOverlay: React.FC = () => {
 									</div>
 									<div className='flex justify-between items-center'>
 										<span className='text-gray-300'>Luck:</span>
-										<span className='text-green-300 font-medium'>
+										<span className='text-purple-500 font-medium'>
 											{characterStats.luck}
 										</span>
 									</div>
