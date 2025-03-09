@@ -146,7 +146,11 @@ const createGameSlice = (
 			Object.assign(newStats, combatStats);
 
 			// Recalculate resource rates with new stats
-			const newRates = calculateResourceRates(state.tiles, newStats, state.farmLevels);
+			const newRates = calculateResourceRates(
+				state.tiles,
+				newStats,
+				state.farmLevels
+			);
 
 			set({
 				characterStats: newStats,
@@ -219,7 +223,11 @@ const createGameSlice = (
 			};
 
 			// Recalculate resource rates with the new tile and current stats
-			const newRates = calculateResourceRates(newTiles, state.characterStats, state.farmLevels);
+			const newRates = calculateResourceRates(
+				newTiles,
+				state.characterStats,
+				state.farmLevels
+			);
 
 			// Calculate XP gain based on new owned tiles count
 			const newOwnedTilesCount = ownedTilesCount + 1;
@@ -289,7 +297,11 @@ const createGameSlice = (
 			};
 
 			// Recalculate resource rates with the new tile and current stats
-			const newRates = calculateResourceRates(newTiles, state.characterStats, state.farmLevels);
+			const newRates = calculateResourceRates(
+				newTiles,
+				state.characterStats,
+				state.farmLevels
+			);
 
 			// Calculate XP gain based on new owned tiles count
 			const newOwnedTilesCount = ownedTilesCount + 1;
@@ -368,7 +380,11 @@ const createGameSlice = (
 			});
 
 			// Recalculate resource rates with current stats and farm levels
-			const newRates = calculateResourceRates(newTiles, state.characterStats, state.farmLevels);
+			const newRates = calculateResourceRates(
+				newTiles,
+				state.characterStats,
+				state.farmLevels
+			);
 
 			set({
 				tiles: newTiles,
@@ -394,7 +410,7 @@ const createGameSlice = (
 				updatedTiles[y][x] = {
 					...updatedTiles[y][x],
 					level: 2,
-					building: buildingType
+					building: buildingType,
 				};
 
 				// Recalculate resource rates with the updated tiles and building
@@ -409,7 +425,7 @@ const createGameSlice = (
 					...state,
 					tiles: updatedTiles,
 					resourceRates: newResourceRates,
-					resourceModifiers: newResourceRates.modifiers
+					resourceModifiers: newResourceRates.modifiers,
 				};
 			});
 		},
@@ -539,8 +555,8 @@ const createGameSlice = (
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'idle-explorer-v5',
-		version: 5,
+		name: 'idle-explorer-v6',
+		version: 6,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {
 			// Validate and fix state if needed

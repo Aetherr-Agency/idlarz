@@ -264,7 +264,7 @@ export const BIOME_ICONS = {
 };
 
 export const INITIAL_RESOURCES = {
-	gold: 1250, // Increased starter gold to make early game smoother
+	gold: 125,
 	wood: 0,
 	stone: 0,
 	coal: 0,
