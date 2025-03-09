@@ -370,7 +370,7 @@ export const MERCHANT_RESOURCE_PRICES = {
 	stone: 0.5,
 	coal: 1,
 	food: 0.75,
-	meat: 3.0,
+	meat: 15.0,
 };
 
 // Farm animal configurations
