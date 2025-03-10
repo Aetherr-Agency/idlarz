@@ -74,6 +74,7 @@ const createGameSlice = (
 		biomeSelectionActive: false,
 		pendingTileCoords: null,
 		selectableBiomes: null,
+		clickMultiplier: 1, // Initialize with default multiplier of 1
 
 		// Add a new method to purchase or upgrade an animal
 		purchaseAnimal: (animalId: string) => {
@@ -594,6 +595,7 @@ export const useGameStore = create(
 					biomeSelectionActive: false,
 					pendingTileCoords: null,
 					selectableBiomes: null,
+					clickMultiplier: 1, // Initialize with default multiplier of 1
 				};
 			}
 			return state;

@@ -15,6 +15,7 @@ const ResourceDisplay: React.FC = () => {
 	const resources = useGameStore((state) => state.resources);
 	const resourceRates = useGameStore((state) => state.resourceRates);
 	const addResources = useGameStore((state) => state.addResources);
+	const clickMultiplier = useGameStore((state) => state.clickMultiplier);
 
 	// State for click animations (now an array to support multiple)
 	const [animations, setAnimations] = useState<AnimationItem[]>([]);
@@ -30,8 +31,8 @@ const ResourceDisplay: React.FC = () => {
 		const goldRate = resourceRates.total.gold;
 		if (goldRate <= 0) return;
 
-		// Double the gold and add to player's resources
-		const goldToAdd = goldRate * 2;
+		// Apply the clickMultiplier to the gold earned per click
+		const goldToAdd = goldRate * clickMultiplier;
 		addResources({ gold: goldToAdd });
 		
 		// Calculate position for animation relative to gold element
@@ -60,7 +61,7 @@ const ResourceDisplay: React.FC = () => {
 				);
 			}, 700);
 		}
-	}, [resourceRates.total.gold, addResources]);
+	}, [resourceRates.total.gold, addResources, clickMultiplier]);
 
 	// Add global click listener
 	useEffect(() => {

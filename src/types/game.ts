@@ -152,6 +152,7 @@ export interface GameState {
 	biomeSelectionActive: boolean;
 	pendingTileCoords: { x: number; y: number } | null;
 	selectableBiomes: BiomeType[] | null;
+	clickMultiplier: number; // Multiplier for gold earned per click
 
 	// Methods
 	buyTile: (x: number, y: number) => boolean;
