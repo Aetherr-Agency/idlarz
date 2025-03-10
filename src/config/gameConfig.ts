@@ -382,7 +382,7 @@ export const ANIMALS: Animal[] = [
 		description: 'A simple farm animal that produces a small amount of meat.',
 		baseCost: 10000, // Starting at 10k food as requested
 		costScaling: 1.5, // Each level costs 1.5x more
-		baseProduction: 0.05, // 0.05 meat per second (3 per minute)
+		baseProduction: 0.2, // 0.2 meat per second
 		productionScaling: 1.2, // Each level increases production by 20%
 	},
 	{
@@ -392,7 +392,7 @@ export const ANIMALS: Animal[] = [
 		description: 'A wild animal that produces more meat than a chicken.',
 		baseCost: 50000,
 		costScaling: 1.6,
-		baseProduction: 0.2, // 0.2 meat per second (12 per minute)
+		baseProduction: 0.5, // 0.6 meat per second
 		productionScaling: 1.25,
 	},
 	{
@@ -402,7 +402,7 @@ export const ANIMALS: Animal[] = [
 		description: 'A domestic animal that produces a good amount of meat.',
 		baseCost: 200000,
 		costScaling: 1.7,
-		baseProduction: 0.5, // 0.5 meat per second (30 per minute)
+		baseProduction: 1, // 0.5 meat per second
 		productionScaling: 1.3,
 	},
 	{
@@ -412,7 +412,7 @@ export const ANIMALS: Animal[] = [
 		description: 'A large animal that produces a significant amount of meat.',
 		baseCost: 1000000,
 		costScaling: 1.8,
-		baseProduction: 1.5, // 1.5 meat per second (90 per minute)
+		baseProduction: 2, // 2 meat per second
 		productionScaling: 1.4,
 	},
 ];
