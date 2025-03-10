@@ -49,6 +49,31 @@ body {
 	animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+@keyframes gold-click {
+	0% {
+		opacity: 0;
+		transform: translateY(0);
+	}
+	20% {
+		opacity: 1;
+		transform: translateY(-5px);
+	}
+	80% {
+		opacity: 1;
+		transform: translateY(-15px);
+	}
+	100% {
+		opacity: 0;
+		transform: translateY(-25px);
+	}
+}
+
+.animate-gold-click {
+	animation: gold-click 0.7s ease-out forwards;
+	text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
+	font-weight: bold;
+}
+
 .castle-tile {
 	z-index: 10;
 

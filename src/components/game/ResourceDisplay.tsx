@@ -1,15 +1,75 @@
-import React from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { Resources } from '@/types/game';
 import { formatNumber } from '@/utils/formatters';
 import { HEADER_DISPLAYED_RESOURCES_INFO, RESOURCE_ICONS } from '@/config/gameConfig';
 
+// Animation item type to track multiple animations
+interface AnimationItem {
+	id: number;
+	amount: number;
+	position: { x: number; y: number };
+}
+
 const ResourceDisplay: React.FC = () => {
 	const resources = useGameStore((state) => state.resources);
 	const resourceRates = useGameStore((state) => state.resourceRates);
+	const addResources = useGameStore((state) => state.addResources);
+
+	// State for click animations (now an array to support multiple)
+	const [animations, setAnimations] = useState<AnimationItem[]>([]);
+	const nextAnimationId = useRef(0);
+	const goldElementRef = useRef<HTMLDivElement>(null);
 
 	// Define resources to display (including meat)
 	const resourcesToDisplay = Object.keys(resources) as Array<keyof Resources>;
+
+	// Function to handle click and award gold (now supports multiple animations)
+	const handleGameClick = useCallback(() => {
+		// Get the total gold rate per second
+		const goldRate = resourceRates.total.gold;
+		if (goldRate <= 0) return;
+
+		// Double the gold and add to player's resources
+		const goldToAdd = goldRate * 2;
+		addResources({ gold: goldToAdd });
+		
+		// Calculate position for animation relative to gold element
+		// Add slight randomness to position for visual variety when overlapping
+		if (goldElementRef.current) {
+			const rect = goldElementRef.current.getBoundingClientRect();
+			const xOffset = Math.random() * 20 - 10; // Random offset between -10 and 10
+			const yOffset = Math.random() * 10 - 5;  // Random offset between -5 and 5
+			
+			const newAnimation: AnimationItem = {
+				id: nextAnimationId.current++,
+				amount: goldToAdd,
+				position: {
+					x: rect.right + 10 + xOffset,
+					y: rect.top + (rect.height / 2) - 10 + yOffset
+				}
+			};
+			
+			// Add the new animation to the array
+			setAnimations(prevAnimations => [...prevAnimations, newAnimation]);
+			
+			// Remove this specific animation after 700ms
+			setTimeout(() => {
+				setAnimations(prevAnimations => 
+					prevAnimations.filter(anim => anim.id !== newAnimation.id)
+				);
+			}, 700);
+		}
+	}, [resourceRates.total.gold, addResources]);
+
+	// Add global click listener
+	useEffect(() => {
+		window.addEventListener('click', handleGameClick);
+		
+		return () => {
+			window.removeEventListener('click', handleGameClick);
+		};
+	}, [handleGameClick]);
 
 	return (
 		<>
@@ -35,6 +95,7 @@ const ResourceDisplay: React.FC = () => {
 				return (
 					<div
 						key={resource}
+						ref={resource === 'gold' ? goldElementRef : undefined}
 						className='group relative flex items-center justify-center gap-2 text-sm'>
 						<div
 							className='text-xl md:text-2xl'
@@ -86,6 +147,19 @@ const ResourceDisplay: React.FC = () => {
 					</div>
 				);
 			})}
+
+			{/* Multiple Click Animations */}
+			{animations.map(anim => (
+				<div 
+					key={anim.id}
+					className="absolute animate-gold-click font-medium text-yellow-400 z-50"
+					style={{ 
+						left: `${anim.position.x}px`, 
+						top: `${anim.position.y}px` 
+					}}>
+					+{formatNumber(anim.amount)} 💰
+				</div>
+			))}
 		</>
 	);
 };
