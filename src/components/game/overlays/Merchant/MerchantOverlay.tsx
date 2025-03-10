@@ -303,15 +303,46 @@ const MerchantOverlay: React.FC = () => {
 		}, 3000);
 	};
 
+	// Helper function to get click multiplier level (0-3)
+	const getClickMultiplierLevel = () => {
+		if (clickMultiplier >= 16) return 3;
+		if (clickMultiplier >= 8) return 2;
+		if (clickMultiplier >= 4) return 1;
+		return 0;
+	};
+
+	// Helper function to get next click multiplier upgrade price
+	const getClickMultiplierPrice = () => {
+		const level = getClickMultiplierLevel();
+		switch (level) {
+			case 0: return 250000; // 250k - Level 1 (2x → 4x)
+			case 1: return 500000; // 500k - Level 2 (4x → 8x)
+			case 2: return 2000000; // 2M - Level 3 (8x → 16x)
+			default: return 0; // Max level
+		}
+	};
+
+	// Helper function to format the multiplier display text
+	const getClickMultiplierText = () => {
+		const level = getClickMultiplierLevel();
+		switch (level) {
+			case 0: return "Upgrade gold per click (2x → 4x)";
+			case 1: return "Upgrade gold per click (4x → 8x)";
+			case 2: return "Upgrade gold per click (8x → 16x)";
+			default: return "Maximum level reached (16x)";
+		}
+	};
+
 	// Handle buying the gold click multiplier
 	const handleBuyClickMultiplier = () => {
-		const price = 250000; // 250k gold
+		const level = getClickMultiplierLevel();
+		const price = getClickMultiplierPrice();
+
+		// Check if already at max level
+		if (level >= 3) return;
 
 		// Check if player can afford it
 		if (resources.gold < price) return;
-
-		// Check if already purchased
-		if (clickMultiplier >= 4) return; // Already purchased (>= 4 because initial is 2)
 
 		// Update game state - double the current multiplier
 		useGameStore.setState((state) => ({
@@ -324,7 +355,7 @@ const MerchantOverlay: React.FC = () => {
 
 		// Show purchase message
 		setPurchaseMessage({
-			item: 'Double Gold per Click',
+			item: `Gold Click Multiplier Level ${level + 1}`,
 			price: price,
 		});
 
@@ -408,41 +439,39 @@ const MerchantOverlay: React.FC = () => {
 							{/* Gold click multiplier upgrade */}
 							<div className="grid grid-cols-2 gap-4 mb-6">
 								<div className={cn('bg-gray-700 bg-opacity-30 p-4 rounded-lg border border-gray-600 text-white', {
-									'border-purple-500 bg-purple-900 text-white': clickMultiplier >= 4
+									'border-purple-500 bg-purple-900 text-white': getClickMultiplierLevel() >= 3
 								})}>
 									<h3 className='font-semibold mb-2 flex items-center text-sm'>
-										<span className='text-md mr-2'>💰✨</span> Gold Click
-										Multiplier
-										{clickMultiplier >= 4 && (
+										<span className='text-md mr-2'>💰✨</span> Gold Click Multiplier
+										{getClickMultiplierLevel() >= 3 && (
 										<span className='ml-2 text-[10px] uppercase text-purple-500'>
-										(Already owned)
+										(Max level)
 									</span>
 										)}
-
 									</h3>
 									<p className='text-sm text-gray-300 mb-4'>
-									Double the amount of gold you earn per click (from 2x to 4x).
+									{getClickMultiplierText()}
 								</p>
-
-									{clickMultiplier < 4 ? (
+								
+									{getClickMultiplierLevel() < 3 ? (
 										<div className='flex justify-between items-center text-sm mt-2'>
 											<p className='text-yellow-400 font-medium'>
-												{formatNumber(250000)} 💰
+												{formatNumber(getClickMultiplierPrice())} 💰
 											</p>
 											<button
 												onClick={handleBuyClickMultiplier}
-												disabled={resources.gold < 250000}
-												className={`px-4 py-2 rounded border cursor-pointer ${
-													resources.gold >= 250000
-														? 'border-green-700 bg-green-700 hover:bg-green-600 text-white'
-														: 'border-gray-600 bg-gray-500 text-gray-200 cursor-not-allowed'
+												disabled={resources.gold < getClickMultiplierPrice()}
+												className={`px-3 py-1 text-xs rounded ${
+													resources.gold >= getClickMultiplierPrice()
+														? 'bg-green-700 hover:bg-green-600 text-white'
+														: 'bg-gray-700 text-gray-400 cursor-not-allowed'
 												}`}>
-												{resources.gold >= 250000 ? 'Purchase' : 'Get more gold!'}
+												{resources.gold >= getClickMultiplierPrice() ? 'Purchase' : 'Get more gold!'}
 											</button>
 										</div>
 									) : (
 										<div className='bg-purple-900 bg-opacity-50 p-2 rounded border border-purple-700 text-center'>
-											<p className='text-purple-300 font-medium'>Already purchased! ✅</p>
+											<p className='text-purple-300 font-medium'>Max Level Reached (16x)! ✅</p>
 										</div>
 									)}
 								</div>

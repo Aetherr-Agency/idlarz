@@ -63,8 +63,8 @@ export const EMPTY_BIOMES: BiomeType[] = ['empty'];
 export const SCALING_CONFIG = {
 	// Base scaling factor that increases exponentially
 	baseScalingFactor: 1.42,
-	scalingIncreasePer: 12, // Increase scaling every X tiles
-	scalingIncreaseAmount: 0.045, // 4.5% increase in scaling factor
+	scalingIncreasePer: 24, // Increase scaling every X tiles
+	scalingIncreaseAmount: 0.01, // 1% increase in scaling factor
 
 	// Exponential cost scaling formula
 	costFormula: (ownedTiles: number) => {
