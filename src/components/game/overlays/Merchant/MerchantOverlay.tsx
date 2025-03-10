@@ -311,15 +311,15 @@ const MerchantOverlay: React.FC = () => {
 		if (resources.gold < price) return;
 
 		// Check if already purchased
-		if (clickMultiplier > 1) return;
+		if (clickMultiplier >= 4) return; // Already purchased (>= 4 because initial is 2)
 
-		// Update game state
+		// Update game state - double the current multiplier
 		useGameStore.setState((state) => ({
 			resources: {
 				...state.resources,
 				gold: state.resources.gold - price,
 			},
-			clickMultiplier: 2,
+			clickMultiplier: state.clickMultiplier * 2, // Double the current multiplier
 		}));
 
 		// Show purchase message
@@ -408,23 +408,23 @@ const MerchantOverlay: React.FC = () => {
 							{/* Gold click multiplier upgrade */}
 							<div className="grid grid-cols-2 gap-4 mb-6">
 								<div className={cn('bg-gray-700 bg-opacity-30 p-4 rounded-lg border border-gray-600 text-white', {
-									'border-purple-500 bg-purple-900 text-white': clickMultiplier > 2
+									'border-purple-500 bg-purple-900 text-white': clickMultiplier >= 4
 								})}>
 									<h3 className='font-semibold mb-2 flex items-center text-sm'>
 										<span className='text-md mr-2'>💰✨</span> Gold Click
 										Multiplier
-										{clickMultiplier > 2 && (
+										{clickMultiplier >= 4 && (
 										<span className='ml-2 text-[10px] uppercase text-purple-500'>
 										(Already owned)
 									</span>
 										)}
 
 									</h3>
-									<p className='text-xs '>
-										Double the amount of gold you earn per click.
-									</p>
+									<p className='text-sm text-gray-300 mb-4'>
+									Double the amount of gold you earn per click (from 2x to 4x).
+								</p>
 
-									{clickMultiplier < 2 && (
+									{clickMultiplier < 4 ? (
 										<div className='flex justify-between items-center text-sm mt-2'>
 											<p className='text-yellow-400 font-medium'>
 												{formatNumber(250000)} 💰
@@ -439,6 +439,10 @@ const MerchantOverlay: React.FC = () => {
 												}`}>
 												{resources.gold >= 250000 ? 'Purchase' : 'Get more gold!'}
 											</button>
+										</div>
+									) : (
+										<div className='bg-purple-900 bg-opacity-50 p-2 rounded border border-purple-700 text-center'>
+											<p className='text-purple-300 font-medium'>Already purchased! ✅</p>
 										</div>
 									)}
 								</div>
