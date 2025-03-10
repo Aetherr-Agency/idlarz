@@ -160,16 +160,17 @@ const Tile: React.FC<TileProps> = ({
 						'opacity-75 border-2 border-red-500': isShaking,
 						'cursor-pointer':
 							isOwned && (biome === 'castle' || biome === 'grounds'),
+						'castle-tile': isOwned && biome === 'castle',
 					}
 				)}
 				style={{
 					...style,
 					backgroundColor,
-					...(isOwned &&
-						biome === 'castle' && {
-							boxShadow:
-								'0px 0px 0px 45px rgba(109, 40, 217, 0.1), 0px 0px 0px 48px rgba(109, 40, 217, 0.09)',
-						}),
+					// ...(isOwned &&
+					// 	biome === 'castle' && {
+					// 		boxShadow:
+					// 			'0px 0px 0px 45px rgba(109, 40, 217, 0.1), 0px 0px 0px 48px rgba(109, 40, 217, 0.09)',
+					// 	}),
 					...(farAwayTile && {
 						backgroundColor: '#090c13',
 						backgroundImage:
