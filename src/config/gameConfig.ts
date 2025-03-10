@@ -422,7 +422,7 @@ export const MERCHANT_RESOURCE_INFO = {
 	wood: {
 		icon: RESOURCE_ICONS.wood,
 		label: 'Wood',
-		description: 'A basic construction material, widely available in forests.',
+		description: 'A basic construction material, available in forests.',
 		priceDescription: 'Common but always in demand.',
 	},
 	stone: {

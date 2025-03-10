@@ -24,7 +24,7 @@ const BuildingSelectionDialog: FC<BuildingSelectionDialogProps> = ({
 
 	return (
 		<div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
-			<div className='bg-gray-800 p-6 rounded-lg max-w-xl w-full shadow-xl'>
+			<div className='bg-gray-800 p-6 rounded-lg max-w-[720px] w-full shadow-xl'>
 				<div className='flex justify-between items-center mb-4'>
 					<h2 className='text-xl font-bold text-white'>Select Building</h2>
 					<button onClick={onClose} className='p-1 rounded hover:bg-gray-700'>
@@ -41,7 +41,7 @@ const BuildingSelectionDialog: FC<BuildingSelectionDialogProps> = ({
 						<button
 							key={building.name}
 							onClick={() => handleSelect(building.name)}
-							className='flex items-start p-3 rounded bg-gray-700 hover:bg-gray-600 transition-colors cursor-pointer'>
+							className='transition-all border-2 border-transparent hover:border-amber-400 flex items-start p-3 rounded bg-gray-700 hover:bg-gray-600 transition-colors cursor-pointer'>
 							<div className='text-2xl mr-3 mt-1'>{building.icon}</div>
 							<div className='flex-1 text-left'>
 								<span className='text-xs font-bold block text-white'>

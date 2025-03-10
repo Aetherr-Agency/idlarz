@@ -4,15 +4,15 @@ import React from 'react';
 const MERCHANT_TABS: MerchantTabInfo[] = [
 	{
 		id: 'exchange',
-		label: 'Exchange',
+		label: 'Sell Resources',
 		emoji: '💱',
 		description: 'Sell your resources for gold',
 	},
 	{
 		id: 'buy',
-		label: 'Buy Items',
+		label: 'Buy Goods',
 		emoji: '🛒',
-		description: 'Purchase useful items and equipment',
+		description: 'Purchase useful items and resources',
 	},
 	{
 		id: 'upgrade',

@@ -1,39 +1,5 @@
 import React from 'react';
-import { MERCHANT_RESOURCE_PRICES, RESOURCE_ICONS } from '@/config/gameConfig';
-
-// Resource display information
-const RESOURCE_MERCHANT_INFO = {
-	wood: {
-		icon: RESOURCE_ICONS.wood,
-		label: 'Wood',
-		description: 'A basic construction material, widely available in forests.',
-		priceDescription: 'Common but always in demand.',
-	},
-	stone: {
-		icon: RESOURCE_ICONS.stone,
-		label: 'Stone',
-		description: 'Durable and versatile building material from quarries.',
-		priceDescription: 'Premium quality building material.',
-	},
-	coal: {
-		icon: RESOURCE_ICONS.coal,
-		label: 'Coal',
-		description: 'Valuable fuel source used for advanced applications.',
-		priceDescription: 'Highly sought after for its energy properties.',
-	},
-	food: {
-		icon: RESOURCE_ICONS.food,
-		label: 'Food',
-		description: 'Sustains population and enables growth.',
-		priceDescription: 'Plentiful but essential for survival.',
-	},
-	meat: {
-		icon: RESOURCE_ICONS.meat,
-		label: 'Meat',
-		description: 'A source of protein for a healthy diet.',
-		priceDescription: 'High demand for a nutritious meal.',
-	},
-};
+import { MERCHANT_RESOURCE_INFO, MERCHANT_RESOURCE_PRICES } from '@/config/gameConfig';
 
 // Extracted component for merchant price list
 export const MerchantPriceList: React.FC = () => {
@@ -49,14 +15,14 @@ export const MerchantPriceList: React.FC = () => {
 					<span className='text-gray-300 flex items-center'>
 						<span className='mr-1'>
 							{
-								RESOURCE_MERCHANT_INFO[
-									resource as keyof typeof RESOURCE_MERCHANT_INFO
+								MERCHANT_RESOURCE_INFO[
+									resource as keyof typeof MERCHANT_RESOURCE_INFO
 								].icon
 							}
 						</span>
 						{
-							RESOURCE_MERCHANT_INFO[
-								resource as keyof typeof RESOURCE_MERCHANT_INFO
+							MERCHANT_RESOURCE_INFO[
+								resource as keyof typeof MERCHANT_RESOURCE_INFO
 							].label
 						}
 					</span>

@@ -9,6 +9,7 @@ import {
 	MERCHANT_RESOURCE_PRICES,
 } from '@/config/gameConfig';
 import { Resources } from '@/types/game';
+import { cn } from '@/lib/utils';
 
 // Merchant tab options
 type MerchantTab = 'exchange' | 'buy' | 'upgrade' | 'quests' | 'gambling';
@@ -38,51 +39,81 @@ const PlaceholderTabContent: React.FC<PlaceholderTabContentProps> = ({
 	);
 };
 
-// Resource pack sizes for purchasing
-const RESOURCE_PACK_SIZES = [10, 100, 1000];
-
-// Component for buying resources
-interface ResourcePackProps {
+// Component for resource buying with slider
+interface ResourceBuyingSectionProps {
 	resource: keyof typeof MERCHANT_RESOURCE_PRICES;
-	packSize: number;
-	onBuy: () => void;
-	price: number;
-	canAfford: boolean;
+	maxAmount: number;
+	currentAmount: number;
+	goldPrice: number;
+	onAmountChange: (
+		resource: keyof typeof MERCHANT_RESOURCE_PRICES,
+		amount: number
+	) => void;
+	onBuy: (resource: keyof typeof MERCHANT_RESOURCE_PRICES) => void;
 }
 
-const ResourcePack: React.FC<ResourcePackProps> = ({
+const ResourceBuyingSection: React.FC<ResourceBuyingSectionProps> = ({
 	resource,
-	packSize,
+	maxAmount,
+	currentAmount,
+	goldPrice,
+	onAmountChange,
 	onBuy,
-	price,
-	canAfford,
 }) => {
 	const resourceInfo = MERCHANT_RESOURCE_INFO[resource];
+	const canAfford = useGameStore((state) => state.resources.gold >= goldPrice);
 
 	return (
-		<div className='bg-gray-700 bg-opacity-30 p-3 rounded-lg border border-gray-600 mb-2'>
-			<div className='flex justify-between items-center'>
-				<div className='flex items-center gap-2'>
-					<span className='text-xl'>{resourceInfo.icon}</span>
+		<div className='p-3 bg-gray-800 rounded-lg border border-gray-700'>
+			<div className='flex items-center justify-between mb-3'>
+				<div className='flex items-center'>
+					<span className='text-2xl mr-2'>{resourceInfo.icon}</span>
 					<div>
-						<p className='text-white font-medium'>
-							{resourceInfo.label} x{formatNumber(packSize)}
-						</p>
-						<p className='text-xs text-gray-400'>{resourceInfo.description}</p>
+						<h3 className='text-white font-bold text-sm'>
+							{resourceInfo.label}
+						</h3>
+						<p className='text-xs text-gray-400 mr-4'>{resourceInfo.description}</p>
 					</div>
 				</div>
-				<div className='flex flex-col items-end'>
-					<p className='text-yellow-400 font-medium'>
-						{formatNumber(price)} Gold
-					</p>
-					<button
-						onClick={onBuy}
-						disabled={!canAfford}
-						className={`px-3 py-1 mt-1 rounded text-sm ${
-							canAfford
-								? 'bg-green-700 hover:bg-green-600 text-white'
-								: 'bg-gray-700 text-gray-400 cursor-not-allowed'
+				<div className='text-right'>
+					<div className='text-yellow-400 font-medium text-xs'>
+						{MERCHANT_RESOURCE_PRICES[resource] * 2} 💰 each
+					</div>
+					<div className='text-[10px] text-gray-400 whitespace-nowrap'>
+						Max: {formatNumber(maxAmount)}
+					</div>
+				</div>
+			</div>
+
+			<div className='flex items-center gap-4 mb-3'>
+				<input
+					type='range'
+					min='0'
+					max={maxAmount}
+					value={currentAmount}
+					onChange={(e) => onAmountChange(resource, parseInt(e.target.value))}
+					disabled={maxAmount <= 0}
+					className='flex-grow h-2 rounded-lg appearance-none bg-gray-700 disabled:opacity-50'
+				/>
+				<div className='w-20 text-center'>
+					<span
+						className={`transition-all font-bold text-green-400 duration-500 ${
+							currentAmount <= 0 && 'opacity-0 select-none'
 						}`}>
+						{formatNumber(currentAmount)}
+					</span>
+				</div>
+			</div>
+
+			<div className='flex justify-between items-center'>
+				<div className='text-yellow-400 text-sm'>
+					<span className='font-medium'>{formatNumber(goldPrice)}</span> 💰
+				</div>
+				<div className='flex gap-2 font-bold'>
+					<button
+						onClick={() => onBuy(resource)}
+						disabled={currentAmount <= 0 || !canAfford}
+						className='text-[10px] uppercase cursor-pointer px-3 py-1 bg-green-600 hover:bg-green-500 text-white rounded text-xs disabled:opacity-50 disabled:bg-gray-700 disabled:cursor-not-allowed'>
 						Buy
 					</button>
 				</div>
@@ -108,6 +139,15 @@ const MerchantOverlay: React.FC = () => {
 	const [sellAmounts, setSellAmounts] = useState<
 		Record<keyof typeof MERCHANT_RESOURCE_PRICES, number>
 	>({
+		wood: 0,
+		stone: 0,
+		coal: 0,
+		food: 0,
+		meat: 0,
+	});
+
+	// Create state for buy amounts using sliders
+	const [buyAmounts, setBuyAmounts] = useState<Record<string, number>>({
 		wood: 0,
 		stone: 0,
 		coal: 0,
@@ -196,6 +236,17 @@ const MerchantOverlay: React.FC = () => {
 		});
 	};
 
+	// Handle changing the amount of a resource to buy
+	const handleBuyAmountChange = (
+		resource: keyof typeof MERCHANT_RESOURCE_PRICES,
+		amount: number
+	) => {
+		setBuyAmounts({
+			...buyAmounts,
+			[resource]: amount,
+		});
+	};
+
 	// Calculate gold to be gained for the current selection
 	const calculateGold = (
 		resource: keyof typeof MERCHANT_RESOURCE_PRICES,
@@ -212,29 +263,39 @@ const MerchantOverlay: React.FC = () => {
 		return Math.floor(amount * MERCHANT_RESOURCE_PRICES[resource] * 2);
 	};
 
-	// Handle buying a resource pack
-	const handleBuyResourcePack = (
-		resource: keyof typeof MERCHANT_RESOURCE_PRICES,
-		amount: number
+	// Handle buying a resource with slider
+	const handleBuyResource = (
+		resource: keyof typeof MERCHANT_RESOURCE_PRICES
 	) => {
+		const amount = buyAmounts[resource];
+		if (amount <= 0) return;
+
 		const price = calculateResourcePackPrice(resource, amount);
-		
+
 		// Check if player can afford it
 		if (resources.gold < price) return;
-		
+
 		// Subtract gold and add resources
 		const resourcesUpdate: Partial<Resources> = {
 			gold: -price,
 			[resource]: amount,
 		};
-		
+
 		addResources(resourcesUpdate);
-		
+
 		// Show purchase message
 		setPurchaseMessage({
-			item: `${MERCHANT_RESOURCE_INFO[resource].label} x${formatNumber(amount)}`,
+			item: `${MERCHANT_RESOURCE_INFO[resource].label} x${formatNumber(
+				amount
+			)}`,
 			price: price,
 		});
+
+		// Reset the slider for this resource
+		setBuyAmounts((prev) => ({
+			...prev,
+			[resource]: 0,
+		}));
 
 		// Clear message after 3 seconds
 		setTimeout(() => {
@@ -245,13 +306,13 @@ const MerchantOverlay: React.FC = () => {
 	// Handle buying the gold click multiplier
 	const handleBuyClickMultiplier = () => {
 		const price = 250000; // 250k gold
-		
+
 		// Check if player can afford it
 		if (resources.gold < price) return;
-		
+
 		// Check if already purchased
 		if (clickMultiplier > 1) return;
-		
+
 		// Update game state
 		useGameStore.setState((state) => ({
 			resources: {
@@ -260,10 +321,10 @@ const MerchantOverlay: React.FC = () => {
 			},
 			clickMultiplier: 2,
 		}));
-		
+
 		// Show purchase message
 		setPurchaseMessage({
-			item: "Double Gold per Click",
+			item: 'Double Gold per Click',
 			price: price,
 		});
 
@@ -273,6 +334,14 @@ const MerchantOverlay: React.FC = () => {
 		}, 3000);
 	};
 
+	// Calculate max buy amount based on player's gold
+	const calculateMaxBuyAmount = (
+		resource: keyof typeof MERCHANT_RESOURCE_PRICES
+	) => {
+		const unitPrice = MERCHANT_RESOURCE_PRICES[resource] * 2;
+		return Math.floor(resources.gold / unitPrice);
+	};
+
 	// Render tab content based on active tab
 	const renderTabContent = () => {
 		switch (activeTab) {
@@ -280,7 +349,7 @@ const MerchantOverlay: React.FC = () => {
 				return (
 					<>
 						<h2 className='text-white font-semibold mb-4 text-center border-b border-gray-700 pb-2'>
-							Resource Exchange
+							Sell resources
 						</h2>
 
 						{/* Sale success message */}
@@ -322,7 +391,7 @@ const MerchantOverlay: React.FC = () => {
 				return (
 					<>
 						<h2 className='text-white font-semibold mb-4 text-center border-b border-gray-700 pb-2'>
-							Buy Items
+							Buy Goods
 						</h2>
 
 						{/* Purchase success message */}
@@ -335,76 +404,76 @@ const MerchantOverlay: React.FC = () => {
 							</div>
 						)}
 
-						<div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+						<div className='xxx'>
 							{/* Gold click multiplier upgrade */}
-							<div className='bg-gray-700 bg-opacity-30 p-4 rounded-lg border border-gray-600'>
-								<h3 className='text-white font-semibold mb-2 flex items-center'>
-									<span className='text-xl mr-2'>💰</span> Gold Click Multiplier
-								</h3>
-								<p className='text-sm text-gray-300 mb-4'>
-									Double the amount of gold you earn per click.
-								</p>
-								
-								{clickMultiplier > 1 ? (
-									<div className='bg-purple-900 bg-opacity-50 p-2 rounded border border-purple-700 text-center'>
-										<p className='text-purple-300 font-medium'>Already purchased!</p>
-									</div>
-								) : (
-									<div className='flex justify-between items-center'>
-										<p className='text-yellow-400 font-medium'>
-											{formatNumber(250000)} Gold
-										</p>
-										<button
-											onClick={handleBuyClickMultiplier}
-											disabled={resources.gold < 250000}
-											className={`px-4 py-2 rounded ${
-												resources.gold >= 250000
-													? 'bg-green-700 hover:bg-green-600 text-white'
-													: 'bg-gray-700 text-gray-400 cursor-not-allowed'
-											}`}>
-											Purchase
-										</button>
-									</div>
-								)}
+							<div className="grid grid-cols-2 gap-4 mb-6">
+								<div className={cn('bg-gray-700 bg-opacity-30 p-4 rounded-lg border border-gray-600 text-white', {
+									'border-purple-500 bg-purple-900 text-white': clickMultiplier > 1
+								})}>
+									<h3 className='font-semibold mb-2 flex items-center text-sm'>
+										<span className='text-md mr-2'>💰✨</span> Gold Click
+										Multiplier
+										<span className='ml-2 text-[10px] uppercase text-purple-500'>
+											(Already owned)
+										</span>
+									</h3>
+									<p className='text-xs '>
+										Double the amount of gold you earn per click.
+									</p>
+
+									{clickMultiplier < 1 && (
+										<div className='flex justify-between items-center text-sm mt-2'>
+											<p className='text-yellow-400 font-medium'>
+												{formatNumber(250000)} 💰
+											</p>
+											<button
+												onClick={handleBuyClickMultiplier}
+												disabled={resources.gold < 250000}
+												className={`px-4 py-2 rounded border cursor-pointer ${
+													resources.gold >= 250000
+														? 'border-green-700 bg-green-700 hover:bg-green-600 text-white'
+														: 'border-gray-600 bg-gray-500 text-gray-200 cursor-not-allowed'
+												}`}>
+												{resources.gold >= 250000 ? 'Purchase' : 'Get more gold!'}
+											</button>
+										</div>
+									)}
+								</div>
 							</div>
 
 							{/* Resource packs */}
 							<div className='bg-gray-700 bg-opacity-30 p-4 rounded-lg border border-gray-600'>
-								<h3 className='text-white font-semibold mb-2'>Resource Packs</h3>
+								<h3 className='text-white font-semibold mb-2'>
+									Resource Packs
+								</h3>
 								<p className='text-sm text-gray-300 mb-4'>
 									Purchase resources in bulk (prices are 2x sell value).
 								</p>
-								
-								<div className='space-y-4'>
-									{/* Resource packs by type */}
+
+								<div className='grid grid-cols-2 gap-4'>
+									{/* Resource buying sections with sliders */}
 									{Object.keys(MERCHANT_RESOURCE_PRICES)
-										.filter(resource => resource !== 'xp') // Exclude XP
+										.filter((resource) => resource !== 'xp') // Exclude XP
 										.map((resource) => {
-											const typedResource = resource as keyof typeof MERCHANT_RESOURCE_PRICES;
-											
+											const typedResource =
+												resource as keyof typeof MERCHANT_RESOURCE_PRICES;
+											const maxAmount = calculateMaxBuyAmount(typedResource);
+											const currentAmount = buyAmounts[typedResource];
+											const goldPrice = calculateResourcePackPrice(
+												typedResource,
+												currentAmount
+											);
+
 											return (
-												<div key={resource} className='mb-3'>
-													<h4 className='text-white text-sm font-medium mb-1 flex items-center'>
-														<span className='mr-1'>{MERCHANT_RESOURCE_INFO[typedResource].icon}</span>
-														{MERCHANT_RESOURCE_INFO[typedResource].label}
-													</h4>
-													
-													{RESOURCE_PACK_SIZES.map((packSize) => {
-														const price = calculateResourcePackPrice(typedResource, packSize);
-														const canAfford = resources.gold >= price;
-														
-														return (
-															<ResourcePack
-																key={`${resource}-${packSize}`}
-																resource={typedResource}
-																packSize={packSize}
-																price={price}
-																canAfford={canAfford}
-																onBuy={() => handleBuyResourcePack(typedResource, packSize)}
-															/>
-														);
-													})}
-												</div>
+												<ResourceBuyingSection
+													key={resource}
+													resource={typedResource}
+													maxAmount={maxAmount}
+													currentAmount={currentAmount}
+													goldPrice={goldPrice}
+													onAmountChange={handleBuyAmountChange}
+													onBuy={handleBuyResource}
+												/>
 											);
 										})}
 								</div>
