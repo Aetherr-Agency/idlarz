@@ -59,6 +59,7 @@ export interface Tile {
 	level?: number;
 	upgradeCost?: Resources;
 	building?: string;
+	hasChest?: boolean;
 }
 
 export type EquipmentSlot =
@@ -153,6 +154,11 @@ export interface GameState {
 	pendingTileCoords: { x: number; y: number } | null;
 	selectableBiomes: BiomeType[] | null;
 	clickMultiplier: number; // Multiplier for gold earned per click
+	chestSpawnTimer: number;
+	activeChests: number;
+	lastChestReward: number;
+	lastChestGoldRate: number;
+	lastChestMinutesAwarded: number;
 
 	// Methods
 	buyTile: (x: number, y: number) => boolean;
@@ -167,8 +173,9 @@ export interface GameState {
 	toggleMerchantWindow: () => void;
 	toggleFarmWindow: () => void;
 	setShowFarmWindow: (show: boolean) => void;
-	sellResources: (resource: keyof Resources, amount: number) => number | undefined;
+	sellResources: (resource: keyof Resources, amount: number) => void;
 	addStatPoint: (stat: keyof CharacterStats) => void;
 	setPlayerName: (name: string) => void;
 	addResources: (resourceToAdd: Partial<Resources>) => void;
+	collectChest: (x: number, y: number) => boolean;
 }

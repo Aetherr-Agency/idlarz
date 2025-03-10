@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import Grid from '@/components/game/Grid';
 import CharacterOverlay from '@/components/game/overlays/CharacterOverlay';
@@ -14,10 +14,19 @@ import MerchantOverlay from '@/components/game/overlays/Merchant/MerchantOverlay
 import FarmOverlay from '@/components/game/overlays/FarmOverlay';
 import GameHeader from '@/components/game/GameHeader';
 import BiomeSelectionDialog from '@/components/game/BiomeSelectionDialog';
+import ChestNotification from '@/components/game/overlays/ChestNotification';
 
 export default function Home() {
 	const tick = useGameStore((state) => state.tick);
+	const lastChestReward = useGameStore((state) => state.lastChestReward);
+	const lastChestGoldRate = useGameStore((state) => state.lastChestGoldRate);
+	const lastChestMinutesAwarded = useGameStore((state) => state.lastChestMinutesAwarded);
 	const lastTickTime = useRef(Date.now());
+	const [showChestNotification, setShowChestNotification] = useState(false);
+	const [chestRewardAmount, setChestRewardAmount] = useState(0);
+	const [minutesAwarded, setMinutesAwarded] = useState(0);
+	const [goldPerSecond, setGoldPerSecond] = useState(0);
+	const prevLastChestRewardRef = useRef(0);
 
 	const biomeSelectionActive = useGameStore((state) => state.biomeSelectionActive);
 	const selectableBiomes = useGameStore((state) => state.selectableBiomes);
@@ -66,6 +75,30 @@ export default function Home() {
 		}
 	}, [biomeSelectionActive, pendingTileCoords]);
 
+	useEffect(() => {
+		// Only proceed if there's a real change (not just initial value)
+		// and if the reward is greater than zero
+		if (lastChestReward > 0 && lastChestReward !== prevLastChestRewardRef.current) {
+			// Update the notification values
+			setChestRewardAmount(lastChestReward);
+			setGoldPerSecond(lastChestGoldRate);
+			setMinutesAwarded(lastChestMinutesAwarded);
+			
+			// Show the notification
+			setShowChestNotification(true);
+			
+			// Store the current value for future comparison
+			prevLastChestRewardRef.current = lastChestReward;
+			
+			// Auto-hide after 3 seconds
+			const timer = setTimeout(() => {
+				setShowChestNotification(false);
+			}, 3000);
+			
+			return () => clearTimeout(timer);
+		}
+	}, [lastChestReward, lastChestGoldRate, lastChestMinutesAwarded]);
+
 	return (
 		<main className='h-screen w-screen overflow-hidden relative'>
 			<div className='fixed top-0 left-0 right-0 z-10 bg-gray-900/80 backdrop-blur-sm'>
@@ -80,7 +113,13 @@ export default function Home() {
 			<LoadingScreen />
 			<NamePrompt />
 			<GameDebug />
-			
+			<ChestNotification 
+				show={showChestNotification} 
+				amount={chestRewardAmount} 
+				goldPerSecond={goldPerSecond}
+				minutesAwarded={minutesAwarded}
+				onClose={() => setShowChestNotification(false)}
+			/>
 			{/* Biome Selection Dialog */}
 			{biomeSelectionActive && selectableBiomes && (
 				<BiomeSelectionDialog

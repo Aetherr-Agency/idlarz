@@ -75,6 +75,11 @@ const createGameSlice = (
 		pendingTileCoords: null,
 		selectableBiomes: null,
 		clickMultiplier: 2, // Initialize with default multiplier of 2
+		chestSpawnTimer: 0, // Initialize chest spawn timer
+		activeChests: 0, // Initialize active chest count
+		lastChestReward: 0,
+		lastChestGoldRate: 0,
+		lastChestMinutesAwarded: 0,
 
 		// Add a new method to purchase or upgrade an animal
 		purchaseAnimal: (animalId: string) => {
@@ -432,56 +437,130 @@ const createGameSlice = (
 			});
 		},
 
+		// Method to collect chest from a tile
+		collectChest: (x: number, y: number) => {
+			const state = get();
+			const tile = state.tiles[y]?.[x];
+
+			// If the tile doesn't exist or doesn't have a chest, return false
+			if (!tile || !tile.hasChest) return false;
+
+			// Get player's gold income rate per second
+			const goldIncomeRate = state.resourceRates.total.gold;
+
+			// Generate random time between 5 and 50 minutes (in seconds)
+			const minTime = 5 * 60; // 5 minutes in seconds
+			const maxTime = 50 * 60; // 50 minutes in seconds
+			const randomTimeInSeconds =
+				Math.floor(Math.random() * (maxTime - minTime + 1)) + minTime;
+			const minutesAwarded = randomTimeInSeconds / 60;
+
+			// Calculate gold reward based on income rate * time
+			const goldReward = Math.floor(goldIncomeRate * randomTimeInSeconds);
+
+			// Create a new copy of the tiles array to ensure immutability
+			const newTiles = [...state.tiles];
+			newTiles[y] = [...newTiles[y]];
+			newTiles[y][x] = { ...newTiles[y][x], hasChest: false };
+
+			// Set the latest chest reward for notification
+			set({
+				tiles: newTiles,
+				activeChests: state.activeChests - 1,
+				resources: {
+					...state.resources,
+					gold: state.resources.gold + goldReward,
+				},
+				lastChestReward: goldReward,
+				lastChestGoldRate: goldIncomeRate,
+				lastChestMinutesAwarded: minutesAwarded,
+			});
+
+			return true;
+		},
+
 		tick: (deltaTime: number) => {
 			const state = get();
-			if (!state?.resourceRates?.total) return;
-
 			const secondsElapsed = deltaTime / 1000;
+
+			// Resource accumulation
 			const newResources = { ...state.resources };
 
-			// Apply resource generation with stat modifiers
+			// Add resources based on rates
 			Object.entries(state.resourceRates.total).forEach(([resource, rate]) => {
-				if (typeof rate === 'number' && !isNaN(rate)) {
-					// Apply XP gain multiplier for XP resource
-					if (resource === 'xp') {
-						const xpMultiplier =
-							1 + state.characterStats.xpGainMultiplier / 100;
-						newResources[resource as keyof Resources] +=
-							rate * secondsElapsed * xpMultiplier;
-					} else {
-						newResources[resource as keyof Resources] += rate * secondsElapsed;
-					}
+				// Skip XP as it's handled separately
+				if (resource !== 'xp') {
+					const resourceKey = resource as keyof Resources;
+					newResources[resourceKey] += rate * secondsElapsed;
 				}
 			});
 
-			// Calculate new level based on XP
-			const newLevel = calculateLevel(newResources.xp);
+			// Handle XP gain with multiplier from character stats
+			const xpGain =
+				state.resourceRates.total.xp *
+				(1 + state.characterStats.xpGainMultiplier / 100);
+			newResources.xp += xpGain * secondsElapsed;
 
-			// Create new state update object
-			const stateUpdate: Partial<GameState> = {
-				resources: newResources,
-				level: newLevel,
-			};
+			// Chest spawning system
+			// Constants for chest system (in seconds)
+			const CHEST_SPAWN_INTERVAL = 600; // 10 minutes (configurable)
+			const MAX_ACTIVE_CHESTS = 5;
 
-			// Check for level up and add stat points if needed
-			if (newLevel.level > state.previousLevel) {
-				const levelsGained = newLevel.level - state.previousLevel;
-				const newPoints = levelsGained * 3; // 3 stat points per level
+			let newChestSpawnTimer = state.chestSpawnTimer + secondsElapsed;
+			let newActiveChestsCount = state.activeChests;
+			let newTiles = state.tiles;
 
-				// Create a new stats object and add the points
-				const newCharacterStats = { ...state.characterStats };
-				newCharacterStats.availablePoints += newPoints;
+			// If it's time to spawn a chest and we haven't reached the maximum
+			if (
+				newChestSpawnTimer >= CHEST_SPAWN_INTERVAL &&
+				newActiveChestsCount < MAX_ACTIVE_CHESTS
+			) {
+				// Reset timer
+				newChestSpawnTimer = 0;
 
-				// Recalculate combat stats
-				const combatStats = calculateCombatStats(newCharacterStats);
-				Object.assign(newCharacterStats, combatStats);
+				// Find all owned tiles except castle
+				const eligibleTiles: { x: number; y: number }[] = [];
+				state.tiles.forEach((row, y) => {
+					row.forEach((tile, x) => {
+						if (tile.isOwned && tile.biome !== 'castle' && !tile.hasChest) {
+							eligibleTiles.push({ x, y });
+						}
+					});
+				});
 
-				stateUpdate.characterStats = newCharacterStats;
-				stateUpdate.previousLevel = newLevel.level;
+				// If there are eligible tiles, select one randomly and add a chest
+				if (eligibleTiles.length > 0) {
+					const randomIndex = Math.floor(Math.random() * eligibleTiles.length);
+					const { x, y } = eligibleTiles[randomIndex];
+
+					// Create a new copy of the tiles array to ensure immutability
+					newTiles = [...state.tiles];
+					newTiles[y] = [...newTiles[y]];
+					newTiles[y][x] = { ...newTiles[y][x], hasChest: true };
+
+					// Increment active chest count
+					newActiveChestsCount++;
+				}
 			}
 
-			// Update the state with all changes
-			set(stateUpdate);
+			// Calculate current level and progress
+			const { level, progress } = calculateLevel(newResources.xp);
+
+			// Add a stat point if level has increased
+			const newCharacterStats = { ...state.characterStats };
+			if (level > state.level.level) {
+				newCharacterStats.availablePoints += level - state.level.level;
+			}
+
+			set({
+				resources: newResources,
+				level: { level, progress },
+				previousLevel: state.level.level,
+				characterStats: newCharacterStats,
+				tiles: newTiles,
+				chestSpawnTimer: newChestSpawnTimer,
+				activeChests: newActiveChestsCount,
+			});
 		},
 
 		setPlayerName: (name: string) => {
@@ -550,16 +629,14 @@ const createGameSlice = (
 					gold: state.resources.gold + goldGained,
 				},
 			});
-
-			return goldGained;
 		},
 	};
 };
 
 export const useGameStore = create(
 	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'idle-explorer-v7',
-		version: 7,
+		name: 'idle-explorer-v11',
+		version: 11,
 		storage: createJSONStorage(() => localStorage),
 		onRehydrateStorage: () => (state) => {
 			// Validate and fix state if needed
@@ -596,6 +673,11 @@ export const useGameStore = create(
 					pendingTileCoords: null,
 					selectableBiomes: null,
 					clickMultiplier: 2, // Initialize with default multiplier of 2
+					chestSpawnTimer: 0, // Initialize chest spawn timer
+					activeChests: 0, // Initialize active chest count
+					lastChestReward: 0,
+					lastChestGoldRate: 0,
+					lastChestMinutesAwarded: 0,
 				};
 			}
 			return state;

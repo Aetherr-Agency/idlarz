@@ -34,6 +34,7 @@ const Tile: React.FC<TileProps> = ({
 	const resources = useGameStore((state) => state.resources);
 	const characterStats = useGameStore((state) => state.characterStats);
 	const upgradeGroundsTile = useGameStore((state) => state.upgradeGroundsTile);
+	const collectChest = useGameStore((state) => state.collectChest);
 	const isBiomeSelectionActive = useGameStore(
 		(state) => state.biomeSelectionActive
 	);
@@ -42,6 +43,10 @@ const Tile: React.FC<TileProps> = ({
 	const [isShaking, setIsShaking] = useState(false);
 	const [showCastleDialog, setShowCastleDialog] = useState(false);
 	const [showBuildingDialog, setShowBuildingDialog] = useState(false);
+	const [showChestTooltip, setShowChestTooltip] = useState(false);
+
+	// Check if this tile has a chest
+	const hasChest = tiles?.[y]?.[x]?.hasChest || false;
 
 	const isAdjacent = useMemo(() => {
 		if (isOwned || !tiles) return false;
@@ -85,6 +90,16 @@ const Tile: React.FC<TileProps> = ({
 		// First priority: If in biome selection mode, handle selection
 		if (isBiomeSelectionActive && pendingTileCoords) {
 			selectBiome(biome);
+			return;
+		}
+
+		// Check if this is a chest collection
+		if (isOwned && hasChest) {
+			const success = collectChest(x, y);
+			if (success) {
+				audioManager.playSound('click');
+				// You could add a special chest collection sound here
+			}
 			return;
 		}
 
@@ -159,18 +174,14 @@ const Tile: React.FC<TileProps> = ({
 						'group hover:z-20': true,
 						'opacity-75 border-2 border-red-500': isShaking,
 						'cursor-pointer':
-							isOwned && (biome === 'castle' || biome === 'grounds'),
+							isOwned && (biome === 'castle' || biome === 'grounds' || hasChest),
 						'castle-tile': isOwned && biome === 'castle',
+						'border-2 border-amber-400': isOwned && hasChest
 					}
 				)}
 				style={{
 					...style,
 					backgroundColor,
-					// ...(isOwned &&
-					// 	biome === 'castle' && {
-					// 		boxShadow:
-					// 			'0px 0px 0px 45px rgba(109, 40, 217, 0.1), 0px 0px 0px 48px rgba(109, 40, 217, 0.09)',
-					// 	}),
 					...(farAwayTile && {
 						backgroundColor: '#090c13',
 						backgroundImage:
@@ -179,6 +190,8 @@ const Tile: React.FC<TileProps> = ({
 					}),
 				}}
 				onClick={handleClick}
+				onMouseEnter={() => hasChest && setShowChestTooltip(true)}
+				onMouseLeave={() => setShowChestTooltip(false)}
 				role='button'>
 				<div className='w-full h-full flex items-center justify-center relative'>
 					{isOwned &&
@@ -189,6 +202,21 @@ const Tile: React.FC<TileProps> = ({
 							{tiles[GRID_CENTER_Y]?.[GRID_CENTER_X]?.level}
 						</span>
 					)}
+					
+					{/* Chest icon on tile */}
+					{isOwned && hasChest && (
+						<span className='absolute bottom-0 right-0 text-[14px] z-10'>
+							💰
+						</span>
+					)}
+					
+					{/* Chest tooltip */}
+					{isOwned && hasChest && showChestTooltip && (
+						<div className='absolute -top-6 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-80 text-yellow-400 text-[9px] px-2 py-1 rounded z-50 whitespace-nowrap'>
+							CLICK TO COLLECT BONUS GOLD 💰
+						</div>
+					)}
+					
 					{biome === 'grounds' && level && level > 1 && (
 						<>
 							{level > 1 && (

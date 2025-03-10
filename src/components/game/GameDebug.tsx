@@ -50,6 +50,39 @@ const GameDebug: React.FC = () => {
 	const handleAddMeat = () => {
 		addResources({ meat: 100000 });
 	};
+	
+	const handleSpawnChest = () => {
+		// Find a random owned tile that's not a castle to spawn a chest on
+		const eligibleTiles: { x: number; y: number }[] = [];
+		tiles.forEach((row, y) => {
+			row.forEach((tile, x) => {
+				if (tile.isOwned && tile.biome !== 'castle' && !tile.hasChest) {
+					eligibleTiles.push({ x, y });
+				}
+			});
+		});
+		
+		if (eligibleTiles.length > 0) {
+			const randomIndex = Math.floor(Math.random() * eligibleTiles.length);
+			const { x, y } = eligibleTiles[randomIndex];
+			
+			// Access the gameStore state to spawn a chest
+			useGameStore.setState((state) => {
+				const newTiles = [...state.tiles];
+				newTiles[y] = [...newTiles[y]];
+				newTiles[y][x] = { ...newTiles[y][x], hasChest: true };
+				
+				return {
+					tiles: newTiles,
+					activeChests: state.activeChests + 1
+				};
+			});
+			
+			alert(`Chest spawned at tile (${x}, ${y})`);
+		} else {
+			alert('No eligible tiles for chest spawning. Buy more tiles first!');
+		}
+	};
 
 	if (process.env.NODE_ENV !== 'development') return null;
 
@@ -96,6 +129,11 @@ const GameDebug: React.FC = () => {
 					onClick={handleAddMeat}
 					className='bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded-md text-xs'>
 					Add 100k Meat
+				</button>
+				<button
+					onClick={handleSpawnChest}
+					className='bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded-md text-xs'>
+					Spawn Chest
 				</button>
 			</div>
 		</div>

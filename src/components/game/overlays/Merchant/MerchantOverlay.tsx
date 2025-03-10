@@ -183,46 +183,60 @@ const MerchantOverlay: React.FC = () => {
 	const handleSell = (resource: keyof typeof MERCHANT_RESOURCE_PRICES) => {
 		if (sellAmounts[resource] <= 0) return;
 
-		const goldGained = sellResources(resource, sellAmounts[resource]);
-		if (goldGained) {
-			// Set success message
-			setSaleMessage({
-				resource: MERCHANT_RESOURCE_INFO[resource].label,
-				amount: sellAmounts[resource],
-				gold: goldGained,
-			});
+		// Calculate gold gained before selling
+		const goldBefore = resources.gold;
+		
+		// Sell the resources
+		sellResources(resource, sellAmounts[resource]);
+		
+		// Calculate gold gained by comparing before and after
+		const goldGained = resources.gold - goldBefore;
+		
+		// Set success message
+		setSaleMessage({
+			resource: MERCHANT_RESOURCE_INFO[resource].label,
+			amount: sellAmounts[resource],
+			gold: goldGained,
+		});
 
-			// Reset the slider for this resource
-			setSellAmounts((prev) => ({
-				...prev,
-				[resource]: 0,
-			}));
+		// Reset the slider for this resource
+		setSellAmounts((prev) => ({
+			...prev,
+			[resource]: 0,
+		}));
 
-			// Clear message after 3 seconds
-			setTimeout(() => {
-				setSaleMessage(null);
-			}, 3000);
-		}
+		// Clear message after 3 seconds
+		setTimeout(() => {
+			setSaleMessage(null);
+		}, 3000);
 	};
 
 	// Handle selling all of a resource
 	const handleSellAll = (resource: keyof typeof MERCHANT_RESOURCE_PRICES) => {
 		if (resources[resource] <= 0) return;
 
-		const goldGained = sellResources(resource, resources[resource]);
-		if (goldGained) {
-			// Set success message
-			setSaleMessage({
-				resource: MERCHANT_RESOURCE_INFO[resource].label,
-				amount: resources[resource],
-				gold: goldGained,
-			});
+		const amountToSell = resources[resource];
+		
+		// Calculate gold gained before selling
+		const goldBefore = resources.gold;
+		
+		// Sell the resources
+		sellResources(resource, amountToSell);
+		
+		// Calculate gold gained by comparing before and after
+		const goldGained = resources.gold - goldBefore;
+		
+		// Set success message
+		setSaleMessage({
+			resource: MERCHANT_RESOURCE_INFO[resource].label,
+			amount: amountToSell,
+			gold: goldGained,
+		});
 
-			// Clear message after 3 seconds
-			setTimeout(() => {
-				setSaleMessage(null);
-			}, 3000);
-		}
+		// Clear message after 3 seconds
+		setTimeout(() => {
+			setSaleMessage(null);
+		}, 3000);
 	};
 
 	// Handle changing the amount of a resource to sell
