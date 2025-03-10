@@ -20,13 +20,23 @@ import { TileStatus } from './TileStatus';
 import CastleUpgradeDialog from './CastleUpgradeDialog';
 import BuildingSelectionDialog from './BuildingSelectionDialog';
 
-const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level, building }) => {
+const Tile: React.FC<TileProps> = ({
+	biome,
+	isOwned,
+	x,
+	y,
+	style,
+	level,
+	building,
+}) => {
 	const tiles = useGameStore((state) => state.tiles);
 	const buyTile = useGameStore((state) => state.buyTile);
 	const resources = useGameStore((state) => state.resources);
 	const characterStats = useGameStore((state) => state.characterStats);
 	const upgradeGroundsTile = useGameStore((state) => state.upgradeGroundsTile);
-	const isBiomeSelectionActive = useGameStore((state) => state.biomeSelectionActive);
+	const isBiomeSelectionActive = useGameStore(
+		(state) => state.biomeSelectionActive
+	);
 	const pendingTileCoords = useGameStore((state) => state.pendingTileCoords);
 	const selectBiome = useGameStore((state) => state.selectBiome);
 	const [isShaking, setIsShaking] = useState(false);
@@ -148,12 +158,18 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level, buildin
 							biome === 'castle',
 						'group hover:z-20': true,
 						'opacity-75 border-2 border-red-500': isShaking,
-						'cursor-pointer': isOwned && (biome === 'castle' || biome === 'grounds'),
+						'cursor-pointer':
+							isOwned && (biome === 'castle' || biome === 'grounds'),
 					}
 				)}
 				style={{
 					...style,
 					backgroundColor,
+					...(isOwned &&
+						biome === 'castle' && {
+							boxShadow:
+								'0px 0px 0px 45px rgba(109, 40, 217, 0.1), 0px 0px 0px 48px rgba(109, 40, 217, 0.09)',
+						}),
 					...(farAwayTile && {
 						backgroundColor: '#090c13',
 						backgroundImage:
@@ -175,28 +191,32 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level, buildin
 					{biome === 'grounds' && level && level > 1 && (
 						<>
 							{level > 1 && (
-							<span className='opacity-75 absolute top-0.5 right-0.5 text-[6px] bg-black w-3 h-3 aspect-square flex items-center justify-center leading-0 font-bold text-purple-600 rounded-full'>
-							⭐
-						</span>
+								<span className='opacity-75 absolute top-0.5 right-0.5 text-[6px] bg-black w-3 h-3 aspect-square flex items-center justify-center leading-0 font-bold text-purple-600 rounded-full'>
+									⭐
+								</span>
 							)}
 
-							
 							{/* Building icon */}
 							<span className='absolute bottom-0.5 right-0.5 text-[10px]'>
 								{BUILDINGS[building as BuildingType]?.icon}
 							</span>
 							{/* Resource icons for building bonuses */}
 							<div className='absolute bottom-0.5 left-0.5 flex gap-0.5 text-[8px]'>
-								{BUILDINGS[building as BuildingType]?.resourceGeneration && 
-									Object.entries(BUILDINGS[building as BuildingType].resourceGeneration).map(([resource, rate]) => {
+								{BUILDINGS[building as BuildingType]?.resourceGeneration &&
+									Object.entries(
+										BUILDINGS[building as BuildingType].resourceGeneration
+									).map(([resource, rate]) => {
 										if (!rate) return null;
 										return (
 											<span key={resource} className='text-green-400'>
-												{RESOURCE_ICONS[resource as keyof typeof RESOURCE_ICONS]}
+												{
+													RESOURCE_ICONS[
+														resource as keyof typeof RESOURCE_ICONS
+													]
+												}
 											</span>
 										);
-									})
-								}
+									})}
 							</div>
 						</>
 					)}
@@ -220,9 +240,7 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, style, level, buildin
 
 			{/* Castle Upgrade Dialog */}
 			{showCastleDialog && (
-				<CastleUpgradeDialog
-					onClose={() => setShowCastleDialog(false)}
-				/>
+				<CastleUpgradeDialog onClose={() => setShowCastleDialog(false)} />
 			)}
 
 			{/* Building Selection Dialog */}
