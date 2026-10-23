@@ -82,7 +82,7 @@ export const getStatDescription = (
 		vitality:
 			'+ 3 HP per point / +0.5 DEF per point / +0.5 Magic DEF per point / 2.5% Food & Wood Modifier per point',
 		charisma:
-			'+ 1 HP & DEF & Magic DEF +0.25 per point / +1 Luck per point / +0.5% Crit Chance & Crit DMG per point /  +0.1% Tile  Discount per point [max 25%] / +0.25% XP Modifier per point / 2.5% Gold & Coal Modifier per point',
+			'+ 1 HP & DEF & Magic DEF +0.25 per point / +1 Luck per point / +0.5% Crit Chance & Crit DMG per point /  +0.5% Tile Discount per point [max 25% at 50 points] / +0.25% XP Modifier per point / 2.5% Gold & Coal Modifier per point',
 		// Combat stats
 		physicalAtk:
 			'Your physical attack power. Determines damage dealt with physical attacks.',

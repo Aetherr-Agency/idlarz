@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { formatNumber } from '@/utils/formatters';
 import { ResourceSellingSection } from './ResourceSellingSection';
@@ -171,6 +171,11 @@ const MerchantOverlay: React.FC = () => {
 		price: number;
 	} | null>(null);
 
+	// Always reopen on the Sell tab (the overlay stays mounted while closed)
+	useEffect(() => {
+		if (showMerchantWindow) setActiveTab('exchange');
+	}, [showMerchantWindow]);
+
 	if (!showMerchantWindow) return null;
 
 	// Calculate the max for each resource (current owned amount)
@@ -186,15 +191,12 @@ const MerchantOverlay: React.FC = () => {
 	const handleSell = (resource: keyof typeof MERCHANT_RESOURCE_PRICES) => {
 		if (sellAmounts[resource] <= 0) return;
 
-		// Calculate gold gained before selling
-		const goldBefore = resources.gold;
-		
+		// Gold gained (same formula as the store's sellResources)
+		const goldGained = calculateGold(resource, sellAmounts[resource]);
+
 		// Sell the resources
 		sellResources(resource, sellAmounts[resource]);
-		
-		// Calculate gold gained by comparing before and after
-		const goldGained = resources.gold - goldBefore;
-		
+
 		// Set success message
 		setSaleMessage({
 			resource: MERCHANT_RESOURCE_INFO[resource].label,
@@ -220,15 +222,12 @@ const MerchantOverlay: React.FC = () => {
 
 		const amountToSell = resources[resource];
 		
-		// Calculate gold gained before selling
-		const goldBefore = resources.gold;
-		
+		// Gold gained (same formula as the store's sellResources)
+		const goldGained = calculateGold(resource, amountToSell);
+
 		// Sell the resources
 		sellResources(resource, amountToSell);
-		
-		// Calculate gold gained by comparing before and after
-		const goldGained = resources.gold - goldBefore;
-		
+
 		// Set success message
 		setSaleMessage({
 			resource: MERCHANT_RESOURCE_INFO[resource].label,

@@ -6,6 +6,7 @@ import {
 	GRID_HEIGHT,
 	SCALING_CONFIG,
 	RESOURCE_ICONS,
+	CASTLE_BASE_RATES,
 	CASTLE_UPGRADE,
 	BUILDINGS,
 	BuildingType,
@@ -35,7 +36,6 @@ export const BiomeTooltip = memo(
 		y?: number;
 	}) => {
 		const biomeInfo = BIOMES[biome];
-		const multiplier = level ? Math.pow(1.5, level - 1) : 1;
 		const tiles = useGameStore((state) => state.tiles);
 		const building = x !== undefined && y !== undefined ? tiles[y][x].building : undefined;
 		const resourceRates = useGameStore((state) => state.resourceRates);
@@ -100,7 +100,11 @@ export const BiomeTooltip = memo(
 				).map(([resource, rate]) => {
 					const baseRate = rate || 0;
 					let effectiveRate =
-						biome === 'castle' ? baseRate * multiplier : baseRate;
+						biome === 'castle'
+							? // CASTLE_BASE_RATES shadows the biome table; the castle level only adds a global modifier
+							  CASTLE_BASE_RATES[resource as keyof typeof CASTLE_BASE_RATES] ||
+							  baseRate
+							: baseRate;
 
 					// Only apply adjacency bonus to positive rates
 					if (effectiveRate > 0 && x !== undefined) {

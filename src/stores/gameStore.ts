@@ -269,7 +269,6 @@ const createGameSlice = (
 				},
 				resourceRates: newRates,
 				resourceModifiers: newRates.modifiers,
-				level: calculateLevel(state.resources.xp + totalXpGain),
 				characterStats: newStats,
 			});
 
@@ -283,7 +282,8 @@ const createGameSlice = (
 			if (
 				!state.biomeSelectionActive ||
 				!state.pendingTileCoords ||
-				!state.selectableBiomes
+				!state.selectableBiomes ||
+				!state.selectableBiomes.includes(biome)
 			) {
 				return false;
 			}
@@ -343,7 +343,6 @@ const createGameSlice = (
 				},
 				resourceRates: newRates,
 				resourceModifiers: newRates.modifiers,
-				level: calculateLevel(state.resources.xp + totalXpGain),
 				characterStats: newStats,
 				biomeSelectionActive: false,
 				pendingTileCoords: null,
@@ -520,7 +519,8 @@ const createGameSlice = (
 
 		tick: (deltaTime: number) => {
 			const state = get();
-			const secondsElapsed = deltaTime / 1000;
+			// Clamp: a system clock moved backwards must not drain resources
+			const secondsElapsed = Math.max(0, deltaTime) / 1000;
 
 			// Resource accumulation
 			const newResources = { ...state.resources };
@@ -680,50 +680,13 @@ export const useGameStore = create(
 		name: 'idle-explorer-v11',
 		version: 11,
 		storage: createJSONStorage(() => localStorage),
-		onRehydrateStorage: () => (state) => {
-			// Validate and fix state if needed
-			if (!state || !validateGrid(state.tiles)) {
-				const initialGrid = createInitialGrid();
-				const initialRates = calculateResourceRates(
-					initialGrid,
-					INITIAL_CHARACTER_STATS,
-					{}
-				);
-
-				return {
-					tiles: initialGrid,
-					resources: { ...INITIAL_RESOURCES },
-					resourceRates: initialRates,
-					resourceModifiers: initialRates.modifiers,
-					xp: 0,
-					level: calculateLevel(0),
-					previousLevel: 0,
-					playerName: DEFAULT_PLAYER_NAME,
-					playerClass: DEFAULT_PLAYER_CLASS,
-					characterStats: INITIAL_CHARACTER_STATS,
-					equipment: {},
-					inventory: INITIAL_INVENTORY_ITEMS,
-					farmLevels: {}, // Initialize farm levels (animal counts)
-					showCharacterWindow: false,
-					showStatisticsWindow: false,
-					showMerchantWindow: false,
-					showFarmWindow: false, // Initialize farm window visibility
-					isHydrated: true,
-					buyTile: state?.buyTile,
-					upgradeCastle: state?.upgradeCastle,
-					tick: state?.tick,
-					biomeSelectionActive: false,
-					pendingTileCoords: null,
-					selectableBiomes: null,
-					clickMultiplier: 2, // Initialize with default multiplier of 2
-					chestSpawnTimer: 0, // Initialize chest spawn timer
-					activeChests: 0, // Initialize active chest count
-					lastChestReward: 0,
-					lastChestGoldRate: 0,
-					lastChestMinutesAwarded: 0,
-				};
+		// Validate persisted state; fall back to a fresh game if the saved grid is invalid
+		merge: (persisted, current) => {
+			const saved = persisted as Partial<GameState> | undefined;
+			if (!saved || !validateGrid(saved.tiles)) {
+				return { ...current, isHydrated: true };
 			}
-			return state;
+			return { ...current, ...saved, isHydrated: true };
 		},
 	})
 );

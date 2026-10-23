@@ -39,12 +39,12 @@ export const INITIAL_CHARACTER_STATS: CharacterStats = {
 
 // Grid Configuration
 export const GRID_SIZE = 50; // Width of the grid
-export const GRID_HEIGHT = 50; // Height of the grid (half of width)
+export const GRID_HEIGHT = 50; // Height of the grid (same as width)
 export const GRID_CENTER_X = Math.floor(GRID_SIZE / 2);
 export const GRID_CENTER_Y = Math.floor(GRID_HEIGHT / 2);
 
 export const TILE_SIZE = 48; // Balanced for visibility
-export const VIEWPORT_SIZE = 25; // 12 tiles in each direction from center
+export const VIEWPORT_SIZE = 25; // currently unused
 
 // Game Constants
 export const TICK_RATE = 100; // 10 times per second
@@ -53,7 +53,7 @@ export const ADJACENCY_BONUS = 0.25; // 25% bonus for adjacent same biomes
 
 // XP calculation constants - Exponential XP system
 export const BASE_XP_PER_TILE = 125;
-export const XP_GROWTH_FACTOR = 1.3; // Exponential growth factor for XP needed per level (2x)
+export const XP_GROWTH_FACTOR = 1.3; // Exponential growth factor for XP needed per level (x1.3)
 export const BASE_XP_PER_LEVEL = 750; // Starting XP needed for level 1 to 2
 
 export const SPECIAL_SINGLE_TYPE_BIOMES: BiomeType[] = ['castle'];
@@ -381,7 +381,7 @@ export const ANIMALS: Animal[] = [
 		description: 'A wild animal that produces more meat than a chicken.',
 		baseCost: 50000,
 		costScaling: 1.6,
-		baseProduction: 0.5, // 0.6 meat per second
+		baseProduction: 0.5, // 0.5 meat per second
 		productionScaling: 1.25,
 	},
 	{
@@ -390,7 +390,7 @@ export const ANIMALS: Animal[] = [
 		description: 'A domestic animal that produces a good amount of meat.',
 		baseCost: 200000,
 		costScaling: 1.7,
-		baseProduction: 1, // 0.5 meat per second
+		baseProduction: 1, // 1 meat per second
 		productionScaling: 1.3,
 	},
 	{
