@@ -15,13 +15,20 @@ export const PIXEL_ICON_SIZES = {
 	menu_character: [40, 40],
 	menu_merchant: [40, 40],
 	menu_farm: [40, 40],
-	level_star: [24, 24],
+	level_orb: [24, 24],
 	xp: [40, 40],
 	cash_bag: [24, 24],
 	unknown: [12, 16],
-	// portraits
-	hero: [40, 56],
-	merchant: [40, 56],
+	// portraits: full figure per hero class, head-and-shoulders bust for the header, the merchant
+	hero_warrior: [56, 80],
+	hero_paladin: [56, 80],
+	hero_ranger: [56, 80],
+	hero_mage: [56, 80],
+	bust_warrior: [40, 40],
+	bust_paladin: [40, 40],
+	bust_ranger: [40, 40],
+	bust_mage: [40, 40],
+	merchant: [56, 80],
 	// equipment slots
 	equip_head: [40, 40],
 	equip_neck: [40, 40],
@@ -58,13 +65,16 @@ export const PIXEL_ICON_SIZES = {
 	animal_pig: [40, 40],
 	animal_cow: [40, 40],
 	animal_deer: [40, 40],
+	// farm pen: the whole fenced meadow (back) and the near fences that go in front of the animals (front)
+	farm_back: [256, 184],
+	farm_front: [256, 184],
 } as const;
 
 export type PixelIconName = keyof typeof PIXEL_ICON_SIZES;
 
 export const pixelIconSrc = (name: PixelIconName) => `${PIXEL_ICON_DIR}/${name}.png`;
 
-// Resource key -> sprite. Resources without an entry (e.g. xp) fall back to their emoji.
+// Resource key -> sprite. Resources without an entry fall back to their emoji.
 export const RESOURCE_PIXEL_ICONS: Partial<Record<string, PixelIconName>> = {
 	gold: 'gold',
 	wood: 'wood',
@@ -118,4 +128,14 @@ export const BUILDING_PIXEL_ICONS: Record<string, PixelIconName> = {
 	market: 'building_market',
 	blacksmith: 'building_blacksmith',
 	workshop: 'building_workshop',
+};
+
+// Soft working-glow colour per building (a converted tile's workstation glows in this tone)
+export const BUILDING_GLOW: Record<string, string> = {
+	farm: '#9be15d',
+	mine: '#ffb347',
+	lumbermill: '#e0a860',
+	market: '#ffd84a',
+	blacksmith: '#ff8a3c',
+	workshop: '#b27aff',
 };

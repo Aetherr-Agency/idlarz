@@ -1,4 +1,4 @@
-"""Prop sprites: menu-button icons (helm, coin pouch, barn) and the level gem."""
+"""Prop sprites: menu-button icons (helm, coin pouch, barn) and the purple level/XP orb."""
 import math
 from PIL import Image, ImageDraw
 from render3d import Scene, Prim, rot, vnoise, between, place, I3, hexc
@@ -15,56 +15,81 @@ def plank_tex(pl, nl, pr):
     return None, d
 
 
-# ----------------------------------------------------------------- level badge: amethyst gem (2D facets)
-def _star_base():
-    """24x24 faceted gold star (light from the top-left) with a dark amber outline."""
-    img = Image.new('RGBA', (24, 24), (0, 0, 0, 0))
-    d = ImageDraw.Draw(img)
-    ramp = [hexc(c) for c in ('#7a3a10', '#c07a18', '#eaa828', '#fad24c', '#fff6b4')]
-    cx, cy, R, r = 11.5, 12.5, 10.6, 4.6
-    pts = []
-    for i in range(10):
-        rad = R if i % 2 == 0 else r
-        a = -math.pi / 2 + i * math.pi / 5
-        pts.append((cx + rad * math.cos(a), cy + rad * math.sin(a)))
-    L = (-0.6, -0.8)
-    for i in range(10):
-        a, b = pts[i], pts[(i + 1) % 10]
-        mx, my = (a[0] + b[0] + cx) / 3 - cx, (a[1] + b[1] + cy) / 3 - cy
-        n = math.hypot(mx, my) or 1
-        v = 0.5 + 0.5 * ((mx * L[0] + my * L[1]) / n)
-        d.polygon([(cx, cy), a, b], fill=ramp[max(0, min(4, int(v * 4.99)))])
-    return add_outline(img, hexc('#4a230a'))
+# ----------------------------------------------------------------- level orb / XP orb (2D, light from the top-left)
+_BAYER = ((0, 8, 2, 10), (12, 4, 14, 6), (3, 11, 1, 9), (15, 7, 13, 5))
 
 
-def star_frames():
-    """6 frames: a bright sweep glides across the star, then a 4-point glint blooms and fades."""
-    base = _star_base()
+def orb_base(size=24, dark_core=True):
+    """Purple glass orb. dark_core=True leaves a deep socket in the middle so a number reads on it (level badge);
+    False fills it with a bright energy core (the XP icon)."""
+    ring, core = MATS['xp'].ramp, MATS['xp_core'].ramp
+    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+    cx = cy = (size - 1) / 2.0
+    R = size / 2.0 - 1.2
+    L = (-0.45, -0.62, 0.64)
+    for y in range(size):
+        for x in range(size):
+            dx, dy = (x - cx) / R, (y - cy) / R
+            r2 = dx * dx + dy * dy
+            if r2 > 1.0:
+                continue
+            nz = math.sqrt(1.0 - r2)
+            lit = max(0.0, dx * L[0] + dy * L[1] + nz * L[2])
+            rr = math.sqrt(r2)
+            b = (_BAYER[y % 4][x % 4] / 16.0 - 0.5) * 0.22
+            if dark_core and rr < 0.6:
+                # socket: dark, with a faint lower-right bounce light
+                t = 0.12 + 0.55 * max(0.0, dx * 0.5 + dy * 0.6) * (rr / 0.6) ** 2
+                col = core[max(0, min(4, int(t * 5 + b)))]
+            elif (not dark_core) and rr < 0.5:
+                t = 0.62 + 0.45 * (1 - rr / 0.5)
+                col = ring[max(0, min(4, int(t * 5 + b)))]
+            else:
+                t = 0.3 + 0.7 * lit + 0.2 * max(0.0, rr - 0.8) / 0.2          # glassy bright rim
+                col = ring[max(0, min(4, int(t * 5 + b)))]
+                if 0.78 < rr < 0.94 and dx + dy < -0.55 and lit > 0.35:     # curved window glint, upper left
+                    col = ring[4]
+            img.putpixel((x, y), col)
+    return add_outline(img, hexc('#10042c'))
+
+
+def _orb_decorate(img, size):
+    fx.glint(img, int(size * 0.3), int(size * 0.28), 1 if size < 30 else 2)
+    return img
+
+
+def level_orb():
+    return _orb_decorate(orb_base(24, True), 24)
+
+
+def orb_frames(size=24, n=6):
+    """n frames: a pale sweep glides across the glass, then the glint blooms and fades."""
+    base = orb_base(size, True)
     px = base.load()
-    inside = [(x, y) for y in range(24) for x in range(24) if px[x, y][3] > 200]
+    c, R = (size - 1) / 2.0, size / 2.0 - 1.2
+    # the sweep only crosses the glass rim: the dark socket stays dark so the level number never loses contrast
+    inside = [(x, y) for y in range(size) for x in range(size)
+              if px[x, y][3] > 200 and math.hypot(x - c, y - c) > 0.66 * R]
     frames = []
-    for i in range(6):
+    for i in range(n):
         f = base.copy()
         fp = f.load()
-        sweep = 6 + i * 6
+        sweep = size * 0.4 + i * (size * 0.9 / n)
         for x, y in inside:
-            if abs((x + y) - sweep) <= 1:
-                fp[x, y] = hexc('#fffce0')
-            elif abs((x + y) - sweep) == 2:
-                fp[x, y] = hexc('#fff0a0')
-        glint_r = (0, 0, 1, 3, 2, 1)[i]
-        if glint_r:
-            fx.glint(f, 8, 7, glint_r)
+            d = abs((x + y) - sweep)
+            if d <= 1:
+                fp[x, y] = hexc('#f4e8ff')
+            elif d <= 2:
+                fp[x, y] = hexc('#c9a8ff')
+        r = (0, 0, 1, 2, 1, 0)[i % 6]
+        if r:
+            fx.glint(f, int(size * 0.3), int(size * 0.28), r)
         frames.append(f)
     return frames
 
 
-def star():
-    return star_frames()[3]
-
-
-def star_sheet():
-    frames = star_frames()
+def level_orb_sheet():
+    frames = orb_frames()
     sheet = Image.new('RGBA', (24 * len(frames), 24), (0, 0, 0, 0))
     for i, f in enumerate(frames):
         sheet.alpha_composite(f, (i * 24, 0))

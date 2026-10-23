@@ -163,15 +163,51 @@ body {
 	}
 }
 
-.pixel-level-badge {
-	padding: 1px 6px;
-	font-size: 10px;
+.pixel-avatar {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 48px;
+	height: 48px;
+	background: url('/pixel/ui/slot_frame.png') 0 0 / 48px 48px no-repeat;
+	image-rendering: pixelated;
+}
+
+.character-portrait {
+	display: inline-flex;
+	line-height: 0;
+
+	&.is-interactive {
+		cursor: pointer;
+	}
+}
+
+.px-name {
 	font-weight: 700;
-	line-height: 14px;
+	cursor: text;
+}
+
+.pixel-name {
+	font-size: 0.875rem;
+	max-width: 6.5rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.px-name-input {
+	width: 7.25rem;
+	padding: 0 4px;
+	font: inherit;
+	font-size: 0.875rem;
+	font-weight: 700;
 	color: #fff1c0;
-	background: #6a4414;
-	border: 1px solid #c08a30;
-	box-shadow: inset 0 1px 0 #a8783a;
+	background: #0a0706;
+	border: 2px solid #c08a30;
+	outline: none;
+	box-shadow: 0 0 0 2px #080504, 0 0 10px rgba(255, 190, 70, 0.4);
+	text-align: center;
 }
 
 .pixel-xp {
@@ -311,20 +347,6 @@ body {
 
 .castle-tile {
 	z-index: 10;
-
-	&:after {
-		content: '';
-		display: block;
-		position: absolute;
-		top: -50px;
-		left: -50px;
-		width: calc(100% + 100px);
-		height: calc(100% + 100px);
-		border: 2px dashed #c27aff;
-		background-color: #c27aff0a;
-		pointer-events: none;
-		z-index: 20;
-	}
 }
 
 /* ======================================================================================
@@ -854,17 +876,17 @@ body {
 /* --- Hero HUD: stone alcove scene, flickering torches, flasks flanking the hero, stony XP bar --- */
 .hero-hud {
 	position: relative;
-	width: 288px; /* hero_scene.png is 144x96, shown at 2x */
-	height: 192px;
+	width: 288px; /* hero_scene.png is 144x112, shown at 2x */
+	height: 224px;
 	margin: 0 auto;
-	background: url('/pixel/ui/hero_scene.png') 0 0 / 288px 192px no-repeat;
+	background: url('/pixel/ui/hero_scene.png') 0 0 / 288px 224px no-repeat;
 	image-rendering: pixelated;
 	box-shadow: 0 0 0 2px #080504, 0 0 0 4px #5a3f1c;
 }
 
 .hero-torch {
 	position: absolute;
-	top: 28px;
+	top: 56px;
 	width: 20px;
 	height: 32px;
 	background: url('/pixel/ui/torch.png') 0 0 / 60px 32px no-repeat;
@@ -976,7 +998,7 @@ body {
 	text-shadow: 0 1px 0 #0a1a06, 1px 0 0 #0a1a06, -1px 0 0 #0a1a06, 0 -1px 0 #0a1a06;
 }
 
-.hero-star {
+.hero-orb {
 	position: absolute;
 	left: -6px;
 	bottom: -2px;
@@ -985,19 +1007,43 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	}
+	filter: drop-shadow(0 0 5px rgba(150, 90, 255, 0.8));
+}
 
-.hero-star-lv {
+/* name plate hanging at the top of the alcove */
+.hero-nameplate {
 	position: absolute;
-	top: 11px;
-	left: 0;
-	right: 0;
-	text-align: center;
-	font-size: 0.95rem;
-	font-weight: 700;
-	line-height: 1;
-	color: #fff6c8;
-	text-shadow: 0 2px 0 #5a2a08, 1px 0 0 #5a2a08, -1px 0 0 #5a2a08, 0 -1px 0 #5a2a08;
+	top: 6px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 2;
+	min-width: 132px;
+	padding: 3px 14px 4px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	line-height: 1.15;
+	color: #fff1c0;
+	text-shadow: 0 2px 0 #1a0f06;
+	background: rgba(12, 8, 6, 0.82);
+	border: 2px solid #7a5224;
+	box-shadow: 0 0 0 2px #080504, inset 0 1px 0 rgba(240, 210, 122, 0.35);
+}
+
+.hero-nameplate .px-name {
+	font-size: 1rem;
+}
+
+.hero-nameplate .px-name-input {
+	font-size: 1rem;
+	width: 7.5rem;
+}
+
+.hero-class {
+	font-size: 0.6875rem;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	color: #a89878;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1008,20 +1054,44 @@ body {
 	}
 }
 
-/* --- Shining level star: 6-frame strip (24px frames), stepped --- */
-.shine-star {
+/* --- Level orb: 6-frame glass sprite (24px frames), stepped; the level number sits in its dark socket --- */
+.level-orb {
 	--s: 1;
+	position: relative;
 	display: inline-block;
 	flex-shrink: 0;
 	width: calc(24px * var(--s));
 	height: calc(24px * var(--s));
-	background: url('/pixel/icons/level_star_shine.png') 0 0 / calc(144px * var(--s)) calc(24px * var(--s)) no-repeat;
+	background: url('/pixel/icons/level_orb_shine.png') 0 0 / calc(144px * var(--s)) calc(24px * var(--s)) no-repeat;
 	image-rendering: pixelated;
-	filter: drop-shadow(0 0 4px rgba(255, 200, 70, 0.7));
-	animation: star-shine 1s steps(6) infinite;
+	filter: drop-shadow(0 0 4px rgba(150, 90, 255, 0.75));
+	animation: orb-shine 1.2s steps(6) infinite;
 }
 
-@keyframes star-shine {
+.level-orb-num {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding-top: calc(1px * var(--s));
+	font-family: var(--font-pixel);
+	font-size: calc(10px * var(--s));
+	font-weight: 700;
+	line-height: 1;
+	letter-spacing: 0;
+	color: #fff;
+	pointer-events: none;
+	--o: calc(1px * var(--s));
+	text-shadow: var(--o) 0 0 #10042c, calc(var(--o) * -1) 0 0 #10042c, 0 var(--o) 0 #10042c, 0 calc(var(--o) * -1) 0 #10042c;
+}
+
+.level-orb[data-digits='3'] .level-orb-num {
+	font-size: calc(7px * var(--s));
+	letter-spacing: -0.5px;
+}
+
+@keyframes orb-shine {
 	to {
 		background-position-x: calc(-144px * var(--s));
 	}
@@ -1189,7 +1259,7 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.shine-star,
+	.level-orb,
 	.tile-ground-lake,
 	.tile-unknown,
 	.tile-unknown::before,

@@ -1,0 +1,191 @@
+/* Castle range: the 3x3 patch the castle's bonus will cover - violet wash, marching dashes, rivet corners,
+   and gold sparkles rising above every owned tile inside it. */
+
+.castle-range {
+	position: absolute;
+	z-index: 12;
+	pointer-events: none;
+	image-rendering: pixelated;
+	background:
+		url('/pixel/ui/range_tint.png') 0 0 / 32px 32px repeat,
+		radial-gradient(closest-side, rgba(170, 100, 255, 0.28), rgba(110, 50, 200, 0.16) 70%, rgba(90, 40, 170, 0.1));
+	box-shadow: 0 0 28px 4px rgba(150, 80, 255, 0.5), inset 0 0 40px rgba(170, 100, 255, 0.35);
+	animation: range-breathe 3.2s ease-in-out infinite alternate, range-weave 5s steps(10) infinite;
+}
+
+@keyframes range-breathe {
+	from {
+		box-shadow: 0 0 18px 2px rgba(150, 80, 255, 0.35), inset 0 0 28px rgba(170, 100, 255, 0.25);
+	}
+	to {
+		box-shadow: 0 0 36px 8px rgba(160, 90, 255, 0.65), inset 0 0 52px rgba(185, 120, 255, 0.45);
+	}
+}
+
+@keyframes range-weave {
+	to {
+		background-position: 32px 32px, 0 0;
+	}
+}
+
+/* marching dashes along the four edges (8px dashes, drifting) */
+.range-edge {
+	position: absolute;
+	background-image: repeating-linear-gradient(var(--dir), #e2c4ff 0 8px, #8a44e0 8px 12px, transparent 12px 20px);
+	animation: range-march 1s steps(10) infinite;
+	filter: drop-shadow(0 0 3px #b27aff);
+}
+
+.range-edge.top,
+.range-edge.bottom {
+	left: 14px;
+	right: 14px;
+	height: 4px;
+	--dir: 90deg;
+}
+
+.range-edge.left,
+.range-edge.right {
+	top: 14px;
+	bottom: 14px;
+	width: 4px;
+	--dir: 180deg;
+}
+
+.range-edge.top {
+	top: 0;
+}
+
+.range-edge.bottom {
+	bottom: 0;
+	animation-direction: reverse;
+}
+
+.range-edge.left {
+	left: 0;
+	animation-direction: reverse;
+}
+
+.range-edge.right {
+	right: 0;
+}
+
+@keyframes range-march {
+	to {
+		background-position: 20px 20px;
+	}
+}
+
+.range-corner {
+	position: absolute;
+	width: 40px;
+	height: 40px;
+	background: url('/pixel/ui/range_corner.png') 0 0 / 40px 40px no-repeat;
+	filter: drop-shadow(0 0 4px #b27aff);
+	animation: range-corner-pulse 1.6s steps(2) infinite alternate;
+}
+
+.range-corner.tl {
+	top: -2px;
+	left: -2px;
+}
+
+.range-corner.tr {
+	top: -2px;
+	right: -2px;
+	transform: scaleX(-1);
+}
+
+.range-corner.bl {
+	bottom: -2px;
+	left: -2px;
+	transform: scaleY(-1);
+}
+
+.range-corner.br {
+	bottom: -2px;
+	right: -2px;
+	transform: scale(-1, -1);
+}
+
+@keyframes range-corner-pulse {
+	to {
+		filter: drop-shadow(0 0 8px #d8b0ff) brightness(1.2);
+	}
+}
+
+.range-label {
+	position: absolute;
+	top: -26px;
+	left: 50%;
+	transform: translateX(-50%);
+	padding: 1px 10px;
+	font-family: var(--font-pixel);
+	font-size: 0.7rem;
+	font-weight: 700;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	white-space: nowrap;
+	color: #f0ddff;
+	text-shadow: 0 2px 0 #1a0640;
+	background: rgba(24, 8, 52, 0.85);
+	border: 2px solid #8a44e0;
+}
+
+/* gold twinkles above owned tiles in range: 6-frame strip (11px frames at 2x) floating upward */
+.range-sparks {
+	position: absolute;
+	inset: 0;
+	z-index: 3;
+	overflow: visible;
+	pointer-events: none;
+}
+
+.range-spark {
+	position: absolute;
+	left: var(--x);
+	bottom: 30%;
+	width: 22px;
+	height: 22px;
+	margin-left: -11px;
+	opacity: 0;
+	background: url('/pixel/ui/spark_sheet.png') 0 0 / 132px 22px no-repeat;
+	image-rendering: pixelated;
+	filter: drop-shadow(0 0 4px rgba(255, 210, 60, 0.9));
+	animation: spark-twinkle 0.9s steps(6) infinite, spark-float 2.4s linear infinite;
+	animation-delay: var(--d), var(--d);
+}
+
+@keyframes spark-twinkle {
+	to {
+		background-position-x: -132px;
+	}
+}
+
+@keyframes spark-float {
+	0% {
+		transform: translateY(8px);
+		opacity: 0;
+	}
+	20%,
+	80% {
+		opacity: 1;
+	}
+	100% {
+		transform: translateY(-30px);
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.castle-range,
+	.range-edge,
+	.range-corner,
+	.range-spark {
+		animation: none;
+	}
+
+	.range-spark {
+		opacity: 1;
+	}
+}

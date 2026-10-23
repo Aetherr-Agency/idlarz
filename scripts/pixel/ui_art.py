@@ -209,7 +209,7 @@ def bar_fill():
 
 
 # ----------------------------------------------------------------- hero scene (stone alcove, 144x96)
-SCENE_W, SCENE_H = 144, 96
+SCENE_W, SCENE_H = 144, 112
 
 
 def _lerp(a, b, t):
@@ -222,7 +222,7 @@ def hero_scene():
     px = img.load()
     rnd = random.Random(8)
     brick_tones = [C(c) for c in ('#2e241d', '#34291f', '#281f19', '#3a2e24', '#30261e')]
-    floor_y = 66
+    floor_y = 80
     # brick wall
     for row in range(0, floor_y // 8 + 1):
         off = 8 if row % 2 else 0
@@ -242,7 +242,7 @@ def hero_scene():
                         col = tuple(max(0, c - 10) for c in tone[:3]) + (255,)
                     px[x, y] = col
     # arch niche
-    cx, cy, R = 72, 40, 31
+    cx, cy, R = 72, 52, 32
     def in_arch(x, y, grow=0):
         return (y >= cy and abs(x - cx) <= R + grow and y <= floor_y) or ((x - cx) ** 2 + (y - cy) ** 2 <= (R + grow) ** 2 and y < cy)
     for y in range(SCENE_H):
@@ -274,11 +274,11 @@ def hero_scene():
     d.point((cx, cy - R - 2), fill=C('#e0b23a'))
     # sconces (the flames are a separate animated sprite)
     for sx in (18, SCENE_W - 19):
-        d.rectangle([sx - 1, 34, sx + 1, 46], fill=C('#5a3a1c'))
+        d.rectangle([sx - 1, 48, sx + 1, 60], fill=C('#5a3a1c'))
+        d.rectangle([sx - 3, 60, sx + 3, 62], fill=C('#2a2a32'))
         d.rectangle([sx - 3, 46, sx + 3, 48], fill=C('#2a2a32'))
-        d.rectangle([sx - 3, 32, sx + 3, 34], fill=C('#2a2a32'))
-        d.point((sx - 3, 32), fill=C('#7a7a88'))
-        d.rectangle([sx - 2, 28, sx + 2, 32], fill=C('#3a2410'))
+        d.point((sx - 3, 46), fill=C('#7a7a88'))
+        d.rectangle([sx - 2, 42, sx + 2, 46], fill=C('#3a2410'))
     # floor: worn slabs with a bright back edge
     for y in range(floor_y, SCENE_H):
         t = (y - floor_y) / (SCENE_H - floor_y)
@@ -417,3 +417,122 @@ def flask_bubbles(h=24):
             d.ellipse([x, y, x + 3, y + 3], outline=(255, 255, 255, 150))
             d.point((x + 1, y + 1), fill=(255, 255, 255, 220))
     return img
+
+
+# ----------------------------------------------------------------- castle range overlay
+def range_corner(size=20):
+    """Top-left bracket of the castle's bonus range: violet rail with a gold rivet and a glowing tip."""
+    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    # outer glow, rail, highlight
+    for t, col in ((4, '#7a3ac820'), (3, '#9a56e840'), (2, '#c27aff')):
+        d.line([(0, 0), (size - 1, 0)], fill=C(col[:7]) if len(col) == 7 else hexc8(col), width=t)
+        d.line([(0, 0), (0, size - 1)], fill=C(col[:7]) if len(col) == 7 else hexc8(col), width=t)
+    d.line([(1, 1), (size - 2, 1)], fill=C('#f0ddff'))
+    d.line([(1, 1), (1, size - 2)], fill=C('#f0ddff'))
+    d.rectangle([0, 0, 5, 5], fill=C('#8a44e0'), outline=C('#2a0a5a'))
+    d.rectangle([1, 1, 4, 4], fill=C('#c9a0ff'))
+    d.point((2, 2), fill=C('#fff6c8'))
+    d.point((3, 3), fill=C('#d9a850'))
+    for i in range(6, size, 1):                          # fading tips of the rails
+        a = 255 if i < size - 6 else max(40, 255 - (i - (size - 7)) * 40)
+        d.point((i, 3), fill=hexc8('#2a0a5a%02x' % min(a, 255)))
+        d.point((3, i), fill=hexc8('#2a0a5a%02x' % min(a, 255)))
+    return img
+
+
+def hexc8(h):
+    h = h.lstrip('#')
+    return tuple(int(h[i:i + 2], 16) for i in range(0, 8, 2)) if len(h) == 8 else C('#' + h)
+
+
+def range_tint(size=16, seed=5):
+    """Seamless faint violet ground wash: sparse rune dots on a diagonal weave (drawn at 2x in CSS)."""
+    rnd = random.Random(seed)
+    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+    px = img.load()
+    for y in range(size):
+        for x in range(size):
+            if (x + y) % 8 == 0:
+                px[x, y] = (150, 90, 230, 54)
+            elif (x - y) % 8 == 0:
+                px[x, y] = (120, 70, 210, 30)
+    for _ in range(4):
+        x, y = rnd.randrange(size), rnd.randrange(size)
+        px[x, y] = (226, 190, 255, 140)
+    return img
+
+
+def spark_sheet(n=6, s=11):
+    """Gold twinkle: a plus that grows, flashes white and fades; n frames of s x s."""
+    sheet = Image.new('RGBA', (s * n, s), (0, 0, 0, 0))
+    radii = (0, 1, 2, 3, 2, 1)
+    c = s // 2
+    for i in range(n):
+        r = radii[i % len(radii)]
+        if not r:
+            continue
+        px = sheet.load()
+        ox = i * s
+        px[ox + c, c] = C('#ffffff')
+        for k in range(1, r + 1):
+            col = C('#fff2a0') if k == 1 else C('#ffd23a')
+            a = 255 if k < r or r == 1 else 200
+            for dx, dy in ((k, 0), (-k, 0), (0, k), (0, -k)):
+                px[ox + c + dx, c + dy] = col[:3] + (a,)
+        if r >= 2:
+            for dx, dy in ((1, 1), (-1, 1), (1, -1), (-1, -1)):
+                px[ox + c + dx, c + dy] = (255, 214, 80, 170)
+    return sheet
+
+
+# ----------------------------------------------------------------- level-up ribbon (3 slices, middle repeats)
+def _ribbon(w, parts):
+    return None
+
+
+def banner_parts(h=28):
+    """Returns (left, middle, right): a crimson ribbon with gold edging and swallow-tailed ends."""
+    cap, mid_w = 22, 8
+    full_w = cap * 2 + mid_w
+    img = Image.new('RGBA', (full_w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+
+    def body(x0, x1):
+        d.rectangle([x0, 4, x1, h - 5], fill=C('#8a1428'))
+        d.rectangle([x0, 4, x1, 5], fill=C('#c8283c'))
+        d.rectangle([x0, h - 8, x1, h - 5], fill=C('#5e0c1c'))
+        d.line([(x0, 3), (x1, 3)], fill=C('#2a0610'))
+        d.line([(x0, h - 4), (x1, h - 4)], fill=C('#2a0610'))
+        d.line([(x0, 4), (x1, 4)], fill=C('#f0d27a'))
+        d.line([(x0, h - 5), (x1, h - 5)], fill=C('#b07c34'))
+        d.line([(x0, 8), (x1, 8)], fill=C('#d94a5c'))
+
+    body(cap, cap + mid_w - 1)
+    # left tail (folded behind) and body cap
+    d.polygon([(0, 8), (cap, 8), (cap, h - 2), (0, h - 2), (7, (h + 6) // 2)], fill=C('#5e0c1c'), outline=C('#2a0610'))
+    d.polygon([(2, 10), (cap, 10), (cap, h - 4), (2, h - 4), (8, (h + 6) // 2)], fill=C('#7a1224'))
+    d.rectangle([cap - 8, 4, cap, h - 5], fill=C('#8a1428'))
+    d.rectangle([cap - 8, 4, cap, 5], fill=C('#c8283c'))
+    d.line([(cap - 8, 3), (cap, 3)], fill=C('#2a0610'))
+    d.line([(cap - 8, h - 4), (cap, h - 4)], fill=C('#2a0610'))
+    d.line([(cap - 8, 4), (cap, 4)], fill=C('#f0d27a'))
+    d.line([(cap - 8, h - 5), (cap, h - 5)], fill=C('#b07c34'))
+    left = img.crop((0, 0, cap, h))
+    # right = mirror of left
+    from PIL import ImageOps
+    right = ImageOps.mirror(left)
+    mid = img.crop((cap, 0, cap + mid_w, h))
+    return left, mid, right
+
+
+def banner_left():
+    return banner_parts()[0]
+
+
+def banner_mid():
+    return banner_parts()[1]
+
+
+def banner_right():
+    return banner_parts()[2]

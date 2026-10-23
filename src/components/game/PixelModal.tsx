@@ -1,5 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
+
+// Open modals, oldest first: Esc closes only the one on top (e.g. the hero picker over the Character window)
+const openModals: symbol[] = [];
 
 interface PixelModalProps {
 	title: React.ReactNode;
@@ -27,13 +30,23 @@ const PixelModal: React.FC<PixelModalProps> = ({
 	className,
 	children,
 }) => {
+	const id = useRef(Symbol('modal')).current;
+
+	useEffect(() => {
+		openModals.push(id);
+		return () => {
+			const at = openModals.indexOf(id);
+			if (at >= 0) openModals.splice(at, 1);
+		};
+	}, [id]);
+
 	useEffect(() => {
 		const onKey = (e: KeyboardEvent) => {
-			if (e.key === 'Escape') onClose();
+			if (e.key === 'Escape' && openModals[openModals.length - 1] === id) onClose();
 		};
 		window.addEventListener('keydown', onKey);
 		return () => window.removeEventListener('keydown', onKey);
-	}, [onClose]);
+	}, [onClose, id]);
 
 	return (
 		<div

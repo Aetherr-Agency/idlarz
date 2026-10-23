@@ -9,6 +9,7 @@ import React, {
 import { useGameStore } from '@/stores/gameStore';
 import { GRID_SIZE, GRID_HEIGHT, TILE_SIZE } from '@/config/gameConfig';
 import Tile from './Tile';
+import CastleRange from './CastleRange';
 
 interface Position {
 	x: number;
@@ -251,6 +252,7 @@ const Grid: React.FC = () => {
 					height: GRID_HEIGHT * TILE_SIZE,
 				}}>
 				{visibleTiles}
+				<CastleRange />
 			</div>
 		</div>
 	);

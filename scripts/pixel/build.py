@@ -27,6 +27,7 @@ import sprites_buildings  # noqa: E402
 import sprites_castle  # noqa: E402
 import sprites_characters  # noqa: E402
 import sprites_equipment  # noqa: E402
+import sprites_farm  # noqa: E402
 import sprites_map  # noqa: E402
 import sprites_props  # noqa: E402
 import sprites_resources  # noqa: E402
@@ -40,13 +41,14 @@ SPRITES = {
     'gold': sprites_resources.gold, 'wood': sprites_resources.wood, 'stone': sprites_resources.stone,
     'coal': sprites_resources.coal, 'food': sprites_resources.bread, 'meat': sprites_resources.meat,
     'menu_character': sprites_props.helm, 'menu_merchant': sprites_props.pouch, 'menu_farm': sprites_props.barn,
-    'level_star': sprites_props.star,
-    'hero': sprites_characters.adventurer, 'merchant': sprites_characters.merchant_portrait,
+    'level_orb': sprites_props.level_orb,
     'equip_head': sprites_equipment.head, 'equip_neck': sprites_equipment.neck,
     'equip_chest': sprites_equipment.chest, 'equip_mainHand': sprites_equipment.mainhand,
     'equip_offHand': sprites_equipment.offhand, 'equip_legs': sprites_equipment.legs,
     'equip_feet': sprites_equipment.feet, 'equip_ring': sprites_equipment.ring,
+    **sprites_characters.SPRITES,
     **sprites_animals.SPRITES,
+    **sprites_farm.SPRITES,
     **sprites_map.SPRITES,
     **sprites_castle.SPRITES,
     **sprites_buildings.SPRITES,
@@ -59,6 +61,8 @@ UI = {
     'header_xp_frame': ui_art.header_xp_frame, 'header_xp_fill': ui_art.header_xp_fill,
     'bar_frame': ui_art.bar_frame, 'bar_fill': ui_art.bar_fill,
     'hero_scene': ui_art.hero_scene, 'torch': ui_art.torch_sheet,
+    'range_corner': ui_art.range_corner, 'range_tint': ui_art.range_tint, 'spark_sheet': ui_art.spark_sheet,
+    'banner_left': ui_art.banner_left, 'banner_mid': ui_art.banner_mid, 'banner_right': ui_art.banner_right,
     'flask_glass': ui_art.flask_glass, 'flask_mask': ui_art.flask_mask, 'flask_bubbles': ui_art.flask_bubbles,
 }
 
@@ -108,12 +112,17 @@ def contact_sheet(imgs, path, k=5, cols=6):
 REFERENCE = os.path.join(HERE, 'reference')
 
 
+def small_sprites(sprites):
+    """Contact sheets show icon-sized art only (not the big farm pen layers or the 40px bust crops)."""
+    return {n: im for n, im in sprites.items() if im.size[0] <= 72 and not n.startswith('bust_')}
+
+
 def hero_hud_composite(sprites, ui):
     """Static mock of the Character HUD (alcove, hero, flasks, stone XP bar, gem) at 2x, for the style guide."""
     S = 2
     scene = upscale(ui['hero_scene'], S)
     img = scene.copy()
-    img.alpha_composite(upscale(sprites['hero'], S), ((img.size[0] - 80) // 2, img.size[1] - 40 - 112))
+    img.alpha_composite(upscale(sprites['hero_warrior'], S), ((img.size[0] - 112) // 2, img.size[1] - 40 - 160))
     glass, mask = ui['flask_glass'], ui['flask_mask']
     for side, (top, bottom) in (('left', ((255, 154, 154), (138, 16, 40))), ('right', ((154, 208, 255), (28, 46, 144)))):
         liquid = Image.new('RGBA', glass.size, (0, 0, 0, 0))
@@ -143,14 +152,14 @@ def hero_hud_composite(sprites, ui):
             inner.putpixel((x, y), fill.getpixel((x % 8, y)))
     bar.alpha_composite(inner, (4, 4))
     img.alpha_composite(upscale(bar, S), (14, img.size[1] - 10 - 28))
-    gem = upscale(sprites['level_star'], S)
+    gem = upscale(sprites['level_orb'], S)
     img.alpha_composite(gem, (0, img.size[1] - 48 + 2))
     return img
 
 
 def reference_sheets(sprites, ui, bg):
     os.makedirs(REFERENCE, exist_ok=True)
-    contact_sheet(sprites, os.path.join(REFERENCE, 'icons.png'), k=4, cols=6)
+    contact_sheet(small_sprites(sprites), os.path.join(REFERENCE, 'icons.png'), k=4, cols=6)
     hero_hud_composite(sprites, ui).save(os.path.join(REFERENCE, 'hero-hud.png'))
     # fog: two layers over the map colour, tiled
     sheet = Image.new('RGBA', (384, 256), (7, 10, 18, 255))
@@ -219,11 +228,11 @@ def main():
             im = sprites_castle.build(i + 1, 0)
             cells.alpha_composite(im, (i * 72 + (72 - im.size[0]) // 2, 72 - im.size[1]))
         cells.save(os.path.join(PUB, 'icons', 'castle_loading.png'))
-    if not only or 'level_star_shine' in only:
-        sprites_props.star_sheet().save(os.path.join(PUB, 'icons', 'level_star_shine.png'))
+    if not only or 'level_orb_shine' in only:
+        sprites_props.level_orb_sheet().save(os.path.join(PUB, 'icons', 'level_orb_shine.png'))
 
     if sprites:
-        contact_sheet(sprites, os.path.join(PREVIEW, 'sprites.png'))
+        contact_sheet(small_sprites(sprites), os.path.join(PREVIEW, 'sprites.png'))
     if refs:
         reference_sheets(sprites, ui, bg)
     print('built', len(sprites), 'sprites,', len(ui), 'ui parts ->', PUB)

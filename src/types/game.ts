@@ -1,4 +1,5 @@
 import { BIOMES } from '@/config/gameConfig';
+import type { PlayerClassId } from '@/config/playerClasses';
 
 export type BiomeType = keyof typeof BIOMES;
 
@@ -144,6 +145,7 @@ export interface GameState {
 		progress: number;
 	};
 	playerName: string;
+	playerClass: PlayerClassId;
 	characterStats: CharacterStats;
 	equipment: Equipment;
 	inventory: Item[];
@@ -179,6 +181,7 @@ export interface GameState {
 	sellResources: (resource: keyof Resources, amount: number) => void;
 	addStatPoint: (stat: keyof CharacterStats) => void;
 	setPlayerName: (name: string) => void;
+	setPlayerClass: (playerClass: PlayerClassId) => void;
 	addResources: (resourceToAdd: Partial<Resources>) => void;
 	collectChest: (x: number, y: number) => boolean;
 	// Tap an owned tile: grants a slice of its output. Returns null while on cooldown / nothing to give.

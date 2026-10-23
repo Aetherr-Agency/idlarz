@@ -3,7 +3,7 @@ import { useGameStore } from '@/stores/gameStore';
 import { CharacterStats } from '@/types/game';
 import LevelDetails from '../LevelDetails';
 import PixelModal from '../PixelModal';
-import PixelIcon from '../PixelIcon';
+import CharacterPortrait from '../CharacterPortrait';
 import { countOwnedTiles, getStatDescription } from '@/utils/gameUtils';
 import { formatNumber, formatRate } from '@/utils/formatters';
 import audioManager from '@/utils/audioManager';
@@ -61,7 +61,7 @@ const StatisticsOverlay: React.FC = () => {
 	return (
 		<PixelModal
 			title='Statistics'
-			icon={<PixelIcon name='hero' alt='' />}
+			icon={<CharacterPortrait variant='bust' interactive={false} />}
 			size='lg'
 			onClose={toggleStatisticsWindow}>
 				<div className='grid grid-cols-6 gap-6 h-full'>

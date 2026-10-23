@@ -283,6 +283,9 @@ export const CASTLE_BASE_RATES = {
 	xp: 0.5, // Castle provides more base XP
 };
 
+// Castle range: tiles within this many steps of the castle (3x3 at radius 1) will get the castle's range bonus
+export const CASTLE_RANGE = { radius: 1 };
+
 // Exponential castle upgrade system
 export const CASTLE_UPGRADE = {
 	maxLevel: 6, // Increased from 5

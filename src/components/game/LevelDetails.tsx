@@ -3,8 +3,10 @@ import { useGameStore } from '@/stores/gameStore';
 import { formatNumber } from '@/utils/formatters';
 import { BASE_XP_PER_LEVEL, XP_GROWTH_FACTOR } from '@/config/gameConfig';
 import { LevelUpTimer } from './LevelUpTimer';
-import PixelIcon from './PixelIcon';
-import ShiningStar from './ShiningStar';
+import { PLAYER_CLASSES, DEFAULT_PLAYER_CLASS } from '@/config/playerClasses';
+import CharacterPortrait from './CharacterPortrait';
+import EditableName from './EditableName';
+import LevelOrb from './LevelOrb';
 
 type FlaskKind = 'hp' | 'mp';
 
@@ -39,7 +41,8 @@ const Flask: React.FC<{ kind: FlaskKind; value: number; max: number }> = ({
  * and a stony XP bar along the floor with the level on a gem. Shared by the Character and Statistics windows.
  */
 const LevelDetails: React.FC = () => {
-	const { resources, level, resourceRates, characterStats } = useGameStore();
+	const { resources, level, resourceRates, characterStats, playerClass } = useGameStore();
+	const info = PLAYER_CLASSES[playerClass] ?? PLAYER_CLASSES[DEFAULT_PLAYER_CLASS];
 
 	const xpForNextLevel = Math.floor(
 		BASE_XP_PER_LEVEL * Math.pow(XP_GROWTH_FACTOR, level.level - 1)
@@ -52,8 +55,15 @@ const LevelDetails: React.FC = () => {
 			<div className='hero-torch' style={{ left: 26 }} />
 			<div className='hero-torch' style={{ left: 240 }} />
 
+			<div className='hero-nameplate'>
+				<EditableName />
+				<span className='hero-class'>
+					{info.race} {info.label}
+				</span>
+			</div>
+
 			<div className='hero-figure'>
-				<PixelIcon name='hero' scale={2} alt='Your character' />
+				<CharacterPortrait scale={2} />
 			</div>
 
 			<Flask kind='hp' value={characterStats.hp} max={characterStats.hp} />
@@ -73,9 +83,8 @@ const LevelDetails: React.FC = () => {
 				</div>
 			</div>
 
-			<div className='hero-star' title={`Level ${level.level}`}>
-				<ShiningStar scale={2} />
-				<span className='hero-star-lv'>{level.level}</span>
+			<div className='hero-orb' title={`Level ${level.level}`}>
+				<LevelOrb scale={2} level={level.level} />
 			</div>
 		</div>
 	);

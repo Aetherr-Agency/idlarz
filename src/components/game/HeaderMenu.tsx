@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { formatNumber } from '@/utils/formatters';
 import { BASE_XP_PER_LEVEL, XP_GROWTH_FACTOR } from '@/config/gameConfig';
 import PixelIcon from './PixelIcon';
-import ShiningStar from './ShiningStar';
+import LevelOrb from './LevelOrb';
+import CharacterPortrait from './CharacterPortrait';
+import EditableName from './EditableName';
 
 // Inner width of the XP frame sprite (72px wide, 3px border each side)
 const XP_BAR_INNER_PX = 66;
@@ -12,7 +14,6 @@ const HeaderMenu: React.FC = () => {
 	const {
 		resources,
 		level,
-		playerName,
 		toggleCharacterWindow,
 		toggleStatisticsWindow,
 		toggleMerchantWindow,
@@ -25,6 +26,19 @@ const HeaderMenu: React.FC = () => {
 	} = useGameStore((state) => state);
 
 	const [levelUpActive, setLevelUpActive] = useState(false);
+
+	// A single click opens the statistics; hold it back a moment so a double-click (rename / class picker)
+	// can cancel it instead of flashing the window open and shut.
+	const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const cancelClick = () => {
+		if (clickTimer.current) clearTimeout(clickTimer.current);
+		clickTimer.current = null;
+	};
+	const handleProfileClick = () => {
+		cancelClick();
+		clickTimer.current = setTimeout(toggleStatisticsWindow, 220);
+	};
+	useEffect(() => cancelClick, []);
 	const [prevAvailablePoints, setPrevAvailablePoints] = useState(0);
 
 	// Detect level up based on available points
@@ -63,18 +77,18 @@ const HeaderMenu: React.FC = () => {
 			<div
 				className='pixel-profile max-w-64'
 				data-active={showStatisticsWindow}
-				onClick={toggleStatisticsWindow}>
-				<PixelIcon name='hero' alt='Your character' />
+				onClick={handleProfileClick}
+				onDoubleClick={cancelClick}>
+				<span className='pixel-avatar'>
+					<CharacterPortrait variant='bust' />
+				</span>
 				<div className='flex flex-col text-[#ecdcb4] items-start justify-center select-none'>
-					<div className='flex items-center gap-2 mb-1.5'>
-						<p className='font-bold text-sm overflow-hidden text-ellipsis max-w-24 truncate'>
-							{playerName}
-						</p>
-						{levelUpActive ? (
-							<ShiningStar className='animate-pulse-ring' />
-						) : (
-							<span className='pixel-level-badge'>{level.level}</span>
-						)}
+					<div className='flex items-center gap-2 mb-1'>
+						<EditableName className='pixel-name' />
+						<LevelOrb
+							level={level.level}
+							className={levelUpActive ? 'animate-pulse-ring' : undefined}
+						/>
 					</div>
 
 					<div

@@ -128,16 +128,16 @@ def cash_bag():
     return img
 
 
-# ----------------------------------------------------------------- XP orb (40x40)
+# ----------------------------------------------------------------- XP orb (40x40): the same purple glass orb as the level badge
 def xp_orb():
-    sc = Scene(MATS, scale=12.5, origin=(20, 21))
-    _P(sc, 'ell', (0, 0, 0.9), (1.15, 1.15, 1.15), 'xp', I3, None, 1)
-    _P(sc, 'ell', (-0.22, -0.3, 1.25), (0.46, 0.4, 0.46), 'xp', I3, None, 2)                  # inner glow
-    for k, (dx, dz) in enumerate(((0.95, 0.85), (-0.85, 1.2))):                                # orbiting sparks
-        _P(sc, 'ell', (dx, -0.9, dz + 0.6), (0.1, 0.1, 0.1), 'xp', I3, None, 5 + k)
-    img = sc.render()
-    fx.glint(img, 11, 10, 3)
-    fx.glint(img, 31, 30, 1)
+    from PIL import Image
+    from sprites_props import orb_base
+    orb = orb_base(30, dark_core=False)
+    img = Image.new('RGBA', (40, 40), (0, 0, 0, 0))
+    img.alpha_composite(orb, (5, 6))
+    fx.glint(img, 13, 14, 3)
+    fx.glint(img, 33, 8, 1)
+    fx.glint(img, 8, 33, 1)
     return img
 
 

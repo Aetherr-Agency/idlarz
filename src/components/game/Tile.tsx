@@ -10,7 +10,9 @@ import {
 	BuildingType,
 	TILE_TAP,
 	CASTLE_UPGRADE,
+	CASTLE_RANGE,
 } from '@/config/gameConfig';
+import '@/styles/Buildings.css';
 import { useGameStore } from '@/stores/gameStore';
 import { countOwnedTiles } from '@/utils/gameUtils';
 import { cn } from '@/lib/utils';
@@ -18,9 +20,8 @@ import audioManager from '@/utils/audioManager';
 import { queueTileTap } from '@/lib/floatText';
 import ResourceIcon from './ResourceIcon';
 import PixelIcon from './PixelIcon';
-import ShiningStar from './ShiningStar';
 import CastleSprite from './CastleSprite';
-import { BIOME_PIXEL_ICONS, BUILDING_PIXEL_ICONS } from '@/config/pixelIcons';
+import { BIOME_PIXEL_ICONS, BUILDING_PIXEL_ICONS, BUILDING_GLOW } from '@/config/pixelIcons';
 import { TileStatus } from './TileStatus';
 import CastleUpgradeDialog from './CastleUpgradeDialog';
 import BuildingSelectionDialog from './BuildingSelectionDialog';
@@ -79,6 +80,13 @@ const Tile: React.FC<TileProps> = ({
 	const hasBuilding = biome === 'grounds' && !!building && (level ?? 1) > 1;
 	const castleLevel = tiles?.[GRID_CENTER_Y]?.[GRID_CENTER_X]?.level ?? 1;
 	const isMaxCastle = biome === 'castle' && castleLevel >= CASTLE_UPGRADE.maxLevel;
+
+	// Owned neighbours of the castle get gold sparkles: they are inside the castle's range
+	const inCastleRange =
+		isOwned &&
+		biome !== 'castle' &&
+		Math.abs(x - GRID_CENTER_X) <= CASTLE_RANGE.radius &&
+		Math.abs(y - GRID_CENTER_Y) <= CASTLE_RANGE.radius;
 
 	const ownedTilesCount = useMemo(() => countOwnedTiles(tiles), [tiles]);
 
@@ -223,6 +231,26 @@ const Tile: React.FC<TileProps> = ({
 						<span className='tile-badge'>{castleLevel}</span>
 					)}
 
+					{inCastleRange && (
+						<span className='range-sparks' aria-hidden>
+							{[0, 1, 2].map((k) => {
+								const h = (x * 7 + y * 13 + k * 5) % 11;
+								return (
+									<i
+										key={k}
+										className='range-spark'
+										style={
+											{
+												'--x': `${22 + ((h * 9 + k * 31) % 60)}%`,
+												'--d': `${-((h * 0.37 + k * 0.8) % 2.4).toFixed(2)}s`,
+											} as React.CSSProperties
+										}
+									/>
+								);
+							})}
+						</span>
+					)}
+
 					{/* Bonus cash bag on the tile */}
 					{isOwned && hasChest && (
 						<PixelIcon name='cash_bag' alt='Bonus gold' className='tile-bag' />
@@ -237,16 +265,15 @@ const Tile: React.FC<TileProps> = ({
 					)}
 					
 					{hasBuilding && (
-						<>
+						<span
+							className='tile-building'
+							style={{ '--glow': BUILDING_GLOW[building as string] ?? '#ffd860' } as React.CSSProperties}>
 							<PixelIcon
 								name={BUILDING_PIXEL_ICONS[building as string]}
 								alt={BUILDINGS[building as BuildingType]?.label ?? 'Building'}
 								className='tile-icon'
 							/>
-							<span className='absolute top-0.5 right-0.5'>
-								<ShiningStar />
-							</span>
-						</>
+						</span>
 					)}
 				</div>
 

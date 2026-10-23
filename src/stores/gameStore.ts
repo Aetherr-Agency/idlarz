@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import {
+	DEFAULT_PLAYER_CLASS,
+	PLAYER_CLASSES,
+	type PlayerClassId,
+} from '@/config/playerClasses';
+import {
 	CASTLE_UPGRADE,
 	GRID_SIZE,
 	GRID_HEIGHT,
@@ -67,6 +72,7 @@ const createGameSlice = (
 		level: calculateLevel(0),
 		previousLevel: 0,
 		playerName: DEFAULT_PLAYER_NAME,
+		playerClass: DEFAULT_PLAYER_CLASS,
 		characterStats: INITIAL_CHARACTER_STATS,
 		equipment: {},
 		inventory: INITIAL_INVENTORY_ITEMS,
@@ -603,6 +609,9 @@ const createGameSlice = (
 				set({ playerName: trimmedName });
 			}
 		},
+		setPlayerClass: (playerClass: PlayerClassId) => {
+			if (PLAYER_CLASSES[playerClass]) set({ playerClass });
+		},
 		addResources: (resourceToAdd: Partial<Resources>) => {
 			set((state) => ({
 				resources: {
@@ -690,6 +699,7 @@ export const useGameStore = create(
 					level: calculateLevel(0),
 					previousLevel: 0,
 					playerName: DEFAULT_PLAYER_NAME,
+					playerClass: DEFAULT_PLAYER_CLASS,
 					characterStats: INITIAL_CHARACTER_STATS,
 					equipment: {},
 					inventory: INITIAL_INVENTORY_ITEMS,

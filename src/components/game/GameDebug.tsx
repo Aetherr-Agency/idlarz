@@ -51,6 +51,10 @@ const GameDebug: React.FC = () => {
 		addResources({ meat: 100000 });
 	};
 	
+	const handleAddXp = () => {
+		addResources({ xp: 1500 });
+	};
+
 	const handleSpawnChest = () => {
 		// Find a random owned tile that's not a castle to spawn a chest on
 		const eligibleTiles: { x: number; y: number }[] = [];
@@ -129,6 +133,11 @@ const GameDebug: React.FC = () => {
 					onClick={handleAddMeat}
 					className='bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded-md text-xs'>
 					Add 100k Meat
+				</button>
+				<button
+					onClick={handleAddXp}
+					className='bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded-md text-xs'>
+					Add 1.5k XP
 				</button>
 				<button
 					onClick={handleSpawnChest}
