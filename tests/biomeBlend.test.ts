@@ -4,7 +4,7 @@ import { blendKey, getBlendPieces, groundOf, parseBlendKey } from '../src/utils/
 import type { BiomeType, Tile } from '../src/types/game';
 
 /** Builds a tile grid from rows of letters: F forest, P plains, L lake, C castle, . = not owned. */
-const NAMES: Record<string, BiomeType> = { F: 'forest', P: 'plains', L: 'lake', C: 'castle' };
+const NAMES: Record<string, BiomeType> = { F: 'forest', P: 'plains', L: 'lake', C: 'castle', G: 'grounds' };
 const grid = (rows: string[]): Tile[][] =>
 	rows.map((row) =>
 		[...row].map((c) => ({ biome: NAMES[c] ?? 'forest', isOwned: c in NAMES }))
@@ -34,11 +34,33 @@ test('unexplored neighbours blend in clouds, off-map edges do not', () => {
 	assert.deepEqual(pieces.map((p) => [p.piece, p.ground]), [['e', 'mystery']]);
 });
 
-test('the castle keeps crisp edges both ways', () => {
+test('the castle gets a kerb on every differing side, its neighbours stay crisp', () => {
 	const g = grid(['FFF', 'FCF', 'FFF']);
-	assert.deepEqual(getBlendPieces(g, 1, 1), []);
+	assert.deepEqual(
+		getBlendPieces(g, 1, 1).map((p) => [p.piece, p.ground]),
+		[['n', 'curb-castle'], ['e', 'curb-castle'], ['s', 'curb-castle'], ['w', 'curb-castle']]
+	);
 	assert.deepEqual(getBlendPieces(g, 0, 1), []);
 	assert.deepEqual(getBlendPieces(g, 0, 0), []);
+});
+
+test('a yard gets corner notches only toward owned differing diagonals, not toward fog', () => {
+	const g = grid(['FFF', 'FFF', 'FF.']);
+	g[1][1] = { biome: 'grounds', isOwned: true, building: 'farm', level: 2 };
+	g[1][0] = g[0][1] = g[1][2] = g[2][1] = g[1][1];
+	const pieces = getBlendPieces(g, 1, 1);
+	assert.deepEqual(pieces.filter((p) => p.ground === 'curb-yard').map((p) => p.piece).sort(), ['ne', 'nw', 'sw']);
+});
+
+test('water meets land with a shoreline on both sides', () => {
+	const g = grid(['FL', 'FL']);
+	assert.deepEqual(getBlendPieces(g, 0, 0).map((p) => [p.piece, p.ground]), [['e', 'shore-land']]);
+	assert.deepEqual(getBlendPieces(g, 1, 0).map((p) => [p.piece, p.ground]), [['w', 'shore-water']]);
+});
+
+test('water toward unexplored clouds still uses the plain blend', () => {
+	const g = grid(['L.']);
+	assert.deepEqual(getBlendPieces(g, 0, 0).map((p) => [p.piece, p.ground]), [['e', 'mystery']]);
 });
 
 test('a built-up grounds tile is drawn as yard', () => {

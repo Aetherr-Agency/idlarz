@@ -127,6 +127,26 @@ def lake(seed=6):
     return img
 
 
+def coast(seed=14):
+    """Pale beach sand with wind ripples, shells and pebbles - the dry side of a shoreline."""
+    img, px = _canvas(['#d4b878', '#dcc084', '#e6cc92'], seed, dither=0.45)
+    rnd = random.Random(seed)
+    for row in range(3):                                  # soft ripples
+        y = 4 + row * 8
+        for x in range(S):
+            wave = int(round(1.4 * __import__('math').sin((x + row * 5) * 0.55)))
+            _put(px, x, y + wave, '#c4a468')
+            if x % 3:
+                _put(px, x, y + wave + 1, '#efdba4')
+    for x, y in _scatter(rnd, 5):                         # pebbles
+        _blob(px, x, y, 1, 1, '#a89478', '#c8b8a0', '#6e5e48')
+    for i, (x, y) in enumerate(_scatter(rnd, 3)):         # shells
+        _put(px, x, y, '#fff4e0'); _put(px, x + 1, y, '#f2c8c0' if i % 2 else '#fff4e0'); _put(px, x, y + 1, '#c8a498')
+    for x, y in _scatter(rnd, 8):
+        _put(px, x, y, '#b89858')
+    return img
+
+
 def grounds(seed=7):
     img, px = _canvas(['#4a2c12', '#583616', '#664018'], seed, cells=(3, 6))
     rnd = random.Random(seed)
@@ -174,7 +194,7 @@ def empty(seed=9):
 
 GROUNDS = {
     'forest': forest, 'plains': plains, 'hills': hills, 'swamp': swamp, 'tundra': tundra,
-    'lake': lake, 'grounds': grounds, 'yard': yard, 'castle': castle, 'empty': empty,
+    'lake': lake, 'coast': coast, 'grounds': grounds, 'yard': yard, 'castle': castle, 'empty': empty,
 }
 
 

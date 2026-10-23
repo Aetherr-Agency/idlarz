@@ -2,14 +2,14 @@
 
   public/pixel/icons/  sprites (resources, menu, equipment, portraits, animals, gold shine strip)
   public/pixel/ui/     frames, header chrome, HP/MP flask parts, stone XP bar, hero scene
-  public/pixel/bg/     cracked-stone header tile, fog mist, biome grounds + edge-blend masks
+  public/pixel/bg/     cracked-stone header tile, fog mist, biome grounds, edge-blend masks, shore + kerb trims
   scripts/pixel/previews/  contact sheets for review (git-ignored)
   --refs                   also refresh the curated images in scripts/pixel/reference/
 
-The build wipes the three public folders first, so nothing stale can linger."""
+Files are rewritten in place and anything stale is removed afterwards, so a running dev server never 404s."""
 import os
-import shutil
 import sys
+import time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -33,6 +33,7 @@ import sprites_map  # noqa: E402
 import sprites_meadow  # noqa: E402
 import sprites_props  # noqa: E402
 import sprites_resources  # noqa: E402
+import trim_art  # noqa: E402
 from common import upscale  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
@@ -76,6 +77,7 @@ BG = {
     'mystery': ground_art.mystery,
     **{f'ground_{name}': fn for name, fn in ground_art.GROUNDS.items()},
     **blend_art.MASKS,
+    **trim_art.TRIMS,
 }
 
 
@@ -213,9 +215,7 @@ def reference_sheets(sprites, ui, bg):
 def main():
     refs = '--refs' in sys.argv
     only = set(a for a in sys.argv[1:] if not a.startswith('--'))
-    if not only:
-        for folder in ('icons', 'ui', 'bg'):
-            shutil.rmtree(os.path.join(PUB, folder), ignore_errors=True)
+    started = time.time()
     os.makedirs(PREVIEW, exist_ok=True)
 
     sprites = save_group('icons', SPRITES, only)
@@ -241,6 +241,13 @@ def main():
     if refs:
         reference_sheets(sprites, ui, bg)
         blend_art.preview_sheet(rim=True).save(os.path.join(REFERENCE, 'biome-blend.png'))
+    if not only:
+        # drop stale files AFTER writing, so a running dev server never serves a half-empty folder (images would 404 until reload)
+        for folder in ('icons', 'ui', 'bg'):
+            for name in os.listdir(os.path.join(PUB, folder)):
+                path = os.path.join(PUB, folder, name)
+                if os.path.getmtime(path) < started - 1:
+                    os.remove(path)
     print('built', len(sprites), 'sprites,', len(ui), 'ui parts ->', PUB)
 
 

@@ -48,36 +48,36 @@
 | 38 | 6.69M | 31.32M | 668.64K wood, 668.64K stone, 534.91K coal | 2587 |  |
 | 39 | 8.49M | 39.81M | 849.18K wood, 849.18K stone, 679.34K coal | 2706 | pick |
 | 40 | 10.78M | 50.59M | 1.08M wood, 1.08M stone, 862.76K coal, 862.76K food | 2829 |  |
-| 41 | 13.70M | 64.29M | 1.37M wood, 1.37M stone, 1.10M coal, 1.10M food | 2956 |  |
-| 42 | 17.39M | 81.68M | 1.74M wood, 1.74M stone, 1.39M coal, 1.39M food | 3087 |  |
-| 43 | 22.09M | 103.77M | 2.21M wood, 2.21M stone, 1.77M coal, 1.77M food | 3222 | pick |
-| 44 | 28.06M | 131.83M | 2.81M wood, 2.81M stone, 2.24M coal, 2.24M food | 3361 |  |
-| 45 | 35.63M | 167.46M | 3.56M wood, 3.56M stone, 2.85M coal, 2.85M food | 3504 |  |
-| 46 | 45.25M | 212.71M | 4.53M wood, 4.53M stone, 3.62M coal, 3.62M food | 3652 |  |
-| 47 | 57.47M | 270.18M | 5.75M wood, 5.75M stone, 4.60M coal, 4.60M food | 3805 | pick |
-| 48 | 72.98M | 343.16M | 7.30M wood, 7.30M stone, 5.84M coal, 5.84M food | 3961 |  |
-| 49 | 92.69M | 435.85M | 9.27M wood, 9.27M stone, 7.42M coal, 7.42M food | 4123 |  |
-| 50 | 117.72M | 553.57M | 11.77M wood, 11.77M stone, 9.42M coal, 9.42M food | 4290 |  |
-| 51 | 149.50M | 703.07M | 14.95M wood, 14.95M stone, 11.96M coal, 11.96M food | 4461 | pick |
-| 52 | 189.87M | 892.94M | 18.99M wood, 18.99M stone, 15.19M coal, 15.19M food | 4638 |  |
-| 53 | 241.13M | 1.13B | 24.11M wood, 24.11M stone, 19.29M coal, 19.29M food | 4820 |  |
-| 54 | 306.23M | 1.44B | 30.62M wood, 30.62M stone, 24.50M coal, 24.50M food | 5008 |  |
-| 55 | 388.92M | 1.83B | 38.89M wood, 38.89M stone, 31.11M coal, 31.11M food | 5201 | pick |
-| 56 | 493.93M | 2.32B | 49.39M wood, 49.39M stone, 39.51M coal, 39.51M food | 5399 |  |
-| 57 | 627.29M | 2.95B | 62.73M wood, 62.73M stone, 50.18M coal, 50.18M food | 5604 |  |
-| 58 | 796.65M | 3.75B | 79.67M wood, 79.67M stone, 63.73M coal, 63.73M food | 5814 |  |
-| 59 | 1.01B | 4.76B | 101.17M wood, 101.17M stone, 80.94M coal, 80.94M food | 6031 | pick |
-| 60 | 1.28B | 6.04B | 128.49M wood, 128.49M stone, 102.79M coal, 102.79M food | 6254 |  |
-| 61 | 1.63B | 7.68B | 163.18M wood, 163.18M stone, 130.55M coal, 130.55M food | 6484 |  |
-| 62 | 2.07B | 9.75B | 207.24M wood, 207.24M stone, 165.80M coal, 165.80M food | 6720 |  |
-| 63 | 2.63B | 12.38B | 263.20M wood, 263.20M stone, 210.56M coal, 210.56M food | 6964 | pick |
-| 64 | 3.34B | 15.72B | 334.27M wood, 334.27M stone, 267.41M coal, 267.41M food | 7214 |  |
-| 65 | 4.25B | 19.97B | 424.52M wood, 424.52M stone, 339.61M coal, 339.61M food | 7471 |  |
-| 66 | 5.39B | 25.36B | 539.14M wood, 539.14M stone, 431.31M coal, 431.31M food | 7736 |  |
-| 67 | 6.85B | 32.21B | 684.70M wood, 684.70M stone, 547.76M coal, 547.76M food | 8009 | pick |
-| 68 | 8.70B | 40.90B | 869.57M wood, 869.57M stone, 695.66M coal, 695.66M food | 8289 |  |
-| 69 | 11.04B | 51.95B | 1.10B wood, 1.10B stone, 883.49M coal, 883.49M food | 8577 |  |
-| 70 | 14.03B | 65.97B | 1.40B wood, 1.40B stone, 1.12B coal, 1.12B food | 8874 |  |
+| 41 | 12.62M | 63.21M | 1.26M wood, 1.26M stone, 1.01M coal, 1.01M food | 2956 |  |
+| 42 | 14.76M | 77.97M | 1.48M wood, 1.48M stone, 1.18M coal, 1.18M food | 3087 |  |
+| 43 | 17.27M | 95.25M | 1.73M wood, 1.73M stone, 1.38M coal, 1.38M food | 3222 | pick |
+| 44 | 20.21M | 115.46M | 2.02M wood, 2.02M stone, 1.62M coal, 1.62M food | 3361 |  |
+| 45 | 23.64M | 139.10M | 2.36M wood, 2.36M stone, 1.89M coal, 1.89M food | 3504 |  |
+| 46 | 27.66M | 166.76M | 2.77M wood, 2.77M stone, 2.21M coal, 2.21M food | 3652 |  |
+| 47 | 32.37M | 199.13M | 3.24M wood, 3.24M stone, 2.59M coal, 2.59M food | 3805 | pick |
+| 48 | 37.87M | 237.00M | 3.79M wood, 3.79M stone, 3.03M coal, 3.03M food | 3961 |  |
+| 49 | 44.31M | 281.31M | 4.43M wood, 4.43M stone, 3.54M coal, 3.54M food | 4123 |  |
+| 50 | 51.84M | 333.15M | 5.18M wood, 5.18M stone, 4.15M coal, 4.15M food | 4290 |  |
+| 51 | 60.65M | 393.80M | 6.07M wood, 6.07M stone, 4.85M coal, 4.85M food | 4461 | pick |
+| 52 | 70.96M | 464.76M | 7.10M wood, 7.10M stone, 5.68M coal, 5.68M food | 4638 |  |
+| 53 | 83.03M | 547.79M | 8.30M wood, 8.30M stone, 6.64M coal, 6.64M food | 4820 |  |
+| 54 | 97.14M | 644.93M | 9.71M wood, 9.71M stone, 7.77M coal, 7.77M food | 5008 |  |
+| 55 | 113.66M | 758.59M | 11.37M wood, 11.37M stone, 9.09M coal, 9.09M food | 5201 | pick |
+| 56 | 132.98M | 891.56M | 13.30M wood, 13.30M stone, 10.64M coal, 10.64M food | 5399 |  |
+| 57 | 155.58M | 1.05B | 15.56M wood, 15.56M stone, 12.45M coal, 12.45M food | 5604 |  |
+| 58 | 182.03M | 1.23B | 18.20M wood, 18.20M stone, 14.56M coal, 14.56M food | 5814 |  |
+| 59 | 212.98M | 1.44B | 21.30M wood, 21.30M stone, 17.04M coal, 17.04M food | 6031 | pick |
+| 60 | 249.18M | 1.69B | 24.92M wood, 24.92M stone, 19.93M coal, 19.93M food | 6254 |  |
+| 61 | 291.54M | 1.98B | 29.15M wood, 29.15M stone, 23.32M coal, 23.32M food | 6484 |  |
+| 62 | 341.11M | 2.32B | 34.11M wood, 34.11M stone, 27.29M coal, 27.29M food | 6720 |  |
+| 63 | 399.10M | 2.72B | 39.91M wood, 39.91M stone, 31.93M coal, 31.93M food | 6964 | pick |
+| 64 | 466.94M | 3.19B | 46.69M wood, 46.69M stone, 37.36M coal, 37.36M food | 7214 |  |
+| 65 | 546.32M | 3.74B | 54.63M wood, 54.63M stone, 43.71M coal, 43.71M food | 7471 |  |
+| 66 | 639.20M | 4.38B | 63.92M wood, 63.92M stone, 51.14M coal, 51.14M food | 7736 |  |
+| 67 | 747.86M | 5.12B | 74.79M wood, 74.79M stone, 59.83M coal, 59.83M food | 8009 | pick |
+| 68 | 875.00M | 6.00B | 87.50M wood, 87.50M stone, 70.00M coal, 70.00M food | 8289 |  |
+| 69 | 1.02B | 7.02B | 102.37M wood, 102.37M stone, 81.90M coal, 81.90M food | 8577 |  |
+| 70 | 1.20B | 8.22B | 119.78M wood, 119.78M stone, 95.82M coal, 95.82M food | 8874 |  |
 
 ## 2. Level curve
 
@@ -259,6 +259,7 @@ Per-second output of one tile before adjacency and modifiers (already multiplied
 | Swamp | food 0.13, wood 0.26 |
 | Tundra | gold 0.13, coal 0.455 |
 | Lake | gold 0.065, food 0.325 |
+| Coast | gold 0.13, food 0.26 |
 
 Building cost: 500 gold, 250 wood, 150 stone for the first, ×1.6 for each further building.
 

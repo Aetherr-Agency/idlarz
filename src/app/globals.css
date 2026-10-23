@@ -1129,6 +1129,10 @@ body {
 	animation: lake-flow 9s steps(24) infinite; /* waves drift one texture period -> seamless */
 }
 
+.tile-ground-coast {
+	background-image: url('/pixel/bg/ground_coast.png');
+}
+
 .tile-ground-grounds {
 	background-image: url('/pixel/bg/ground_grounds.png');
 }
@@ -1181,6 +1185,14 @@ body {
 	background: var(--src) 0 0 / 48px 48px;
 	-webkit-mask: var(--mask) 0 0 / 100% 100% no-repeat;
 	mask: var(--mask) 0 0 / 100% 100% no-repeat;
+	image-rendering: pixelated;
+}
+
+.tile-trim {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: center / 100% 100% no-repeat;
 	image-rendering: pixelated;
 }
 
