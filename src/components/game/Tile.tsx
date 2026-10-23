@@ -182,12 +182,8 @@ const Tile: React.FC<TileProps> = ({
 				style={{
 					...style,
 					backgroundColor,
-					...(farAwayTile && {
-						backgroundColor: '#090c13',
-						backgroundImage:
-							'linear-gradient(45deg, #0b0d14 25%, transparent 25%, transparent 75%, #0b0d14 75%, #0b0d14), linear-gradient(-45deg, #0b0d14 25%, transparent 25%, transparent 75%, #0b0d14 75%, #0b0d14)',
-						backgroundSize: '48px 48px',
-					}),
+					// Unexplored land is left clear so the fog-of-war mist behind the grid shows through
+					...(farAwayTile && { backgroundColor: 'transparent' }),
 				}}
 				onClick={handleClick}
 				onMouseEnter={() => hasChest && setShowChestTooltip(true)}

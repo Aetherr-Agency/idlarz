@@ -236,6 +236,12 @@ const Grid: React.FC = () => {
 			onTouchStart={handleMouseDown}
 			onTouchMove={handleMouseMove}
 			onTouchEnd={handleMouseUp}>
+			{/* Fog of war: drifting mist behind the map; far-away tiles are transparent so it shows through */}
+			<div className='fog-layer fog-a' />
+			<div
+				className='fog-layer fog-b'
+				style={{ backgroundPosition: `${position.x * 0.35}px ${position.y * 0.35}px` }}
+			/>
 			<div
 				className='absolute'
 				style={{

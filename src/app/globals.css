@@ -74,6 +74,221 @@ body {
 	font-weight: bold;
 }
 
+/* ---------- Pixel-art header (assets: public/pixel/v3, guide: scripts/pixel/reference/STYLE.md) ---------- */
+.pixelated {
+	image-rendering: pixelated;
+}
+
+.pixel-header {
+	background: #0a0605 url('/pixel/v3/topbar_bg.png') repeat;
+	image-rendering: pixelated;
+	font-family: Georgia, 'Times New Roman', serif;
+	padding-bottom: 10px;
+
+	&::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		height: 10px;
+		background: url('/pixel/v3/topbar_edge.png') repeat-x;
+		image-rendering: pixelated;
+		pointer-events: none;
+	}
+}
+
+.pixel-divider-right {
+	background: url('/pixel/v3/divider.png') no-repeat right center;
+	image-rendering: pixelated;
+}
+
+.pixel-slot {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	width: 48px;
+	height: 48px;
+	background: url('/pixel/v3/slot_frame.png') no-repeat;
+	image-rendering: pixelated;
+	cursor: pointer;
+	user-select: none;
+	transition: filter 0.15s;
+
+	&:hover {
+		filter: brightness(1.3);
+	}
+
+	&[data-active='true'] {
+		background-image: url('/pixel/v3/slot_frame_active.png');
+	}
+}
+
+.pixel-profile {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 4px 8px;
+	border: 2px solid transparent;
+	border-radius: 2px;
+	cursor: pointer;
+	user-select: none;
+	transition: background-color 0.15s, border-color 0.15s;
+
+	&:hover {
+		border-color: #7a5224;
+		background: rgba(60, 38, 16, 0.45);
+	}
+
+	&[data-active='true'] {
+		border-color: #c08a30;
+		background: rgba(90, 56, 20, 0.55);
+	}
+}
+
+.pixel-level-badge {
+	padding: 1px 6px;
+	font-size: 10px;
+	font-weight: 700;
+	line-height: 14px;
+	color: #fff1c0;
+	background: #6a4414;
+	border: 1px solid #c08a30;
+	box-shadow: inset 0 1px 0 #a8783a;
+}
+
+.pixel-xp {
+	position: relative;
+	width: 72px;
+	height: 10px;
+	background: url('/pixel/v3/xp_frame.png') no-repeat;
+	image-rendering: pixelated;
+}
+
+.pixel-xp-fill {
+	position: absolute;
+	left: 3px;
+	top: 3px;
+	height: 4px;
+	background: url('/pixel/v3/xp_fill.png') repeat-x;
+	background-size: 2px 4px;
+	image-rendering: pixelated;
+	transition: width 0.3s ease-out;
+}
+
+/* gold coins twinkle: 6-frame sprite strip, 40x40 per frame */
+.pixel-gold-shine {
+	width: 40px;
+	height: 40px;
+	flex-shrink: 0;
+	background: url('/pixel/v3/gold_shine_sheet.png') 0 0 / 240px 40px no-repeat;
+	image-rendering: pixelated;
+	animation: pixel-shine 1.2s steps(6) infinite;
+}
+
+@keyframes pixel-shine {
+	from {
+		background-position-x: 0;
+	}
+	to {
+		background-position-x: -240px;
+	}
+}
+
+/* Income popup at the cursor: transform + opacity only, so it stays on the compositor (smooth) */
+.gold-popup {
+	position: fixed;
+	z-index: 90;
+	pointer-events: none;
+	will-change: transform, opacity;
+	animation: gold-popup-rise 900ms linear forwards;
+}
+
+.gold-popup-inner {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-family: Georgia, 'Times New Roman', serif;
+	font-weight: 700;
+	font-size: 15px;
+	color: #ffe27a;
+	white-space: nowrap;
+	text-shadow: 0 1px 0 #3a1708, 1px 0 0 #3a1708, -1px 0 0 #3a1708, 0 -1px 0 #3a1708,
+		0 0 8px rgba(255, 200, 60, 0.55);
+}
+
+@keyframes gold-popup-rise {
+	0% {
+		opacity: 0;
+		transform: translate3d(calc(-50% + var(--drift) * 0.1), -8px, 0) scale(0.6);
+		animation-timing-function: cubic-bezier(0.2, 0.9, 0.3, 1.15);
+	}
+	15% {
+		opacity: 1;
+		transform: translate3d(calc(-50% + var(--drift) * 0.25), -28px, 0) scale(1.1);
+		animation-timing-function: cubic-bezier(0.25, 0.6, 0.35, 1);
+	}
+	60% {
+		opacity: 1;
+		animation-timing-function: linear;
+	}
+	100% {
+		opacity: 0;
+		transform: translate3d(calc(-50% + var(--drift)), -96px, 0) scale(0.95);
+	}
+}
+
+/* ---------- Fog of war: two drifting mist layers behind the map ---------- */
+.fog-layer {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background-repeat: repeat;
+	image-rendering: pixelated;
+}
+
+.fog-a {
+	background-image: url('/pixel/v3/fog_a.png');
+	background-size: 512px 512px;
+	opacity: 0.8;
+	animation: fog-drift-a 140s linear infinite;
+}
+
+.fog-b {
+	background-image: url('/pixel/v3/fog_b.png');
+	background-size: 768px 768px;
+	opacity: 0.55;
+	animation: fog-drift-b 210s linear infinite;
+}
+
+@keyframes fog-drift-a {
+	from {
+		background-position: 0 0;
+	}
+	to {
+		background-position: 512px 512px; /* exactly one tile period per axis -> seamless loop */
+	}
+}
+
+@keyframes fog-drift-b {
+	from {
+		background-position: 0 0;
+	}
+	to {
+		background-position: -768px 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.fog-a,
+	.fog-b,
+	.pixel-gold-shine {
+		animation: none;
+	}
+}
+
 .castle-tile {
 	z-index: 10;
 

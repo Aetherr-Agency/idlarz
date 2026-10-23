@@ -1,15 +1,22 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useGameStore } from '@/stores/gameStore';
 import { Resources } from '@/types/game';
 import { formatNumber } from '@/utils/formatters';
 import { HEADER_DISPLAYED_RESOURCES_INFO, RESOURCE_ICONS } from '@/config/gameConfig';
+import { RESOURCE_PIXEL_ICONS } from '@/config/pixelIcons';
+import PixelIcon from './PixelIcon';
+import StableNumber from './StableNumber';
 
-// Animation item type to track multiple animations
+// Income popup spawned where the player clicked
 interface AnimationItem {
 	id: number;
 	amount: number;
 	position: { x: number; y: number };
+	drift: number;
 }
+
+const POPUP_DURATION_MS = 900;
 
 const ResourceDisplay: React.FC = () => {
 	const resources = useGameStore((state) => state.resources);
@@ -17,56 +24,40 @@ const ResourceDisplay: React.FC = () => {
 	const addResources = useGameStore((state) => state.addResources);
 	const clickMultiplier = useGameStore((state) => state.clickMultiplier);
 
-	// State for click animations (now an array to support multiple)
 	const [animations, setAnimations] = useState<AnimationItem[]>([]);
 	const nextAnimationId = useRef(0);
-	const goldElementRef = useRef<HTMLDivElement>(null);
 
 	// Define resources to display (including meat)
 	const resourcesToDisplay = Object.keys(resources) as Array<keyof Resources>;
 
-	// Function to handle click and award gold (now supports multiple animations)
-	const handleGameClick = useCallback(() => {
-		// Get the total gold rate per second
-		const goldRate = resourceRates.total.gold;
-		if (goldRate <= 0) return;
+	// Award gold on every click and show the income right under the cursor
+	const handleGameClick = useCallback(
+		(e: MouseEvent) => {
+			const goldRate = resourceRates.total.gold;
+			if (goldRate <= 0) return;
 
-		// Apply the clickMultiplier to the gold earned per click
-		const goldToAdd = goldRate * clickMultiplier;
-		addResources({ gold: goldToAdd });
-		
-		// Calculate position for animation relative to gold element
-		// Add slight randomness to position for visual variety when overlapping
-		if (goldElementRef.current) {
-			const rect = goldElementRef.current.getBoundingClientRect();
-			const xOffset = Math.random() * 20 - 10; // Random offset between -10 and 10
-			const yOffset = Math.random() * 10 - 5;  // Random offset between -5 and 5
-			
+			const goldToAdd = goldRate * clickMultiplier;
+			addResources({ gold: goldToAdd });
+
 			const newAnimation: AnimationItem = {
 				id: nextAnimationId.current++,
 				amount: goldToAdd,
-				position: {
-					x: rect.right + 10 + xOffset,
-					y: rect.top + (rect.height / 2) - 10 + yOffset
-				}
+				position: { x: e.clientX, y: e.clientY },
+				drift: Math.round((Math.random() - 0.5) * 36), // sideways wander so rapid clicks fan out
 			};
-			
-			// Add the new animation to the array
-			setAnimations(prevAnimations => [...prevAnimations, newAnimation]);
-			
-			// Remove this specific animation after 700ms
+
+			setAnimations((prev) => [...prev, newAnimation]);
 			setTimeout(() => {
-				setAnimations(prevAnimations => 
-					prevAnimations.filter(anim => anim.id !== newAnimation.id)
-				);
-			}, 700);
-		}
-	}, [resourceRates.total.gold, addResources, clickMultiplier]);
+				setAnimations((prev) => prev.filter((anim) => anim.id !== newAnimation.id));
+			}, POPUP_DURATION_MS);
+		},
+		[resourceRates.total.gold, addResources, clickMultiplier]
+	);
 
 	// Add global click listener
 	useEffect(() => {
 		window.addEventListener('click', handleGameClick);
-		
+
 		return () => {
 			window.removeEventListener('click', handleGameClick);
 		};
@@ -96,24 +87,41 @@ const ResourceDisplay: React.FC = () => {
 				return (
 					<div
 						key={resource}
-						ref={resource === 'gold' ? goldElementRef : undefined}
 						className='group relative flex items-center justify-center gap-2 text-sm'>
-						<div
-							className='text-xl md:text-2xl'
-							role='img'
-							aria-label={resource}>
-							{resourceInfo.icon}
-						</div>
-						<div className='flex flex-col'>
-							<div className='font-medium text-sm md:text-base text-white'>
-								{formatNumber(resources[resource])}
-							</div>
+						{RESOURCE_PIXEL_ICONS[resource] ? (
+							resource === 'gold' ? (
+								<div
+									className='pixel-gold-shine'
+									role='img'
+									aria-label={resource}
+								/>
+							) : (
+								<PixelIcon
+									name={RESOURCE_PIXEL_ICONS[resource]!}
+									alt={resource}
+								/>
+							)
+						) : (
 							<div
-								className={`text-xs ${
-									totalRate > 0 ? 'text-green-400' : 'text-gray-400'
-								}`}>
-								{formatNumber(totalRate)}/s
+								className='text-xl md:text-2xl'
+								role='img'
+								aria-label={resource}>
+								{resourceInfo.icon}
 							</div>
+						)}
+						{/* Fixed-width text block: digits sit in equal cells and the block reserves room for
+						    the widest value, so growing numbers never shift the icon or the next resource */}
+						<div className='flex flex-col'>
+							<StableNumber
+								value={formatNumber(resources[resource])}
+								className='font-semibold text-sm md:text-base text-[#f1e6c8] min-w-[4.6em]'
+							/>
+							<StableNumber
+								value={`${formatNumber(totalRate)}/s`}
+								className={`text-xs min-w-[5.6em] ${
+									totalRate > 0 ? 'text-green-400' : 'text-gray-400'
+								}`}
+							/>
 						</div>
 
 						{/* Enhanced Tooltip */}
@@ -149,18 +157,30 @@ const ResourceDisplay: React.FC = () => {
 				);
 			})}
 
-			{/* Multiple Click Animations */}
-			{animations.map(anim => (
-				<div 
-					key={anim.id}
-					className="absolute animate-gold-click font-medium text-yellow-400 z-50"
-					style={{ 
-						left: `${anim.position.x}px`, 
-						top: `${anim.position.y}px` 
-					}}>
-					+{formatNumber(anim.amount)} 💰
-				</div>
-			))}
+			{/* Income popups: portalled to <body> so they are positioned against the viewport,
+			    exactly where the player clicked, whatever the header layout does */}
+			{animations.length > 0 &&
+				createPortal(
+					animations.map((anim) => (
+						<div
+							key={anim.id}
+							className='gold-popup'
+							style={
+								{
+									left: anim.position.x,
+									top: anim.position.y,
+									'--drift': `${anim.drift}px`,
+									animationDuration: `${POPUP_DURATION_MS}ms`,
+								} as React.CSSProperties
+							}>
+							<span className='gold-popup-inner'>
+								<PixelIcon name='gold' alt='' scale={0.5} />
+								+{formatNumber(anim.amount)}
+							</span>
+						</div>
+					)),
+					document.body
+				)}
 		</>
 	);
 };
