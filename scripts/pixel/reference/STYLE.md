@@ -12,7 +12,7 @@ graphics for anything that isn't a map glyph. Match the references in this folde
 | `icons.png` | Current approved sprite set (resources, menu, portraits, equipment, animals, map). |
 | `hero-hud.png` | Current approved Character HUD (alcove scene, flasks, stone XP bar, level gem). |
 | `ui-parts.png` | Frames, stone bar, slot frames, divider, torch - the 9-slice/chrome parts. |
-| `fog.png`, `map-tiles.png`, `gold-shine.png` | Fog tile, biome ground + unexplored tiles, and the coin twinkle strip. |
+| `fog.png`, `map-tiles.png`, `castle-levels.png`, `gold-shine.png` | Fog tile, biome ground + unexplored tiles, and the coin twinkle strip. |
 
 ## Sprite look
 - **Canvas**: 40x40 (portraits 40x56, level gem 24x24). Artwork fills ~34-36px. Sprites float on transparency -
@@ -57,13 +57,19 @@ graphics for anything that isn't a map glyph. Match the references in this folde
     ice cracks, lake wave dashes that drift, grounds tilled furrows, castle purple flagstones). Same-biome neighbours
     join into one continuous field.
   - *Icons*: one 32px sprite per biome (`biome_*`: fir trees, wheat + flowers, rocky peak with snow cap, reeds + lily pond,
-    ice crystals, pond with shore, tilled plot with stakes, castle with red-roofed towers). Drawn on top of the ground
+    ice crystals, pond with shore, tilled plot with stakes); the castle tile uses the level castles below. Drawn on top of the ground
     with a 2px hard drop shadow.
   - *Unexplored land*: dark indigo with soft flat-banded pixel clouds drifting (two layers, hover = faster + brighter) and a
     floating "?" mark that glows on hover. Calm on purpose so the "?" stays the focus.
   - *Fog of war*: chunky low-res clouds (48px/64px art shown at 3x, 3 flat alpha bands, no outlines, no dither), two layers
     drifting opposite ways and breathing.
   - *Pickups*: bonus gold is a bobbing cash bag (24px, gold glow). Castle level and grounds level use pixel plaques/stars.
+- **Castle** (`castle_1`-`castle_6`, `sprites_castle.py`): grows every upgrade level - timber-roofed keep (32px), keep + tower
+  (32), keep + two towers with battlements (40), walled courtyard (48), banner-flying fortress (56), and the **max-level grand
+  castle** (72px): gold roofs, gilded bands, glowing windows, crystal spire. Max level is a 4-frame sheet
+  (`castle_6_anim`, flags wave, crystal pulses), drawn larger than its 48px tile so it overlaps the neighbours (the sprite is
+  `pointer-events: none`), with a pulsing golden drop-shadow glow, a golden aura on the tile and sparkles rising. The upgrade
+  dialog previews current -> next castle. Reference: `castle-levels.png`.
 - **XP**: green glowing orb sprite (`xp`), used wherever XP appears in text. **Level**: an animated shining star
   (6-frame sweep + glint strip, `ShiningStar`), never a gem.
 - **Header**: cracked-stone bar, bronze/iron edge with rivets, 48px slot frames (active glows gold), ornamental divider,
@@ -95,7 +101,7 @@ shadows, contours, rim light, coloured outlines), so every asset shares one ligh
 |---|---|
 | `render3d.py` | Engine. `common.py`, `fx.py` (glints), `fog.py` (tileable noise + cracked stone). |
 | `materials.py` | Every material: 5-tone ramp + outline + shading hints. One palette for the whole game. |
-| `sprites_resources.py` `sprites_props.py` `sprites_characters.py` `sprites_equipment.py` `sprites_animals.py` `sprites_map.py` | Sprites as lists of primitives (boxes, ellipsoids, cylinders, cones). `sprites_props` also draws the animated star in 2D. |
+| `sprites_resources.py` `sprites_props.py` `sprites_characters.py` `sprites_equipment.py` `sprites_animals.py` `sprites_map.py` `sprites_castle.py` | Sprites as lists of primitives (boxes, ellipsoids, cylinders, cones). `sprites_props` also draws the animated star in 2D. |
 | `ground_art.py` | Seamless biome ground textures, the unexplored cloud tile and the fog tiles (flat-banded cloud generator). |
 | `ui_art.py` | 2D UI art: frames, header chrome, flask parts, stone XP bar, hero scene, torch. |
 | `build.py` | Builds everything into `public/pixel/{icons,ui,bg}` (wipes them first). `--refs` also refreshes this folder. |

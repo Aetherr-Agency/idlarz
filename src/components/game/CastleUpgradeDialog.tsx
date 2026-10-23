@@ -6,6 +6,7 @@ import { formatNumber } from '@/utils/formatters';
 import audioManager from '@/utils/audioManager';
 import PixelModal from './PixelModal';
 import ResourceIcon from './ResourceIcon';
+import CastleSprite from './CastleSprite';
 
 interface CastleUpgradeDialogProps {
 	onClose: () => void;
@@ -105,6 +106,21 @@ const CastleUpgradeDialog: FC<CastleUpgradeDialogProps> = ({ onClose }) => {
 			title={`Castle ${castleLevel}/${CASTLE_UPGRADE.maxLevel}`}
 			size='sm'
 			onClose={onClose}>
+			<div className='flex items-end justify-center gap-6 mb-4 min-h-[88px]'>
+				<div className='flex flex-col items-center gap-1'>
+					<CastleSprite level={castleLevel} variant='inline' />
+					<span className='text-xs text-[#a89878]'>Level {castleLevel}</span>
+				</div>
+				{!isMaxLevel && (
+					<>
+						<span className='text-2xl text-[#f0d27a] pb-6'>→</span>
+						<div className='flex flex-col items-center gap-1 opacity-80'>
+							<CastleSprite level={castleLevel + 1} variant='inline' />
+							<span className='text-xs text-[#f0d27a]'>Level {castleLevel + 1}</span>
+						</div>
+					</>
+				)}
+			</div>
 			<div className='text-sm text-[#a89878] mb-1'>
 				Current bonus:{' '}
 				<span className='text-green-400'>+{(currentMultiplier * 100).toFixed(0)}%</span> to all

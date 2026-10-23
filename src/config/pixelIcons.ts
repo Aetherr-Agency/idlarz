@@ -31,7 +31,14 @@ export const PIXEL_ICON_SIZES = {
 	equip_legs: [40, 40],
 	equip_feet: [40, 40],
 	equip_ring: [40, 40],
-	// map: one icon per biome (castle is the castle tile)
+	// castle by upgrade level (grows each level; 6 is the animated max)
+	castle_1: [32, 32],
+	castle_2: [32, 32],
+	castle_3: [40, 40],
+	castle_4: [48, 48],
+	castle_5: [56, 56],
+	castle_6: [72, 72],
+	// map: one icon per biome
 	biome_forest: [32, 32],
 	biome_plains: [32, 32],
 	biome_hills: [32, 32],
@@ -39,7 +46,6 @@ export const PIXEL_ICON_SIZES = {
 	biome_tundra: [32, 32],
 	biome_lake: [32, 32],
 	biome_grounds: [32, 32],
-	biome_castle: [32, 32],
 	// farm animals
 	animal_chicken: [40, 40],
 	animal_pig: [40, 40],
@@ -83,7 +89,7 @@ export const ANIMAL_PIXEL_ICONS: Record<string, PixelIconName> = {
 	deer: 'animal_deer',
 };
 
-// Biome -> map icon (the 'empty' biome has none)
+// Biome -> map icon (the 'empty' biome has none; the castle uses castle_<level>)
 export const BIOME_PIXEL_ICONS: Record<string, PixelIconName | undefined> = {
 	forest: 'biome_forest',
 	plains: 'biome_plains',
@@ -92,5 +98,7 @@ export const BIOME_PIXEL_ICONS: Record<string, PixelIconName | undefined> = {
 	tundra: 'biome_tundra',
 	lake: 'biome_lake',
 	grounds: 'biome_grounds',
-	castle: 'biome_castle',
 };
+
+export const castleIconName = (level: number): PixelIconName =>
+	`castle_${Math.max(1, Math.min(6, Math.floor(level)))}` as PixelIconName;

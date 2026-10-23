@@ -9,6 +9,7 @@ import {
 	BUILDINGS,
 	BuildingType,
 	TILE_TAP,
+	CASTLE_UPGRADE,
 } from '@/config/gameConfig';
 import { useGameStore } from '@/stores/gameStore';
 import { countOwnedTiles } from '@/utils/gameUtils';
@@ -18,6 +19,7 @@ import { queueTileTap } from '@/lib/floatText';
 import ResourceIcon from './ResourceIcon';
 import PixelIcon from './PixelIcon';
 import ShiningStar from './ShiningStar';
+import CastleSprite from './CastleSprite';
 import { BIOME_PIXEL_ICONS } from '@/config/pixelIcons';
 import { TileStatus } from './TileStatus';
 import CastleUpgradeDialog from './CastleUpgradeDialog';
@@ -73,6 +75,9 @@ const Tile: React.FC<TileProps> = ({
 				tiles[adjY]?.[adjX]?.isOwned
 		);
 	}, [x, y, isOwned, tiles]);
+
+	const castleLevel = tiles?.[GRID_CENTER_Y]?.[GRID_CENTER_X]?.level ?? 1;
+	const isMaxCastle = biome === 'castle' && castleLevel >= CASTLE_UPGRADE.maxLevel;
 
 	const ownedTilesCount = useMemo(() => countOwnedTiles(tiles), [tiles]);
 
@@ -188,6 +193,7 @@ const Tile: React.FC<TileProps> = ({
 						'cursor-pointer':
 							isOwned && (biome === 'castle' || biome === 'grounds' || hasChest),
 						'castle-tile': isOwned && biome === 'castle',
+						'castle-max-tile': isOwned && isMaxCastle,
 						'border-2 border-amber-400': isOwned && hasChest,
 						'tile-cooldown': cooling,
 					}
@@ -205,6 +211,7 @@ const Tile: React.FC<TileProps> = ({
 						'w-full h-full flex items-center justify-center relative',
 						{ 'tile-tapped': tapped }
 					)}>
+					{isOwned && biome === 'castle' && <CastleSprite level={castleLevel} />}
 					{isOwned && BIOME_PIXEL_ICONS[biome] && (
 						<PixelIcon name={BIOME_PIXEL_ICONS[biome]!} alt={biome} className='tile-icon' />
 					)}
@@ -212,7 +219,7 @@ const Tile: React.FC<TileProps> = ({
 						<PixelIcon name='unknown' alt='Unexplored' scale={2} className='unknown-mark' />
 					)}
 					{biome === 'castle' && (
-						<span className='tile-badge'>{tiles[GRID_CENTER_Y]?.[GRID_CENTER_X]?.level}</span>
+						<span className='tile-badge'>{castleLevel}</span>
 					)}
 
 					{/* Bonus cash bag on the tile */}

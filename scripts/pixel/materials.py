@@ -63,5 +63,7 @@ MATS = {
     'blossom': Material(['#6a1a3a', '#b03a68', '#e068a0', '#f8a0c8', '#ffe0ee'], '#401028'),
     'xp': Material(['#0a3a1a', '#1a7a2c', '#3cc23c', '#8cee50', '#e8ffa0'], '#062410', spec=0.07, shiny=14, spec_col='#ffffff'),
     'wallstone': Material(['#3e3650', '#6a6484', '#9892b0', '#c4bed6', '#eeeaf8'], '#241e34', grain=0.2, grain_scale=3.0),
+    'glow': Material(['#8a5a10', '#d8a020', '#ffd860', '#fff2a0', '#ffffff'], '#6a4408', gain=1.35),
+    'crystal': Material(['#1a4a7a', '#3a8ac8', '#8ad0f8', '#d8f4ff', '#ffffff'], '#0e2a4a', spec=0.08, shiny=14, spec_col='#ffffff', gain=1.2),
     'flag': Material(['#4a0a14', '#8a1428', '#c8283c', '#f05468', '#ffa0ac'], '#2e0610'),
 }

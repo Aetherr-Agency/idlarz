@@ -1,4 +1,4 @@
-"""Map sprites: one icon per biome (32x32), the castle, the bonus cash bag (24x24) and the XP orb (40x40).
+"""Map sprites: one icon per biome (32x32), the bonus cash bag (24x24) and the XP orb (40x40).
 Same ray-cast look as the rest of the set, just smaller canvases for the 48px map tiles."""
 import math
 from render3d import Scene, Prim, rot, vnoise, between, I3
@@ -108,28 +108,6 @@ def grounds():
     return sc.render()
 
 
-def castle():
-    sc = _scene(7.8, (16, 25))
-    wall = 'wallstone'
-    _P(sc, 'box', (0, 0, 0.7), (1.0, 0.75, 0.7), wall, I3, None, 1)                          # keep
-    for sx in (-1, 1):                                                                       # side towers
-        _P(sc, 'cyl', (1.0 * sx, 0.0, 0.95), (0.4, 0.95), wall, I3, None, 2)
-        _P(sc, 'cone', (1.0 * sx, 0.0, 2.2), (0.55, 0.45), 'barn', I3, None, 3)
-        _P(sc, 'box', (1.0 * sx, -0.4, 1.2), (0.06, 0.04, 0.16), 'dark')
-    _P(sc, 'cyl', (0, 0.1, 1.6), (0.46, 0.5), wall, I3, None, 4)                             # centre tower
-    _P(sc, 'cone', (0, 0.1, 2.75), (0.62, 0.55), 'barn', I3, None, 5)
-    sc.add(between('cyl', (0, 0.1, 3.2), (0, 0.1, 3.8), (0.03,), 'steel', None, (0, 0, 1)))  # flag pole
-    _P(sc, 'box', (0.2, 0.1, 3.62), (0.2, 0.025, 0.12), 'flag')
-    _P(sc, 'box', (0, -0.78, 0.4), (0.3, 0.05, 0.4), 'door')                                 # gate
-    _P(sc, 'ell', (0, -0.78, 0.8), (0.3, 0.05, 0.2), 'door')
-    _P(sc, 'box', (0, -0.8, 1.05), (0.12, 0.04, 0.12), 'dark')                               # window
-    for i in range(-2, 3):                                                                   # crenellations
-        _P(sc, 'box', (0.4 * i, -0.62, 1.5), (0.14, 0.12, 0.13), wall, I3, None, 20 + i)
-    img = sc.render()
-    fx.glint(img, 15, 2, 1)
-    return img
-
-
 # ----------------------------------------------------------------- bonus cash bag (24x24)
 def cash_bag():
     sc = _scene(8.6, (12, 20), size=24)
@@ -184,6 +162,6 @@ def unknown_mark():
 SPRITES = {
     'unknown': unknown_mark,
     'biome_forest': forest, 'biome_plains': plains, 'biome_hills': hills, 'biome_swamp': swamp,
-    'biome_tundra': tundra, 'biome_lake': lake, 'biome_grounds': grounds, 'biome_castle': castle,
+    'biome_tundra': tundra, 'biome_lake': lake, 'biome_grounds': grounds,
     'cash_bag': cash_bag, 'xp': xp_orb,
 }

@@ -23,6 +23,7 @@ import fog  # noqa: E402
 import ground_art  # noqa: E402
 import ui_art  # noqa: E402
 import sprites_animals  # noqa: E402
+import sprites_castle  # noqa: E402
 import sprites_characters  # noqa: E402
 import sprites_equipment  # noqa: E402
 import sprites_map  # noqa: E402
@@ -46,6 +47,7 @@ SPRITES = {
     'equip_feet': sprites_equipment.feet, 'equip_ring': sprites_equipment.ring,
     **sprites_animals.SPRITES,
     **sprites_map.SPRITES,
+    **sprites_castle.SPRITES,
 }
 
 UI = {
@@ -168,11 +170,19 @@ def reference_sheets(sprites, ui, bg):
         for a in range(3):
             for b in range(3):
                 sheet.alpha_composite(tile, (12 + i * (cell + 12) + a * 48, 12 + b * 48))
-        icon = sprites.get('unknown' if name == 'mystery' else f'biome_{name}')
+        icon = sprites.get('unknown' if name == 'mystery' else ('castle_3' if name == 'castle' else f'biome_{name}'))
         if icon is not None:
             big = upscale(icon, 2 if name == 'mystery' else 1)
             sheet.alpha_composite(big, (12 + i * (cell + 12) + 48 + (48 - big.size[0]) // 2, 12 + 48 + (48 - big.size[1]) // 2))
     sheet.save(os.path.join(REFERENCE, 'map-tiles.png'))
+    # castle levels 1-6 side by side, bottom aligned, at 2x
+    lv = [sprites[f'castle_{i}'] for i in range(1, 7)]
+    sheet = Image.new('RGBA', (sum(im.size[0] * 2 + 16 for im in lv) + 16, 72 * 2 + 32), (60, 36, 100, 255))
+    x = 16
+    for im in lv:
+        sheet.alpha_composite(upscale(im, 2), (x, 16 + 72 * 2 - im.size[1] * 2))
+        x += im.size[0] * 2 + 16
+    sheet.save(os.path.join(REFERENCE, 'castle-levels.png'))
     # UI parts at 3x on a dark ground
     parts = ['frame_modal', 'frame_panel', 'frame_tip', 'bar_frame', 'bar_fill', 'slot_frame', 'slot_frame_active',
              'header_divider', 'torch']
@@ -198,6 +208,8 @@ def main():
     bg = save_group('bg', BG, only)
     if not only or 'gold_shine' in only:
         gold_shine().save(os.path.join(PUB, 'icons', 'gold_shine.png'))
+    if not only or 'castle_6_anim' in only:
+        sprites_castle.sheet_max().save(os.path.join(PUB, 'icons', 'castle_6_anim.png'))
     if not only or 'level_star_shine' in only:
         sprites_props.star_sheet().save(os.path.join(PUB, 'icons', 'level_star_shine.png'))
 

@@ -1194,3 +1194,99 @@ body {
 		animation: none;
 	}
 }
+
+/* --- Castle: grows with each upgrade; the max level overflows its tile with glow + animation --- */
+.castle-sprite {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -56%);
+	z-index: 5;
+	image-rendering: pixelated;
+	pointer-events: none; /* overflow must not block clicks on the neighbouring tiles */
+	filter: drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35));
+
+	&.castle-inline {
+		position: relative;
+		left: auto;
+		top: auto;
+		transform: none;
+		pointer-events: auto;
+	}
+}
+
+.castle-max {
+	width: 72px;
+	height: 72px;
+	background: url('/pixel/icons/castle_6_anim.png') 0 0 / 288px 72px no-repeat;
+	animation: castle-anim 0.9s steps(4) infinite, castle-glow 2.6s ease-in-out infinite alternate;
+}
+
+@keyframes castle-anim {
+	to {
+		background-position-x: -288px;
+	}
+}
+
+@keyframes castle-glow {
+	from {
+		filter: drop-shadow(0 0 3px rgba(255, 200, 80, 0.4)) drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35));
+	}
+	to {
+		filter: drop-shadow(0 0 12px rgba(255, 224, 120, 0.95)) drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35));
+	}
+}
+
+/* golden aura on the tile itself + sparkles that drift up around the castle */
+.castle-max-tile {
+	animation: castle-aura 2.6s ease-in-out infinite alternate;
+}
+
+@keyframes castle-aura {
+	from {
+		box-shadow: 0 0 10px 2px rgba(255, 200, 70, 0.25), inset 0 0 8px rgba(255, 220, 120, 0.2);
+	}
+	to {
+		box-shadow: 0 0 30px 10px rgba(255, 210, 80, 0.5), inset 0 0 14px rgba(255, 230, 140, 0.4);
+	}
+}
+
+.castle-spark {
+	position: absolute;
+	left: var(--x);
+	top: 70%;
+	width: 4px;
+	height: 4px;
+	background: #fff6c0;
+	box-shadow: 0 0 6px 1px #ffd860;
+	opacity: 0;
+	pointer-events: none;
+	animation: spark-rise 2.8s linear infinite;
+	animation-delay: var(--d);
+}
+
+@keyframes spark-rise {
+	0% {
+		transform: translateY(0);
+		opacity: 0;
+	}
+	15% {
+		opacity: 1;
+	}
+	100% {
+		transform: translateY(-56px);
+		opacity: 0;
+	}
+}
+
+.tile-badge {
+	z-index: 6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.castle-max,
+	.castle-max-tile,
+	.castle-spark {
+		animation: none;
+	}
+}
