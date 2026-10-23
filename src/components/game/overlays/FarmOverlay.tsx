@@ -2,6 +2,7 @@ import React from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { formatNumber } from '@/utils/formatters';
 import { ANIMALS } from '@/config/gameConfig';
+import { ANIMAL_PIXEL_ICONS } from '@/config/pixelIcons';
 import {
 	calculateAnimalCost,
 	calculateAnimalProduction,
@@ -29,7 +30,7 @@ const FarmAnimalCard: React.FC<{
 	return (
 		<div className='px-card relative'>
 			<div className='flex items-center gap-4 mb-3'>
-				<div className='text-4xl'>{animal.icon}</div>
+				<PixelIcon name={ANIMAL_PIXEL_ICONS[animal.id]} alt={animal.name} scale={2} />
 				<div>
 					<h3 className='px-tip-title text-base'>{animal.name}</h3>
 					<p className='text-[#a89878] text-sm'>{animal.description}</p>

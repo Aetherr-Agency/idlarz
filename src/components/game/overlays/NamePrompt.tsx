@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import PixelModal from '../PixelModal';
+import PixelIcon from '../PixelIcon';
 
 const NAME_MAX_LENGTH = 9;
 
@@ -117,25 +118,25 @@ const NamePrompt = () => {
 							<p className='text-[#d8c8a0] mb-2'>The Farm allows you to produce meat by purchasing and upgrading animals:</p>
 							<div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
 								<div className='px-card'>
-									<h4 className='text-yellow-300 font-medium mb-1'>Chicken 🐔</h4>
+									<h4 className='text-yellow-300 font-medium mb-1'>Chicken <PixelIcon name='animal_chicken' alt='' scale={0.5} className='inline-block align-middle' /></h4>
 									<p className='text-[#d8c8a0] text-xs'>Base Cost: 10,000 food</p>
 									<p className='text-[#d8c8a0] text-xs'>Production: 0.05 meat/s (3/min)</p>
 									<p className='text-[#a89878] text-sm mt-1'>Each level: +20% production, 1.5× cost</p>
 								</div>
 								<div className='px-card'>
-									<h4 className='text-yellow-300 font-medium mb-1'>Deer 🦌</h4>
+									<h4 className='text-yellow-300 font-medium mb-1'>Deer <PixelIcon name='animal_deer' alt='' scale={0.5} className='inline-block align-middle' /></h4>
 									<p className='text-[#d8c8a0] text-xs'>Base Cost: 50,000 food</p>
 									<p className='text-[#d8c8a0] text-xs'>Production: 0.2 meat/s (12/min)</p>
 									<p className='text-[#a89878] text-sm mt-1'>Each level: +25% production, 1.6× cost</p>
 								</div>
 								<div className='px-card'>
-									<h4 className='text-yellow-300 font-medium mb-1'>Pig 🐖</h4>
+									<h4 className='text-yellow-300 font-medium mb-1'>Pig <PixelIcon name='animal_pig' alt='' scale={0.5} className='inline-block align-middle' /></h4>
 									<p className='text-[#d8c8a0] text-xs'>Base Cost: 200,000 food</p>
 									<p className='text-[#d8c8a0] text-xs'>Production: 0.5 meat/s (30/min)</p>
 									<p className='text-[#a89878] text-sm mt-1'>Each level: +30% production, 1.7× cost</p>
 								</div>
 								<div className='px-card'>
-									<h4 className='text-yellow-300 font-medium mb-1'>Cow 🐄</h4>
+									<h4 className='text-yellow-300 font-medium mb-1'>Cow <PixelIcon name='animal_cow' alt='' scale={0.5} className='inline-block align-middle' /></h4>
 									<p className='text-[#d8c8a0] text-xs'>Base Cost: 1,000,000 food</p>
 									<p className='text-[#d8c8a0] text-xs'>Production: 1.5 meat/s (90/min)</p>
 									<p className='text-[#a89878] text-sm mt-1'>Each level: +40% production, 1.8× cost</p>

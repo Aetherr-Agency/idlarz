@@ -71,7 +71,7 @@ const HeaderMenu: React.FC = () => {
 						</p>
 						{levelUpActive ? (
 							<PixelIcon
-								name='level_star'
+								name='level_gem'
 								alt='Level up available'
 								className='animate-pulse-ring'
 							/>

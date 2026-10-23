@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# generated review sheets and python caches
+scripts/pixel/previews/
+__pycache__/

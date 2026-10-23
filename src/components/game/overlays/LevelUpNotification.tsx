@@ -60,7 +60,7 @@ const LevelUpNotification: React.FC = () => {
       onClick={() => setShowNotification(false)}
     >
       <div className="level-up-emoji">
-        <PixelIcon name="level_star" scale={4} alt="" />
+        <PixelIcon name="level_gem" scale={4} alt="" />
       </div>
       <div className="level-up-text">
         Level Up!

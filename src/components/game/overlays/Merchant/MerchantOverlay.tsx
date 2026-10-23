@@ -570,7 +570,7 @@ const MerchantOverlay: React.FC = () => {
 					<div className='col-span-1 flex flex-col gap-4'>
 						{/* Merchant Avatar */}
 						<div className='px-panel flex flex-col items-center'>
-							<div className='mb-3'><PixelIcon name='merchant_portrait' alt='Merchant' scale={2} /></div>
+							<div className='mb-3'><PixelIcon name='merchant' alt='Merchant' scale={2} /></div>
 							<h3 className='px-h text-center w-full'>
 								Merchant
 							</h3>

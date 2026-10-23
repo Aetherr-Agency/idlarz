@@ -1,9 +1,9 @@
-"""Game-UI art (2D, Pillow): 9-slice frames, HP/MP flask glass + mask + bubbles, XP medallion.
-Rendered into public/pixel/ui/ by generate_ui.py."""
+"""2D UI art (Pillow): 9-slice frames, header chrome, HP/MP flask parts, stone XP bar, hero scene.
+Everything is drawn at native pixel size and shown at integer scale (see reference/STYLE.md)."""
 import math
 import random
 from PIL import Image, ImageDraw
-from common import hexc as C
+from common import hexc as C, add_outline
 
 
 # ----------------------------------------------------------------- 9-slice frames
@@ -18,22 +18,18 @@ def frame_modal(slice_px=12):
     S = slice_px * 3
     img = Image.new('RGBA', (S, S), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    # bands from the outside in (colour, thickness)
     bands = [('#080504', 1), ('#d9a850', 1), ('#b07c34', 1), ('#7a5224', 1), ('#2b1d0e', 1),
              ('#4a4440', 1), ('#5e5750', 2), ('#3a352f', 1), ('#1c1814', 1), ('#080504', 1)]
     o = 0
     for col, t in bands:
-        for k in range(t):
+        for _ in range(t):
             d.rectangle([o, o, S - 1 - o, S - 1 - o], outline=C(col))
             o += 1
-    # clear the centre so only the border survives
     d.rectangle([slice_px, slice_px, S - 1 - slice_px, S - 1 - slice_px], fill=(0, 0, 0, 0))
-    # edge ticks (one per 12px cell) - tiny notches in the iron band
     mid = slice_px * 1.5
     for (x, y) in ((mid, 6), (mid, S - 7), (6, mid), (S - 7, mid)):
         d.rectangle([int(x) - 1, int(y) - 1, int(x) + 1, int(y) + 1], fill=C('#2b2520'))
         d.point((int(x) - 1, int(y) - 1), fill=C('#7a6e60'))
-    # corner brackets: gold plate + rivet
     for cx, cy, sx, sy in ((0, 0, 1, 1), (S - 1, 0, -1, 1), (0, S - 1, 1, -1), (S - 1, S - 1, -1, -1)):
         pts = [(cx, cy), (cx + sx * 11, cy), (cx + sx * 11, cy + sy * 3), (cx + sx * 3, cy + sy * 3),
                (cx + sx * 3, cy + sy * 11), (cx, cy + sy * 11)]
@@ -80,7 +76,259 @@ def frame_tip():
     return img
 
 
-# ----------------------------------------------------------------- flask (HP / MP)
+# ----------------------------------------------------------------- header chrome
+def header_edge():
+    """64x10 bronze + iron lower border with rivets (tiles horizontally)."""
+    w, h = 64, 10
+    img = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    rows = ['#0a0605', '#c9954a', '#9a6a2a', '#6a4418', '#2b1d0e', '#413a33', '#352f2a', '#1c1714', '#0a0605', '#0a0605']
+    for y, c in enumerate(rows):
+        d.line([(0, y), (w, y)], fill=C(c))
+    for x in (8, 40):
+        d.rectangle([x - 1, 4, x + 1, 6], fill=C('#5a5048'))
+        d.point((x - 1, 4), fill=C('#a89b8a'))
+        d.point((x, 4), fill=C('#d8ccb8'))
+        d.point((x + 1, 6), fill=C('#26201b'))
+    for x in range(0, w, 4):
+        d.point((x, 2), fill=C('#b07c34'))
+    return img
+
+
+def slot_frame(active=False, size=48):
+    """Square icon-slot frame (bronze bevel, dark well); `active` glows gold."""
+    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    hi = '#f0c860' if active else '#a8783a'
+    mid = '#c08a30' if active else '#7a5224'
+    lo = '#6a4414' if active else '#3d2a14'
+    d.rectangle([0, 0, size - 1, size - 1], fill=C('#0e0a08'))
+    d.rectangle([1, 1, size - 2, size - 2], fill=C(mid))
+    d.line([(1, 1), (size - 2, 1)], fill=C(hi))
+    d.line([(1, 1), (1, size - 2)], fill=C(hi))
+    d.line([(1, size - 2), (size - 2, size - 2)], fill=C(lo))
+    d.line([(size - 2, 1), (size - 2, size - 2)], fill=C(lo))
+    d.rectangle([3, 3, size - 4, size - 4], fill=C('#0e0a08'))
+    d.rectangle([4, 4, size - 5, size - 5], fill=C('#3a2410' if active else '#17100b'))
+    d.line([(4, 4), (size - 5, 4)], fill=C('#050302'))
+    d.line([(4, 4), (4, size - 5)], fill=C('#050302'))
+    if active:
+        for i in range(5, 9):
+            a = 40 - (i - 5) * 9
+            d.rectangle([i, i, size - 1 - i, size - 1 - i], outline=(240, 180, 60, a))
+    for x, y in ((2, 2), (size - 3, 2), (2, size - 3), (size - 3, size - 3)):
+        d.point((x, y), fill=C('#e8d29a'))
+    return img
+
+
+def header_divider(h=56):
+    img = Image.new('RGBA', (9, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    cy = h // 2
+    d.line([(4, 2), (4, cy - 6)], fill=C('#5a3f1c'))
+    d.line([(4, cy + 6), (4, h - 3)], fill=C('#5a3f1c'))
+    d.line([(5, 2), (5, cy - 6)], fill=C('#1a120a'))
+    d.line([(5, cy + 6), (5, h - 3)], fill=C('#1a120a'))
+    d.polygon([(4, cy - 5), (8, cy), (4, cy + 5), (0, cy)], fill=C('#8a5f26'))
+    d.polygon([(4, cy - 3), (6, cy), (4, cy + 3), (2, cy)], fill=C('#e0b23a'))
+    d.point((4, cy - 1), fill=C('#fff0a0'))
+    return add_outline(img)
+
+
+def header_xp_frame(w=72):
+    """Slim bronze XP bar frame used in the header profile."""
+    img = Image.new('RGBA', (w, 10), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.rectangle([0, 0, w - 1, 9], fill=C('#0e0a08'))
+    d.rectangle([1, 1, w - 2, 8], fill=C('#8a5f26'))
+    d.line([(1, 1), (w - 2, 1)], fill=C('#d9a850'))
+    d.line([(1, 8), (w - 2, 8)], fill=C('#4a3014'))
+    d.rectangle([2, 2, w - 3, 7], fill=C('#0e0a08'))
+    d.rectangle([3, 3, w - 4, 6], fill=C('#1d1511'))
+    for x in (0, w - 1):
+        d.point((x, 0), fill=(0, 0, 0, 0))
+        d.point((x, 9), fill=(0, 0, 0, 0))
+    d.point((1, 1), fill=C('#f0d890'))
+    d.point((w - 2, 1), fill=C('#f0d890'))
+    return img
+
+
+def header_xp_fill():
+    img = Image.new('RGBA', (2, 4), (0, 0, 0, 0))
+    for y, c in enumerate(['#9be26a', '#5fbf3e', '#3f9a2c', '#2a6e1e']):
+        for x in range(2):
+            img.putpixel((x, y), C(c))
+    return img
+
+
+# ----------------------------------------------------------------- stone XP bar (character HUD)
+def bar_frame():
+    """16x14 source, 4px border: chiselled stone trough with a dark recess. Slice 4, edges repeat."""
+    W, H, B = 16, 14, 4
+    img = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    px = img.load()
+    rnd = random.Random(21)
+    for y in range(H):
+        for x in range(W):
+            edge = min(x, y, W - 1 - x, H - 1 - y)
+            if edge >= B:
+                continue                                    # recess stays transparent
+            if edge == 0:
+                col = '#0a0806'
+            elif edge == 1:                                 # chiselled bevel
+                col = '#b8aa96' if (y <= x and y < H - 1 - x) or (x < y and x < W - 1 - y and y < H // 2) else '#5a4e42'
+                if y < x and y <= H - 1 - y and (y == 1):
+                    col = '#a89a86'
+                elif x == 1 or y == 1:
+                    col = '#a89a86'
+                else:
+                    col = '#5a4e42'
+            elif edge == 2:
+                col = ['#8a7c6a', '#7a6e5e', '#968a78', '#6e6254'][rnd.randrange(4)]
+            else:
+                col = '#0a0806'                              # inner shadow line
+            px[x, y] = C(col)
+    for x, y in ((0, 0), (W - 1, 0), (0, H - 1), (W - 1, H - 1)):
+        px[x, y] = (0, 0, 0, 0)
+    return img
+
+
+def bar_fill():
+    """8x6 tile: stepped emerald bands with a bright top line and glints (repeat-x, scrolls in CSS)."""
+    rows = ['#d4ff96', '#8fe04a', '#6cc83a', '#4fb030', '#3a9028', '#236a1e']
+    img = Image.new('RGBA', (8, 6), (0, 0, 0, 0))
+    for y, col in enumerate(rows):
+        for x in range(8):
+            img.putpixel((x, y), C(col))
+    for x, y in ((1, 1), (2, 1), (5, 2), (6, 2)):          # glints
+        img.putpixel((x, y), C('#f2ffc8'))
+    for x in (3, 7):                                          # segment seams
+        for y in range(2, 6):
+            img.putpixel((x, y), C('#2e8426'))
+    return img
+
+
+# ----------------------------------------------------------------- hero scene (stone alcove, 144x96)
+SCENE_W, SCENE_H = 144, 96
+
+
+def _lerp(a, b, t):
+    return tuple(int(a[i] + (b[i] - a[i]) * t) for i in range(3))
+
+
+def hero_scene():
+    """Dark brick wall, an arched niche and a worn stone floor - the stage the hero stands on."""
+    img = Image.new('RGBA', (SCENE_W, SCENE_H), C('#14100d'))
+    px = img.load()
+    rnd = random.Random(8)
+    brick_tones = [C(c) for c in ('#2e241d', '#34291f', '#281f19', '#3a2e24', '#30261e')]
+    floor_y = 66
+    # brick wall
+    for row in range(0, floor_y // 8 + 1):
+        off = 8 if row % 2 else 0
+        for bx in range(-off, SCENE_W, 16):
+            tone = rnd.choice(brick_tones)
+            for y in range(row * 8, min(floor_y, row * 8 + 8)):
+                for x in range(bx, bx + 16):
+                    if not (0 <= x < SCENE_W):
+                        continue
+                    ly, lx = y - row * 8, x - bx
+                    col = tone
+                    if ly == 0 or lx == 0:
+                        col = C('#0f0b09')                  # mortar
+                    elif ly == 1 or lx == 1:
+                        col = tuple(min(255, c + 12) for c in tone[:3]) + (255,)
+                    elif rnd.random() < 0.05:
+                        col = tuple(max(0, c - 10) for c in tone[:3]) + (255,)
+                    px[x, y] = col
+    # arch niche
+    cx, cy, R = 72, 40, 31
+    def in_arch(x, y, grow=0):
+        return (y >= cy and abs(x - cx) <= R + grow and y <= floor_y) or ((x - cx) ** 2 + (y - cy) ** 2 <= (R + grow) ** 2 and y < cy)
+    for y in range(SCENE_H):
+        for x in range(SCENE_W):
+            if y > floor_y:
+                continue
+            if in_arch(x, y):
+                t = (y - (cy - R)) / (floor_y - (cy - R))
+                col = _lerp((32, 40, 74), (10, 12, 26), min(1, max(0, t)))
+                if (x + y) % 4 == 0 and t < 0.5:
+                    col = tuple(min(255, c + 6) for c in col)
+                px[x, y] = col + (255,)
+            elif in_arch(x, y, 4):                                  # arch ring stones
+                ang = math.degrees(math.atan2(y - cy, x - cx))
+                seam = int(ang // 15) % 2
+                ring = '#8a7a66' if seam else '#6e6050'
+                if y > cy:
+                    ring = '#7a6c58' if (y // 8) % 2 else '#5e5242'
+                px[x, y] = C(ring)
+                if not in_arch(x, y, 1):
+                    px[x, y] = C('#a89880') if y < cy else C('#9a8a74')
+                if in_arch(x, y, 4) and not in_arch(x, y, 3):
+                    px[x, y] = C('#0f0b09')
+    # keystone
+    d = ImageDraw.Draw(img)
+    d.rectangle([cx - 5, cy - R - 5, cx + 5, cy - R + 2], fill=C('#b8a68a'))
+    d.rectangle([cx - 5, cy - R - 5, cx + 5, cy - R - 5], fill=C('#d8c8a8'))
+    d.line([(cx - 5, cy - R + 2), (cx + 5, cy - R + 2)], fill=C('#0f0b09'))
+    d.point((cx, cy - R - 2), fill=C('#e0b23a'))
+    # sconces (the flames are a separate animated sprite)
+    for sx in (18, SCENE_W - 19):
+        d.rectangle([sx - 1, 34, sx + 1, 46], fill=C('#5a3a1c'))
+        d.rectangle([sx - 3, 46, sx + 3, 48], fill=C('#2a2a32'))
+        d.rectangle([sx - 3, 32, sx + 3, 34], fill=C('#2a2a32'))
+        d.point((sx - 3, 32), fill=C('#7a7a88'))
+        d.rectangle([sx - 2, 28, sx + 2, 32], fill=C('#3a2410'))
+    # floor: worn slabs with a bright back edge
+    for y in range(floor_y, SCENE_H):
+        t = (y - floor_y) / (SCENE_H - floor_y)
+        base = _lerp((74, 64, 54), (34, 28, 24), t)
+        for x in range(SCENE_W):
+            col = base
+            slab_h = 10
+            row = (y - floor_y) // slab_h
+            offs = (row % 2) * 24
+            if (y - floor_y) % slab_h == 0 or (x + offs) % 48 == 0:
+                col = _lerp(col, (10, 8, 7), 0.65)
+            elif rnd.random() < 0.06:
+                col = _lerp(col, (120, 108, 92), 0.25)
+            px[x, y] = tuple(col) + (255,)
+    for x in range(SCENE_W):
+        px[x, floor_y] = C('#9a8a74')
+        px[x, floor_y + 1] = C('#6a5c4c')
+    # edge vignette
+    for y in range(SCENE_H):
+        for x in range(SCENE_W):
+            e = min(x, SCENE_W - 1 - x) / 22.0
+            if e < 1:
+                r, g, b, a = px[x, y]
+                k = 0.45 + 0.55 * e
+                px[x, y] = (int(r * k), int(g * k), int(b * k), a)
+    return img
+
+
+def torch_sheet():
+    """3 flame frames, 10x16 each, side by side (animated with steps() in CSS)."""
+    frames = [
+        [(5, 15), (4, 14), (6, 14), (3, 12), (7, 12), (4, 10), (6, 10), (5, 8), (5, 6)],
+        [(5, 15), (4, 14), (6, 14), (3, 12), (6, 12), (4, 10), (7, 9), (6, 7), (7, 5)],
+        [(5, 15), (4, 14), (6, 14), (4, 12), (7, 12), (3, 10), (5, 10), (4, 8), (3, 6)],
+    ]
+    sheet = Image.new('RGBA', (30, 16), (0, 0, 0, 0))
+    d = ImageDraw.Draw(sheet)
+    for i, pts in enumerate(frames):
+        ox = i * 10
+        d.ellipse([ox + 1, 6, ox + 8, 16], fill=C('#e8541a'))
+        d.ellipse([ox + 2, 7, ox + 7, 15], fill=C('#f58a24'))
+        d.ellipse([ox + 3, 9, ox + 6, 15], fill=C('#ffd050'))
+        for x, y in pts[-3:]:
+            d.point((ox + x, y - 2), fill=C('#f58a24'))
+            d.point((ox + x, y - 1), fill=C('#e8541a'))
+        d.point((ox + 4, 12), fill=C('#fff4b0'))
+    return sheet
+
+
+# ----------------------------------------------------------------- HP / MP flask parts
 FLASK_W, FLASK_H = 40, 56
 
 
@@ -91,7 +339,6 @@ def _shape(r_bulb, neck_half, cx=20, cy=37):
             return True
         if y <= 24 and abs(x - cx) <= neck_half and y >= 8:
             return True
-        # shoulder: smooth taper from neck to the bulb
         if 22 <= y <= 28:
             t = (y - 22) / 6.0
             if abs(x - cx) <= neck_half + t * (r_bulb - neck_half) * 0.85 and (x - cx) ** 2 + (y - cy) ** 2 <= (r_bulb + 3) ** 2:
@@ -121,11 +368,8 @@ def flask_glass():
         for x in range(FLASK_W):
             o, i = outer(x + 0.5, y + 0.5), inner(x + 0.5, y + 0.5)
             if o and not i and y >= 9:
-                # glass wall: bright on the upper-left, darker lower-right
                 lit = (x + y) < 58
                 px[x, y] = C('#cfe6f4', 200) if lit else C('#6a8aa0', 200)
-    d = ImageDraw.Draw(img)
-    # dark outline around the whole bottle
     out = img.copy()
     op = out.load()
     for y in range(FLASK_H):
@@ -138,12 +382,10 @@ def flask_glass():
                         break
     img = out
     d = ImageDraw.Draw(img)
-    # lip
     d.rectangle([13, 8, 27, 10], fill=C('#8fb0c4'))
     d.line([(13, 8), (27, 8)], fill=C('#e8f6ff'))
     d.rectangle([12, 7, 28, 7], fill=C('#10202c'))
     d.rectangle([12, 11, 28, 11], fill=C('#10202c'))
-    # cork
     d.rectangle([16, 1, 24, 7], fill=C('#8a5a30'))
     d.rectangle([16, 1, 24, 2], fill=C('#c08a50'))
     d.rectangle([16, 6, 24, 7], fill=C('#5a3a1c'))
@@ -152,7 +394,6 @@ def flask_glass():
     d.line([(16, 0), (24, 0)], fill=C('#2a1608'))
     for p in ((18, 3), (21, 4), (19, 5)):
         d.point(p, fill=C('#6a4220'))
-    # glass shine: arc streaks on the left, a spark on the shoulder
     for y in range(28, 46):
         d.point((9 + (46 - y) // 9, y), fill=(255, 255, 255, 150))
     d.line([(10, 30), (12, 28)], fill=(255, 255, 255, 190))
@@ -175,86 +416,4 @@ def flask_bubbles(h=24):
         else:
             d.ellipse([x, y, x + 3, y + 3], outline=(255, 255, 255, 150))
             d.point((x + 1, y + 1), fill=(255, 255, 255, 220))
-    return img
-
-
-# ----------------------------------------------------------------- XP medallion
-MEDAL = 80
-SEGMENTS = 40
-
-
-def _polar(x, y, c=39.5):
-    dx, dy = x + 0.5 - (c + 0.5), y + 0.5 - (c + 0.5)
-    r = math.hypot(dx, dy)
-    a = (math.degrees(math.atan2(dx, -dy)) + 360) % 360      # 0 = top, clockwise
-    return r, a
-
-
-def medallion_base():
-    img = Image.new('RGBA', (MEDAL, MEDAL), (0, 0, 0, 0))
-    px = img.load()
-    for y in range(MEDAL):
-        for x in range(MEDAL):
-            r, a = _polar(x, y)
-            lit = math.cos(math.radians(a - 315))              # light from the upper-left
-            col = None
-            if r <= 39.5:
-                if r > 36.5:                                    # outer bronze ring
-                    t = (r - 36.5) / 3.0
-                    base = ['#f0d27a', '#c9954a', '#9a6a2a', '#5a3a14'][min(3, int(t * 4))]
-                    col = base if lit > -0.2 or t > 0.6 else '#6a4414'
-                    if r > 39.0:
-                        col = '#080504'
-                elif r > 35.5:
-                    col = '#0c0806'
-                elif r > 27.5:                                  # empty XP band (segments)
-                    seg = (a % (360 / SEGMENTS)) / (360 / SEGMENTS)
-                    if seg < 0.16 or seg > 0.84:
-                        col = '#0c0806'
-                    else:
-                        col = '#2a3a3c' if r < 33.5 else '#3c5254'
-                        if r > 34.8:
-                            col = '#4c6668'
-                        if r < 28.6:
-                            col = '#1a2628'
-                elif r > 25.5:
-                    col = '#080504' if r > 26.5 else '#8a5f26'
-                else:                                           # centre disc
-                    t = r / 25.5
-                    col = ['#242e4c', '#1c2540', '#151c34', '#0e1426'][min(3, int(t * 4))]
-                    if lit > 0.55 and r > 14:
-                        col = '#2c3860'
-            if col:
-                px[x, y] = C(col)
-    # studs on the outer ring
-    d = ImageDraw.Draw(img)
-    for k in range(8):
-        a = math.radians(k * 45)
-        cx, cy = 39.5 + 37.8 * math.sin(a), 39.5 - 37.8 * math.cos(a)
-        d.ellipse([cx - 1.6, cy - 1.6, cx + 1.6, cy + 1.6], fill=C('#fff0b8') if k % 2 == 0 else C('#ee5a6e'))
-        d.point((int(cx), int(cy)), fill=C('#ffffff'))
-    # shine on the centre disc
-    for i in range(10):
-        d.point((16 + i, 30 - i // 2 - (i * i) // 40), fill=(255, 255, 255, 40))
-    return img
-
-
-def medallion_fill():
-    img = Image.new('RGBA', (MEDAL, MEDAL), (0, 0, 0, 0))
-    px = img.load()
-    for y in range(MEDAL):
-        for x in range(MEDAL):
-            r, a = _polar(x, y)
-            if 27.5 < r <= 35.5:
-                seg = (a % (360 / SEGMENTS)) / (360 / SEGMENTS)
-                if 0.16 <= seg <= 0.84:
-                    if r > 34.6:
-                        col = '#d8ffb0'
-                    elif r > 31.5:
-                        col = '#7ee04a'
-                    elif r > 29.0:
-                        col = '#3fae2c'
-                    else:
-                        col = '#237a1e'
-                    px[x, y] = C(col)
     return img

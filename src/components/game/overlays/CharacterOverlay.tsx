@@ -57,12 +57,12 @@ const EquipmentCard: React.FC<{ slot: EquipmentSlot; label: string; item?: Item 
 					className={item ? '' : 'px-equip-empty'}
 				/>
 			</div>
-			<div className='min-w-0'>
-				<div className='text-xs uppercase tracking-wide text-[#a89878]'>{label}</div>
+			<div className='min-w-0 overflow-hidden'>
+				<div className='text-xs uppercase tracking-wide text-[#a89878] truncate'>{label}</div>
 				{item ? (
 					<div className='truncate text-[#f1e6c8]'>{item.name}</div>
 				) : (
-					<div className='text-[#6a5a48]'>Empty</div>
+					<div className='text-[#6a5a48] truncate'>Empty</div>
 				)}
 			</div>
 			{hover && item && <ItemTooltip item={item} />}
@@ -90,8 +90,8 @@ const CharacterOverlay: React.FC = () => {
 			icon={<PixelIcon name='menu_character' alt='' />}
 			size='lg'
 			onClose={toggleCharacterWindow}>
-			<div className='grid grid-cols-[300px_1fr] gap-5 h-full'>
-				{/* Level medallion + HP/MP flasks + bonuses */}
+			<div className='grid grid-cols-[320px_1fr] gap-5 h-full'>
+				{/* Hero HUD (scene, flasks, XP bar) + bonuses */}
 				<div className='px-panel flex flex-col gap-4 overflow-y-auto'>
 					<LevelDetails />
 					<div className='border-t-2 px-rule pt-3'>
@@ -117,7 +117,7 @@ const CharacterOverlay: React.FC = () => {
 				{/* Equipment slots */}
 				<div className='px-panel'>
 					<div className='px-h text-center'>Equipment</div>
-					<div className='grid grid-cols-3 gap-3'>
+					<div className='grid grid-cols-[repeat(auto-fill,minmax(200px,1fr))] gap-3'>
 						{Object.entries(EQUIPMENT_SLOT_INFO).map(([slotKey, info]) => (
 							<EquipmentCard
 								key={slotKey}

@@ -87,7 +87,6 @@ export type Equipment = {
 export interface Item {
 	id: string;
 	name: string;
-	icon: string;
 	slot: EquipmentSlot;
 	stats: Partial<Resources>;
 	description?: string;
@@ -122,7 +121,6 @@ export interface MerchantTabInfo {
 export interface Animal {
 	id: string;
 	name: string;
-	icon: string;
 	description: string;
 	baseCost: number;
 	costScaling: number;

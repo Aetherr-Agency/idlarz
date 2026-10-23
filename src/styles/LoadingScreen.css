@@ -9,7 +9,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #0a0605 url('/pixel/v3/topbar_bg.png') repeat;
+  background: #0a0605 url('/pixel/bg/crack.png') repeat;
   image-rendering: pixelated;
   font-family: var(--font-pixel);
   z-index: 9999;
