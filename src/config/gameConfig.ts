@@ -251,18 +251,6 @@ export const BIOMES: Record<string, BiomeInfo> = {
 	},
 } as const;
 
-export const BIOME_ICONS = {
-	castle: '🏰',
-	forest: '🌲',
-	plains: '🌾',
-	hills: '⛰️',
-	swamp: '🌿',
-	tundra: '❄️',
-	lake: '💧',
-	empty: '⬛',
-	grounds: '🛠️',
-};
-
 export const INITIAL_RESOURCES = {
 	gold: 125,
 	wood: 0,

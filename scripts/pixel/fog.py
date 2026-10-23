@@ -1,4 +1,4 @@
-"""Seamless pixel-art textures: fog-of-war mist and cracked dark stone (both tile without seams)."""
+"""Seamless noise helpers + the cracked dark stone tile (header / modal background)."""
 import random
 from PIL import Image
 from common import hexc as C
@@ -24,36 +24,6 @@ def tnoise(x, y, size, cells, seed=0):
             w = (tx if dx else 1 - tx) * (ty if dy else 1 - ty)
             out += w * _h((ix + dx) % cells, (iy + dy) % cells, seed)
     return out
-
-
-def _smooth(a, b, v):
-    t = max(0.0, min(1.0, (v - a) / (b - a)))
-    return t * t * (3 - 2 * t)
-
-
-def fog_tile(size=128, seed=3, tint=(128, 160, 210), alphas=(0, 10, 20, 32, 46, 62)):
-    """Small-grain drifting mist: warped fractal noise, quantised into a few alpha bands with a whisper of
-    dither. Transparent where clear, so it layers over any dark background."""
-    img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
-    px = img.load()
-    k = len(alphas)
-    for y in range(size):
-        for x in range(size):
-            wx = (tnoise(x, y, size, 3, seed + 11) - 0.5) * 70
-            wy = (tnoise(x, y, size, 3, seed + 23) - 0.5) * 70
-            xs, ys = x + wx, y + wy
-            v = (0.26 * tnoise(xs, ys, size, 4, seed)
-                 + 0.28 * tnoise(xs, ys, size, 8, seed + 5)
-                 + 0.26 * tnoise(xs, ys, size, 16, seed + 9)
-                 + 0.20 * tnoise(xs, ys, size, 32, seed + 13))
-            m = _smooth(0.40, 0.80, v)
-            lvl = int(m * (k - 0.001) + (BAYER[y % 4][x % 4] / 16.0 - 0.5) * 0.35)
-            lvl = max(0, min(k - 1, lvl))
-            if lvl:
-                lift = lvl / (k - 1)
-                col = tuple(int(c + (255 - c) * 0.18 * lift) for c in tint)
-                px[x, y] = col + (alphas[lvl],)
-    return img
 
 
 def crack_tile(size=96, seed=11):

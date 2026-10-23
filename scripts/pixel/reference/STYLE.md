@@ -9,10 +9,10 @@ graphics for anything that isn't a map glyph. Match the references in this folde
 | `ui-ref-hud.png` | **UI direction**: framed portrait with level badge, horizontal HP/MP bars with icon chips, life pips, shield button. |
 | `ui-ref-gauges.png` | **UI direction**: ornate dark-framed vertical gauges (HP / MP) with an icon head. |
 | `ui-ref-buttons.png` | **UI direction**: vertical strip of square stone-maroon icon buttons with a red notification pip. |
-| `icons.png` | Current approved sprite set (resources, menu, portraits, equipment, animals). |
+| `icons.png` | Current approved sprite set (resources, menu, portraits, equipment, animals, map). |
 | `hero-hud.png` | Current approved Character HUD (alcove scene, flasks, stone XP bar, level gem). |
 | `ui-parts.png` | Frames, stone bar, slot frames, divider, torch - the 9-slice/chrome parts. |
-| `fog.png`, `gold-shine.png` | Fog-of-war tile and the coin twinkle strip. |
+| `fog.png`, `map-tiles.png`, `gold-shine.png` | Fog tile, biome ground + unexplored tiles, and the coin twinkle strip. |
 
 ## Sprite look
 - **Canvas**: 40x40 (portraits 40x56, level gem 24x24). Artwork fills ~34-36px. Sprites float on transparency -
@@ -44,17 +44,31 @@ graphics for anything that isn't a map glyph. Match the references in this folde
 - **Resources**: gold (coin stacks + standing coin, twinkles), wood (log pile with end rings), stone (cut blocks),
   coal (dark chunks, blue sheen), food (baguette + cross-cut boule), meat (roast drumstick).
 - **Menu**: character = plumed great helm (T-visor), merchant = stitched coin pouch, farm = shingled barn.
-- **Badges/portraits**: level gem (faceted amethyst), adventurer (`hero`), merchant (green robe, wide hat, held coin).
+- **Badges/portraits**: level star (animated), adventurer (`hero`), merchant (green robe, wide hat, held coin).
 - **Equipment slots**: `equip_head/neck/chest/mainHand/offHand/legs/feet/ring` - kettle hat, amulet, cuirass, sword,
   round shield, greaves, boots, ring. Empty = dim grayscale silhouette, filled = glowing slot frame.
 - **Animals**: `animal_chicken/pig/cow/deer`.
 - **Character HUD** (`LevelDetails.tsx`): 144x96 stone alcove scene shown at 2x - hero standing on the floor (idle bob),
   two flickering torches (3-frame strip), HP/MP flasks flanking him, stony XP bar along the floor with a flowing emerald
   fill and 10% ticks, level on an amethyst gem. Flask scale is an integer (`--s`).
+- **Map** (48px tiles, art at 2x):
+  - *Ground*: every biome has a seamless 24px pixel texture in the biome's colour family with its own "noise" (forest leaf
+    flecks, plains grass blades + flowers, hills rock clusters + moss, swamp murky pools + reeds, tundra snow patches +
+    ice cracks, lake wave dashes that drift, grounds tilled furrows, castle purple flagstones). Same-biome neighbours
+    join into one continuous field.
+  - *Icons*: one 32px sprite per biome (`biome_*`: fir trees, wheat + flowers, rocky peak with snow cap, reeds + lily pond,
+    ice crystals, pond with shore, tilled plot with stakes, castle with red-roofed towers). Drawn on top of the ground
+    with a 2px hard drop shadow.
+  - *Unexplored land*: dark indigo with soft flat-banded pixel clouds drifting (two layers, hover = faster + brighter) and a
+    floating "?" mark that glows on hover. Calm on purpose so the "?" stays the focus.
+  - *Fog of war*: chunky low-res clouds (48px/64px art shown at 3x, 3 flat alpha bands, no outlines, no dither), two layers
+    drifting opposite ways and breathing.
+  - *Pickups*: bonus gold is a bobbing cash bag (24px, gold glow). Castle level and grounds level use pixel plaques/stars.
+- **XP**: green glowing orb sprite (`xp`), used wherever XP appears in text. **Level**: an animated shining star
+  (6-frame sweep + glint strip, `ShiningStar`), never a gem.
 - **Header**: cracked-stone bar, bronze/iron edge with rivets, 48px slot frames (active glows gold), ornamental divider,
   slim bronze XP bar, twinkling coin.
-- **Backgrounds**: cracked dark stone tile (`bg/crack.png`); fog of war = 128px seamless mist at 1x/1.5x, two layers
-  drifting opposite ways and breathing; unexplored tiles are transparent. Drift distance = one tile period.
+- **Backgrounds**: cracked dark stone tile (`bg/crack.png`) for header/modals. Fog drift distance must equal one tile period.
 
 ## UI kit (windows, dialogs, tooltips)
 - **Font**: Pixelify Sans (`@fontsource-variable/pixelify-sans`, CSS var `--font-pixel`); Tailwind text scale is nudged up
@@ -71,7 +85,7 @@ graphics for anything that isn't a map glyph. Match the references in this folde
 - **Motion**: transform/opacity only, integer pixel steps for sprite animation, honour `prefers-reduced-motion`.
 - **Tile tap feedback**: cursor popup (a line per resource, lucky header), pulse on the *inner* tile element (the outer
   one carries the grid translate), darkening cooldown overlay.
-- Map glyphs (biome/castle/building/chest emoji on tiles) are intentionally still emoji for now.
+- Remaining emoji: the six building icons (grounds tiles + building picker) and the Merchant tab icons.
 
 ## Pipeline (`scripts/pixel`)
 Sprites are small 3D scenes ray-cast by `render3d.py` (box / ellipsoid / cylinder primitives, hue-shifted ramps, cast
@@ -79,9 +93,10 @@ shadows, contours, rim light, coloured outlines), so every asset shares one ligh
 
 | File | Role |
 |---|---|
-| `render3d.py` | Engine. `common.py`, `fx.py` (glints), `fog.py` (mist + cracked stone textures). |
+| `render3d.py` | Engine. `common.py`, `fx.py` (glints), `fog.py` (tileable noise + cracked stone). |
 | `materials.py` | Every material: 5-tone ramp + outline + shading hints. One palette for the whole game. |
-| `sprites_resources.py` `sprites_props.py` `sprites_characters.py` `sprites_equipment.py` `sprites_animals.py` | Sprites as lists of primitives. |
+| `sprites_resources.py` `sprites_props.py` `sprites_characters.py` `sprites_equipment.py` `sprites_animals.py` `sprites_map.py` | Sprites as lists of primitives (boxes, ellipsoids, cylinders, cones). `sprites_props` also draws the animated star in 2D. |
+| `ground_art.py` | Seamless biome ground textures, the unexplored cloud tile and the fog tiles (flat-banded cloud generator). |
 | `ui_art.py` | 2D UI art: frames, header chrome, flask parts, stone XP bar, hero scene, torch. |
 | `build.py` | Builds everything into `public/pixel/{icons,ui,bg}` (wipes them first). `--refs` also refreshes this folder. |
 

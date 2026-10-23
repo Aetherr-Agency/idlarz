@@ -4,6 +4,7 @@ import { formatNumber } from '@/utils/formatters';
 import { BASE_XP_PER_LEVEL, XP_GROWTH_FACTOR } from '@/config/gameConfig';
 import { LevelUpTimer } from './LevelUpTimer';
 import PixelIcon from './PixelIcon';
+import ShiningStar from './ShiningStar';
 
 type FlaskKind = 'hp' | 'mp';
 
@@ -72,9 +73,9 @@ const LevelDetails: React.FC = () => {
 				</div>
 			</div>
 
-			<div className='hero-gem' title={`Level ${level.level}`}>
-				<PixelIcon name='level_gem' scale={2} alt='' />
-				<span className='hero-gem-lv'>{level.level}</span>
+			<div className='hero-star' title={`Level ${level.level}`}>
+				<ShiningStar scale={2} />
+				<span className='hero-star-lv'>{level.level}</span>
 			</div>
 		</div>
 	);

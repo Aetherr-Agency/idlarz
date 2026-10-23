@@ -1,15 +1,12 @@
 import React, { memo, useMemo, useState } from 'react';
 import { TileProps } from '@/types/game';
 import {
-	BIOMES,
 	GRID_SIZE,
 	GRID_HEIGHT,
 	SCALING_CONFIG,
-	BIOME_ICONS,
 	GRID_CENTER_X,
 	GRID_CENTER_Y,
 	BUILDINGS,
-	RESOURCE_ICONS,
 	BuildingType,
 	TILE_TAP,
 } from '@/config/gameConfig';
@@ -19,6 +16,9 @@ import { cn } from '@/lib/utils';
 import audioManager from '@/utils/audioManager';
 import { queueTileTap } from '@/lib/floatText';
 import ResourceIcon from './ResourceIcon';
+import PixelIcon from './PixelIcon';
+import ShiningStar from './ShiningStar';
+import { BIOME_PIXEL_ICONS } from '@/config/pixelIcons';
 import { TileStatus } from './TileStatus';
 import CastleUpgradeDialog from './CastleUpgradeDialog';
 import BuildingSelectionDialog from './BuildingSelectionDialog';
@@ -73,14 +73,6 @@ const Tile: React.FC<TileProps> = ({
 				tiles[adjY]?.[adjX]?.isOwned
 		);
 	}, [x, y, isOwned, tiles]);
-
-	const backgroundColor = useMemo(() => {
-		const baseColor = BIOMES[biome].baseColor;
-		if (isOwned) {
-			return baseColor;
-		}
-		return isAdjacent ? `${baseColor}BF` : `${baseColor}40`;
-	}, [biome, isOwned, isAdjacent]);
 
 	const ownedTilesCount = useMemo(() => countOwnedTiles(tiles), [tiles]);
 
@@ -179,7 +171,8 @@ const Tile: React.FC<TileProps> = ({
 					'absolute transition-all duration-200 ease-in-out select-none',
 					{
 						'opacity-100': isOwned,
-						'opacity-50 hover:opacity-100': !isOwned && isAdjacent,
+						'tile-unknown': !isOwned && isAdjacent,
+						[`tile-ground tile-ground-${biome} tile-owned`]: isOwned,
 						'opacity-75': farAwayTile,
 						'hover:z-10 cursor-pointer border border-gray-800':
 							!isOwned && isAdjacent,
@@ -202,9 +195,6 @@ const Tile: React.FC<TileProps> = ({
 				style={{
 					...style,
 					...({ '--cd': `${TILE_TAP.cooldownMs}ms` } as React.CSSProperties),
-					backgroundColor,
-					// Unexplored land is left clear so the fog-of-war mist behind the grid shows through
-					...(farAwayTile && { backgroundColor: 'transparent' }),
 				}}
 				onClick={handleClick}
 				onMouseEnter={() => hasChest && setShowChestTooltip(true)}
@@ -215,22 +205,21 @@ const Tile: React.FC<TileProps> = ({
 						'w-full h-full flex items-center justify-center relative',
 						{ 'tile-tapped': tapped }
 					)}>
-					{isOwned &&
-						BIOME_ICONS[BIOMES[biome].name as keyof typeof BIOME_ICONS]}
-					{!isOwned && isAdjacent && '❔'}
+					{isOwned && BIOME_PIXEL_ICONS[biome] && (
+						<PixelIcon name={BIOME_PIXEL_ICONS[biome]!} alt={biome} className='tile-icon' />
+					)}
+					{!isOwned && isAdjacent && (
+						<PixelIcon name='unknown' alt='Unexplored' scale={2} className='unknown-mark' />
+					)}
 					{biome === 'castle' && (
-						<span className='absolute top-0.5 right-0.5 text-[8px] bg-amber-400 w-3 h-3 aspect-square flex items-center justify-center leading-0 font-bold text-purple-600 rounded-full'>
-							{tiles[GRID_CENTER_Y]?.[GRID_CENTER_X]?.level}
-						</span>
+						<span className='tile-badge'>{tiles[GRID_CENTER_Y]?.[GRID_CENTER_X]?.level}</span>
 					)}
-					
-					{/* Chest icon on tile */}
+
+					{/* Bonus cash bag on the tile */}
 					{isOwned && hasChest && (
-						<span className='absolute bottom-0 right-0 text-[14px] z-10'>
-							💰
-						</span>
+						<PixelIcon name='cash_bag' alt='Bonus gold' className='tile-bag' />
 					)}
-					
+
 					{/* Chest tooltip */}
 					{isOwned && hasChest && showChestTooltip && (
 						<div className='absolute -top-11 left-1/2 -translate-x-1/2 z-[60] px-tooltip whitespace-nowrap text-xs flex items-center gap-1 text-[#f0d27a]'>
@@ -241,34 +230,14 @@ const Tile: React.FC<TileProps> = ({
 					
 					{biome === 'grounds' && level && level > 1 && (
 						<>
-							{level > 1 && (
-								<span className='opacity-75 absolute top-0.5 right-0.5 text-[6px] bg-black w-3 h-3 aspect-square flex items-center justify-center leading-0 font-bold text-purple-600 rounded-full'>
-									⭐
-								</span>
-							)}
-
+							<span className='absolute top-0.5 right-0.5'>
+								<ShiningStar />
+							</span>
+					
 							{/* Building icon */}
-							<span className='absolute bottom-0.5 right-0.5 text-[10px]'>
+							<span className='absolute bottom-0.5 right-0.5 text-[14px]'>
 								{BUILDINGS[building as BuildingType]?.icon}
 							</span>
-							{/* Resource icons for building bonuses */}
-							<div className='absolute bottom-0.5 left-0.5 flex gap-0.5 text-[8px]'>
-								{BUILDINGS[building as BuildingType]?.resourceGeneration &&
-									Object.entries(
-										BUILDINGS[building as BuildingType].resourceGeneration
-									).map(([resource, rate]) => {
-										if (!rate) return null;
-										return (
-											<span key={resource} className='text-green-400'>
-												{
-													RESOURCE_ICONS[
-														resource as keyof typeof RESOURCE_ICONS
-													]
-												}
-											</span>
-										);
-									})}
-							</div>
 						</>
 					)}
 				</div>

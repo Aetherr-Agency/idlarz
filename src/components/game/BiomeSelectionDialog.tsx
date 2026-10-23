@@ -1,7 +1,9 @@
 import React from 'react';
 import type { FC } from 'react';
 import { BiomeType } from '@/types/game';
-import { BIOMES, BIOME_ICONS } from '@/config/gameConfig';
+import { BIOMES } from '@/config/gameConfig';
+import { BIOME_PIXEL_ICONS } from '@/config/pixelIcons';
+import PixelIcon from './PixelIcon';
 import audioManager from '@/utils/audioManager';
 import PixelModal from './PixelModal';
 import ResourceIcon from './ResourceIcon';
@@ -45,12 +47,12 @@ const BiomeSelectionDialog: FC<BiomeSelectionDialogProps> = ({
 								onSelect(biome);
 								audioManager.playSound('purchase');
 							}}
-							className='px-card flex items-center gap-3 text-left cursor-pointer hover:brightness-125 transition'
-							style={{ backgroundColor: BIOMES[biome].baseColor + '40' }}>
+							className='px-card flex items-center gap-3 text-left cursor-pointer hover:brightness-125 transition'> 
 							<div
-								className='flex-shrink-0 w-9 h-9 flex items-center justify-center text-xl'
-								style={{ color: biomeInfo.baseColor }}>
-								{BIOME_ICONS[biome as keyof typeof BIOME_ICONS]}
+								className={`tile-ground tile-ground-${biome} flex-shrink-0 w-12 h-12 flex items-center justify-center`}>
+								{BIOME_PIXEL_ICONS[biome] && (
+									<PixelIcon name={BIOME_PIXEL_ICONS[biome]!} alt={biomeInfo.label} className='tile-icon' />
+								)}
 							</div>
 
 							<div className='flex-grow'>

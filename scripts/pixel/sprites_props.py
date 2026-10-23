@@ -16,26 +16,59 @@ def plank_tex(pl, nl, pr):
 
 
 # ----------------------------------------------------------------- level badge: amethyst gem (2D facets)
-def gem():
+def _star_base():
+    """24x24 faceted gold star (light from the top-left) with a dark amber outline."""
     img = Image.new('RGBA', (24, 24), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
-    ramp = [hexc(c) for c in ('#2a1060', '#4b24a0', '#7a46d8', '#b48cf0', '#f0e0ff')]
-    G = [(2, 9), (7, 9), (12, 9), (17, 9), (22, 9)]
-    T1, T2, P = (7, 3), (17, 3), (12, 22)
-    facets = [
-        ([G[0], T1, G[1]], 2), ([T1, G[1], G[2]], 3), ([T1, T2, G[2]], 4),
-        ([T2, G[2], G[3]], 3), ([T2, G[3], G[4]], 1),
-        ([G[0], G[1], P], 1), ([G[1], G[2], P], 2), ([G[2], G[3], P], 1), ([G[3], G[4], P], 0),
-    ]
-    for pts, i in facets:
-        d.polygon(pts, fill=ramp[i])
-    d.line([G[0], G[4]], fill=ramp[0])
-    d.line([T1, T2], fill=ramp[4])
-    d.line([G[0], T1], fill=ramp[3])
-    img = add_outline(img, hexc('#1a0a44'))
-    fx.glint(img, 7, 6, 2)
-    fx.glint(img, 17, 13, 1)
-    return img
+    ramp = [hexc(c) for c in ('#7a3a10', '#c07a18', '#eaa828', '#fad24c', '#fff6b4')]
+    cx, cy, R, r = 11.5, 12.5, 10.6, 4.6
+    pts = []
+    for i in range(10):
+        rad = R if i % 2 == 0 else r
+        a = -math.pi / 2 + i * math.pi / 5
+        pts.append((cx + rad * math.cos(a), cy + rad * math.sin(a)))
+    L = (-0.6, -0.8)
+    for i in range(10):
+        a, b = pts[i], pts[(i + 1) % 10]
+        mx, my = (a[0] + b[0] + cx) / 3 - cx, (a[1] + b[1] + cy) / 3 - cy
+        n = math.hypot(mx, my) or 1
+        v = 0.5 + 0.5 * ((mx * L[0] + my * L[1]) / n)
+        d.polygon([(cx, cy), a, b], fill=ramp[max(0, min(4, int(v * 4.99)))])
+    return add_outline(img, hexc('#4a230a'))
+
+
+def star_frames():
+    """6 frames: a bright sweep glides across the star, then a 4-point glint blooms and fades."""
+    base = _star_base()
+    px = base.load()
+    inside = [(x, y) for y in range(24) for x in range(24) if px[x, y][3] > 200]
+    frames = []
+    for i in range(6):
+        f = base.copy()
+        fp = f.load()
+        sweep = 6 + i * 6
+        for x, y in inside:
+            if abs((x + y) - sweep) <= 1:
+                fp[x, y] = hexc('#fffce0')
+            elif abs((x + y) - sweep) == 2:
+                fp[x, y] = hexc('#fff0a0')
+        glint_r = (0, 0, 1, 3, 2, 1)[i]
+        if glint_r:
+            fx.glint(f, 8, 7, glint_r)
+        frames.append(f)
+    return frames
+
+
+def star():
+    return star_frames()[3]
+
+
+def star_sheet():
+    frames = star_frames()
+    sheet = Image.new('RGBA', (24 * len(frames), 24), (0, 0, 0, 0))
+    for i, f in enumerate(frames):
+        sheet.alpha_composite(f, (i * 24, 0))
+    return sheet
 
 
 # ----------------------------------------------------------------- polished menu icons

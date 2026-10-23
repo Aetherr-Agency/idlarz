@@ -3,6 +3,7 @@ import { useGameStore } from '@/stores/gameStore';
 import { formatNumber } from '@/utils/formatters';
 import { BASE_XP_PER_LEVEL, XP_GROWTH_FACTOR } from '@/config/gameConfig';
 import PixelIcon from './PixelIcon';
+import ShiningStar from './ShiningStar';
 
 // Inner width of the XP frame sprite (72px wide, 3px border each side)
 const XP_BAR_INNER_PX = 66;
@@ -70,11 +71,7 @@ const HeaderMenu: React.FC = () => {
 							{playerName}
 						</p>
 						{levelUpActive ? (
-							<PixelIcon
-								name='level_gem'
-								alt='Level up available'
-								className='animate-pulse-ring'
-							/>
+							<ShiningStar className='animate-pulse-ring' />
 						) : (
 							<span className='pixel-level-badge'>{level.level}</span>
 						)}

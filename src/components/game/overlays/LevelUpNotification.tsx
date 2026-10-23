@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { useHydration } from '@/hooks/useHydration';
 import '@/styles/LevelUpNotification.css';
-import PixelIcon from '../PixelIcon';
+import ShiningStar from '../ShiningStar';
 
 const LevelUpNotification: React.FC = () => {
   const level = useGameStore((state) => state.level);
@@ -60,7 +60,7 @@ const LevelUpNotification: React.FC = () => {
       onClick={() => setShowNotification(false)}
     >
       <div className="level-up-emoji">
-        <PixelIcon name="level_gem" scale={4} alt="" />
+        <ShiningStar scale={4} />
       </div>
       <div className="level-up-text">
         Level Up!

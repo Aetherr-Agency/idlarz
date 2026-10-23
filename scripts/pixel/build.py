@@ -20,10 +20,12 @@ render3d.DEFAULTS.update(rim=True, dither=0.2)       # the house look: rim light
 from PIL import Image  # noqa: E402
 import fx  # noqa: E402
 import fog  # noqa: E402
+import ground_art  # noqa: E402
 import ui_art  # noqa: E402
 import sprites_animals  # noqa: E402
 import sprites_characters  # noqa: E402
 import sprites_equipment  # noqa: E402
+import sprites_map  # noqa: E402
 import sprites_props  # noqa: E402
 import sprites_resources  # noqa: E402
 from common import upscale  # noqa: E402
@@ -36,13 +38,14 @@ SPRITES = {
     'gold': sprites_resources.gold, 'wood': sprites_resources.wood, 'stone': sprites_resources.stone,
     'coal': sprites_resources.coal, 'food': sprites_resources.bread, 'meat': sprites_resources.meat,
     'menu_character': sprites_props.helm, 'menu_merchant': sprites_props.pouch, 'menu_farm': sprites_props.barn,
-    'level_gem': sprites_props.gem,
+    'level_star': sprites_props.star,
     'hero': sprites_characters.adventurer, 'merchant': sprites_characters.merchant_portrait,
     'equip_head': sprites_equipment.head, 'equip_neck': sprites_equipment.neck,
     'equip_chest': sprites_equipment.chest, 'equip_mainHand': sprites_equipment.mainhand,
     'equip_offHand': sprites_equipment.offhand, 'equip_legs': sprites_equipment.legs,
     'equip_feet': sprites_equipment.feet, 'equip_ring': sprites_equipment.ring,
     **sprites_animals.SPRITES,
+    **sprites_map.SPRITES,
 }
 
 UI = {
@@ -57,8 +60,10 @@ UI = {
 
 BG = {
     'crack': fog.crack_tile,
-    'fog_a': lambda: fog.fog_tile(seed=3),
-    'fog_b': lambda: fog.fog_tile(seed=11, tint=(110, 170, 190)),
+    'fog_a': ground_art.fog,
+    'fog_b': lambda: ground_art.fog(size=64, seed=11, tint=(110, 170, 190), thresholds=(0.44, 0.52, 0.60), alphas=(10, 22, 36)),
+    'mystery': ground_art.mystery,
+    **{f'ground_{name}': fn for name, fn in ground_art.GROUNDS.items()},
 }
 
 
@@ -134,8 +139,8 @@ def hero_hud_composite(sprites, ui):
             inner.putpixel((x, y), fill.getpixel((x % 8, y)))
     bar.alpha_composite(inner, (4, 4))
     img.alpha_composite(upscale(bar, S), (14, img.size[1] - 10 - 28))
-    gem = upscale(sprites['level_gem'], S)
-    img.alpha_composite(gem, (-6 + 6, img.size[1] - 48 + 2))
+    gem = upscale(sprites['level_star'], S)
+    img.alpha_composite(gem, (0, img.size[1] - 48 + 2))
     return img
 
 
@@ -153,6 +158,21 @@ def reference_sheets(sprites, ui, bg):
     shine = Image.new('RGBA', (strip.size[0] * 3, strip.size[1] * 3), (26, 19, 15, 255))
     shine.alpha_composite(upscale(strip, 3))
     shine.save(os.path.join(REFERENCE, 'gold-shine.png'))
+    # map: each biome ground + the unexplored tile as a 3x3 patch at 2x, with its icon on the middle tile
+    names = [n for n in ground_art.GROUNDS if n != 'empty'] + ['mystery']
+    cell = 48 * 3
+    sheet = Image.new('RGBA', (len(names) * (cell + 12) + 12, cell + 24), (20, 16, 14, 255))
+    for i, name in enumerate(names):
+        key = 'mystery' if name == 'mystery' else f'ground_{name}'
+        tile = upscale(bg[key], 2)
+        for a in range(3):
+            for b in range(3):
+                sheet.alpha_composite(tile, (12 + i * (cell + 12) + a * 48, 12 + b * 48))
+        icon = sprites.get('unknown' if name == 'mystery' else f'biome_{name}')
+        if icon is not None:
+            big = upscale(icon, 2 if name == 'mystery' else 1)
+            sheet.alpha_composite(big, (12 + i * (cell + 12) + 48 + (48 - big.size[0]) // 2, 12 + 48 + (48 - big.size[1]) // 2))
+    sheet.save(os.path.join(REFERENCE, 'map-tiles.png'))
     # UI parts at 3x on a dark ground
     parts = ['frame_modal', 'frame_panel', 'frame_tip', 'bar_frame', 'bar_fill', 'slot_frame', 'slot_frame_active',
              'header_divider', 'torch']
@@ -178,6 +198,8 @@ def main():
     bg = save_group('bg', BG, only)
     if not only or 'gold_shine' in only:
         gold_shine().save(os.path.join(PUB, 'icons', 'gold_shine.png'))
+    if not only or 'level_star_shine' in only:
+        sprites_props.star_sheet().save(os.path.join(PUB, 'icons', 'level_star_shine.png'))
 
     if sprites:
         contact_sheet(sprites, os.path.join(PREVIEW, 'sprites.png'))

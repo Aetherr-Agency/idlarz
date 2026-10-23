@@ -80,7 +80,8 @@ class Material:
 
 
 class Prim:
-    """kind: 'box' size=(hx,hy,hz) | 'ell' size=(a,b,c) | 'cyl' size=(radius, half_length) (axis = local z).
+    """kind: 'box' size=(hx,hy,hz) | 'ell' size=(a,b,c) | 'cyl' size=(radius, half_length) (axis = local z)
+    | 'cone' size=(base_radius, half_height) (apex up).
     tex(p_local, n_local, prim) -> (material_name_or_None, delta_intensity)."""
 
     def __init__(self, kind, center, size, mat, R=I3, tex=None, seed=0):
@@ -148,6 +149,37 @@ class Prim:
                         p = add(ol, mul(dl, t))
                         if p[0] ** 2 + p[1] ** 2 <= r * r:
                             best = (t, (0, 0, sg), p)
+            res = best
+        elif self.kind == 'cone':
+            r, h = self.s                      # base radius r at z=-h, apex at z=+h
+            k = r / (2.0 * h)
+            ox, oy, oz = ol
+            dx, dy, dz = dl
+            best = None
+            A = dx * dx + dy * dy - k * k * dz * dz
+            B = ox * dx + oy * dy + k * k * (h - oz) * dz
+            C = ox * ox + oy * oy - k * k * (h - oz) ** 2
+            roots = []
+            if abs(A) > 1e-12:
+                disc = B * B - A * C
+                if disc >= 0:
+                    sq = math.sqrt(disc)
+                    roots = [(-B - sq) / A, (-B + sq) / A]
+            elif abs(B) > 1e-12:
+                roots = [-C / (2 * B)]
+            for t in sorted(roots):
+                if t > 1e-4:
+                    z = oz + dz * t
+                    if -h <= z <= h:
+                        p = add(ol, mul(dl, t))
+                        best = (t, norm((p[0], p[1], k * k * (h - p[2]))), p)
+                        break
+            if abs(dz) > 1e-9:                 # flat base
+                t = (-h - oz) / dz
+                if t > 1e-4 and (best is None or t < best[0]):
+                    p = add(ol, mul(dl, t))
+                    if p[0] ** 2 + p[1] ** 2 <= r * r:
+                        best = (t, (0, 0, -1), p)
             res = best
         if res is None:
             return None

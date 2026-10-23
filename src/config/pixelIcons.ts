@@ -15,7 +15,10 @@ export const PIXEL_ICON_SIZES = {
 	menu_character: [40, 40],
 	menu_merchant: [40, 40],
 	menu_farm: [40, 40],
-	level_gem: [24, 24],
+	level_star: [24, 24],
+	xp: [40, 40],
+	cash_bag: [24, 24],
+	unknown: [12, 16],
 	// portraits
 	hero: [40, 56],
 	merchant: [40, 56],
@@ -28,6 +31,15 @@ export const PIXEL_ICON_SIZES = {
 	equip_legs: [40, 40],
 	equip_feet: [40, 40],
 	equip_ring: [40, 40],
+	// map: one icon per biome (castle is the castle tile)
+	biome_forest: [32, 32],
+	biome_plains: [32, 32],
+	biome_hills: [32, 32],
+	biome_swamp: [32, 32],
+	biome_tundra: [32, 32],
+	biome_lake: [32, 32],
+	biome_grounds: [32, 32],
+	biome_castle: [32, 32],
 	// farm animals
 	animal_chicken: [40, 40],
 	animal_pig: [40, 40],
@@ -47,6 +59,7 @@ export const RESOURCE_PIXEL_ICONS: Partial<Record<string, PixelIconName>> = {
 	coal: 'coal',
 	food: 'food',
 	meat: 'meat',
+	xp: 'xp',
 };
 
 // Equipment slot -> its pixel icon (both ring slots share one sprite)
@@ -68,4 +81,16 @@ export const ANIMAL_PIXEL_ICONS: Record<string, PixelIconName> = {
 	pig: 'animal_pig',
 	cow: 'animal_cow',
 	deer: 'animal_deer',
+};
+
+// Biome -> map icon (the 'empty' biome has none)
+export const BIOME_PIXEL_ICONS: Record<string, PixelIconName | undefined> = {
+	forest: 'biome_forest',
+	plains: 'biome_plains',
+	hills: 'biome_hills',
+	swamp: 'biome_swamp',
+	tundra: 'biome_tundra',
+	lake: 'biome_lake',
+	grounds: 'biome_grounds',
+	castle: 'biome_castle',
 };
