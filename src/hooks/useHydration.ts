@@ -1,21 +1,17 @@
 import { useState, useEffect } from 'react';
+import { useGameStore } from '@/stores/gameStore';
 
-/**
- * Hook to handle initial loading state with a safety timeout
- */
+const MIN_SPLASH_MS = 1800; // keep the loading animation visible long enough to read as intentional
+
+/** True once the saved game has been loaded from the vault AND the splash has been shown for a moment. */
 export const useHydration = () => {
-	const [hydrated, setHydrated] = useState(false);
+	const storeReady = useGameStore((state) => state.isHydrated);
+	const [splashDone, setSplashDone] = useState(false);
 
 	useEffect(() => {
-		// This effect only runs once on client-side
-		// Set hydrated to true after a brief delay to allow React to render
-		const timer = setTimeout(() => {
-			setHydrated(true);
-			console.log('Hydration completed via timeout');
-		}, 2500); // 2.5 second timeout should be enough for most cases
-
+		const timer = setTimeout(() => setSplashDone(true), MIN_SPLASH_MS);
 		return () => clearTimeout(timer);
 	}, []);
 
-	return hydrated;
+	return storeReady && splashDone;
 };

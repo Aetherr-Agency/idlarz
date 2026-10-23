@@ -6,12 +6,14 @@ import {
 	GRID_HEIGHT,
 	SCALING_CONFIG,
 	RESOURCE_ICONS,
+	BIOME_YIELD,
 	CASTLE_UPGRADE,
 	BUILDINGS,
 	BuildingType,
 } from '@/config/gameConfig';
 import { useGameStore } from '@/stores/gameStore';
 import { calculateTileTapYield } from '@/utils/gameUtils';
+import { formatTime } from '@/utils/formatters';
 import { TILE_TAP } from '@/config/gameConfig';
 import ResourceIcon from './ResourceIcon';
 import PixelIcon from './PixelIcon';
@@ -35,10 +37,10 @@ export const BiomeTooltip = memo(
 		y?: number;
 	}) => {
 		const biomeInfo = BIOMES[biome];
-		const multiplier = level ? Math.pow(1.5, level - 1) : 1;
 		const tiles = useGameStore((state) => state.tiles);
 		const building = x !== undefined && y !== undefined ? tiles[y][x].building : undefined;
 		const resourceRates = useGameStore((state) => state.resourceRates);
+		const castleUpgrade = useGameStore((state) => state.castleUpgrade);
 		const tapYield =
 			x !== undefined && y !== undefined
 				? calculateTileTapYield(tiles, x, y, resourceRates)
@@ -98,16 +100,9 @@ export const BiomeTooltip = memo(
 						number
 					][]
 				).map(([resource, rate]) => {
-					const baseRate = rate || 0;
-					let effectiveRate =
-						biome === 'castle' ? baseRate * multiplier : baseRate;
-
-					// Only apply adjacency bonus to positive rates
-					if (effectiveRate > 0 && x !== undefined) {
-						effectiveRate *= adjacencyMultiplier;
-					}
-
+					const baseRate = (rate || 0) * (biome === 'castle' ? 1 : BIOME_YIELD.scale);
 					if (baseRate === 0) return null;
+					const withNeighbours = baseRate * adjacencyMultiplier;
 
 					return (
 						<div key={resource} className='flex flex-col gap-1'>
@@ -119,6 +114,11 @@ export const BiomeTooltip = memo(
 								</span>
 
 								<span className='text-xs text-gray-500 mt-0.5'>(base)</span>
+								{adjacentCount > 0 && (
+									<span className='text-yellow-500 text-xs mt-0.5'>
+										{formatRate(withNeighbours)} with neighbours
+									</span>
+								)}
 							</div>
 						</div>
 					);
@@ -133,14 +133,15 @@ export const BiomeTooltip = memo(
 						{Object.entries(buildingInfo.resourceGeneration).map(([resource, rate]) => {
 							if (!rate) return null;
 							
-							// Apply adjacency bonus to building resources
-							const effectiveRate = rate * adjacencyMultiplier;
+							// Buildings get the same yield scale and neighbour bonus as the biome
+							const scaledRate = rate * BIOME_YIELD.scale;
+							const effectiveRate = scaledRate * adjacencyMultiplier;
 							
 							return (
 								<div key={`building-${resource}`} className='flex items-center gap-1 text-xs'>
 									<ResourceIcon resource={resource} />
 									<span className='text-green-400 font-semibold'>
-										+{formatRate(rate)}
+										+{formatRate(scaledRate)}
 									</span>
 									{adjacentCount > 0 && (
 										<span className='text-yellow-500 mt-0.5'>
@@ -162,6 +163,11 @@ export const BiomeTooltip = memo(
 								100
 						)}
 						% all resource generation
+					</div>
+				)}
+				{biome === 'castle' && castleUpgrade && (
+					<div className='mt-1 text-amber-300 text-xs'>
+						Upgrading to level {castleUpgrade.toLevel}: {formatTime(castleUpgrade.remainingSec)} left
 					</div>
 				)}
 				{biome === 'grounds' && (!level || level === 1) && (

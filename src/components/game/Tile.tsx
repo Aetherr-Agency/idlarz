@@ -3,7 +3,6 @@ import { TileProps } from '@/types/game';
 import {
 	GRID_SIZE,
 	GRID_HEIGHT,
-	SCALING_CONFIG,
 	GRID_CENTER_X,
 	GRID_CENTER_Y,
 	BUILDINGS,
@@ -14,7 +13,12 @@ import {
 } from '@/config/gameConfig';
 import '@/styles/Buildings.css';
 import { useGameStore } from '@/stores/gameStore';
-import { countOwnedTiles } from '@/utils/gameUtils';
+import {
+	calculateTileCost,
+	canAffordBundle,
+	countOwnedTiles,
+	tileCostAsResources,
+} from '@/utils/gameUtils';
 import { cn } from '@/lib/utils';
 import audioManager from '@/utils/audioManager';
 import { queueTileTap } from '@/lib/floatText';
@@ -90,15 +94,14 @@ const Tile: React.FC<TileProps> = ({
 
 	const ownedTilesCount = useMemo(() => countOwnedTiles(tiles), [tiles]);
 
-	const cost = useMemo(() => {
-		const baseCost = SCALING_CONFIG.costFormula(ownedTilesCount);
-		const discountMultiplier = 1 - characterStats.tileCostDiscount / 100;
-		return Math.floor(baseCost * discountMultiplier);
-	}, [ownedTilesCount, characterStats.tileCostDiscount]);
+	const tileCost = useMemo(
+		() => calculateTileCost(ownedTilesCount, characterStats.tileCostDiscount),
+		[ownedTilesCount, characterStats.tileCostDiscount]
+	);
 
-	const canAfford = resources.gold >= cost;
+	const canAfford = canAffordBundle(resources, tileCostAsResources(tileCost));
 
-	const handleClick = () => {
+	const handleClick = (e: React.MouseEvent) => {
 		// First priority: If in biome selection mode, handle selection
 		if (isBiomeSelectionActive && pendingTileCoords) {
 			selectBiome(biome);
@@ -117,7 +120,11 @@ const Tile: React.FC<TileProps> = ({
 
 		// Tapping an owned tile also yields a slice of that tile's own output (rate-limited per tile)
 		if (isOwned) {
-			const tap = tapTile(x, y);
+			const tap = tapTile(x, y, {
+				eventId: e.nativeEvent.timeStamp,
+				now: performance.now(),
+				trusted: e.nativeEvent.isTrusted,
+			});
 			if (tap) {
 				audioManager.playSound('click');
 				queueTileTap(tap.items, tap.lucky);
@@ -157,7 +164,7 @@ const Tile: React.FC<TileProps> = ({
 				if (result && !useGameStore.getState().biomeSelectionActive) {
 					audioManager.playSound('purchase');
 				}
-			} else if (cost > 0) {
+			} else if (tileCost.gold > 0) {
 				// Only play wrong sound and shake for adjacent unaffordable tiles
 				setIsShaking(true);
 				audioManager.playSound('wrong');
@@ -169,8 +176,11 @@ const Tile: React.FC<TileProps> = ({
 	const handleBuildingSelect = (buildingType: string) => {
 		// Upgrade the grounds tile with the selected building
 		if (biome === 'grounds') {
-			upgradeGroundsTile(x, y, buildingType);
-			audioManager.playSound('purchase');
+			if (upgradeGroundsTile(x, y, buildingType)) {
+				audioManager.playSound('purchase');
+			} else {
+				audioManager.playSound('wrong');
+			}
 		}
 		setShowBuildingDialog(false);
 	};

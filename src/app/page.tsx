@@ -9,7 +9,8 @@ import LevelUpNotification from '@/components/game/overlays/LevelUpNotification'
 import LoadingScreen from '@/components/game/overlays/LoadingScreen';
 import NamePrompt from '@/components/game/overlays/NamePrompt';
 import GameDebug from '@/components/game/GameDebug';
-import { TICK_RATE, SCALING_CONFIG } from '@/config/gameConfig';
+import { TICK_RATE } from '@/config/gameConfig';
+import { calculateTileCost } from '@/utils/gameUtils';
 import MerchantOverlay from '@/components/game/overlays/Merchant/MerchantOverlay';
 import FarmOverlay from '@/components/game/overlays/FarmOverlay';
 import GameHeader from '@/components/game/GameHeader';
@@ -17,13 +18,24 @@ import BiomeSelectionDialog from '@/components/game/BiomeSelectionDialog';
 import ChestNotification from '@/components/game/overlays/ChestNotification';
 import FloatingText from '@/components/game/FloatingText';
 import ClassPickerDialog from '@/components/game/ClassPickerDialog';
+import SaveMenuDialog from '@/components/game/overlays/SaveMenuDialog';
+import TabLockOverlay from '@/components/game/overlays/TabLockOverlay';
+import { useSingleTab } from '@/hooks/useSingleTab';
+import { useCtrlSequence } from '@/hooks/useCtrlSequence';
+import { useUiStore } from '@/stores/uiStore';
 
 export default function Home() {
 	const tick = useGameStore((state) => state.tick);
+	const isHydrated = useGameStore((state) => state.isHydrated);
+	const { status: tabStatus, takeOver } = useSingleTab();
+	const toggleSaveMenu = useUiStore((state) => state.toggleSaveMenu);
+	// Hidden shortcut: Control x5 within 2.5 s opens the save tools (export / import / reset)
+	useCtrlSequence(5, 2500, toggleSaveMenu);
 	const lastChestReward = useGameStore((state) => state.lastChestReward);
 	const lastChestGoldRate = useGameStore((state) => state.lastChestGoldRate);
 	const lastChestMinutesAwarded = useGameStore((state) => state.lastChestMinutesAwarded);
-	const lastTickTime = useRef(Date.now());
+	// Monotonic clock: changing the system clock must not change game speed
+	const lastTickTime = useRef(performance.now());
 	const [showChestNotification, setShowChestNotification] = useState(false);
 	const [chestRewardAmount, setChestRewardAmount] = useState(0);
 	const [minutesAwarded, setMinutesAwarded] = useState(0);
@@ -39,18 +51,17 @@ export default function Home() {
 	const tiles = useGameStore((state) => state.tiles);
 	const [clickPosition, setClickPosition] = React.useState<{x: number, y: number} | undefined>(undefined);
 	
-	const tileCost = (() => {
-		if (!pendingTileCoords) return 0;
-		
-		const ownedTilesCount = tiles.flat().filter(tile => tile.isOwned).length;
-		const baseCost = SCALING_CONFIG.costFormula(ownedTilesCount);
-		const discountMultiplier = 1 - characterStats.tileCostDiscount / 100;
-		return Math.floor(baseCost * discountMultiplier);
-	})();
+	const tileCost = calculateTileCost(
+		tiles.flat().filter((tile) => tile.isOwned).length,
+		characterStats.tileCostDiscount
+	);
 
 	useEffect(() => {
+		// Only the owning tab runs the game, and only once the saved game has been loaded
+		if (!isHydrated || tabStatus !== 'owner') return;
+		lastTickTime.current = performance.now();
 		const gameLoop = () => {
-			const currentTime = Date.now();
+			const currentTime = performance.now();
 			const deltaTime = currentTime - lastTickTime.current;
 			lastTickTime.current = currentTime;
 
@@ -59,7 +70,7 @@ export default function Home() {
 
 		const interval = setInterval(gameLoop, TICK_RATE);
 		return () => clearInterval(interval);
-	}, [tick]);
+	}, [tick, isHydrated, tabStatus]);
 
 	useEffect(() => {
 		if (biomeSelectionActive && pendingTileCoords) {
@@ -117,6 +128,8 @@ export default function Home() {
 			<LoadingScreen />
 			<NamePrompt />
 			<GameDebug />
+			<SaveMenuDialog />
+			{tabStatus === 'blocked' && <TabLockOverlay onTakeOver={takeOver} />}
 			<ChestNotification 
 				show={showChestNotification} 
 				amount={chestRewardAmount} 

@@ -1,19 +1,20 @@
 import React from 'react';
 import type { FC } from 'react';
-import { BiomeType } from '@/types/game';
+import { BiomeType, TileCost } from '@/types/game';
 import { BIOMES } from '@/config/gameConfig';
 import { BIOME_PIXEL_ICONS } from '@/config/pixelIcons';
 import PixelIcon from './PixelIcon';
 import audioManager from '@/utils/audioManager';
 import PixelModal from './PixelModal';
 import ResourceIcon from './ResourceIcon';
-import { formatNumber } from '@/utils/formatters';
+import CostList from './CostList';
+import { tileCostAsResources } from '@/utils/gameUtils';
 
 interface BiomeSelectionDialogProps {
 	availableBiomes: BiomeType[];
 	onSelect: (biome: BiomeType) => void;
 	onCancel: () => void;
-	cost: number;
+	cost: TileCost;
 	position?: { x: number; y: number };
 }
 
@@ -32,9 +33,7 @@ const BiomeSelectionDialog: FC<BiomeSelectionDialogProps> = ({
 		<PixelModal title='Choose a Biome' size='md' onClose={onCancel}>
 			<p className='text-[#a89878] mb-4 flex items-center gap-1 flex-wrap'>
 				Every 4th tile allows biome selection. Cost:
-				<span className='text-yellow-400 inline-flex items-center gap-1'>
-					{formatNumber(cost)} <ResourceIcon resource='gold' />
-				</span>
+				<CostList cost={tileCostAsResources(cost)} />
 			</p>
 
 			<div className='grid grid-cols-2 gap-3 mb-4'>

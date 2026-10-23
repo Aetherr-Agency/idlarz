@@ -21,16 +21,18 @@ interface Velocity {
 	y: number;
 }
 
-const MIN_VELOCITY = 1;
+const MIN_VELOCITY = 0.02; // px/ms below which the fling stops
 const VELOCITY_SCALE = 1;
+const FRAME_MS = 8; // converts px/ms to px/frame (tuned so a flick travels ~80x its speed)
+const FRICTION = 0.9; // per-frame velocity decay while flinging
+const FLING_MAX_IDLE_MS = 100; // releasing after pausing longer than this does not fling
 const VISIBLE_PADDING = 2;
 
 const Grid: React.FC = () => {
 	const tiles = useGameStore((state) => state.tiles);
 	const gridRef = useRef<HTMLDivElement>(null);
 	const [position, setPosition] = useState<Position>({ x: 0, y: 0 });
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const [velocity, setVelocity] = useState<Velocity>({ x: 0, y: 0 });
+	const velocityRef = useRef<Velocity>({ x: 0, y: 0 });
 	const [isDragging, setIsDragging] = useState(false);
 	const [lastMousePos, setLastMousePos] = useState<Position | null>(null);
 	const [lastUpdateTime, setLastUpdateTime] = useState<number>(0);
@@ -93,7 +95,7 @@ const Grid: React.FC = () => {
 			const pos = 'touches' in e ? e.touches[0] : e;
 			setIsDragging(true);
 			setLastMousePos({ x: pos.clientX, y: pos.clientY });
-			setVelocity({ x: 0, y: 0 });
+			velocityRef.current = { x: 0, y: 0 };
 		},
 		[]
 	);
@@ -110,10 +112,10 @@ const Grid: React.FC = () => {
 			const deltaTime = currentTime - lastUpdateTime;
 
 			if (deltaTime > 0) {
-				setVelocity({
+				velocityRef.current = {
 					x: (deltaX / deltaTime) * VELOCITY_SCALE,
 					y: (deltaY / deltaTime) * VELOCITY_SCALE,
-				});
+				};
 			}
 
 			setPosition((prev) =>
@@ -132,32 +134,25 @@ const Grid: React.FC = () => {
 	const handleMouseUp = useCallback(() => {
 		setIsDragging(false);
 		setLastMousePos(null);
-	}, []);
+		if (performance.now() - lastUpdateTime > FLING_MAX_IDLE_MS) {
+			velocityRef.current = { x: 0, y: 0 };
+		}
+	}, [lastUpdateTime]);
 
 	const animate = useCallback(() => {
-		if (!isDragging) {
-			setVelocity((prev) => {
-				const newVel = {
-					x: prev.x,
-					y: prev.y,
-				};
-
-				if (
-					Math.abs(newVel.x) < MIN_VELOCITY &&
-					Math.abs(newVel.y) < MIN_VELOCITY
-				) {
-					return { x: 0, y: 0 };
-				}
-
+		const vel = velocityRef.current;
+		if (!isDragging && (vel.x !== 0 || vel.y !== 0)) {
+			if (Math.abs(vel.x) < MIN_VELOCITY && Math.abs(vel.y) < MIN_VELOCITY) {
+				velocityRef.current = { x: 0, y: 0 };
+			} else {
 				setPosition((prevPos) =>
 					getBoundedPosition({
-						x: prevPos.x + newVel.x,
-						y: prevPos.y + newVel.y,
+						x: prevPos.x + vel.x * FRAME_MS,
+						y: prevPos.y + vel.y * FRAME_MS,
 					})
 				);
-
-				return newVel;
-			});
+				velocityRef.current = { x: vel.x * FRICTION, y: vel.y * FRICTION };
+			}
 		}
 
 		animationFrameRef.current = requestAnimationFrame(animate);
@@ -230,6 +225,7 @@ const Grid: React.FC = () => {
 	return (
 		<div
 			ref={gridRef}
+			data-click-area
 			className='fixed inset-0 overflow-hidden bg-gray-950'
 			onMouseDown={handleMouseDown}
 			onMouseMove={handleMouseMove}

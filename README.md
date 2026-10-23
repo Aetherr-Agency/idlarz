@@ -1,52 +1,35 @@
-# Idle Game
+# Idle Explorer
 
-A modern idle/incremental game built with Next.js 14, Tailwind CSS, and Zustand.
+An idle / incremental territory game. Start with a castle on a 50×50 map, buy adjacent tiles that turn into biomes (forest, plains, hills, swamp, tundra, lake, grounds), grow your income, upgrade the castle, raise farm animals, trade with the merchant, level up and spend stat points. Progress is saved automatically in the browser (encrypted, in IndexedDB).
 
-## Tech Stack
+Live: https://idlarz.vercel.app
 
-- **Next.js 14**: React framework with App Router
-- **TypeScript**: For type safety
-- **Tailwind CSS**: For styling
-- **Zustand**: For state management with persistence
-- **tailwind-merge**: For conditional class merging
+## Tech stack
 
-## Project Structure
+- **Next.js 15.5** (App Router) · **React 19** · **TypeScript 5.9**
+- **Tailwind CSS 4** · `clsx` + `tailwind-merge`
+- **Zustand 5** with `persist` into an encrypted IndexedDB vault (save tools: press Control five times)
 
-```
-src/
-├── app/                 # Next.js app directory
-├── components/         
-│   └── ui/             # Reusable UI components
-└── stores/             # Zustand stores
-    └── gameStore.ts    # Main game state management
-```
+## Getting started
 
-## Getting Started
-
-1. Install dependencies:
 ```bash
 npm install
+npm run dev      # http://localhost:3000 (dev build shows a cheat/debug panel bottom-left)
+npm run build
+npm run lint
+npm test         # click limiter, economy/exploit and save tests
 ```
 
-2. Run the development server:
-```bash
-npm run dev
-```
+## Documentation
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the game.
+Full design and technical docs live in [`docs/`](docs/README.md):
 
-## Game Features
+- [Architecture](docs/01-architecture.md) — files, state, tick loop, persistence
+- [Mechanics](docs/02-mechanics.md) — every rule as implemented
+- [Formulas & scaling](docs/03-formulas-and-scaling.md) — all maths with tables
+- [Unfinished features & known issues](docs/04-unfinished-and-known-issues.md)
+- [Balance backlog & roadmap](docs/05-balance-backlog-and-roadmap.md)
+- [Playtest & pacing report](docs/06-playtest-and-pacing-report.md) — why the old game finished in ~3 days and what the rebalance changed
+- [Saves, security & exploit audit](docs/07-security-and-exploits.md)
 
-- Resource management (Gold)
-- Persistent game state using Zustand
-- Responsive design with Tailwind CSS
-- Dark mode support
-
-## Development
-
-The project follows modern React best practices:
-- TypeScript for type safety
-- Component-based architecture
-- Zustand for simple but powerful state management
-- Persistent storage to save game progress
-- Tailwind CSS for utility-first styling
+Tables and pacing numbers are generated from the real config: `npm run report` (tables), `npm run sim` (bot simulation); `npm test` runs the exploit/save tests.

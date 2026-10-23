@@ -78,7 +78,7 @@ const AnimalPanel: React.FC<{
 						onPurchase();
 						audioManager.playSound('click');
 					} else {
-						audioManager.playSound('error');
+						audioManager.playSound('wrong');
 					}
 				}}
 				disabled={!canAfford}

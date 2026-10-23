@@ -11,23 +11,26 @@ import StableNumber from './StableNumber';
 const ResourceDisplay: React.FC = () => {
 	const resources = useGameStore((state) => state.resources);
 	const resourceRates = useGameStore((state) => state.resourceRates);
-	const addResources = useGameStore((state) => state.addResources);
-	const clickMultiplier = useGameStore((state) => state.clickMultiplier);
+	const clickForGold = useGameStore((state) => state.clickForGold);
 
 	// Define resources to display (including meat)
 	const resourcesToDisplay = Object.keys(resources) as Array<keyof Resources>;
 
-	// Every click earns gold; a click on an owned tile also carries that tile's tap bonus
-	// (already applied by the store). Both show up as one popup under the cursor.
+	// A real click on the map earns gold (rate limited in the store); a click on an owned tile also carries
+	// that tile's tap bonus (already applied by the store). Both show up as one popup under the cursor.
+	// Clicks on windows, the header or buttons never pay, and neither do synthetic clicks.
 	const handleGameClick = useCallback(
 		(e: MouseEvent) => {
 			const items: FloatItem[] = [];
 
-			const goldRate = resourceRates.total.gold;
-			if (goldRate > 0) {
-				const goldToAdd = goldRate * clickMultiplier;
-				addResources({ gold: goldToAdd });
-				items.push({ resource: 'gold', amount: goldToAdd });
+			const onMap = e.target instanceof Element && !!e.target.closest('[data-click-area]');
+			if (onMap) {
+				const goldToAdd = clickForGold({
+					eventId: e.timeStamp,
+					now: performance.now(),
+					trusted: e.isTrusted,
+				});
+				if (goldToAdd > 0) items.push({ resource: 'gold', amount: goldToAdd });
 			}
 
 			const tap = takeTileTap();
@@ -40,7 +43,7 @@ const ResourceDisplay: React.FC = () => {
 				lucky: tap?.lucky,
 			});
 		},
-		[resourceRates.total.gold, addResources, clickMultiplier]
+		[clickForGold]
 	);
 
 	// Add global click listener
