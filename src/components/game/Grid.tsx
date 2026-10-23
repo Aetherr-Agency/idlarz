@@ -205,6 +205,7 @@ const Grid: React.FC = () => {
 						x={x}
 						y={y}
 						level={tile.level}
+							building={tile.building}
 						style={{
 							width: TILE_SIZE,
 							height: TILE_SIZE,

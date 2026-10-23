@@ -442,7 +442,6 @@ export type BuildingType =
 export interface Building {
 	name: BuildingType;
 	label: string;
-	icon: string;
 	description: string;
 	resourceGeneration: Partial<Resources>;
 }
@@ -452,7 +451,6 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 	farm: {
 		name: 'farm',
 		label: 'Farm',
-		icon: '🌱',
 		description: 'Produces +0.2 food per second',
 		resourceGeneration: {
 			food: 0.2,
@@ -461,7 +459,6 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 	mine: {
 		name: 'mine',
 		label: 'Mine',
-		icon: '⚫',
 		description: 'Produces +0.2 stone and coal per second',
 		resourceGeneration: {
 			stone: 0.2,
@@ -471,7 +468,6 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 	lumbermill: {
 		name: 'lumbermill',
 		label: 'Lumber Mill',
-		icon: '🪓',
 		description: 'Produces +0.2 wood per second',
 		resourceGeneration: {
 			wood: 0.2,
@@ -480,7 +476,6 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 	market: {
 		name: 'market',
 		label: 'Market',
-		icon: '🏪',
 		description: 'Produces +0.2 gold per second',
 		resourceGeneration: {
 			gold: 0.2,
@@ -489,7 +484,6 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 	blacksmith: {
 		name: 'blacksmith',
 		label: 'Blacksmith',
-		icon: '🔨',
 		description: 'Produces +0.1 to all resources per second',
 		resourceGeneration: {
 			stone: 0.1,
@@ -502,7 +496,6 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 	workshop: {
 		name: 'workshop',
 		label: 'Workshop',
-		icon: '🏭',
 		description: 'Produces +0.2 XP per second',
 		resourceGeneration: {
 			xp: 0.2,

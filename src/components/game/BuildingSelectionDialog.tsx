@@ -2,6 +2,8 @@ import React from 'react';
 import type { FC } from 'react';
 import audioManager from '@/utils/audioManager';
 import { BUILDINGS } from '@/config/gameConfig';
+import { BUILDING_PIXEL_ICONS } from '@/config/pixelIcons';
+import PixelIcon from './PixelIcon';
 import PixelModal from './PixelModal';
 
 interface BuildingSelectionDialogProps {
@@ -35,7 +37,9 @@ const BuildingSelectionDialog: FC<BuildingSelectionDialogProps> = ({
 						key={building.name}
 						onClick={() => handleSelect(building.name)}
 						className='px-card flex items-start gap-3 text-left cursor-pointer hover:brightness-125 transition'>
-						<div className='text-2xl mt-1'>{building.icon}</div>
+						<div className='tile-ground tile-ground-yard shrink-0 w-[48px] h-[48px] flex items-center justify-center'>
+							<PixelIcon name={BUILDING_PIXEL_ICONS[building.name]} alt={building.label} className='tile-icon' />
+						</div>
 						<div className='flex-1'>
 							<span className='px-tip-title block'>{building.label}</span>
 							<div className='text-sm text-[#a89878] mt-1'>{building.description}</div>

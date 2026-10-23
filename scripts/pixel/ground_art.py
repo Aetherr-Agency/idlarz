@@ -155,6 +155,18 @@ def castle(seed=8):
     return img
 
 
+def yard(seed=13):
+    """Packed earth with cobbles - the ground of a tile once it holds a building."""
+    img, px = _canvas(['#6a5a44', '#766450', '#82705a'], seed, dither=0.4)
+    rnd = random.Random(seed)
+    for gy in range(0, S, 8):
+        for gx in range(0, S, 8):
+            _blob(px, gx + 3 + rnd.randrange(-1, 2), gy + 3 + rnd.randrange(-1, 2), 3, 2, '#9a8a72', '#b8a88c', '#4e4232')
+    for x, y in _scatter(rnd, 10):
+        _put(px, x, y, '#4a3e2e')
+    return img
+
+
 def empty(seed=9):
     img, _ = _canvas(['#141414', '#1a1a1a', '#202020'], seed, dither=0.3)
     return img
@@ -162,7 +174,7 @@ def empty(seed=9):
 
 GROUNDS = {
     'forest': forest, 'plains': plains, 'hills': hills, 'swamp': swamp, 'tundra': tundra,
-    'lake': lake, 'grounds': grounds, 'castle': castle, 'empty': empty,
+    'lake': lake, 'grounds': grounds, 'yard': yard, 'castle': castle, 'empty': empty,
 }
 
 

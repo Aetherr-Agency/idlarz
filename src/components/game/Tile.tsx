@@ -20,7 +20,7 @@ import ResourceIcon from './ResourceIcon';
 import PixelIcon from './PixelIcon';
 import ShiningStar from './ShiningStar';
 import CastleSprite from './CastleSprite';
-import { BIOME_PIXEL_ICONS } from '@/config/pixelIcons';
+import { BIOME_PIXEL_ICONS, BUILDING_PIXEL_ICONS } from '@/config/pixelIcons';
 import { TileStatus } from './TileStatus';
 import CastleUpgradeDialog from './CastleUpgradeDialog';
 import BuildingSelectionDialog from './BuildingSelectionDialog';
@@ -76,6 +76,7 @@ const Tile: React.FC<TileProps> = ({
 		);
 	}, [x, y, isOwned, tiles]);
 
+	const hasBuilding = biome === 'grounds' && !!building && (level ?? 1) > 1;
 	const castleLevel = tiles?.[GRID_CENTER_Y]?.[GRID_CENTER_X]?.level ?? 1;
 	const isMaxCastle = biome === 'castle' && castleLevel >= CASTLE_UPGRADE.maxLevel;
 
@@ -177,7 +178,7 @@ const Tile: React.FC<TileProps> = ({
 					{
 						'opacity-100': isOwned,
 						'tile-unknown': !isOwned && isAdjacent,
-						[`tile-ground tile-ground-${biome} tile-owned`]: isOwned,
+						[`tile-ground tile-ground-${hasBuilding ? 'yard' : biome} tile-owned`]: isOwned,
 						'opacity-75': farAwayTile,
 						'hover:z-10 cursor-pointer border border-gray-800':
 							!isOwned && isAdjacent,
@@ -212,7 +213,7 @@ const Tile: React.FC<TileProps> = ({
 						{ 'tile-tapped': tapped }
 					)}>
 					{isOwned && biome === 'castle' && <CastleSprite level={castleLevel} />}
-					{isOwned && BIOME_PIXEL_ICONS[biome] && (
+					{isOwned && !hasBuilding && BIOME_PIXEL_ICONS[biome] && (
 						<PixelIcon name={BIOME_PIXEL_ICONS[biome]!} alt={biome} className='tile-icon' />
 					)}
 					{!isOwned && isAdjacent && (
@@ -235,15 +236,15 @@ const Tile: React.FC<TileProps> = ({
 						</div>
 					)}
 					
-					{biome === 'grounds' && level && level > 1 && (
+					{hasBuilding && (
 						<>
+							<PixelIcon
+								name={BUILDING_PIXEL_ICONS[building as string]}
+								alt={BUILDINGS[building as BuildingType]?.label ?? 'Building'}
+								className='tile-icon'
+							/>
 							<span className='absolute top-0.5 right-0.5'>
 								<ShiningStar />
-							</span>
-					
-							{/* Building icon */}
-							<span className='absolute bottom-0.5 right-0.5 text-[14px]'>
-								{BUILDINGS[building as BuildingType]?.icon}
 							</span>
 						</>
 					)}

@@ -46,6 +46,13 @@ export const PIXEL_ICON_SIZES = {
 	biome_tundra: [32, 32],
 	biome_lake: [32, 32],
 	biome_grounds: [32, 32],
+	// grounds buildings (picker icon + tile graphic)
+	building_farm: [40, 40],
+	building_mine: [40, 40],
+	building_lumbermill: [40, 40],
+	building_market: [40, 40],
+	building_blacksmith: [40, 40],
+	building_workshop: [40, 40],
 	// farm animals
 	animal_chicken: [40, 40],
 	animal_pig: [40, 40],
@@ -102,3 +109,13 @@ export const BIOME_PIXEL_ICONS: Record<string, PixelIconName | undefined> = {
 
 export const castleIconName = (level: number): PixelIconName =>
 	`castle_${Math.max(1, Math.min(6, Math.floor(level)))}` as PixelIconName;
+
+// Building type -> sprite
+export const BUILDING_PIXEL_ICONS: Record<string, PixelIconName> = {
+	farm: 'building_farm',
+	mine: 'building_mine',
+	lumbermill: 'building_lumbermill',
+	market: 'building_market',
+	blacksmith: 'building_blacksmith',
+	workshop: 'building_workshop',
+};

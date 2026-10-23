@@ -1067,6 +1067,10 @@ body {
 	background-image: url('/pixel/bg/ground_castle.png');
 }
 
+.tile-ground-yard {
+	background-image: url('/pixel/bg/ground_yard.png');
+}
+
 .tile-ground-empty {
 	background-image: url('/pixel/bg/ground_empty.png');
 }

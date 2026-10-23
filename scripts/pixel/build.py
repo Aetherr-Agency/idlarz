@@ -23,6 +23,7 @@ import fog  # noqa: E402
 import ground_art  # noqa: E402
 import ui_art  # noqa: E402
 import sprites_animals  # noqa: E402
+import sprites_buildings  # noqa: E402
 import sprites_castle  # noqa: E402
 import sprites_characters  # noqa: E402
 import sprites_equipment  # noqa: E402
@@ -48,6 +49,7 @@ SPRITES = {
     **sprites_animals.SPRITES,
     **sprites_map.SPRITES,
     **sprites_castle.SPRITES,
+    **sprites_buildings.SPRITES,
 }
 
 UI = {
@@ -161,7 +163,7 @@ def reference_sheets(sprites, ui, bg):
     shine.alpha_composite(upscale(strip, 3))
     shine.save(os.path.join(REFERENCE, 'gold-shine.png'))
     # map: each biome ground + the unexplored tile as a 3x3 patch at 2x, with its icon on the middle tile
-    names = [n for n in ground_art.GROUNDS if n != 'empty'] + ['mystery']
+    names = [n for n in ground_art.GROUNDS if n not in ('empty', 'yard')] + ['mystery']
     cell = 48 * 3
     sheet = Image.new('RGBA', (len(names) * (cell + 12) + 12, cell + 24), (20, 16, 14, 255))
     for i, name in enumerate(names):
@@ -210,6 +212,13 @@ def main():
         gold_shine().save(os.path.join(PUB, 'icons', 'gold_shine.png'))
     if not only or 'castle_6_anim' in only:
         sprites_castle.sheet_max().save(os.path.join(PUB, 'icons', 'castle_6_anim.png'))
+    if not only or 'castle_loading' in only:
+        # loading screen: the castle growing through its six levels (72px cells, bottom aligned)
+        cells = Image.new('RGBA', (72 * 6, 72), (0, 0, 0, 0))
+        for i in range(6):
+            im = sprites_castle.build(i + 1, 0)
+            cells.alpha_composite(im, (i * 72 + (72 - im.size[0]) // 2, 72 - im.size[1]))
+        cells.save(os.path.join(PUB, 'icons', 'castle_loading.png'))
     if not only or 'level_star_shine' in only:
         sprites_props.star_sheet().save(os.path.join(PUB, 'icons', 'level_star_shine.png'))
 

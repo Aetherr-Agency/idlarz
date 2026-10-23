@@ -70,6 +70,14 @@ graphics for anything that isn't a map glyph. Match the references in this folde
   (`castle_6_anim`, flags wave, crystal pulses), drawn larger than its 48px tile so it overlaps the neighbours (the sprite is
   `pointer-events: none`), with a pulsing golden drop-shadow glow, a golden aura on the tile and sparkles rising. The upgrade
   dialog previews current -> next castle. Reference: `castle-levels.png`.
+- **Buildings** (`building_*`, `sprites_buildings.py`, 40px): thatched farm cottage with crops + haystack, mine with a timbered
+  tunnel and coal cart, lumber mill with a saw blade and log pile, striped-awning market stall, stone forge with glowing fire
+  + anvil + chimney smoke, gear workshop with a floating XP orb. The same sprite is the picker icon and the tile graphic. A
+  converted grounds tile switches to a packed-earth cobble ground (`ground_yard`) and carries the shining star.
+- **Loading screen** (`LoadingScreen.tsx`): a rotating rune circle drawn as smooth SVG and pixelated by an SVG block filter
+  (`feFlood` + `feTile` + `feMorphology` = a 6px grid, applied inside the SVG so the pixels re-form every frame), the castle
+  growing through its six levels (`castle_loading` strip, stepped), drifting fog, rising sparks, an emerald block sweeping
+  through the stone bar, and rotating tips.
 - **XP**: green glowing orb sprite (`xp`), used wherever XP appears in text. **Level**: an animated shining star
   (6-frame sweep + glint strip, `ShiningStar`), never a gem.
 - **Header**: cracked-stone bar, bronze/iron edge with rivets, 48px slot frames (active glows gold), ornamental divider,
@@ -91,7 +99,7 @@ graphics for anything that isn't a map glyph. Match the references in this folde
 - **Motion**: transform/opacity only, integer pixel steps for sprite animation, honour `prefers-reduced-motion`.
 - **Tile tap feedback**: cursor popup (a line per resource, lucky header), pulse on the *inner* tile element (the outer
   one carries the grid translate), darkening cooldown overlay.
-- Remaining emoji: the six building icons (grounds tiles + building picker) and the Merchant tab icons.
+- Remaining emoji: only the Merchant tab icons.
 
 ## Pipeline (`scripts/pixel`)
 Sprites are small 3D scenes ray-cast by `render3d.py` (box / ellipsoid / cylinder primitives, hue-shifted ramps, cast
@@ -101,7 +109,7 @@ shadows, contours, rim light, coloured outlines), so every asset shares one ligh
 |---|---|
 | `render3d.py` | Engine. `common.py`, `fx.py` (glints), `fog.py` (tileable noise + cracked stone). |
 | `materials.py` | Every material: 5-tone ramp + outline + shading hints. One palette for the whole game. |
-| `sprites_resources.py` `sprites_props.py` `sprites_characters.py` `sprites_equipment.py` `sprites_animals.py` `sprites_map.py` `sprites_castle.py` | Sprites as lists of primitives (boxes, ellipsoids, cylinders, cones). `sprites_props` also draws the animated star in 2D. |
+| `sprites_resources.py` `sprites_props.py` `sprites_characters.py` `sprites_equipment.py` `sprites_animals.py` `sprites_map.py` `sprites_castle.py` `sprites_buildings.py` | Sprites as lists of primitives (boxes, ellipsoids, cylinders, cones). `sprites_props` also draws the animated star in 2D. |
 | `ground_art.py` | Seamless biome ground textures, the unexplored cloud tile and the fog tiles (flat-banded cloud generator). |
 | `ui_art.py` | 2D UI art: frames, header chrome, flask parts, stone XP bar, hero scene, torch. |
 | `build.py` | Builds everything into `public/pixel/{icons,ui,bg}` (wipes them first). `--refs` also refreshes this folder. |

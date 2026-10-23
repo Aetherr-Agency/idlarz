@@ -14,6 +14,8 @@ import { useGameStore } from '@/stores/gameStore';
 import { calculateTileTapYield } from '@/utils/gameUtils';
 import { TILE_TAP } from '@/config/gameConfig';
 import ResourceIcon from './ResourceIcon';
+import PixelIcon from './PixelIcon';
+import { BUILDING_PIXEL_ICONS } from '@/config/pixelIcons';
 
 const formatRate = (rate: number) => {
 	if (rate === 0) return '0/s';
@@ -84,7 +86,7 @@ export const BiomeTooltip = memo(
 				{/* Display building info for upgraded grounds */}
 				{biome === 'grounds' && level === 2 && buildingInfo && (
 					<div className='mb-2 text-purple-300 font-semibold text-xs flex items-center gap-1'>
-						<span>{buildingInfo.icon}</span>
+						<PixelIcon name={BUILDING_PIXEL_ICONS[buildingInfo.name]} alt='' scale={0.5} />
 						<span>Grounds level 2 with {buildingInfo.label}</span>
 					</div>
 				)}
