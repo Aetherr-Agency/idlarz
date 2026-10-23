@@ -2,104 +2,83 @@
 
 ## Stack
 
-| Piece | Version (after this upgrade) | Notes |
+| Piece | Version | Notes |
 | --- | --- | --- |
-| Next.js | 15.5.28 | App Router, single page (`src/app/page.tsx`), `'use client'` |
+| Next.js | 15.5.28 | App Router, one page (`src/app/page.tsx`), `'use client'` |
 | React | 19.3.x | |
-| Tailwind CSS | 4.3.x via `@tailwindcss/postcss` | `@import 'tailwindcss'` in `globals.css`, no config file |
-| Zustand | 5.0.x | `persist` middleware → `localStorage` |
-| TypeScript | 5.9 | `strict` |
-| ESLint | 9 (flat config, `next/core-web-vitals` + `next/typescript`) | `npm run lint` = `next lint` (deprecated in 15.5, removed in 16) |
-| Helpers | `clsx`, `tailwind-merge` (`src/lib/utils.ts` → `cn()`) | |
+| Tailwind CSS | 4.3.x via `@tailwindcss/postcss` | `@import 'tailwindcss'` in `globals.css`; pixel-art UI kit styles in `src/app/globals.css` and `src/styles/*` |
+| Zustand | 5.0.x | `persist` with a custom encrypted IndexedDB storage |
+| TypeScript | 5.9 (`target ES2017`) | `strict` |
+| ESLint | 9 (flat config) | `npm run lint` = `next lint` (deprecated in 15.5, removed in 16) |
+| Test / sim runner | `tsx` (devDependency) | `npm test` (node:test), `npm run sim`, `npm run report` |
 
-No backend, no API routes, no tests. The whole game is client-side state.
+No backend, no API routes. The whole game is client-side state.
 
 ## File map
 
 ```
 src/
-├── app/
-│   ├── layout.tsx            html shell + metadata
-│   ├── page.tsx              game loop (setInterval tick), chest-toast wiring, composes all overlays
-│   └── globals.css           tailwind import + keyframes (shake, pulse-ring, gold-click …)
-├── config/gameConfig.ts      ALL tunable constants: grid, costs, biomes, castle, animals, buildings, prices, stats
-├── types/game.ts             Resources, Tile, CharacterStats, GameState (store interface), Animal, Item …
-├── stores/gameStore.ts       the single Zustand store: all actions (buyTile, tick, upgradeCastle, …) + persist
+├── app/page.tsx              game loop, tab lock, hidden Ctrl×5 shortcut, composes all overlays
+├── config/
+│   ├── gameConfig.ts         ALL tunable constants (costs, curves, biomes, castle, animals, merchant, click limiter, chests, stats)
+│   ├── playerClasses.ts, pixelIcons.ts
+├── types/game.ts             Resources, Tile, CharacterStats, GameState (store interface), ClickInput, TileCost ...
+├── stores/
+│   ├── gameStore.ts          the single game store: every action (buyTile, tick, upgradeCastle, clickForGold, tapTile ...)
+│   └── uiStore.ts            transient UI flags (class dialog, save menu)
 ├── utils/
-│   ├── gameUtils.ts          pure game math: rates, level curve, costs, stat modifiers, grid helpers
-│   ├── formatters.ts         formatNumber / formatRate / formatTime (K/M/B/T)
-│   └── audioManager.ts       preloads 4 sounds: purchase, wrong, click, fanfare (public/*.mp3)
-├── hooks/useHydration.ts     fake "hydrated" flag: a 2.5 s timeout (drives LoadingScreen / LevelUp toast)
-├── lib/utils.ts              cn()
-├── styles/                   LevelUpNotification.css, LoadingScreen.css
-└── components/game/
-    ├── GameHeader.tsx        top bar = HeaderMenu (left) + ResourceDisplay (right)
-    ├── HeaderMenu.tsx        avatar/name/level bar, buttons: Character ⚔️, Merchant 💰, Farm 🌾
-    ├── ResourceDisplay.tsx   resource counters + **global click-for-gold listener**
-    ├── Grid.tsx              pan/drag viewport, culls to visible tiles, renders <Tile>
-    ├── Tile.tsx              click handling (buy / chest / castle dialog / building dialog), tooltips
-    ├── TileStatus.tsx, BiomeTooltip.tsx   hover info
-    ├── BiomeSelectionDialog.tsx           pick-a-biome popup (every 4th owned count)
-    ├── BuildingSelectionDialog.tsx        pick a building for a Grounds tile
-    ├── CastleUpgradeDialog.tsx            castle upgrade popup
-    ├── LevelDetails.tsx, LevelUpTimer.tsx level ring + ETA
-    ├── GameDebug.tsx                      dev-only cheat panel (`NODE_ENV === 'development'`)
-    └── overlays/
-        ├── StatisticsOverlay.tsx   stats, stat-point allocation, rates per sec/min/hour
-        ├── CharacterOverlay.tsx    equipment slots (all empty — unfinished)
-        ├── FarmOverlay.tsx         animals
-        ├── Merchant/…              sell / buy tabs (+ 3 placeholder tabs)
-        ├── NamePrompt.tsx          name prompt at 2 owned tiles + long tutorial
-        ├── LevelUpNotification.tsx, ChestNotification.tsx, LoadingScreen.tsx, ResetGameDialog.tsx
+│   ├── gameUtils.ts          pure maths: rates, costs, level curve, stat modifiers, tooltips text helpers
+│   ├── formatters.ts, audioManager.ts
+├── lib/
+│   ├── clickLimiter.ts       token-bucket limiter shared by gold clicks and tile taps
+│   ├── saveVault.ts          IndexedDB + AES-GCM vault, debounced writes, export/import/reset
+│   ├── sanitizeSave.ts       validation/normalisation of any loaded or imported save; PERSISTED_KEYS
+│   ├── floatText.ts          "+N resource" popups at the cursor
+├── hooks/
+│   ├── useHydration.ts       true when the save has been loaded and the splash was shown long enough
+│   ├── useSingleTab.ts       Web Lock: one tab owns the game
+│   └── useCtrlSequence.ts    Control ×5 detector (hidden save tools)
+└── components/game/          Grid, Tile, TileStatus, BiomeTooltip, dialogs (castle, biome, building), header,
+    └── overlays/             Statistics, Character, Farm (+scene/critters), Merchant, NamePrompt + Tutorial,
+                              SaveMenuDialog, TabLockOverlay, LevelUp/Chest notifications, LoadingScreen
+scripts/
+├── sim.ts                    bot simulation on the REAL store (milestones per player profile)
+├── balance-report.ts         tables for docs/generated/balance-tables.md
+└── pixel/                    sprite generators
+tests/                        clickLimiter, economy (exploit/behaviour), saves (validation + crypto)
 ```
 
-## State (`GameState`, `src/types/game.ts`)
+## State (`GameState`)
 
-| Field | Meaning |
-| --- | --- |
-| `tiles: Tile[50][50]` | `{ biome, isOwned, level?, upgradeCost?, building?, hasChest? }`; castle at `[25][25]` |
-| `resources` | `gold, wood, stone, coal, food, meat, xp` (floats) |
-| `resourceRates` | `{ base, modifiers, total }` — recomputed by `calculateResourceRates` after any change to tiles, stats, castle or animals |
-| `resourceModifiers` | duplicate of `resourceRates.modifiers` (written, never read) |
-| `level` | `{ level, progress(0‥1) }` derived from `resources.xp` by `calculateLevel` |
-| `previousLevel` | level seen on the previous tick (used for level-up detection) |
-| `characterStats` | 5 base stats, `availablePoints`, derived combat stats, `xpGainMultiplier`, `tileCostDiscount`, `reputation` |
-| `equipment`, `inventory` | item data model; nothing mutates them (unfinished) |
-| `farmLevels` | `{ chicken: n, deer: n, … }` — number of upgrades bought per animal |
-| `clickMultiplier` | gold-per-click multiplier (2 → 4 → 8 → 16) |
-| `chestSpawnTimer`, `activeChests`, `lastChest*` | chest system |
-| `biomeSelectionActive`, `pendingTileCoords`, `selectableBiomes` | biome-picker state |
-| `show*Window`, `isHydrated`, `playerName` | UI / identity |
-
-All actions live in `createGameSlice` in `gameStore.ts`; pure maths lives in `gameUtils.ts`; constants in `gameConfig.ts`. Components read state via selectors and call actions directly.
+Persisted (`PERSISTED_KEYS`): `tiles`, `resources`, `level`, `previousLevel`, `playerName`, `playerClass`, `characterStats`, `farmLevels`, `clickLevel`, `castleUpgrade`, `playSeconds`, chest fields. Rebuilt on load: `resourceRates`, `resourceModifiers`, derived combat stats, reputation, castle upgrade cost, every window/dialog flag, `isHydrated`. `equipment` and `inventory` exist but are not saved (nothing changes them yet).
 
 ## The loop
 
-`page.tsx` runs `setInterval(…, TICK_RATE = 100 ms)`. Each interval computes `deltaTime = Date.now() − lastTickTime` and calls `store.tick(deltaTime)`:
+`page.tsx` runs `setInterval(…, 100 ms)` **only** in the owning tab and only after the save is loaded. Each interval computes `deltaTime = performance.now() − last` (monotonic) and calls `store.tick(deltaTime)`; `tick` clamps the delta to `0 … MAX_CATCHUP_SEC` (300 s), so a throttled background tab catches up in 5-minute steps but a changed system clock can neither skip nor reverse time. There is no offline progress.
 
-1. For each resource except xp: `resources[r] += rates.total[r] × dt` (dt in seconds).
-2. XP: `resources.xp += rates.total.xp × (1 + characterStats.xpGainMultiplier/100) × dt`.
-3. Chest timer (see 02 §Chests).
-4. `calculateLevel(xp)` → new `level`; if the level number rose versus the stored `level`, `availablePoints += Δlevel`.
-5. One `set()` with everything.
-
-Because delta is wall-clock based, a throttled background tab catches up on its next tick. **There is no offline progress**: closing the tab stops the game (the saved state has no timestamp).
+`tick` order: accumulate resources → XP (with `xpGainMultiplier`) → castle upgrade timer (finishing recomputes the rates) → chests → level / stat points → one `set()`.
 
 ## Persistence
 
-`persist` with key **`idle-explorer-v11`**, `version: 11`, storage `localStorage`. The *entire* state is serialised on every `set` (≈10×/s) — including UI flags such as `show*Window`, `biomeSelectionActive`, `pendingTileCoords`. On load, a `merge` function (added in this upgrade) keeps the saved state only if `validateGrid(tiles)` passes (50×50, castle at centre, valid biomes), otherwise starts a new game. There is no migration: changing the state shape means either keeping new fields optional or bumping `version`/`name` (which resets players).
+`persist` + `vaultStorage` (see [07](07-security-and-exploits.md)): state objects are kept as-is in memory and encrypted/compressed only when written (debounced). On start the vault reads `current` (or `previous`), validates it with `sanitizeSave`, `merge` rebuilds rates and sets `isHydrated`; `onRehydrateStorage` then enables writing. Save key `idle-explorer-v12`, `SAVE_VERSION = 12`; old localStorage saves are deleted, not migrated.
+
+## Clicks
+
+`ResourceDisplay` registers one window `click` listener. A click counts only if it is trusted and lands inside `[data-click-area]` (the map). It calls `clickForGold` (and the tile's `onClick` calls `tapTile` for the same event); both ask the shared limiter with the event's `timeStamp` as id, so one physical click costs one token.
 
 ## Rendering notes
 
-- `Grid` culls to the visible window (+2 tile padding) and drags with custom pointer handlers + a requestAnimationFrame inertia loop. Velocity lives in a ref and decays by `FRICTION` (0.9) per frame; it stops below `MIN_VELOCITY` and a release after a pause does not fling (before B8 the fling never decayed and the loop re-rendered the grid every frame — see 04).
-- Every visible `Tile` subscribes to `tiles` **and** `resources`, so all visible tiles re-render each tick (10×/s). `countOwnedTiles` is also recomputed per tile. This is the first thing to optimise if the viewport grows (see 05).
-- Audio: `audioManager.playSound('purchase' | 'wrong' | 'click' | 'fanfare')`.
+- `Grid` culls to the visible window and pans with pointer handlers; fling inertia keeps its velocity in a ref with friction (no per-frame React state).
+- Every visible `Tile` subscribes to `tiles` and `resources`, so tiles re-render on each tick; fine for the current viewport, the first thing to optimise if it grows ([05](05-balance-backlog-and-roadmap.md)).
+- Tutorial, stat tooltips and cost lists are generated from config constants, so they cannot drift from the rules.
 
 ## Build & run
 
 ```bash
 npm install
 npm run dev      # next dev --turbopack
-npm run build
-npm run lint
+npm run build && npm run lint
+npm test         # unit/exploit tests (limiter, economy, saves)
+npm run sim      # bot simulation -> docs/generated/sim-milestones.md
+npm run report   # tables -> docs/generated/balance-tables.md
 ```

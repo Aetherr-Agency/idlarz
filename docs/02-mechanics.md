@@ -1,130 +1,86 @@
 # 02 · Mechanics
 
-Exact rules as implemented. Formulas are only summarised here; the full derivations and tables are in [03](03-formulas-and-scaling.md).
+Exact rules as implemented. Constants live in [`src/config/gameConfig.ts`](../src/config/gameConfig.ts); formulas and tables are in [03](03-formulas-and-scaling.md). The in-game tutorial (`Tutorial.tsx`) is generated from the same constants, so it always matches this document.
 
 ## 1. The loop in one paragraph
 
-You start with a castle on a 50×50 map and 125 gold. Gold (and passive XP) trickle in per second; you spend gold on **adjacent unexplored tiles**, each of which becomes a random biome (or one you pick) that adds resource income. XP from buying tiles and passive XP raises your **level**; each level gives one **stat point** that boosts specific resource modifiers. Resources other than gold are spent on **castle upgrades** (big global multiplier) and on **farm animals** (meat), or sold to the **merchant** for gold. You can also **click anywhere** for bonus gold and collect random **chests**.
+You start with a castle on a 50×50 map and 125 gold. Gold, other resources and XP trickle in every second. Gold (plus wood/stone/coal later) buys **adjacent unexplored tiles**, each of which becomes a biome and adds income. The **castle** is a big timed upgrade that multiplies everything. **Farm animals** turn food into meat, the **merchant** converts anything into gold (and back, at a loss), **clicking the map** and **chests** add active bonuses, and every **level** gives a stat point. Finishing = castle 6, best click power and ~40+ tiles; the target pace for an active player is ~4 weeks ([06](06-playtest-and-pacing-report.md)).
 
 ## 2. Map & buying tiles
 
-- Grid: `GRID_SIZE × GRID_HEIGHT = 50 × 50` (`gameConfig.ts:41-42`), castle at `(25, 25)` (owned from the start). Tile size 48 px; drag to pan.
-- A tile can be bought only if it is **4-neighbour adjacent** to an owned tile (`gameStore.ts` `buyTile`). Non-adjacent tiles are drawn as dark checker cells; adjacent ones show ❔ and a hover card with the cost.
-- Cost: see [03 §1](03-formulas-and-scaling.md#1-tile-cost) — exponential in the number of owned tiles (castle counts). It depends only on the *count*, never on the tile's position or biome. Charisma gives a discount (0.5 %/point, max 25 %).
-- Not enough gold → the tile shakes and plays the `wrong` sound. Success → `purchase` sound, `+XP`, `+100 reputation`.
-- **Biome assignment**
-  - Normal purchase: uniformly random among the 7 non-special biomes (`forest, plains, hills, swamp, tundra, lake, grounds` — `castle` and `empty` are excluded).
-  - **Pick-your-biome purchase**: when the number of owned tiles *before* the purchase satisfies `owned % 4 === 3` (owned = 3, 7, 11, 15 … i.e. the 3rd, 7th, 11th … tile you buy, because the castle counts as owned), buying opens a biome picker. **Gold is not charged until you choose**; Cancel (or backdrop click) costs nothing. The hover card says "N tiles until manual selection".
-  - The in-game tutorial says "every 4th purchase"; the real cadence is every 4th *owned count* as above.
-- Name prompt: when exactly **2 tiles** are owned and the name is still `Explorer`, the game asks for a name (max 9 chars) and shows a long tutorial (its numbers were corrected in the quick-win pass, [04](04-unfinished-and-known-issues.md)).
+- Grid 50×50, castle at (25, 25) owned from the start; drag to pan.
+- A tile can be bought only if it is **4-neighbour adjacent** to an owned tile and you can pay its whole cost: gold, plus **extra resources from larger territories** (`TILE_RESOURCE_COST`: wood + stone from the 15th owned tile, coal from 30, food from 40). Charisma discounts every part of the cost (0.5 %/point, max 25 %). The hover card and the biome picker show all costs, green when affordable.
+- Cost curve: ×1.45 per owned tile up to 20 tiles, ×1.27 per tile after that ([03 §1](03-formulas-and-scaling.md#1-tile-cost)).
+- Not enough → shake + `wrong` sound. Success → `purchase` sound, XP, +100 reputation.
+- **Biome assignment**: random among the 7 non-special biomes, except when `owned % 4 === 3` (owned = 3, 7, 11 … because the castle counts): then you **choose**. Nothing is charged until you choose; cancel is free; only offered biomes are accepted.
+- Name prompt + tutorial at exactly 2 owned tiles while the name is still `Explorer`.
 
-## 3. Biomes & resource generation
+## 3. Biomes, adjacency, buildings
 
-Per-second base output of one owned tile (before adjacency and modifiers):
+| Biome | Output / s (before adjacency & modifiers) |
+| --- | --- |
+| Castle (unique) | gold 0.1, wood 0.05, stone 0.1, food 0.05, xp 0.5 (not scaled) |
+| Grounds | xp 0.195, gold 0.065, wood 0.065 |
+| Forest | gold 0.13, wood 0.39 |
+| Plains | gold 0.13, food 0.39 (+5 % meat modifier per Plains tile) |
+| Hills | gold 0.065, stone 0.39, coal 0.26 |
+| Swamp | food 0.13, wood 0.26 |
+| Tundra | gold 0.13, coal 0.455 |
+| Lake | gold 0.065, food 0.325 |
 
-| Biome | gold | wood | stone | coal | food | xp | Notes |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Castle 🏰 (unique, start) | see §5 | | | | | | effective values differ from the config table |
-| Grounds 🛠️ | 0.05 | 0.05 | | | | 0.15 | can host one building (§6) |
-| Forest 🌲 | 0.1 | 0.3 | | | | | |
-| Plains 🌾 | 0.1 | | | | 0.3 | | each owned Plains tile also gives **+5 % meat modifier** |
-| Hills ⛰️ | 0.05 | | 0.3 | 0.2 | | | |
-| Swamp 🌿 | | 0.2 | | | 0.1 | | |
-| Tundra ❄️ | 0.1 | | | 0.35 | | | |
-| Lake 💧 | 0.05 | | | | 0.25 | | |
+(Config values × `BIOME_YIELD.scale` = 1.3.) **Adjacency**: each owned same-biome 4-neighbour adds +25 % to that tile's output, including its building.
 
-- **Adjacency bonus**: for each of the 4 neighbours that is owned **and the same biome**, the tile's output (biome *and* its building) is multiplied by `1 + 0.25·count` (`ADJACENCY_BONUS = 0.25`, `SCALING_CONFIG.adjacencyBonus`). Four same-biome neighbours = ×2. This is the only spatial strategy in the game.
-- Global base income: `BASE_GENERATION_RATES` = **0.1 gold/s** and **0.25 xp/s** flow in regardless of tiles.
-- Total income of a resource = `base × (1 + modifiers)` where modifiers come from the castle level, character stats and (for meat) Plains tiles — [03 §3](03-formulas-and-scaling.md#3-resource-rate-pipeline).
-- `meat` is never produced by tiles — only by farm animals.
+**Grounds + buildings**: click an owned Grounds tile once to pick a permanent building. Buildings now **cost resources** (500 gold, 250 wood, 150 stone for the first, ×1.6 for every further one) and the dialog shows the price. Building output (×1.3 yield scale, plus adjacency): Farm food 0.2 · Mine stone/coal 0.2 · Lumber Mill wood 0.2 · Market gold 0.2 · Blacksmith 0.07 of all five · Workshop xp 0.2.
 
 ## 4. Resources
 
-| Resource | Source | Uses |
-| --- | --- | --- |
-| 💰 Gold | base, tiles, click, chests, selling | tiles, castle upgrade, merchant purchases, click-multiplier upgrade |
-| 🪓 Wood, 🧱 Stone, ⚫ Coal | tiles, buildings, buying | castle upgrades; sell |
-| 🌾 Food | tiles, buildings | farm animals, castle upgrades from level 3; sell |
-| 🥩 Meat | farm animals | castle upgrades from level 3; sell (best price) |
-| ✨ XP | base 0.25/s, castle 0.5/s, Grounds, Workshop, tile purchases | levels |
-
-Header shows every resource except XP (XP is shown as the level bar).
+Gold, wood, stone, coal, food, meat, xp. All except gold/xp can be sold to the merchant; all except xp can be bought (at 2× the sell price). The header hides xp (it is the level bar). No stockpile can exceed 10¹⁵.
 
 ## 5. Castle
 
-- Single castle, always level 1 at the start, **max level 6** (`CASTLE_UPGRADE.maxLevel`). Click the castle tile → upgrade dialog.
-- Upgrading costs the resources listed per level (`CASTLE_UPGRADE.upgradeCosts`; first five rows used — [03 §4](03-formulas-and-scaling.md#4-castle)). Cost is paid in full from the stockpile.
-- Effect of level L: **adds `0.2 × 2^(L−1)` to the modifier of every resource** (+20 %, +40 %, +80 %, +160 %, +320 %, +640 %). It does *not* change base rates.
-- Castle's own base output: effectively **0.1 gold, 0.05 wood, 0.05 food, 0.5 xp, 0.1 stone** per second (`CASTLE_BASE_RATES` overrides the matching `BIOMES.castle` entries; stone comes from the biome table because `CASTLE_BASE_RATES.stone` is 0). The biome table's other castle numbers (0.2 gold, 0.1 wood, 0.1 food, 1.0 xp) are therefore dead — see [04](04-unfinished-and-known-issues.md) D3.
-- `CASTLE_UPGRADE.xpBonus` ("+0.5 XP/s flat per castle level") is **not implemented** (D2); the dialog no longer advertises it.
+- Max level 6. **Each upgrade is a timed build**: resources are paid up front, then the castle works for 1 h, 4 h, 12 h, 36 h and 72 h (5 d 5 h in total). It keeps its current bonus meanwhile and only one upgrade runs at a time. The timer is advanced by the game tick (never by the system clock), is saved, and is shown in the castle dialog and its tooltip.
+- Effect of level L: **+0.2 × 2^(L−1)** to the modifier of every resource (+20 % … +640 %), plus **+0.5 XP/s per level above 1** (flat).
+- Costs: see [03 §4](03-formulas-and-scaling.md#4-castle) (gold, wood, stone, coal from level 2→3, food + meat from 3→4).
 
-## 6. Grounds & buildings
+## 6. Farm
 
-- Buying a **Grounds** tile gives a plot. Clicking an owned, un-upgraded Grounds tile opens the building picker.
-- Choosing a building is **free, instant and permanent** (no cost, no removal, no swap): the tile gets `level: 2` and `building`.
-- A building adds its output to the tile's own (Grounds) output and benefits from the Grounds adjacency multiplier:
+- Each purchase adds **one more animal** of that kind (production = base × count). First cost in food: chicken 10 K, deer 50 K, pig 200 K, cow 1 M; each next one of the same kind costs ×1.5 / 1.6 / 1.7 / 1.8 more.
+- Meat income = `Σ production × (1 + castle modifier + 0.05 × Plains tiles)`.
+- While the Farm window is open a critter wanders by every 20–40 s (one at a time, 10 s lifetime): click it for a gift of ~10 s of that resource's income (golden ones ×2).
 
-| Building | Output /s |
+## 7. Merchant
+
+- Sell: wood 0.5, stone 0.5, coal 1, food 0.75, meat 1 gold per unit (`floor(amount × price)`).
+- Buy: 2× the sell price, rounded **up**. Buying then selling (or the reverse) can never gain gold — covered by tests.
+- **Click power** upgrades (gold per click as a % of your gold/s): 50 % → 90 % (750 K) → 130 % (2.5 M) → 180 % (10 M).
+- Three tabs (Upgrade Items / Quests / Gambling) are still placeholders ([04](04-unfinished-and-known-issues.md)). The window always opens on the Sell tab.
+
+## 8. Clicking
+
+- A **real click on the map** pays `gold/s × click power`. A click on an owned tile also taps it: `0.5 s` of that tile's output (each tile has a 1.2 s cooldown; critical "lucky" taps use your crit stats).
+- Clicks on menus, the header, buttons and dialogs never pay. Script-dispatched (untrusted) clicks never pay.
+- **Rate limit** (token buckets, shared by gold click and tile tap): up to 8 clicks in a burst, 5 clicks/s sustained, plus a long-run allowance (20 000 clicks bank, refilling 1.5 clicks/s ≈ 130 K paid clicks/day). A fast human is never limited; an auto-clicker is capped at roughly a dedicated human ([07](07-security-and-exploits.md)).
+
+## 9. Chests
+
+A chest appears on a random owned non-castle tile every 10 min (the timer only runs while fewer than 5 chests wait). Collect it by clicking the tile: reward = `passive gold/s × random 10–60 min × (1 + 0.5 % × Luck)`. Chests are saved with the map.
+
+## 10. XP, levels and stat points
+
+XP comes from passive income (`total.xp × (1 + xpGainMultiplier)`) and from every tile purchase. Level N → N+1 needs `floor(750 × 1.3^(N−1))` XP; each level gives one stat point (also when the level-up comes from a tile purchase).
+
+## 11. Character stats
+
+| Stat | Per point |
 | --- | --- |
-| Farm 🌱 | food 0.2 |
-| Mine ⚫ | stone 0.2, coal 0.2 |
-| Lumber Mill 🪓 | wood 0.2 |
-| Market 🏪 | gold 0.2 |
-| Blacksmith 🔨 | stone, coal, gold, food, wood 0.1 each |
-| Workshop 🏭 | xp 0.2 |
+| Strength | stone & coal +2.5 % |
+| Dexterity | wood & food +2.5 % |
+| Intelligence | gold +2.5 %, XP production +0.2 %, XP gained +0.2 % |
+| Vitality | wood & food +2.5 % |
+| Charisma | gold & coal +2.5 %, XP production +0.25 %, XP gained +0.25 %, tile cost −0.5 % (max −25 %), Luck +1 (chests) |
 
-Because buildings cost nothing, there is no decision beyond "which resource do I need" — the Blacksmith (0.5 total) is strictly the biggest raw yield.
+All text in tooltips and the tutorial comes from `CHARACTER_STAT_CONFIG`. Other derived stats (HP, MP, attack, defence, crit, reputation …) are display-only for now.
 
-## 7. Farm (meat)
+## 12. UI surfaces
 
-- Opened with the 🌾 header button. Four animals; each can be bought repeatedly ("level" = times bought).
-- Cost is paid in **food**; production is meat/s. See [03 §5](03-formulas-and-scaling.md#5-farm-animals) for formulas and the payback table.
-- Meat income = `Σ animal production × (1 + castle modifier + 0.05 × plains tiles)` (stat modifiers do not touch meat).
-- Meat is the best thing to sell (15 gold each vs 0.75 for food) — the farm is the main late-game gold engine and a major balance outlier (05).
-
-## 8. Merchant (💰 header button)
-
-Five tabs; only the first two work.
-
-- **Sell Resources**: wood 0.5, stone 0.5, coal 1, food 0.75, meat 15 gold per unit; slider or "sell all"; `floor(amount × price)`. Gold and XP cannot be sold.
-- **Buy Goods**: resource packs at **2× the sell price** (`floor(amount × price × 2)`), slider limited by gold. Also the **Gold Click Multiplier** ladder: 2× → 4× (250 K gold) → 8× (500 K) → 16× (2 M), max 16×.
-- **Upgrade Items / Quests / Gambling**: placeholder screens ("Coming soon").
-- Opening the Merchant closes the Character and Statistics windows.
-
-## 9. Clicking for gold
-
-`ResourceDisplay` registers a **global `window` click listener**. *Every* click anywhere on the page (map, buttons, dialogs) adds `total gold/s × clickMultiplier` gold (no cooldown, nothing at 0 income) and spawns a floating "+N 💰" by the gold counter. Starting multiplier 2. Consequently active play is far stronger than idle play, and the click multiplier scales linearly with your income.
-
-## 10. Chests
-
-- Timer `chestSpawnTimer` advances every tick. When it reaches **600 s** *and* fewer than **5** chests exist, it resets to 0 and a chest appears on a random owned, non-castle tile without one (💰 icon, amber border).
-- If 5 chests already exist the timer **keeps growing** (it is not reset), so collecting one makes the next one spawn on the very next tick.
-- Click the tile to collect: reward `floor(total gold/s × random whole seconds in [300, 3000])` — i.e. between 5 and 50 minutes of current income — shown in a 3 s toast. Collection does not consume the click for the gold-click bonus (the global listener still fires).
-- Chests persist in the save (they live on tiles). The dev panel has "Spawn Chest".
-
-## 11. XP, levels and stat points
-
-- XP sources: passive `total.xp/s × (1 + xpGainMultiplier/100)` per second, and a lump on each tile purchase `calculateXpGain(newOwned) × (1 + xpGainMultiplier/100)`.
-- Level N → N+1 needs `floor(750 × 1.3^(N−1))` XP ([03 §2](03-formulas-and-scaling.md#2-xp-and-levels)). Hovering the % in the level ring shows an ETA.
-- Each level gained grants **1 stat point** (awarded by `tick`; bought-tile level-ups now also award it after the fix in 04).
-- Level-up shows a notification and plays a fanfare (the Statistics overlay owns the sound listener).
-
-## 12. Character stats
-
-Five base stats, all starting at 5. Spend points in the Statistics overlay (header avatar).
-
-| Stat | Resource modifiers per point | Other derived (display only unless noted) |
-| --- | --- | --- |
-| Strength | stone +2.5 %, coal +2.5 % | physicalAtk +1, def +0.5, critDmg +1 % |
-| Dexterity | wood +2.5 %, food +2.5 % | def +1, atkSpeed +0.25, critChance +0.25 %, critDmg +0.5 % |
-| Intelligence | gold +2.5 %, **xp +0.2 %** (modifier) | magicAtk +1, magicDef +1, mp +2, **xpGainMultiplier +0.2** |
-| Vitality | wood +2.5 %, food +2.5 % | hp +3, def +0.5, magicDef +0.5 |
-| Charisma | gold +2.5 %, coal +2.5 %, **xp +0.25 %** (modifier) | hp/def/magicDef +0.25, luck +1, crit +0.5, **xpGainMultiplier +0.25**, **tileCostDiscount +0.5 %** (cap 25 %) |
-
-Only the bold/modifier effects change gameplay. HP, MP, ATK, DEF, crit, luck, atk speed and reputation exist but nothing consumes them yet. XP benefits from stats **twice** (once as a resource modifier, once as `xpGainMultiplier`). (The Charisma tooltip previously said 0.1 %/point; it now matches the code: 0.5 %/point, capped at 25 % at 50 points.)
-
-## 13. UI surfaces
-
-Header (avatar → Statistics, ⚔️ Character, 💰 Merchant, 🌾 Farm; resource counters with tooltips of base/modifier/total) · Map · Tile hover cards · Castle dialog · Building dialog · Biome picker · Level-up toast · Chest toast · Loading screen (2.5 s) · Name prompt/tutorial · dev-only debug panel (+100 K of each resource, spawn chest, reset name).
-
-> There is no in-game way to reset a save: `ResetGameDialog.tsx` (a "Reset Game (Testing)" button that clears localStorage) exists but is not mounted anywhere. Clear site data in the browser to start over.
+Header (avatar → Statistics, Character, Merchant, Farm; resource counters with base/modifier/total tooltips), map with tile hover cards, castle dialog (with timer), building dialog (with cost), biome picker (with all costs), level-up and chest toasts, loading screen (until the save is loaded), name prompt + tutorial, class picker, dev-only debug panel, and the **hidden save tools** (press Control five times): export / import / reset ([07](07-security-and-exploits.md)).

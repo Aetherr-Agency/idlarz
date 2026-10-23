@@ -59,26 +59,42 @@ export const BASE_XP_PER_LEVEL = 750; // Starting XP needed for level 1 to 2
 export const SPECIAL_SINGLE_TYPE_BIOMES: BiomeType[] = ['castle'];
 export const EMPTY_BIOMES: BiomeType[] = ['empty'];
 
-// Resource scaling configuration
-export const SCALING_CONFIG = {
-	// Base scaling factor that increases exponentially
-	baseScalingFactor: 1.42,
-	scalingIncreasePer: 24, // Increase scaling every X tiles
-	scalingIncreaseAmount: 0.01, // 1% increase in scaling factor
+// Hard limits shared by the tick loop and save validation
+export const MAX_CATCHUP_SEC = 300; // one tick never advances the game by more than this (clock edits, device sleep)
+export const RESOURCE_CAP = 1e15; // anything above this in a save is considered tampered
 
-	// Exponential cost scaling formula
-	costFormula: (ownedTiles: number) => {
-		const tier = Math.floor(ownedTiles / SCALING_CONFIG.scalingIncreasePer);
-		const currentScalingFactor =
-			SCALING_CONFIG.baseScalingFactor *
-			(1 +
-				SCALING_CONFIG.scalingIncreaseAmount * (tier > 20 ? tier : tier / 1.2));
-		return Math.floor(
-			BASE_TILE_COST * Math.pow(currentScalingFactor, ownedTiles)
-		);
-	},
+// Tile cost curve: exponential growth that is steep early (cheap first tiles) and gentler after `earlyTiles`
+export const SCALING_CONFIG = {
+	growthEarly: 1.45, // cost multiplier per owned tile up to `earlyTiles`
+	earlyTiles: 20,
+	growthLate: 1.27, // cost multiplier per owned tile after `earlyTiles`
+
+	// Gold cost of the next tile when `ownedTiles` tiles are owned (castle counts), before discounts
+	costFormula: (ownedTiles: number) =>
+		Math.floor(
+			BASE_TILE_COST *
+				Math.pow(
+					SCALING_CONFIG.growthEarly,
+					Math.min(ownedTiles, SCALING_CONFIG.earlyTiles)
+				) *
+				Math.pow(
+					SCALING_CONFIG.growthLate,
+					Math.max(ownedTiles - SCALING_CONFIG.earlyTiles, 0)
+				)
+		),
 	adjacencyBonus: ADJACENCY_BONUS,
 };
+
+// Extra resources a tile purchase costs once enough tiles are owned. amount = gold cost x share
+export const TILE_RESOURCE_COST: { from: number; resource: 'wood' | 'stone' | 'coal' | 'food'; share: number }[] = [
+	{ from: 15, resource: 'wood', share: 0.1 },
+	{ from: 15, resource: 'stone', share: 0.1 },
+	{ from: 30, resource: 'coal', share: 0.08 },
+	{ from: 40, resource: 'food', share: 0.08 },
+];
+
+// Biome/building output is multiplied by this (the castle's own output and the base rates are not)
+export const BIOME_YIELD = { scale: 1.3 };
 
 // Biome Configuration
 export const RESOURCE_ICONS = {
@@ -129,6 +145,17 @@ export const HEADER_DISPLAYED_RESOURCES_INFO = {
 	},
 } as const;
 
+// The castle's own per-second output (single source of truth: BIOMES.castle reads from it).
+export const CASTLE_BASE_RATES = {
+	gold: 0.1,
+	wood: 0.05,
+	stone: 0.1,
+	coal: 0,
+	food: 0.05,
+	meat: 0,
+	xp: 0.5,
+};
+
 export const BIOMES: Record<string, BiomeInfo> = {
 	empty: {
 		name: 'empty',
@@ -146,13 +173,9 @@ export const BIOMES: Record<string, BiomeInfo> = {
 		baseColor: '#6d28d9',
 		unique: true,
 		upgradeable: true,
-		resourceGeneration: {
-			gold: 0.2,
-			wood: 0.1,
-			stone: 0.1,
-			food: 0.1,
-			xp: 1.0,
-		},
+		resourceGeneration: Object.fromEntries(
+			Object.entries(CASTLE_BASE_RATES).filter(([, rate]) => rate > 0)
+		),
 		resourceIcons: [RESOURCE_ICONS.gold, RESOURCE_ICONS.xp],
 		description: 'Your castle generates resources over time',
 	},
@@ -272,16 +295,6 @@ export const BASE_GENERATION_RATES = {
 	xp: 0.25, // Base XP generation rate increased
 };
 
-// Castle Configuration - improved to make upgrades more impactful
-export const CASTLE_BASE_RATES = {
-	gold: 0.1, // Increased from 0.05
-	wood: 0.05, // Added some base wood generation
-	stone: 0,
-	coal: 0,
-	food: 0.05, // Increased from 0.01
-	meat: 0,
-	xp: 0.5, // Castle provides more base XP
-};
 
 // Castle range: tiles within this many steps of the castle (3x3 at radius 1) will get the castle's range bonus
 export const CASTLE_RANGE = { radius: 1 };
@@ -291,65 +304,67 @@ export const CASTLE_UPGRADE = {
 	maxLevel: 6, // Increased from 5
 	baseResourceMultiplier: 0.2, // 20% base modifier at level 1
 	doublePerLevel: true, // Multiply by 2 for each level
-	xpBonus: 0.5, // Additional flat XP per castle level
+	xpBonus: 0.5, // Additional flat XP/s for every castle level above 1
+	// Real upgrade time in seconds, indexed by the level being left (1 -> 2 is index 0). Counted by the tick loop.
+	durationsSec: [3600, 14400, 43200, 129600, 259200],
 	upgradeCosts: [
-		{ gold: 35000, wood: 5000, stone: 5000 },
-		{ gold: 100000, wood: 15000, stone: 15000, coal: 10000 },
+		{ gold: 350000, wood: 50000, stone: 50000 },
+		{ gold: 1000000, wood: 150000, stone: 150000, coal: 100000 },
 		{
-			gold: 500000,
-			wood: 50000,
-			stone: 50000,
-			coal: 25000,
-			food: 100000,
-			meat: 20000,
-		},
-		{
-			gold: 2000000,
-			wood: 200000,
-			stone: 200000,
-			coal: 100000,
+			gold: 5000000,
+			wood: 500000,
+			stone: 500000,
+			coal: 250000,
 			food: 1000000,
-			meat: 50000,
+			meat: 200000,
 		},
 		{
-			gold: 10000000,
-			wood: 1000000,
-			stone: 1000000,
-			coal: 500000,
-			food: 5000000,
-			meat: 250000,
+			gold: 20000000,
+			wood: 2000000,
+			stone: 2000000,
+			coal: 1000000,
+			food: 10000000,
+			meat: 500000,
 		},
 		{
-			gold: 50000000,
-			wood: 5000000,
-			stone: 5000000,
-			coal: 2500000,
-			food: 25000000,
-			meat: 1000000,
+			gold: 100000000,
+			wood: 10000000,
+			stone: 10000000,
+			coal: 5000000,
+			food: 50000000,
+			meat: 2500000,
 		},
 		{
-			gold: 250000000,
-			wood: 25000000,
-			stone: 25000000,
-			coal: 10000000,
-			food: 100000000,
-			meat: 5000000,
+			gold: 500000000,
+			wood: 50000000,
+			stone: 50000000,
+			coal: 25000000,
+			food: 250000000,
+			meat: 10000000,
 		},
 		{
-			gold: 1000000000,
-			wood: 100000000,
-			stone: 100000000,
-			coal: 50000000,
-			food: 500000000,
-			meat: 25000000,
+			gold: 2500000000,
+			wood: 250000000,
+			stone: 250000000,
+			coal: 100000000,
+			food: 1000000000,
+			meat: 50000000,
 		},
 		{
-			gold: 5000000000,
-			wood: 500000000,
-			stone: 500000000,
-			coal: 250000000,
-			food: 2500000000,
-			meat: 100000000,
+			gold: 10000000000,
+			wood: 1000000000,
+			stone: 1000000000,
+			coal: 500000000,
+			food: 5000000000,
+			meat: 250000000,
+		},
+		{
+			gold: 50000000000,
+			wood: 5000000000,
+			stone: 5000000000,
+			coal: 2500000000,
+			food: 25000000000,
+			meat: 1000000000,
 		},
 	],
 };
@@ -361,8 +376,11 @@ export const MERCHANT_RESOURCE_PRICES = {
 	stone: 0.5,
 	coal: 1,
 	food: 0.75,
-	meat: 15.0,
+	meat: 1,
 };
+
+// Buying resources from the merchant costs this many times the sell price
+export const MERCHANT_BUY_MULTIPLIER = 2;
 
 // Farm animal configurations
 export const ANIMALS: Animal[] = [
@@ -371,9 +389,8 @@ export const ANIMALS: Animal[] = [
 		name: 'Chicken',
 		description: 'A simple farm animal that produces a small amount of meat.',
 		baseCost: 10000, // Starting at 10k food as requested
-		costScaling: 1.5, // Each level costs 1.5x more
-		baseProduction: 0.2, // 0.2 meat per second
-		productionScaling: 1.2, // Each level increases production by 20%
+		costScaling: 1.5, // Each purchase costs 1.5x more than the previous one
+		baseProduction: 0.2, // meat per second per animal; each purchase adds one more animal
 	},
 	{
 		id: 'deer',
@@ -381,8 +398,7 @@ export const ANIMALS: Animal[] = [
 		description: 'A wild animal that produces more meat than a chicken.',
 		baseCost: 50000,
 		costScaling: 1.6,
-		baseProduction: 0.5, // 0.5 meat per second
-		productionScaling: 1.25,
+		baseProduction: 0.5,
 	},
 	{
 		id: 'pig',
@@ -390,8 +406,7 @@ export const ANIMALS: Animal[] = [
 		description: 'A domestic animal that produces a good amount of meat.',
 		baseCost: 200000,
 		costScaling: 1.7,
-		baseProduction: 1, // 1 meat per second
-		productionScaling: 1.3,
+		baseProduction: 1,
 	},
 	{
 		id: 'cow',
@@ -399,8 +414,7 @@ export const ANIMALS: Animal[] = [
 		description: 'A large animal that produces a significant amount of meat.',
 		baseCost: 1000000,
 		costScaling: 1.8,
-		baseProduction: 2, // 2 meat per second
-		productionScaling: 1.4,
+		baseProduction: 2,
 	},
 ];
 
@@ -445,7 +459,6 @@ export type BuildingType =
 export interface Building {
 	name: BuildingType;
 	label: string;
-	description: string;
 	resourceGeneration: Partial<Resources>;
 }
 
@@ -454,7 +467,6 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 	farm: {
 		name: 'farm',
 		label: 'Farm',
-		description: 'Produces +0.2 food per second',
 		resourceGeneration: {
 			food: 0.2,
 		},
@@ -462,7 +474,6 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 	mine: {
 		name: 'mine',
 		label: 'Mine',
-		description: 'Produces +0.2 stone and coal per second',
 		resourceGeneration: {
 			stone: 0.2,
 			coal: 0.2,
@@ -471,7 +482,6 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 	lumbermill: {
 		name: 'lumbermill',
 		label: 'Lumber Mill',
-		description: 'Produces +0.2 wood per second',
 		resourceGeneration: {
 			wood: 0.2,
 		},
@@ -479,7 +489,6 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 	market: {
 		name: 'market',
 		label: 'Market',
-		description: 'Produces +0.2 gold per second',
 		resourceGeneration: {
 			gold: 0.2,
 		},
@@ -487,19 +496,17 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 	blacksmith: {
 		name: 'blacksmith',
 		label: 'Blacksmith',
-		description: 'Produces +0.1 to all resources per second',
 		resourceGeneration: {
-			stone: 0.1,
-			coal: 0.1,
-			gold: 0.1,
-			food: 0.1,
-			wood: 0.1,
+			stone: 0.07,
+			coal: 0.07,
+			gold: 0.07,
+			food: 0.07,
+			wood: 0.07,
 		},
 	},
 	workshop: {
 		name: 'workshop',
 		label: 'Workshop',
-		description: 'Produces +0.2 XP per second',
 		resourceGeneration: {
 			xp: 0.2,
 		},
@@ -592,18 +599,77 @@ export const TILE_TAP = {
 // it leaves (lifetimeMs) for a gift worth `seconds` of that resource's income (at least `min`).
 export const FARM_BONUS = {
 	lifetimeMs: 10000,
-	firstDelayMs: 3500,
-	minGapMs: 6000,
-	maxGapMs: 13000,
-	maxActive: 2,
+	firstDelayMs: 15000,
+	minGapMs: 20000,
+	maxGapMs: 40000,
+	maxActive: 1,
 	goldenChance: 0.12,
-	goldenMultiplier: 3,
+	goldenMultiplier: 2,
 	critters: {
-		butterfly: { label: 'Butterfly', resource: 'gold', seconds: 45, min: 40, weight: 3 },
-		bee: { label: 'Bee', resource: 'food', seconds: 45, min: 30, weight: 3 },
-		ladybug: { label: 'Ladybug', resource: 'xp', seconds: 40, min: 25, weight: 2 },
-		rabbit: { label: 'Rabbit', resource: 'meat', seconds: 45, min: 12, weight: 2 },
+		butterfly: { label: 'Butterfly', resource: 'gold', seconds: 10, min: 5, weight: 3 },
+		bee: { label: 'Bee', resource: 'food', seconds: 10, min: 3, weight: 3 },
+		ladybug: { label: 'Ladybug', resource: 'xp', seconds: 10, min: 3, weight: 2 },
+		rabbit: { label: 'Rabbit', resource: 'meat', seconds: 10, min: 2, weight: 2 },
 	},
 } as const;
 
 export type FarmCritterType = keyof typeof FARM_BONUS.critters;
+
+// Gold per click = total gold/s x click power. Four upgrade levels, bought from the merchant.
+export const CLICK_LADDER = [
+	{ power: 0.5, price: 0 },
+	{ power: 0.9, price: 750000 },
+	{ power: 1.3, price: 2500000 },
+	{ power: 1.8, price: 10000000 },
+] as const;
+
+// Click rate limiter: two token buckets, a click must take a token from both.
+// - burst: up to `capacity` clicks at once, refilling `refillPerSec` per second (a fast human is never limited here;
+//   anything faster than `refillPerSec` clicks/s earns nothing).
+// - stamina: a long-run allowance (`staminaCapacity` clicks, refilling `staminaRefillPerSec`/s ~ 130K paid clicks a
+//   day) so an auto-clicker running 24 h is no better than a very dedicated human, while normal sessions never notice it.
+export const CLICK_LIMIT = {
+	capacity: 8,
+	refillPerSec: 5,
+	staminaCapacity: 20000,
+	staminaRefillPerSec: 1.5,
+	requireTrusted: true, // ignore synthetic (script-dispatched) clicks
+};
+
+// Chests: one spawns every `intervalSec` (timer pauses while `max` chests are waiting) on a random owned tile.
+// Reward = passive gold/s x a random time between minMinutes and maxMinutes, plus a small bonus per Luck.
+export const CHEST = {
+	intervalSec: 600,
+	max: 5,
+	minMinutes: 10,
+	maxMinutes: 60,
+	luckBonusPerPoint: 0.005,
+};
+
+// Buildings on Grounds tiles cost resources; each further building costs `growth` times more.
+export const BUILDING_COST = {
+	base: { gold: 500, wood: 250, stone: 150 } as Partial<Resources>,
+	growth: 1.6,
+};
+
+// What each base stat does per point. Used by the maths (gameUtils) AND by every tooltip/tutorial text.
+export const CHARACTER_STAT_CONFIG = {
+	// Fraction added to the modifier of each listed resource, per point
+	resourceModifierPerPoint: 0.025,
+	resourceTargets: {
+		strength: ['stone', 'coal'],
+		dexterity: ['wood', 'food'],
+		intelligence: ['gold'],
+		vitality: ['food', 'wood'],
+		charisma: ['gold', 'coal'],
+	} as Record<'strength' | 'dexterity' | 'intelligence' | 'vitality' | 'charisma', ('gold' | 'wood' | 'stone' | 'coal' | 'food')[]>,
+	// Fraction added to the XP modifier, per point
+	xpModifierPerPoint: { intelligence: 0.002, charisma: 0.0025 },
+	// Percent added to xpGainMultiplier (applies to passive XP and tile XP), per point
+	xpGainPercentPerPoint: { intelligence: 0.2, charisma: 0.25 },
+	// Percent of tile cost removed per Charisma point, and the cap
+	tileDiscountPercentPerCharisma: 0.5,
+	tileDiscountCapPercent: 25,
+	// Plains: meat modifier per owned Plains tile (fraction)
+	plainsMeatModifier: 0.05,
+};

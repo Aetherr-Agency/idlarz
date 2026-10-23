@@ -1,123 +1,59 @@
-# 06 · Playtest & pacing report
+# 06 · Playtest, pacing & the first rebalance pass
 
-**Why this exists:** a friend "finished" the live game in about 3 days of heavy play. The goal is for progress to be noticeably slower. This report records a sped-up playthrough of the current code and ranks the levers that make it fast. **No balance values were changed** — the recommendations below are to be tackled one at a time (each one should be followed by re-running `npx tsx scripts/balance-report.ts` and a new playtest).
+**Why:** a friend "finished" the live game in about 3 days. This document records what the playtest found, which fixes were applied first and why, and what the simulation says now. Applied items are *not* repeated in the backlog ([05](05-balance-backlog-and-roadmap.md)).
 
-## 1. How the playthrough was done
+## 1. What the playtests showed
 
-- Dev server on `localhost:3111`, driven through the in-app browser.
-- Time was accelerated by replacing `Date.now()` in the page (the game's tick uses wall-clock deltas): ×60 early, ×300, ×1200 and ×3000 later. Late-game ticks therefore cover 100–300 game-seconds each, which is coarse but fine for these slow rates.
-- A bot played through the real UI (clicking tiles, dialogs and buttons) as a *moderate* active player:
-  - **2 clicks per game-second, 24 h a day** (clicks anywhere give gold — [02 §9](02-mechanics.md)); a human would click far less over a day, an auto-clicker far more.
-  - Buys the cheapest adjacent tile whenever affordable (plains when it can choose), upgrades the castle when it can pay, spends stat points on Charisma/Intelligence, buys the first copy of each animal and upgrades when food is plentiful, buys the click multiplier when it can afford 1.2× the price, and sells excess meat/wood/stone/coal to the merchant.
-  - Flaws: until ~day 2.5 it did not sell (the merchant window was stuck on the Buy tab — fixed, B13), later it over-sold stone/meat it needed for castle 6, and it never collected chests. Treat the numbers as **directional**.
+Two independent measurements of the **old** game agree:
 
-## 2. Timeline of the run
+- **Browser playthrough** (real UI, clock sped up, a bot clicking 2×/s): effectively everything — castle 5/6, max click multiplier, all four animals, 35+ tiles — was reached by day 3.5–4; castle 6 was only delayed by bot mistakes.
+- **Headless simulation of the real store with the old parameters** (`npm run sim -- --legacy`): a player who clicks at 20 clicks/s all day finishes (castle 6, max click, 40 tiles) in **2.2 days**; 4 clicks/s for 8 h/day takes 13 days; never clicking takes 25 days. So the "3-day finish" is an auto-clicker / very heavy clicking result.
 
-| Game time | Tiles | Level | Castle | Click × | Passive gold/s | Notes |
-| --- | --- | --- | --- | --- | --- | --- |
-| 0.03 d (40 min) | 9 | 4 | 1 | 2 | 1.1 | |
-| 0.07 d (1.6 h) | 16 | 7 | 1 | 2 | 2.4 | tiles are cheap (< 10 K) |
-| 0.17 d (4 h) | — | — | **2** | 2 | — | castle 1→2 costs 35 K gold, 5 K wood/stone |
-| 0.35 d | — | — | **3** | 2 | — | 100 K gold + 10 K coal |
-| 0.51 d (12 h) | 24 | 14 | 3 | 2 | 5.3 | 154 K gold banked; chickens/deer bought |
-| 0.66 d | — | — | 3 | **4** | — | click upgrade 250 K |
-| 1.25 d | 26 | 18 | 3 | 4 | 5.7 | tile 26 cost 406 K |
-| 1.32 d | — | — | **4** | 4 | — | first food/meat requirement |
-| 2.17 d | 28 | 21 | 4 | 8 | 8.1 | stockpile: wood 423 K, stone 733 K, coal 870 K, **meat 649 K** (unsold) |
-| 2.56 d | 29 → 33 | — | 4 | **16** | — | one merchant liquidation = **17.9 M gold**; bought 4 tiles and the last click upgrade in one go |
-| 3.42 d | — | — | **5** | 16 | 14.5 | |
-| 3.57 d | 35 | 24 | 5 | 16 | 14.5 | |
-| 5.79 d | 38 | 27 | 5 | 16 | 16.0 | 21.6 M gold banked, 5.2 M food; castle 6 pending (needs 10 M gold, 1 M wood/stone, 500 K coal, 5 M food, 250 K meat) |
+Why the old game was so fast, in order of impact:
 
-Tile purchase times past 25 (game days / cost): #26 0.99 d / 406 K · #27 1.6 d / 575 K · #28 2.15 d / 823 K · #29 2.56 d / 1.18 M · #30–33 2.58–2.60 d / 1.7–4.9 M (liquidation burst) · #34 2.8 d / 7.1 M · #35 3.15 d / 10.1 M · #36 3.75 d / 14.4 M · #37 4.38 d / 20.6 M · #38 5.23 d / 29.3 M.
+1. **Click income scaled with income and had no limit**: gold per click = total gold/s × up to 16, any click anywhere (UI buttons included). Income ≈ passive × (1 + clicks/s × 16): ~160× with 10 clicks/s.
+2. **Meat sold for 15 gold** (food 0.75): one liquidation of unsold meat/coal/stone/wood produced 17.9 M gold in the playtest and bought four tiles plus the last click upgrade at once. The farm was the main engine.
+3. **The castle was cheap relative to income** and doubled everything; its full price was about one merchant sale.
+4. **Resources piled up unused** (stone 3.7×, coal 8.7× the next castle need) — everything was sellable gold.
+5. **Tiles stopped being a goal**: tile 25 → 434 K, tile 38 → 29 M gold for ~0.1 gold/s (the original complaint "cost is insane after 25"), so the real progression was castle + farm + clicks, all of which ended in days.
+6. Levels/stat points, chests (5–50 min of passive income) and tile taps were irrelevant next to clicking.
 
-**Reading:** every system with a hard cap (click multiplier 16×, castle 5 of 6, all four animals, 35+ tiles) is essentially done by **day 3.5–4** with a moderately active player, and the only things still unfinished (castle 6, more tiles) are limited by exponential costs that now buy almost nothing. That is the "finished in 3 days" experience.
+## 2. Decision: what was applied first (and why this order)
 
-## 3. What drives the speed (ranked)
+The order follows leverage and risk — remove the exploit-like multipliers first, then add the gates, then make the late game worth playing:
 
-1. **Clicking is the real income and it scales with income.** Click gold = `total gold/s × clickMultiplier`, no cooldown ([03 §3](03-formulas-and-scaling.md)). Total gold/s ≈ `passive × (1 + CPS × multiplier)`:
-   - Day 1.25 (×4): passive 5.7/s, bot clicks add 2 × 4 × 5.7 = **45/s → 89 % of income**.
-   - End state (×16): passive 16/s → **528/s at 2 CPS**, **~2,600/s at 10 CPS** (an auto-clicker or a very active player). The multiplier ladder costs only 250 K / 500 K / 2 M gold — trivial relative to what the same income produces.
-2. **Meat is a gold fountain.** Sell price 15 gold vs food 0.75 → 20×. At day ~2.5 the unsold meat alone was worth ~9.7 M gold (54 % of the 17.9 M liquidation). The farm's *first purchase of each animal* pays back in 42 min (chicken) to 7 h (cow) in food-sell-value terms ([03 §5](03-formulas-and-scaling.md)), and meat income stacks with castle and Plains modifiers.
-3. **Castle is cheap relative to income and doubles everything.** Levels 2–4 cost 35 K–500 K gold; by day 1.3 the bot had castle 4 (+160 %, ×2.6 total). Only levels 5–6 need large food/meat stockpiles. Total castle price to level 6 ≈ 12.6 M gold + 1.27 M wood/stone + 635 K coal + 6.1 M food + 320 K meat — roughly **one merchant liquidation** at day 2.5.
-4. **Stockpiles have no use besides the castle and merchant**: by day 2.2 stone was at 3.7× and coal at 8.7× the next castle need. Everything non-gold is effectively sellable gold (see 2), so non-gold resource production is money.
-5. **Tiles stopped being a goal long ago.** Cost n=30 → 1.7 M, n=38 → 29 M while a tile adds only ~0.05–0.1 gold/s (≈ 0.1 with adjacency). Payback is years; tiles are only bought with spare liquidation money. The user's own observation matches: past ~25 tiles the cost feels insane.
-6. **Levels and stat points do not matter**: level 27 on day 5.8, ≈ 26 stat points × 2.5 % on a ×7+ castle multiplier, XP has no other use.
-7. **Chests are irrelevant**: 5–50 min of *passive* gold (16/s → 5 K–48 K) versus income of hundreds per second from clicking; the bot ignored all five and lost nothing.
-
-## 4. Recommendations (one at a time, highest leverage first)
-
-For each: what to change, expected effect, and how to verify. Re-run the generated tables and repeat the playtest after each step.
-
-### R1 — Decouple click income from total income (biggest single lever)
-- Today: `gold per click = totalGold/s × multiplier`, unlimited clicks.
-- Options (pick one, combine with R1b):
-  - **a)** Cooldown / max CPS (e.g. one paying click per 300 ms, i.e. ≤ 3.3 CPS). Stops auto-clickers and button-mashing, keeps clicking as an active bonus.
-  - **b)** Make the click value a separate stat: `clickPower = base + 0.2 × castle level + upgrades` (flat gold), instead of a multiple of passive income, so late-game clicks stop dominating.
-  - **c)** Lower the multiplier ladder to 2 → 3 → 4 → 5 (or give the upgrades diminishing returns) and rescale prices.
-- Also stop paying gold for clicks on UI buttons/map-drag (only the map) — D10.
-- Target: clicks should be ~25–40 % of income, not 90 %.
-
-### R2 — Tame meat
-- Lower the merchant sell price of meat from 15 to **~2–3** (food stays 0.75), or cap meat sold per hour, or make animals consume food continuously. With price 2.5 the chicken payback goes from 42 min to ≈ 4.2 h and the cow from 6.9 h to ≈ 41 h.
-- Alternatively keep 15 but raise animal costs ×5–10 (first-copy costs 50 K / 250 K / 1 M / 5 M food).
-- Make animals' later levels worthwhile (each purchase adds a new animal's output rather than +20 % of one) — see 05 T5 — only *after* the price is fixed.
-
-### R3 — Slow the castle (the "finish line")
-- Raise costs of levels 2–4 (currently 35 K–500 K) by ~×5 and 5–6 by ×2–3, and require wood/stone/coal early so mining matters.
-- Add **upgrade timers** (e.g. 30 min, 2 h, 8 h, 24 h, 48 h). Time gates are the most direct way to keep a 3-day game from finishing in 3 days, independent of how fast the player earns.
-- Optionally make the bonus less front-loaded: `+0.5 per level` linear (L6 = +300 %) instead of doubling (+640 %).
-
-### R4 — Fix the tile-cost curve and make tiles worth buying
-- Observed problem: the current exponential makes tile #25+ hundreds of thousands and #38 ≈ 29 M for ~0.1 gold/s. Candidate curves in [generated §10](generated/balance-tables.md):
-
-  | n | A (now) | B (1.42ⁿ to 20 then ×1.22) | C (×1.30) | D (×1.25) |
-  | --- | --- | --- | --- | --- |
-  | 25 | 434 K | 165 K | 39 K | 15 K |
-  | 30 | 2.61 M | 446 K | 144 K | 44 K |
-  | 40 | 94.6 M | 3.3 M | 2.0 M | 414 K |
-  | 50 | 5.17 B | 23.8 M | 27.4 M | 3.9 M |
-  | cumulative to 40 tiles | 219 M | 14.7 M | 6.6 M | 1.7 M |
-
-- Recommendation: **B** (or a gentler tail) *combined with R1–R3* so that tiles become the long-term, time-gating sink instead of an unreachable wall. Since the goal is slower progress overall, do **not** flatten tiles first — flatten them after the faster levers are tamed, otherwise the game ends sooner.
-- Make tiles pay for themselves: per-tile output scaled by castle level or tile "levels" with costs, so the 40th tile is a real choice.
-
-### R5 — Give stockpiles a purpose and a cap
-- Add sinks for wood/stone/coal: building construction costs, equipment/upgrade tab (U2), animal housing.
-- Or cap resource storage at a castle-level-dependent size (e.g. `250 K × 2^(L-1)`), forcing spend/sell decisions and preventing multi-day hoards from turning into one huge gold injection.
-
-### R6 — Make levels/stat points matter or retire them
-- Raise stat effect to ~5 %/point and/or make XP gate castle levels (e.g. castle N needs player level 5·N), turning the already-existing XP/level system into pacing.
-- Re-add the unused castle `xpBonus` (U7) only after deciding the above.
-
-### R7 — Chests
-- Scale reward with progress (e.g. 30–60 min of *total* income including clicks, or flat resource packs), reset the spawn timer at the cap, and let chests expire — or they stay irrelevant.
-
-### R8 — Pacing targets to aim for (proposal, tune with the script)
-Let the "fully finished" state (castle 6, all animals, ~50 tiles, max click) take roughly:
-
-| Milestone | Now (moderate bot) | Proposed target |
+| # | Change | Why first / what it fixes |
 | --- | --- | --- |
-| 16 tiles | ~1.6 h | 3–4 h |
-| Castle 2 | ~4 h | ~1 day |
-| Castle 3 | ~8 h | ~3 days |
-| Castle 4 | ~1.3 d | ~7 days |
-| Castle 5 | ~3.4 d | ~14 days |
-| Castle 6 | > 6 d | ~21–28 days |
-| 40 tiles | ~3.5 d | ~21 days |
-| Max click multiplier | ~2.6 d | ~10–14 days |
+| 1 | **Click limiter** (burst 8, 5/s, long-run ≈1.5/s) + only trusted clicks on the **map** + click power 50–180 % of gold/s (was ×2–×16) | the single biggest lever (1); autoclickers can no longer beat a dedicated human, fast humans are never limited |
+| 2 | **Meat 15 → 1 gold**, animals **stack** (each purchase adds one animal) | removes the gold fountain (2) and makes later animal purchases matter |
+| 3 | **Castle**: costs ×10, **timed builds** (1 h … 72 h, tick-counted), castle XP bonus implemented | the finish line can no longer be bought in one go (3); timers survive clock edits |
+| 4 | **Tiles**: cost curve ×1.45/tile to 20 then ×1.27 (was ×1.42 everywhere, tile 40 = 95 M → 10.8 M), **extra wood/stone/coal/food from larger territories**, biome yield ×1.3 | tiles stay a meaningful long-term sink and finally give wood/stone/coal/food a use (4, 5) |
+| 5 | **Buildings cost resources** (×1.6 each), Blacksmith 0.1 → 0.07 | a choice instead of a free pick |
+| 6 | **Chest timer pauses at the cap**, reward 10–60 min, +0.5 %/Luck; **farm critters** 45 s → ~10 s gifts, 20–40 s apart, one at a time, real clicks only | removes two easy bonuses (6) |
+| 7 | **T1**: the hidden +10 % gold / +25 % XP modifier removed (modifiers start at 0); castle output has a single source of truth | honest numbers; part of the intended slowdown |
+| 8 | **Clock/offline safety** (monotonic time, tick clamp), validated actions, encrypted IndexedDB saves ([07](07-security-and-exploits.md)) | closes the cheap exploits so the new pacing means something |
 
-Numbers are placeholders; the *shape* matters: early game stays quick (first session feels good), mid game becomes timer/gate driven, and the end state is a multi-week goal.
+Tuning method: `npm run sim` (bots on the real store) — first reproduce the old behaviour with `--legacy`, then iterate the constants until the dedicated-human finish time was ≈ 4 weeks, an auto-clicker no better than ~1.06× that, and the first hours stayed quick (16 tiles in ≈ 4 h, castle 2 in ≈ 19 h).
 
-### Suggested order of work
-1. R1 (click) — measure again; 2. R2 (meat) — measure; 3. R3 (castle costs + timers); 4. R4 (tile curve B + per-tile value); 5. R5 sinks/caps; 6. R6 levels; 7. R7 chests; then revisit R8 targets. Remember D1 (+10 % gold/+25 % XP hidden modifier) can be folded into whichever step touches `calculateResourceRates`.
+## 3. Result (sim, new parameters)
 
-## 5. Quick wins done during this pass
+From [generated/sim-milestones.md](generated/sim-milestones.md) (game time until the milestone is first reached):
 
-Inertia drift and per-frame re-render of the map, negative-clock resource drain, misleading castle/tooltip/tutorial/comment text, and the merchant tab reset — see B8–B13 in [04](04-unfinished-and-known-issues.md). None of these change the economy.
+| milestone | idle | casual (1 click/s, 3 h/day) | hardcore (4 clicks/s, 8 h/day) | autoclicker (20 clicks/s, 24 h/day) |
+| --- | --- | --- | --- | --- |
+| 16 tiles | 3.7 h | 3.7 h | 3.7 h | 0.8 h |
+| castle 2 | 20 h | 20 h | 19 h | 20 h |
+| castle 3 | 2.8 d | 3.0 d | 2.2 d | 1.8 d |
+| castle 4 | 7.2 d | 6.5 d | 5.0 d | 3.8 d |
+| castle 5 | 16.5 d | 15.1 d | 12.3 d | 9.9 d |
+| 40 tiles | 34.5 d | 31.2 d | 14.7 d | 10.3 d |
+| **finished** (castle 6 + best click + 40 tiles) | **35.8 d** | **32.8 d** | **28.3 d** | **26.8 d** |
 
-## 6. Caveats
+For comparison the old parameters give 25.4 / 22.9 / 13.3 / **2.2** days for the same four bots. The auto-clicker went from 2.2 days to 26.8 days (≈ hardcore), while a dedicated human is ≈ 21 % faster than someone who never clicks. The autoclicker's early lead (16 tiles in 0.8 h) comes from the full long-run bucket at the start and from playing from midnight; the hardcore profile does not start until 07:00.
 
-- The bot clicks 2×/s around the clock; real players click less per day but can auto-click; both extremes are covered by the formula in §3.1.
-- Time acceleration makes late-game ticks coarse (100–300 game-seconds); resource totals are a little off but not by orders of magnitude.
-- Only one run was made, with a few flaws in the bot (§1). Use the numbers to compare *changes*, not as absolute truth. The headless simulation in `scripts/balance-report.ts` (§9 of the generated tables) is an idle-only baseline; extending it with a click/castle/animal strategy would give a reproducible way to evaluate each recommendation without the browser.
+## 4. Caveats and what is not decided
+
+- The bots are one plausible strategy (castle-first, top up missing resources with gold, sell surplus). They do not play critters, tile taps or the class picker. Numbers are good for *comparing changes*, not as absolute truth ([04 B7](04-unfinished-and-known-issues.md)).
+- 4 weeks is the active-player target chosen for this pass; idle ≈ 5 weeks. The gap between active and idle is modest by design of the castle timers (5 d 5 h of mandatory waiting).
+- Remaining balance questions (levels/stat points, chest relevance, merchant depth, endgame) are in [05 §1](05-balance-backlog-and-roadmap.md).
+- The old browser playtest numbers (tile purchase times, stockpiles) were measured on the pre-rebalance game and are kept only as the motivation above.

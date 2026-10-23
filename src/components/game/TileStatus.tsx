@@ -1,11 +1,15 @@
 import React, { memo, useMemo } from 'react';
 import { BiomeType } from '@/types/game';
-import { BIOMES, SCALING_CONFIG } from '@/config/gameConfig';
+import { BIOMES } from '@/config/gameConfig';
 import { useGameStore } from '@/stores/gameStore';
-import { countOwnedTiles } from '@/utils/gameUtils';
-import { formatNumber } from '@/utils/formatters';
+import {
+	calculateTileCost,
+	canAffordBundle,
+	countOwnedTiles,
+	tileCostAsResources,
+} from '@/utils/gameUtils';
 import { BiomeTooltip } from './BiomeTooltip';
-import ResourceIcon from './ResourceIcon';
+import CostList from './CostList';
 import { cn } from '@/lib/utils';
 
 export const TileStatus = memo(
@@ -30,9 +34,10 @@ export const TileStatus = memo(
 
 		const { cost, tilesUntilManualSelection, canManuallySelect } = useMemo(() => {
 			const ownedTilesCount = countOwnedTiles(tiles);
-			const baseCost = SCALING_CONFIG.costFormula(ownedTilesCount);
-			const discountMultiplier = 1 - characterStats.tileCostDiscount / 100;
-			const discountedCost = baseCost * discountMultiplier;
+			const discountedCost = calculateTileCost(
+				ownedTilesCount,
+				characterStats.tileCostDiscount
+			);
 			const tilesUntilManualSelection = (3 - (ownedTilesCount % 4)) % 4;
 			const canManuallySelect = tilesUntilManualSelection === 0;
 
@@ -54,15 +59,13 @@ export const TileStatus = memo(
 		}
 
 		if (isAdjacent) {
-			const canAfford = resources.gold >= cost;
+			const canAfford = canAffordBundle(resources, tileCostAsResources(cost));
 			return (
 				<div className='space-y-1 text-sm'>
 					<div className='px-tip-title'>Unexplored Land</div>
-					<div className='flex items-center gap-1 mb-2'>
-						<ResourceIcon resource='gold' />
-						<span className={canAfford ? 'text-green-400' : 'text-red-400'}>
-							Cost: {formatNumber(cost)} gold
-						</span>
+					<div className='flex flex-wrap items-center gap-1 mb-2'>
+						<span className={canAfford ? 'text-green-400' : 'text-red-400'}>Cost:</span>
+						<CostList cost={tileCostAsResources(cost)} />
 						{characterStats.tileCostDiscount > 0 && (
 							<span className='text-amber-400 text-xs ml-1'>
 								(-{characterStats.tileCostDiscount.toFixed(2)}%)

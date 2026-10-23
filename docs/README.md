@@ -1,29 +1,34 @@
 # Idle Explorer — design & technical docs
 
-Live build: https://idlarz.vercel.app · Repo stack: Next.js 15.5 (App Router) · React 19 · Tailwind 4 · Zustand 5 (persisted to `localStorage`).
+Live build: https://idlarz.vercel.app · Stack: Next.js 15.5 (App Router) · React 19 · Tailwind 4 · Zustand 5 · encrypted IndexedDB saves.
 
-These documents describe the game **as the code actually behaves** (not as the in-game tutorial claims — the tutorial text in `NamePrompt.tsx` is out of date, see [04](04-unfinished-and-known-issues.md)). Every number is traceable to a file; the large tables are generated from the real config so they can be refreshed after tuning.
+These documents describe the game **as the code behaves**. Numbers are traceable to a file; the large tables and the pacing numbers are generated from the real config so they can be refreshed after tuning.
 
 | Doc | What it answers |
 | --- | --- |
-| [01-architecture.md](01-architecture.md) | How the code is organised, the state shape, the tick loop, persistence |
+| [01-architecture.md](01-architecture.md) | Code layout, state shape, tick loop, persistence, how clicks flow |
 | [02-mechanics.md](02-mechanics.md) | Every player-visible mechanic and its exact rules |
-| [03-formulas-and-scaling.md](03-formulas-and-scaling.md) | Every formula, constant, and how the numbers scale |
-| [04-unfinished-and-known-issues.md](04-unfinished-and-known-issues.md) | Half-built features, dead config, bugs (fixed and open) |
-| [05-balance-backlog-and-roadmap.md](05-balance-backlog-and-roadmap.md) | Balance observations, proposed tweaks, suggested next features, upgrade notes |
-| [06-playtest-and-pacing-report.md](06-playtest-and-pacing-report.md) | Sped-up playthrough: where the time goes, why the game "finishes" in ~3 days, prioritised rebalancing recommendations |
-| [generated/balance-tables.md](generated/balance-tables.md) | Auto-generated tables (tile cost, levels, castle, animals, rates, idle simulation) |
+| [03-formulas-and-scaling.md](03-formulas-and-scaling.md) | Every formula and constant with tables |
+| [04-unfinished-and-known-issues.md](04-unfinished-and-known-issues.md) | Half-built features and open issues (only what is still open) |
+| [05-balance-backlog-and-roadmap.md](05-balance-backlog-and-roadmap.md) | Remaining balance questions, feature roadmap, upgrade notes |
+| [06-playtest-and-pacing-report.md](06-playtest-and-pacing-report.md) | Why the old game finished in ~3 days, what the first rebalance pass changed, simulated results |
+| [07-security-and-exploits.md](07-security-and-exploits.md) | Save vault, validation, hidden save tools, exploit audit, server-verified saves (later) |
+| [generated/balance-tables.md](generated/balance-tables.md) | Auto-generated tables (tile cost, levels, castle, animals, biomes, rates) |
+| [generated/sim-milestones.md](generated/sim-milestones.md) | Auto-generated milestone times per simulated player profile |
 
-## Regenerating the tables
+## Commands
 
 ```bash
-npx tsx scripts/balance-report.ts
+npm run report   # regenerate docs/generated/balance-tables.md from the config
+npm run sim      # bot simulation on the real store -> docs/generated/sim-milestones.md
+npm run sim -- --legacy hardcore          # approximate the pre-rebalance game
+npm run sim -- --set=SCALING_CONFIG.growthLate=1.25 castleCostScale=...   # try a tweak without editing files
+npm test         # click limiter, economy/exploit and save-validation tests
 ```
 
-`tsx` is fetched on demand (it is not a project dependency). The script imports the real `gameConfig.ts` / `gameUtils.ts`, so any tuning change shows up in the tables immediately. Re-run it and commit the diff whenever balance values change.
+Re-run `report` and `sim` and commit the diff whenever balance values change.
 
-## Conventions used in the docs
+## Conventions
 
-- `file:line` references point at the code at the time of writing (branch `agntc/game-docs-dependencies-cd99bf`).
-- "Per second" rates are *before* the click multiplier; "modifier" values are fractions (0.25 = +25%).
-- **D1, D2…** are *discrepancies* that were found but deliberately **not** changed because changing them alters game balance; they need a product decision (see 04).
+- Rates are per second and *before* modifiers unless stated; modifiers are fractions (0.25 = +25 %).
+- Anything that moves resources must be validated in the store action and covered in `tests/economy.test.ts`; anything that is saved must be validated in `src/lib/sanitizeSave.ts` ([07](07-security-and-exploits.md)).

@@ -159,7 +159,8 @@ export const MeadowCritter: React.FC<MeadowCritterProps> = ({ critter, onCatch, 
 				role='button'
 				aria-label={`${FARM_BONUS.critters[critter.type].label} - click for a gift`}
 				onClick={(e) => {
-					if (caught.current) return;
+					// Gifts are for real clicks only (a script cannot farm the meadow)
+					if (caught.current || !e.isTrusted) return;
 					caught.current = true;
 					onCatch(critter, e.clientX, e.clientY);
 					onExpire(critter.id);

@@ -5,10 +5,11 @@ import { ResourceSellingSection } from './ResourceSellingSection';
 import { MerchantPriceList } from './MerchantPriceList';
 import { MerchantTabButtons } from './MerchantTabButtons';
 import {
+	CLICK_LADDER,
+	MERCHANT_BUY_MULTIPLIER,
 	MERCHANT_RESOURCE_INFO,
 	MERCHANT_RESOURCE_PRICES,
 } from '@/config/gameConfig';
-import { Resources } from '@/types/game';
 import { cn } from '@/lib/utils';
 import PixelModal from '../../PixelModal';
 import PixelIcon from '../../PixelIcon';
@@ -80,7 +81,7 @@ const ResourceBuyingSection: React.FC<ResourceBuyingSectionProps> = ({
 				</div>
 				<div className='text-right'>
 					<div className='text-yellow-400 font-medium text-xs'>
-						<span className='inline-flex items-center gap-1'>{MERCHANT_RESOURCE_PRICES[resource] * 2} <ResourceIcon resource='gold' /> each</span>
+						<span className='inline-flex items-center gap-1'>{MERCHANT_RESOURCE_PRICES[resource] * MERCHANT_BUY_MULTIPLIER} <ResourceIcon resource='gold' /> each</span>
 					</div>
 					<div className='text-xs text-[#a89878] whitespace-nowrap'>
 						Max: {formatNumber(maxAmount)}
@@ -131,8 +132,9 @@ const MerchantOverlay: React.FC = () => {
 		toggleMerchantWindow,
 		resources,
 		sellResources,
-		addResources,
-		clickMultiplier,
+		buyResource,
+		buyClickUpgrade,
+		clickLevel,
 	} = useGameStore();
 
 	// State for current merchant tab
@@ -195,7 +197,7 @@ const MerchantOverlay: React.FC = () => {
 		const goldGained = calculateGold(resource, sellAmounts[resource]);
 
 		// Sell the resources
-		sellResources(resource, sellAmounts[resource]);
+		if (!sellResources(resource, sellAmounts[resource])) return;
 
 		// Set success message
 		setSaleMessage({
@@ -226,7 +228,7 @@ const MerchantOverlay: React.FC = () => {
 		const goldGained = calculateGold(resource, amountToSell);
 
 		// Sell the resources
-		sellResources(resource, amountToSell);
+		if (!sellResources(resource, amountToSell)) return;
 
 		// Set success message
 		setSaleMessage({
@@ -271,12 +273,14 @@ const MerchantOverlay: React.FC = () => {
 		return Math.floor(amount * MERCHANT_RESOURCE_PRICES[resource]);
 	};
 
-	// Calculate price for resource packs (price is doubled)
+	// Price of a resource pack (rounded up, same as the store's buyResource)
 	const calculateResourcePackPrice = (
 		resource: keyof typeof MERCHANT_RESOURCE_PRICES,
 		amount: number
 	) => {
-		return Math.floor(amount * MERCHANT_RESOURCE_PRICES[resource] * 2);
+		return Math.ceil(
+			amount * MERCHANT_RESOURCE_PRICES[resource] * MERCHANT_BUY_MULTIPLIER
+		);
 	};
 
 	// Handle buying a resource with slider
@@ -292,12 +296,7 @@ const MerchantOverlay: React.FC = () => {
 		if (resources.gold < price) return;
 
 		// Subtract gold and add resources
-		const resourcesUpdate: Partial<Resources> = {
-			gold: -price,
-			[resource]: amount,
-		};
-
-		addResources(resourcesUpdate);
+		if (!buyResource(resource, amount)) return;
 
 		// Show purchase message
 		setPurchaseMessage({
@@ -319,59 +318,25 @@ const MerchantOverlay: React.FC = () => {
 		}, 3000);
 	};
 
-	// Helper function to get click multiplier level (0-3)
-	const getClickMultiplierLevel = () => {
-		if (clickMultiplier >= 16) return 3;
-		if (clickMultiplier >= 8) return 2;
-		if (clickMultiplier >= 4) return 1;
-		return 0;
-	};
+	// Click power ladder: gold per click = your gold/s x power (see CLICK_LADDER)
+	const maxClickLevel = CLICK_LADDER.length - 1;
+	const nextClick = CLICK_LADDER[clickLevel + 1];
+	const percent = (power: number) => `${Math.round(power * 100)}%`;
 
-	// Helper function to get next click multiplier upgrade price
-	const getClickMultiplierPrice = () => {
-		const level = getClickMultiplierLevel();
-		switch (level) {
-			case 0: return 250000; // 250k - Level 1 (2x → 4x)
-			case 1: return 500000; // 500k - Level 2 (4x → 8x)
-			case 2: return 2000000; // 2M - Level 3 (8x → 16x)
-			default: return 0; // Max level
-		}
-	};
+	const getClickMultiplierText = () =>
+		nextClick
+			? `Gold per click: ${percent(CLICK_LADDER[clickLevel].power)} of your gold/s → ${percent(nextClick.power)}`
+			: `Maximum level reached (${percent(CLICK_LADDER[clickLevel].power)} of your gold/s per click)`;
 
-	// Helper function to format the multiplier display text
-	const getClickMultiplierText = () => {
-		const level = getClickMultiplierLevel();
-		switch (level) {
-			case 0: return "Upgrade gold per click (2x → 4x)";
-			case 1: return "Upgrade gold per click (4x → 8x)";
-			case 2: return "Upgrade gold per click (8x → 16x)";
-			default: return "Maximum level reached (16x)";
-		}
-	};
-
-	// Handle buying the gold click multiplier
+	// Handle buying the next click power level
 	const handleBuyClickMultiplier = () => {
-		const level = getClickMultiplierLevel();
-		const price = getClickMultiplierPrice();
-
-		// Check if already at max level
-		if (level >= 3) return;
-
-		// Check if player can afford it
-		if (resources.gold < price) return;
-
-		// Update game state - double the current multiplier
-		useGameStore.setState((state) => ({
-			resources: {
-				...state.resources,
-				gold: state.resources.gold - price,
-			},
-			clickMultiplier: state.clickMultiplier * 2, // Double the current multiplier
-		}));
+		if (!nextClick) return;
+		const price = nextClick.price;
+		if (!buyClickUpgrade()) return;
 
 		// Show purchase message
 		setPurchaseMessage({
-			item: `Gold Click Multiplier Level ${level + 1}`,
+			item: `Click Power Level ${clickLevel + 1}`,
 			price: price,
 		});
 
@@ -385,7 +350,7 @@ const MerchantOverlay: React.FC = () => {
 	const calculateMaxBuyAmount = (
 		resource: keyof typeof MERCHANT_RESOURCE_PRICES
 	) => {
-		const unitPrice = MERCHANT_RESOURCE_PRICES[resource] * 2;
+		const unitPrice = MERCHANT_RESOURCE_PRICES[resource] * MERCHANT_BUY_MULTIPLIER;
 		return Math.floor(resources.gold / unitPrice);
 	};
 
@@ -455,11 +420,11 @@ const MerchantOverlay: React.FC = () => {
 							{/* Gold click multiplier upgrade */}
 							<div className="grid grid-cols-2 gap-4 mb-6">
 								<div className={cn('px-card text-white', {
-									'!border-purple-500': getClickMultiplierLevel() >= 3
+									'!border-purple-500': clickLevel >= maxClickLevel
 								})}>
 									<h3 className='font-semibold mb-2 flex items-center text-sm'>
-										<span className='mr-2'><ResourceIcon resource='gold' /></span> Gold Click Multiplier
-										{getClickMultiplierLevel() >= 3 && (
+										<span className='mr-2'><ResourceIcon resource='gold' /></span> Click Power
+										{clickLevel >= maxClickLevel && (
 										<span className='ml-2 text-xs uppercase text-purple-500'>
 										(Max level)
 									</span>
@@ -469,21 +434,21 @@ const MerchantOverlay: React.FC = () => {
 									{getClickMultiplierText()}
 								</p>
 								
-									{getClickMultiplierLevel() < 3 ? (
+									{nextClick ? (
 										<div className='flex justify-between items-center text-sm mt-2'>
 											<p className='text-yellow-400 font-medium'>
-												<span className='inline-flex items-center gap-1'>{formatNumber(getClickMultiplierPrice())} <ResourceIcon resource='gold' /></span>
+												<span className='inline-flex items-center gap-1'>{formatNumber(nextClick?.price ?? 0)} <ResourceIcon resource='gold' /></span>
 											</p>
 											<button
 												onClick={handleBuyClickMultiplier}
-												disabled={resources.gold < getClickMultiplierPrice()}
+												disabled={resources.gold < (nextClick?.price ?? 0)}
 												className='px-btn px-btn-sm'>
-												{resources.gold >= getClickMultiplierPrice() ? 'Purchase' : 'Get more gold!'}
+												{resources.gold >= (nextClick?.price ?? 0) ? 'Purchase' : 'Get more gold!'}
 											</button>
 										</div>
 									) : (
 										<div className='bg-purple-900 bg-opacity-50 p-2 rounded border border-purple-700 text-center'>
-											<p className='text-purple-300 font-medium'>Max Level Reached (16x)! ✅</p>
+											<p className='text-purple-300 font-medium'>Max Level Reached ({percent(CLICK_LADDER[clickLevel].power)} per click)</p>
 										</div>
 									)}
 								</div>
@@ -495,7 +460,7 @@ const MerchantOverlay: React.FC = () => {
 									Resource Packs
 								</h3>
 								<p className='text-sm text-[#d8c8a0] mb-4'>
-									Purchase resources in bulk (prices are 2x sell value).
+									Purchase resources in bulk (prices are {MERCHANT_BUY_MULTIPLIER}x sell value).
 								</p>
 
 								<div className='grid grid-cols-2 gap-4'>

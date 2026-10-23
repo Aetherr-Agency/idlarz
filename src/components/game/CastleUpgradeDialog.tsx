@@ -2,7 +2,8 @@ import React from 'react';
 import type { FC } from 'react';
 import { CASTLE_UPGRADE } from '@/config/gameConfig';
 import { useGameStore } from '@/stores/gameStore';
-import { formatNumber } from '@/utils/formatters';
+import { formatNumber, formatTime } from '@/utils/formatters';
+import { castleUpgradeDuration } from '@/utils/gameUtils';
 import audioManager from '@/utils/audioManager';
 import PixelModal from './PixelModal';
 import ResourceIcon from './ResourceIcon';
@@ -17,6 +18,7 @@ const CastleUpgradeDialog: FC<CastleUpgradeDialogProps> = ({ onClose }) => {
 	const tiles = useGameStore((state) => state.tiles);
 	const resources = useGameStore((state) => state.resources);
 	const upgradeCastle = useGameStore((state) => state.upgradeCastle);
+	const castleUpgrade = useGameStore((state) => state.castleUpgrade);
 
 	// Safely get castle level from the center tile
 	const centerX = Math.floor(tiles[0].length / 2);
@@ -41,11 +43,13 @@ const CastleUpgradeDialog: FC<CastleUpgradeDialogProps> = ({ onClose }) => {
 			: null;
 
 	// Check if player has enough resources
-	const canAfford = nextLevelCosts
-		? Object.entries(nextLevelCosts).every(
-				([resource, amount]) => resources[resource as keyof typeof resources] >= amount
-		  )
-		: false;
+	const isUpgrading = !!castleUpgrade;
+	const canAfford =
+		!isUpgrading && nextLevelCosts
+			? Object.entries(nextLevelCosts).every(
+					([resource, amount]) => resources[resource as keyof typeof resources] >= (amount || 0)
+			  )
+			: false;
 
 	const handleUpgrade = () => {
 		if (canAfford && !isMaxLevel && upgradeCastle) {
@@ -74,10 +78,12 @@ const CastleUpgradeDialog: FC<CastleUpgradeDialogProps> = ({ onClose }) => {
 			? CASTLE_UPGRADE.baseResourceMultiplier * Math.pow(2, castleLevel + 1)
 			: CASTLE_UPGRADE.baseResourceMultiplier * (castleLevel + 2);
 
-	// Calculate XP gain based on level
-	const currentXpBonus = CASTLE_UPGRADE.xpBonus * castleLevel;
-	const nextXpBonus = CASTLE_UPGRADE.xpBonus * (castleLevel + 1);
-	const afterNextXpBonus = CASTLE_UPGRADE.xpBonus * (castleLevel + 2);
+	// Flat XP/s granted by the castle: xpBonus for every level above 1
+	const currentXpBonus = CASTLE_UPGRADE.xpBonus * (castleLevel - 1);
+	const nextXpBonus = CASTLE_UPGRADE.xpBonus * castleLevel;
+	const afterNextXpBonus = CASTLE_UPGRADE.xpBonus * (castleLevel + 1);
+
+	const duration = castleUpgradeDuration(castleLevel);
 
 	const CostGrid: React.FC<{ costs: Partial<Record<string, number>>; muted?: boolean }> = ({
 		costs,
@@ -127,9 +133,16 @@ const CastleUpgradeDialog: FC<CastleUpgradeDialogProps> = ({ onClose }) => {
 				resources
 			</div>
 			<div className='text-sm text-[#a89878] mb-3'>
-				XP generation: <span className='text-amber-400'>+{currentXpBonus.toFixed(1)} XP/s</span>{' '}
-				flat rate
+				Castle XP: <span className='text-amber-400'>+{currentXpBonus.toFixed(1)} XP/s</span> flat
 			</div>
+
+			{castleUpgrade && (
+				<div className='px-card mb-3 text-center'>
+					<div className='px-h'>Upgrading to level {castleUpgrade.toLevel}</div>
+					<div className='text-amber-300 text-lg'>{formatTime(castleUpgrade.remainingSec)}</div>
+					<div className='text-xs text-[#a89878]'>The castle keeps its current bonus until the work is done.</div>
+				</div>
+			)}
 
 			{!isMaxLevel && nextLevelCosts ? (
 				<>
@@ -139,8 +152,7 @@ const CastleUpgradeDialog: FC<CastleUpgradeDialogProps> = ({ onClose }) => {
 						all resources
 					</div>
 					<div className='text-sm text-[#a89878] mb-3'>
-						XP generation:{' '}
-						<span className='text-amber-400'>+{nextXpBonus.toFixed(1)} XP/s</span> flat rate
+						Castle XP: <span className='text-amber-400'>+{nextXpBonus.toFixed(1)} XP/s</span> flat
 					</div>
 
 					{!isNextToMaxLevel && afterNextLevelCosts && (
@@ -153,6 +165,7 @@ const CastleUpgradeDialog: FC<CastleUpgradeDialogProps> = ({ onClose }) => {
 					<div className='px-card mb-3'>
 						<div className='px-h'>Upgrade Cost</div>
 						<CostGrid costs={nextLevelCosts} />
+						<div className='text-xs text-[#a89878] mt-2'>Build time: {formatTime(duration)}</div>
 					</div>
 
 					{!isNextToMaxLevel && afterNextLevelCosts && (

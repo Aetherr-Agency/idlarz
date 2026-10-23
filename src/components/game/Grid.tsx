@@ -225,6 +225,7 @@ const Grid: React.FC = () => {
 	return (
 		<div
 			ref={gridRef}
+			data-click-area
 			className='fixed inset-0 overflow-hidden bg-gray-950'
 			onMouseDown={handleMouseDown}
 			onMouseMove={handleMouseMove}
