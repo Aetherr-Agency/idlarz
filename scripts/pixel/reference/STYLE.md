@@ -144,7 +144,7 @@ shadows, contours, rim light, coloured outlines), so every asset shares one ligh
 | `blend_art.py` | Biome edge-blend masks (4 edges + 4 inner corners x 3 variants) and the mock-map preview that composes them like the game. |
 | `trim_art.py` | Shoreline (water<->land) and kerb (yard / castle) trims, same piece names as the masks. |
 | `ui_art.py` | 2D UI art: frames, header chrome, flask parts, stone XP bar, hero scene, torch, castle-range parts, gold sparkle strip, level-up ribbon. |
-| `build.py` | Builds everything into `public/pixel/{icons,ui,bg}` (wipes them first). `--refs` also refreshes this folder. |
+| `build.py` | Builds everything into `public/pixel/{icons,ui,bg}` (rewrites in place, then removes stale files). `--refs` also refreshes this folder. |
 
 Commands: `python scripts/pixel/build.py` (all), `python scripts/pixel/build.py hero_mage gold` (just those),
 `python scripts/pixel/build.py --refs` (also refresh references). Review sheets land in `scripts/pixel/previews/` (git-ignored).
