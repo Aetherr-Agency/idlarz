@@ -1151,12 +1151,37 @@ body {
 	}
 }
 
+/* pixel bevel only on the sides that face land we don't own, so owned land reads as one continuous field */
 .tile-owned {
-	box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.12), inset -1px -1px 0 rgba(0, 0, 0, 0.4);
+	box-shadow: var(--bv-n, 0 0 #0000), var(--bv-w, 0 0 #0000), var(--bv-s, 0 0 #0000), var(--bv-e, 0 0 #0000);
+
+	&.open-n {
+		--bv-n: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+	}
+	&.open-w {
+		--bv-w: inset 1px 0 0 rgba(255, 255, 255, 0.12);
+	}
+	&.open-s {
+		--bv-s: inset 0 -1px 0 rgba(0, 0, 0, 0.4);
+	}
+	&.open-e {
+		--bv-e: inset -1px 0 0 rgba(0, 0, 0, 0.4);
+	}
 
 	&:hover {
 		filter: brightness(1.12);
 	}
+}
+
+/* edge blend: the neighbour's ground texture, revealed through a dithered mask (see biomeBlend.ts) */
+.tile-blend {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: var(--src) 0 0 / 48px 48px;
+	-webkit-mask: var(--mask) 0 0 / 100% 100% no-repeat;
+	mask: var(--mask) 0 0 / 100% 100% no-repeat;
+	image-rendering: pixelated;
 }
 
 .tile-icon {

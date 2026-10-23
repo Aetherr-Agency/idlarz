@@ -117,6 +117,12 @@ Reference images in this folder: `icons.png` (icon set), `characters.png` (heroe
 - **Motion**: transform/opacity only, integer pixel steps for sprite animation, honour `prefers-reduced-motion`.
 - **Tile tap feedback**: cursor popup (a line per resource, lucky header), pulse on the *inner* tile element (the outer
   one carries the grid translate), darkening cooldown overlay.
+- **Biome transitions** (`reference/biome-blend.png`: hard edges left, blended right): a tile bordering a different
+  ground draws the NEIGHBOUR's own ground texture through a dithered mask (`bg/blend_<n|e|s|w|ne|se|sw|nw>_<0-2>.png`,
+  50% coverage at the seam fading ~8 art px in, chunky 2x2 dither, jittered edge). Masks carry no colour, so every biome
+  pair (and `mystery` clouds toward unexplored tiles) works with no extra art. The castle keeps crisp edges. The 1px tile
+  bevel only stays on sides facing land we don't own. Logic: `src/utils/biomeBlend.ts` (tested in `tests/biomeBlend.test.ts`),
+  rendered by `Tile.tsx` as `.tile-blend` spans (CSS `mask`). Both tiles on a seam share one jitter variant.
 - Remaining emoji: only the Merchant tab icons.
 
 ## Pipeline (`scripts/pixel`)
@@ -129,6 +135,7 @@ shadows, contours, rim light, coloured outlines), so every asset shares one ligh
 | `materials.py` | Every material: 5-tone ramp + outline + shading hints. One palette for the whole game. |
 | `sprites_resources.py` `sprites_props.py` `sprites_characters.py` `sprites_equipment.py` `sprites_animals.py` `sprites_map.py` `sprites_castle.py` `sprites_buildings.py` `sprites_farm.py` | Sprites as lists of primitives (boxes, ellipsoids, cylinders, cones). `sprites_props` also draws the purple orb in 2D; `sprites_farm` renders the pen in two layers. |
 | `ground_art.py` | Seamless biome ground textures, the unexplored cloud tile and the fog tiles (flat-banded cloud generator). |
+| `blend_art.py` | Biome edge-blend masks (4 edges + 4 inner corners x 3 variants) and the mock-map preview that composes them like the game. |
 | `ui_art.py` | 2D UI art: frames, header chrome, flask parts, stone XP bar, hero scene, torch, castle-range parts, gold sparkle strip, level-up ribbon. |
 | `build.py` | Builds everything into `public/pixel/{icons,ui,bg}` (wipes them first). `--refs` also refreshes this folder. |
 

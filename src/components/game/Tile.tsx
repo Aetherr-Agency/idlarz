@@ -22,6 +22,7 @@ import {
 import { cn } from '@/lib/utils';
 import audioManager from '@/utils/audioManager';
 import { queueTileTap } from '@/lib/floatText';
+import { blendKey, openSides, parseBlendKey } from '@/utils/biomeBlend';
 import ResourceIcon from './ResourceIcon';
 import PixelIcon from './PixelIcon';
 import CastleSprite from './CastleSprite';
@@ -40,6 +41,14 @@ const Tile: React.FC<TileProps> = ({
 	building,
 }) => {
 	const tiles = useGameStore((state) => state.tiles);
+	// string selectors: re-render only when this tile's own transitions / open sides change
+	const blendStr = useGameStore((state) => blendKey(state.tiles, x, y));
+	const open = useGameStore((state) => openSides(state.tiles, x, y));
+	const blendPieces = useMemo(() => parseBlendKey(blendStr), [blendStr]);
+	// lake waves animate from mount: start every lake tile at the shared phase so neighbours never show a seam
+	const [lakeDelay] = useState(() =>
+		typeof performance === 'undefined' ? 0 : -((performance.now() / 1000) % 9)
+	);
 	const buyTile = useGameStore((state) => state.buyTile);
 	const resources = useGameStore((state) => state.resources);
 	const characterStats = useGameStore((state) => state.characterStats);
@@ -215,10 +224,12 @@ const Tile: React.FC<TileProps> = ({
 						'castle-max-tile': isOwned && isMaxCastle,
 						'border-2 border-amber-400': isOwned && hasChest,
 						'tile-cooldown': cooling,
-					}
+					},
+					open.split('').map((side) => `open-${side}`)
 				)}
 				style={{
 					...style,
+					...(biome === 'lake' && isOwned ? { animationDelay: `${lakeDelay.toFixed(2)}s` } : null),
 					...({ '--cd': `${TILE_TAP.cooldownMs}ms` } as React.CSSProperties),
 				}}
 				onClick={handleClick}
@@ -230,6 +241,19 @@ const Tile: React.FC<TileProps> = ({
 						'w-full h-full flex items-center justify-center relative',
 						{ 'tile-tapped': tapped }
 					)}>
+					{blendPieces.map((b) => (
+						<span
+							key={b.piece}
+							className='tile-blend'
+							aria-hidden
+							style={
+								{
+									'--src': `url('/pixel/bg/${b.ground === 'mystery' ? 'mystery' : `ground_${b.ground}`}.png')`,
+									'--mask': `url('/pixel/bg/blend_${b.piece}_${b.variant}.png')`,
+								} as React.CSSProperties
+							}
+						/>
+					))}
 					{isOwned && biome === 'castle' && <CastleSprite level={castleLevel} />}
 					{isOwned && !hasBuilding && BIOME_PIXEL_ICONS[biome] && (
 						<PixelIcon name={BIOME_PIXEL_ICONS[biome]!} alt={biome} className='tile-icon' />

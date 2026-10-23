@@ -2,7 +2,7 @@
 
   public/pixel/icons/  sprites (resources, menu, equipment, portraits, animals, gold shine strip)
   public/pixel/ui/     frames, header chrome, HP/MP flask parts, stone XP bar, hero scene
-  public/pixel/bg/     cracked-stone header tile + fog-of-war mist tiles
+  public/pixel/bg/     cracked-stone header tile, fog mist, biome grounds + edge-blend masks
   scripts/pixel/previews/  contact sheets for review (git-ignored)
   --refs                   also refresh the curated images in scripts/pixel/reference/
 
@@ -20,6 +20,7 @@ render3d.DEFAULTS.update(rim=True, dither=0.2)       # the house look: rim light
 from PIL import Image  # noqa: E402
 import fx  # noqa: E402
 import fog  # noqa: E402
+import blend_art  # noqa: E402
 import ground_art  # noqa: E402
 import ui_art  # noqa: E402
 import sprites_animals  # noqa: E402
@@ -74,6 +75,7 @@ BG = {
     'fog_b': lambda: ground_art.fog(size=64, seed=11, tint=(110, 170, 190), thresholds=(0.44, 0.52, 0.60), alphas=(10, 22, 36)),
     'mystery': ground_art.mystery,
     **{f'ground_{name}': fn for name, fn in ground_art.GROUNDS.items()},
+    **blend_art.MASKS,
 }
 
 
@@ -235,8 +237,10 @@ def main():
 
     if small_sprites(sprites):
         contact_sheet(small_sprites(sprites), os.path.join(PREVIEW, 'sprites.png'))
+    blend_art.preview_sheet(rim=True).save(os.path.join(PREVIEW, 'biome-blend.png'))
     if refs:
         reference_sheets(sprites, ui, bg)
+        blend_art.preview_sheet(rim=True).save(os.path.join(REFERENCE, 'biome-blend.png'))
     print('built', len(sprites), 'sprites,', len(ui), 'ui parts ->', PUB)
 
 
