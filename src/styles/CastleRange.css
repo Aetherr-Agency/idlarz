@@ -8,17 +8,17 @@
 	image-rendering: pixelated;
 	background:
 		url('/pixel/ui/range_tint.png') 0 0 / 32px 32px repeat,
-		radial-gradient(closest-side, rgba(170, 100, 255, 0.28), rgba(110, 50, 200, 0.16) 70%, rgba(90, 40, 170, 0.1));
-	box-shadow: 0 0 28px 4px rgba(150, 80, 255, 0.5), inset 0 0 40px rgba(170, 100, 255, 0.35);
+		radial-gradient(closest-side, rgba(170, 100, 255, 0.18), rgba(110, 50, 200, 0.1) 70%, rgba(90, 40, 170, 0.06));
+	box-shadow: 0 0 16px 2px rgba(150, 80, 255, 0.28), inset 0 0 28px rgba(170, 100, 255, 0.2);
 	animation: range-breathe 3.2s ease-in-out infinite alternate, range-weave 5s steps(10) infinite;
 }
 
 @keyframes range-breathe {
 	from {
-		box-shadow: 0 0 18px 2px rgba(150, 80, 255, 0.35), inset 0 0 28px rgba(170, 100, 255, 0.25);
+		box-shadow: 0 0 10px 1px rgba(150, 80, 255, 0.2), inset 0 0 20px rgba(170, 100, 255, 0.14);
 	}
 	to {
-		box-shadow: 0 0 36px 8px rgba(160, 90, 255, 0.65), inset 0 0 52px rgba(185, 120, 255, 0.45);
+		box-shadow: 0 0 20px 3px rgba(160, 90, 255, 0.36), inset 0 0 34px rgba(185, 120, 255, 0.26);
 	}
 }
 
@@ -31,16 +31,16 @@
 /* marching dashes along the four edges (8px dashes, drifting) */
 .range-edge {
 	position: absolute;
-	background-image: repeating-linear-gradient(var(--dir), #e2c4ff 0 8px, #8a44e0 8px 12px, transparent 12px 20px);
-	animation: range-march 1s steps(10) infinite;
-	filter: drop-shadow(0 0 3px #b27aff);
+	background-image: repeating-linear-gradient(var(--dir), rgba(214, 178, 255, 0.85) 0 8px, transparent 8px 20px);
+	animation: range-march 2s steps(10) infinite;
+	opacity: 1;
 }
 
 .range-edge.top,
 .range-edge.bottom {
 	left: 14px;
 	right: 14px;
-	height: 4px;
+	height: 2px;
 	--dir: 90deg;
 }
 
@@ -48,7 +48,7 @@
 .range-edge.right {
 	top: 14px;
 	bottom: 14px;
-	width: 4px;
+	width: 2px;
 	--dir: 180deg;
 }
 
@@ -78,11 +78,10 @@
 
 .range-corner {
 	position: absolute;
-	width: 40px;
-	height: 40px;
-	background: url('/pixel/ui/range_corner.png') 0 0 / 40px 40px no-repeat;
-	filter: drop-shadow(0 0 4px #b27aff);
-	animation: range-corner-pulse 1.6s steps(2) infinite alternate;
+	width: 28px;
+	height: 28px;
+	background: url('/pixel/ui/range_corner.png') 0 0 / 28px 28px no-repeat;
+	opacity: 0.85;
 }
 
 .range-corner.tl {
@@ -108,12 +107,6 @@
 	transform: scale(-1, -1);
 }
 
-@keyframes range-corner-pulse {
-	to {
-		filter: drop-shadow(0 0 8px #d8b0ff) brightness(1.2);
-	}
-}
-
 .range-label {
 	position: absolute;
 	top: -26px;
@@ -126,10 +119,11 @@
 	letter-spacing: 2px;
 	text-transform: uppercase;
 	white-space: nowrap;
-	color: #f0ddff;
+	color: #d9c2f5;
 	text-shadow: 0 2px 0 #1a0640;
-	background: rgba(24, 8, 52, 0.85);
-	border: 2px solid #8a44e0;
+	background: rgba(24, 8, 52, 0.7);
+	border: 1px solid rgba(138, 68, 224, 0.7);
+	opacity: 0.85;
 }
 
 /* gold twinkles above owned tiles in range: 6-frame strip (11px frames at 2x) floating upward */
@@ -151,8 +145,8 @@
 	opacity: 0;
 	background: url('/pixel/ui/spark_sheet.png') 0 0 / 132px 22px no-repeat;
 	image-rendering: pixelated;
-	filter: drop-shadow(0 0 4px rgba(255, 210, 60, 0.9));
-	animation: spark-twinkle 0.9s steps(6) infinite, spark-float 2.4s linear infinite;
+	filter: drop-shadow(0 0 3px rgba(255, 210, 60, 0.45));
+	animation: spark-twinkle 1.4s steps(6) infinite, spark-float 3.6s linear infinite;
 	animation-delay: var(--d), var(--d);
 }
 
@@ -167,12 +161,12 @@
 		transform: translateY(8px);
 		opacity: 0;
 	}
-	20%,
-	80% {
-		opacity: 1;
+	25%,
+	75% {
+		opacity: 0.85;
 	}
 	100% {
-		transform: translateY(-30px);
+		transform: translateY(-22px);
 		opacity: 0;
 	}
 }

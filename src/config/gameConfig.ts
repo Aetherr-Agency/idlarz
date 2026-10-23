@@ -587,3 +587,23 @@ export const TILE_TAP = {
 	// Lucky tap: chance = the player's crit chance (%), payout = 1 + crit damage multiplier (%)/100
 	luckyEnabled: true,
 };
+
+// Farm meadow bonuses: little critters wander into the meadow while the Farm window is open; click one before
+// it leaves (lifetimeMs) for a gift worth `seconds` of that resource's income (at least `min`).
+export const FARM_BONUS = {
+	lifetimeMs: 10000,
+	firstDelayMs: 3500,
+	minGapMs: 6000,
+	maxGapMs: 13000,
+	maxActive: 2,
+	goldenChance: 0.12,
+	goldenMultiplier: 3,
+	critters: {
+		butterfly: { label: 'Butterfly', resource: 'gold', seconds: 45, min: 40, weight: 3 },
+		bee: { label: 'Bee', resource: 'food', seconds: 45, min: 30, weight: 3 },
+		ladybug: { label: 'Ladybug', resource: 'xp', seconds: 40, min: 25, weight: 2 },
+		rabbit: { label: 'Rabbit', resource: 'meat', seconds: 45, min: 12, weight: 2 },
+	},
+} as const;
+
+export type FarmCritterType = keyof typeof FARM_BONUS.critters;

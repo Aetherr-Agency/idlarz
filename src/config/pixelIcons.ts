@@ -28,7 +28,7 @@ export const PIXEL_ICON_SIZES = {
 	bust_paladin: [40, 40],
 	bust_ranger: [40, 40],
 	bust_mage: [40, 40],
-	merchant: [56, 80],
+	merchant: [76, 96],
 	// equipment slots
 	equip_head: [40, 40],
 	equip_neck: [40, 40],
@@ -68,6 +68,15 @@ export const PIXEL_ICON_SIZES = {
 	// farm pen: the whole fenced meadow (back) and the near fences that go in front of the animals (front)
 	farm_back: [256, 184],
 	farm_front: [256, 184],
+	// meadow around the pen
+	meadow_tree: [56, 72],
+	meadow_pine: [48, 76],
+	meadow_bush: [40, 30],
+	meadow_rocks: [36, 26],
+	meadow_flowers: [36, 30],
+	meadow_stump: [30, 32],
+	meadow_mushrooms: [28, 26],
+	meadow_pond: [80, 48],
 } as const;
 
 export type PixelIconName = keyof typeof PIXEL_ICON_SIZES;

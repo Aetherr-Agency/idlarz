@@ -1,4 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { MeadowCritter, MeadowDecor, useMeadowCritters, Critter } from './MeadowLayer';
 import { ANIMALS } from '@/config/gameConfig';
 import { ANIMAL_PIXEL_ICONS } from '@/config/pixelIcons';
 import { calculateAnimalCost } from '@/utils/gameUtils';
@@ -63,13 +64,17 @@ interface FarmSceneProps {
 	onSelect: (id: string | null) => void;
 	/** animal id that was just bought / upgraded (plays a little burst) */
 	celebrate: string | null;
+	/** a bonus critter was clicked (cursor position for the popup) */
+	onCatchCritter: (critter: Critter, x: number, y: number) => void;
 }
 
 /**
  * The farm as a tiny game: an isometric pen (barn, trough, hay, gate) with your animals wandering about.
  * Click an animal to select it (gold outline) and manage it in the side panel; click the grass to deselect.
  */
-const FarmScene: React.FC<FarmSceneProps> = ({ farmLevels, food, selectedId, onSelect, celebrate }) => {
+const FarmScene: React.FC<FarmSceneProps> = ({ farmLevels, food, selectedId, onSelect, celebrate, onCatchCritter }) => {
+	const stageRef = useRef<HTMLDivElement>(null);
+	const { critters, remove } = useMeadowCritters(stageRef);
 	const nodes = useRef(new Map<string, HTMLDivElement>());
 	const agents = useRef(new Map<string, Agent>());
 	const selectedRef = useRef<string | null>(selectedId);
@@ -185,7 +190,14 @@ const FarmScene: React.FC<FarmSceneProps> = ({ farmLevels, food, selectedId, onS
 	}, []);
 
 	return (
-		<div className='farm-stage' onClick={() => onSelect(null)}>
+		<div
+			ref={stageRef}
+			className='farm-stage'
+			onClick={(e) => {
+				if ((e.target as HTMLElement).closest('.meadow-critter')) return;
+				onSelect(null);
+			}}>
+			<MeadowDecor />
 			<div className='farm-cloud' />
 			<div className='farm-pen' style={{ width: PEN.w * PEN.zoom, height: PEN.h * PEN.zoom }}>
 				<PixelIcon name='farm_back' scale={PEN.zoom} alt='Farm pen' className='farm-layer' />
@@ -242,6 +254,10 @@ const FarmScene: React.FC<FarmSceneProps> = ({ farmLevels, food, selectedId, onS
 
 				<PixelIcon name='farm_front' scale={PEN.zoom} alt='' className='farm-layer farm-front' />
 			</div>
+
+			{critters.map((c) => (
+				<MeadowCritter key={c.id} critter={c} onCatch={onCatchCritter} onExpire={remove} />
+			))}
 		</div>
 	);
 };

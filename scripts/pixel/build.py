@@ -29,6 +29,7 @@ import sprites_characters  # noqa: E402
 import sprites_equipment  # noqa: E402
 import sprites_farm  # noqa: E402
 import sprites_map  # noqa: E402
+import sprites_meadow  # noqa: E402
 import sprites_props  # noqa: E402
 import sprites_resources  # noqa: E402
 from common import upscale  # noqa: E402
@@ -49,6 +50,7 @@ SPRITES = {
     **sprites_characters.SPRITES,
     **sprites_animals.SPRITES,
     **sprites_farm.SPRITES,
+    **sprites_meadow.SPRITES,
     **sprites_map.SPRITES,
     **sprites_castle.SPRITES,
     **sprites_buildings.SPRITES,
@@ -114,7 +116,7 @@ REFERENCE = os.path.join(HERE, 'reference')
 
 def small_sprites(sprites):
     """Contact sheets show icon-sized art only (not the big farm pen layers or the 40px bust crops)."""
-    return {n: im for n, im in sprites.items() if im.size[0] <= 72 and not n.startswith('bust_')}
+    return {n: im for n, im in sprites.items() if im.size[0] <= 80 and not n.startswith(('bust_', 'meadow_', 'bonus_'))}
 
 
 def hero_hud_composite(sprites, ui):
@@ -231,7 +233,7 @@ def main():
     if not only or 'level_orb_shine' in only:
         sprites_props.level_orb_sheet().save(os.path.join(PUB, 'icons', 'level_orb_shine.png'))
 
-    if sprites:
+    if small_sprites(sprites):
         contact_sheet(small_sprites(sprites), os.path.join(PREVIEW, 'sprites.png'))
     if refs:
         reference_sheets(sprites, ui, bg)

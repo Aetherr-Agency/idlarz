@@ -12,6 +12,7 @@ import fx
 FULL = dict(size=(56, 80), scale=12.2, origin=(28, 76))
 BUST = dict(size=(40, 40), scale=14.6, origin=(20, 86))
 HEAD_Z = 5.2
+SHOP = dict(size=(76, 96), scale=12.2, origin=(38, 76))     # the merchant stands behind his market table
 
 
 class Fig:
@@ -312,7 +313,7 @@ def mage(view=FULL):
 
 
 # ----------------------------------------------------------------- MERCHANT (human trader)
-def merchant(view=FULL):
+def merchant(view=SHOP):
     f = Fig(view)
     # huge pack with bedroll, spare cooking pan and a ledger satchel
     f.ell((0, 0.9, 3.3), (1.0, 0.62, 1.2), 'pleather', I3, 1)
@@ -363,9 +364,34 @@ def merchant(view=FULL):
     f.ell((0, 0, z + 0.92), (0.68, 0.64, 0.44), 'leather', I3, 30)
     f.cyl((0, 0, z + 0.78), 0.7, 0.07, 'cloth')
     f.ell((0.58, -0.1, z + 1.16), (0.07, 0.46, 0.18), 'gold', rot(0, 25, 0), 31)
+    # market table in front: planks, red-and-cream cloth skirt, hanging sign, and the goods he sells
+    f.box((0, -1.5, 2.34), (2.3, 0.62, 0.07), 'plank', I3, 60)
+    f.box((0, -2.1, 1.5), (2.3, 0.04, 0.84), 'cloth', I3, 61)
+    f.box((-2.3, -1.5, 1.5), (0.04, 0.62, 0.84), 'cloth', I3, 62)
+    for k in range(5):
+        f.box((-2.0 + k * 1.0, -2.14, 1.5), (0.18, 0.02, 0.84), 'cream', I3, 63 + k)
+    for sx in (-1, 1):
+        f.box((2.15 * sx, -2.0, 0.55), (0.07, 0.07, 0.55), 'plank', I3, 70)
+    f.box((1.35, -2.18, 1.0), (0.5, 0.03, 0.26), 'plank', I3, 71)                 # price sign
+    f.ell((1.35, -2.22, 1.0), (0.14, 0.02, 0.14), 'gold')
+    # bread, coin stacks, potions, apples, grain sack
+    for i, (x, y, z, r) in enumerate(((-1.95, -1.45, 2.58, 0.3), (-1.5, -1.75, 2.55, 0.27), (-1.75, -1.2, 2.55, 0.26))):
+        f.ell((x, y, z), (r * 1.3, r, r * 0.75), 'bread', rot(0, 0, 25 * (i - 1)), 80 + i)
+    for i, (x, y, n) in enumerate(((-0.8, -1.75, 5), (-0.45, -1.5, 3), (-1.0, -1.35, 2))):
+        for k in range(n):
+            f.cyl((x, y, 2.45 + 0.07 * k), 0.2, 0.035, 'gold', I3, 90 + i)
+    for i, (x, m) in enumerate(((0.5, 'ruby'), (0.9, 'ice'))):
+        f.cyl((x, -1.6, 2.58), 0.17, 0.17, m, I3, 100 + i)
+        f.cyl((x, -1.6, 2.86), 0.06, 0.1, 'cream', I3, 102 + i)
+    f.cyl((1.35, -1.25, 2.52), 0.38, 0.1, 'wood_cut', I3, 105)                    # apple bowl
+    for i, (dx, dy) in enumerate(((-0.1, 0.0), (0.12, -0.05), (0.0, 0.14), (0.05, -0.15))):
+        f.ell((1.35 + dx, -1.25 + dy, 2.72), (0.12, 0.12, 0.12), 'cloth', I3, 106 + i)
+    f.ell((1.95, -1.55, 2.65), (0.34, 0.3, 0.3), 'tunic', I3, 110)                 # grain sack
+    f.cyl((1.95, -1.55, 2.92), 0.12, 0.04, 'cloth', I3, 111)
     img = f.render()
-    if view is FULL:
-        fx.glint(img, 46, 8, 2)
+    if view is SHOP:
+        fx.glint(img, 55, 8, 2)
+        fx.glint(img, 13, 63, 1)
     return img
 
 
@@ -376,4 +402,4 @@ SPRITES = {}
 for _name, _fn in CLASSES.items():
     SPRITES[f'hero_{_name}'] = (lambda fn=_fn: fn(FULL))
     SPRITES[f'bust_{_name}'] = (lambda fn=_fn: fn(BUST))
-SPRITES['merchant'] = lambda: merchant(FULL)
+SPRITES['merchant'] = lambda: merchant(SHOP)

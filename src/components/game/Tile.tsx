@@ -233,7 +233,7 @@ const Tile: React.FC<TileProps> = ({
 
 					{inCastleRange && (
 						<span className='range-sparks' aria-hidden>
-							{[0, 1, 2].map((k) => {
+							{[0, 1].map((k) => {
 								const h = (x * 7 + y * 13 + k * 5) % 11;
 								return (
 									<i
@@ -242,7 +242,7 @@ const Tile: React.FC<TileProps> = ({
 										style={
 											{
 												'--x': `${22 + ((h * 9 + k * 31) % 60)}%`,
-												'--d': `${-((h * 0.37 + k * 0.8) % 2.4).toFixed(2)}s`,
+												'--d': `${-((h * 0.53 + k * 1.7) % 3.6).toFixed(2)}s`,
 											} as React.CSSProperties
 										}
 									/>
