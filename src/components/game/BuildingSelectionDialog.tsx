@@ -1,7 +1,14 @@
 import React from 'react';
 import type { FC } from 'react';
 import audioManager from '@/utils/audioManager';
-import { BUILDINGS } from '@/config/gameConfig';
+import { BIOME_YIELD, BUILDINGS } from '@/config/gameConfig';
+import { useGameStore } from '@/stores/gameStore';
+import { calculateBuildingCost, canAffordBundle } from '@/utils/gameUtils';
+import ResourceIcon from './ResourceIcon';
+import CostList from './CostList';
+import { BUILDING_PIXEL_ICONS } from '@/config/pixelIcons';
+import PixelIcon from './PixelIcon';
+import PixelModal from './PixelModal';
 
 interface BuildingSelectionDialogProps {
 	isOpen: boolean;
@@ -14,7 +21,13 @@ const BuildingSelectionDialog: FC<BuildingSelectionDialogProps> = ({
 	onClose,
 	onSelect,
 }) => {
+	const tiles = useGameStore((state) => state.tiles);
+	const resources = useGameStore((state) => state.resources);
+
 	if (!isOpen) return null;
+
+	const cost = calculateBuildingCost(tiles);
+	const canAfford = canAffordBundle(resources, cost);
 
 	const handleSelect = (buildingType: string) => {
 		audioManager.playSound('click');
@@ -23,39 +36,41 @@ const BuildingSelectionDialog: FC<BuildingSelectionDialogProps> = ({
 	};
 
 	return (
-		<div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
-			<div className='bg-gray-800 p-6 rounded-lg max-w-[720px] w-full shadow-xl'>
-				<div className='flex justify-between items-center mb-4'>
-					<h2 className='text-xl font-bold text-white'>Select Building</h2>
-					<button onClick={onClose} className='p-1 rounded hover:bg-gray-700'>
-						<span className='text-white text-xl'>×</span>
-					</button>
-				</div>
-
-				<p className='text-gray-400 mb-4'>
-					Select a building to construct on this grounds tile.
-				</p>
-
-				<div className='grid grid-cols-2 gap-4'>
-					{Object.values(BUILDINGS).map((building) => (
-						<button
-							key={building.name}
-							onClick={() => handleSelect(building.name)}
-							className='transition-all border-2 border-transparent hover:border-amber-400 flex items-start p-3 rounded bg-gray-700 hover:bg-gray-600 transition-colors cursor-pointer'>
-							<div className='text-2xl mr-3 mt-1'>{building.icon}</div>
-							<div className='flex-1 text-left'>
-								<span className='text-xs font-bold block text-white'>
-									{building.label}
-								</span>
-								<div className='text-xs mt-1'>
-									<div className='text-gray-400'>{building.description}</div>
-								</div>
-							</div>
-						</button>
-					))}
-				</div>
+		<PixelModal title='Select Building' size='md' onClose={onClose}>
+			<p className='text-[#a89878] mb-2'>
+				Select a building to construct on this grounds tile. Each building costs more than the last.
+			</p>
+			<div className='flex flex-wrap items-center gap-3 mb-4 text-sm'>
+				<span className='text-[#a89878]'>Cost:</span>
+				<CostList cost={cost} />
 			</div>
-		</div>
+
+			<div className='grid grid-cols-2 gap-3'>
+				{Object.values(BUILDINGS).map((building) => (
+					<button
+						key={building.name}
+						onClick={() => handleSelect(building.name)}
+						disabled={!canAfford}
+						className='px-card flex items-start gap-3 text-left cursor-pointer hover:brightness-125 transition disabled:opacity-50 disabled:cursor-not-allowed'>
+						<div className='tile-ground tile-ground-yard shrink-0 w-[48px] h-[48px] flex items-center justify-center'>
+							<PixelIcon name={BUILDING_PIXEL_ICONS[building.name]} alt={building.label} className='tile-icon' />
+						</div>
+						<div className='flex-1'>
+							<span className='px-tip-title block'>{building.label}</span>
+							<div className='text-sm mt-1 flex flex-wrap gap-x-2 gap-y-0.5'>
+								{(Object.entries(building.resourceGeneration) as [string, number][]).map(
+									([resource, rate]) => (
+										<span key={resource} className='inline-flex items-center gap-0.5 text-green-400'>
+											<ResourceIcon resource={resource} />+{(rate * BIOME_YIELD.scale).toFixed(2)}/s
+										</span>
+									)
+								)}
+							</div>
+						</div>
+					</button>
+				))}
+			</div>
+		</PixelModal>
 	);
 };
 

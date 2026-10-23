@@ -1,4 +1,5 @@
 import { BIOMES } from '@/config/gameConfig';
+import type { PlayerClassId } from '@/config/playerClasses';
 
 export type BiomeType = keyof typeof BIOMES;
 
@@ -57,7 +58,7 @@ export interface Tile {
 	biome: BiomeType;
 	isOwned: boolean;
 	level?: number;
-	upgradeCost?: Resources;
+	upgradeCost?: Partial<Resources>;
 	building?: string;
 	hasChest?: boolean;
 }
@@ -87,7 +88,6 @@ export type Equipment = {
 export interface Item {
 	id: string;
 	name: string;
-	icon: string;
 	slot: EquipmentSlot;
 	stats: Partial<Resources>;
 	description?: string;
@@ -122,12 +122,34 @@ export interface MerchantTabInfo {
 export interface Animal {
 	id: string;
 	name: string;
-	icon: string;
 	description: string;
 	baseCost: number;
 	costScaling: number;
-	baseProduction: number;
-	productionScaling: number;
+	baseProduction: number; // meat/s per animal; every purchase adds one more animal
+}
+
+// One physical click, as seen by the click limiter. `eventId` is shared by every handler of the same DOM event.
+export interface ClickInput {
+	eventId: number;
+	now: number; // ms, monotonic
+	trusted: boolean;
+}
+
+// Castle upgrades are timed builds; the clock is advanced by the tick loop (not by Date.now)
+export interface CastleUpgradeState {
+	toLevel: number;
+	remainingSec: number;
+}
+
+// What buying the next tile costs
+export interface TileCost {
+	gold: number;
+	resources: Partial<Resources>;
+}
+
+export interface TapResult {
+	items: { resource: keyof Resources; amount: number }[];
+	lucky: boolean;
 }
 
 export interface GameState {
@@ -141,6 +163,7 @@ export interface GameState {
 		progress: number;
 	};
 	playerName: string;
+	playerClass: PlayerClassId;
 	characterStats: CharacterStats;
 	equipment: Equipment;
 	inventory: Item[];
@@ -153,7 +176,9 @@ export interface GameState {
 	biomeSelectionActive: boolean;
 	pendingTileCoords: { x: number; y: number } | null;
 	selectableBiomes: BiomeType[] | null;
-	clickMultiplier: number; // Multiplier for gold earned per click
+	clickLevel: number; // Index into CLICK_LADDER (gold per click = gold/s x power)
+	castleUpgrade: CastleUpgradeState | null;
+	playSeconds: number; // accumulated game time (tick deltas); kept for save plausibility checks
 	chestSpawnTimer: number;
 	activeChests: number;
 	lastChestReward: number;
@@ -162,20 +187,27 @@ export interface GameState {
 
 	// Methods
 	buyTile: (x: number, y: number) => boolean;
+	buyClickUpgrade: () => boolean;
+	buyResource: (resource: keyof Resources, amount: number) => boolean;
+	clickForGold: (input: ClickInput) => number;
+	resetGame: () => void;
 	selectBiome: (biome: BiomeType) => boolean;
 	cancelBiomeSelection: () => void;
 	upgradeCastle: () => boolean;
 	purchaseAnimal: (animalId: string) => boolean;
-	upgradeGroundsTile: (x: number, y: number, buildingType: string) => void;
+	upgradeGroundsTile: (x: number, y: number, buildingType: string) => boolean;
 	tick: (deltaTime: number) => void;
 	toggleCharacterWindow: () => void;
 	toggleStatisticsWindow: () => void;
 	toggleMerchantWindow: () => void;
 	toggleFarmWindow: () => void;
 	setShowFarmWindow: (show: boolean) => void;
-	sellResources: (resource: keyof Resources, amount: number) => void;
+	sellResources: (resource: keyof Resources, amount: number) => boolean;
 	addStatPoint: (stat: keyof CharacterStats) => void;
 	setPlayerName: (name: string) => void;
+	setPlayerClass: (playerClass: PlayerClassId) => void;
 	addResources: (resourceToAdd: Partial<Resources>) => void;
 	collectChest: (x: number, y: number) => boolean;
+	// Tap an owned tile: grants a slice of its output. Returns null while on cooldown / nothing to give.
+	tapTile: (x: number, y: number, input?: ClickInput) => TapResult | null;
 }

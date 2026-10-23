@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatNumber } from '@/utils/formatters';
+import ResourceIcon from '../../ResourceIcon';
 import {
 	MERCHANT_RESOURCE_INFO,
 	MERCHANT_RESOURCE_PRICES,
@@ -31,24 +32,24 @@ export const ResourceSellingSection: React.FC<ResourceSellingSectionProps> = ({
 	const resourceInfo = MERCHANT_RESOURCE_INFO[resource];
 
 	return (
-		<div className='p-3 bg-gray-800 rounded-lg border border-gray-700'>
+		<div className='px-card'>
 			<div className='flex items-center justify-between mb-3'>
 				<div className='flex items-center'>
-					<span className='text-2xl mr-2'>{resourceInfo.icon}</span>
+					<span className='mr-2'><ResourceIcon resource={resource} scale={1} /></span>
 					<div>
 						<h3 className='text-white font-bold text-sm'>
 							{resourceInfo.label}
 						</h3>
-						<p className='text-xs text-gray-400'>
+						<p className='text-xs text-[#a89878]'>
 							{resourceInfo.priceDescription}
 						</p>
 					</div>
 				</div>
 				<div className='text-right'>
 					<div className='text-yellow-400 font-medium text-sm'>
-						{MERCHANT_RESOURCE_PRICES[resource]} 💰 each
+						<span className='inline-flex items-center gap-1'>{MERCHANT_RESOURCE_PRICES[resource]} <ResourceIcon resource='gold' /> each</span>
 					</div>
-					<div className='text-xs text-gray-400'>
+					<div className='text-xs text-[#a89878]'>
 						Available: {formatNumber(maxAmount)}
 					</div>
 				</div>
@@ -62,7 +63,7 @@ export const ResourceSellingSection: React.FC<ResourceSellingSectionProps> = ({
 					value={currentAmount}
 					onChange={(e) => onAmountChange(resource, parseInt(e.target.value))}
 					disabled={maxAmount <= 0}
-					className='flex-grow h-2 rounded-lg appearance-none bg-gray-700 disabled:opacity-50'
+					className='px-range flex-grow'
 				/>
 				<div className='w-20 text-center'>
 					<span
@@ -76,19 +77,19 @@ export const ResourceSellingSection: React.FC<ResourceSellingSectionProps> = ({
 
 			<div className='flex justify-between items-center'>
 				<div className='text-yellow-400 text-sm'>
-					<span className='font-medium'>{formatNumber(goldValue)}</span> 💰
+					<span className='inline-flex items-center gap-1'><span className='font-medium'>{formatNumber(goldValue)}</span> <ResourceIcon resource='gold' /></span>
 				</div>
 				<div className='flex gap-2 font-bold'>
 					<button
 						onClick={() => onSell(resource)}
 						disabled={currentAmount <= 0}
-						className='text-[10px] uppercase cursor-pointer px-3 py-1 bg-amber-600 hover:bg-amber-500 text-white rounded text-xs disabled:opacity-50 disabled:bg-gray-700 disabled:cursor-not-allowed'>
+						className='px-btn px-btn-gold px-btn-sm'>
 						Sell
 					</button>
 					<button
 						onClick={() => onSellAll(resource)}
 						disabled={maxAmount <= 0}
-						className='text-[10px] uppercase cursor-pointer px-3 py-1 bg-red-600 hover:bg-red-500 text-white rounded text-xs disabled:opacity-50 disabled:bg-gray-700 disabled:cursor-not-allowed'>
+						className='px-btn px-btn-red px-btn-sm'>
 						Sell All
 					</button>
 				</div>

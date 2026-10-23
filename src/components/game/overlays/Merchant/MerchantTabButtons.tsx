@@ -45,20 +45,17 @@ export const MerchantTabButtons: React.FC<MerchantTabButtonsProps> = ({
 	onTabChange,
 }) => {
 	return (
-		<div className='bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-700'>
+		<div className='px-panel'>
 			<div className='flex flex-col gap-2'>
 				{MERCHANT_TABS.map((tab) => (
 					<button
 						key={tab.id}
 						onClick={() => onTabChange(tab.id)}
-						className={`flex items-center p-2 rounded text-left ${
-							activeTab === tab.id
-								? 'bg-amber-800 text-white'
-								: 'hover:bg-gray-700 text-gray-300'
-						}`}
+						className='px-tab'
+						data-active={activeTab === tab.id}
 						title={tab.description}>
-						<span className='mr-2'>{tab.emoji}</span>
-						<span className='text-sm'>{tab.label}</span>
+						<span>{tab.emoji}</span>
+						<span>{tab.label}</span>
 					</button>
 				))}
 			</div>

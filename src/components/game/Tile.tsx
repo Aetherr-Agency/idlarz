@@ -1,21 +1,31 @@
 import React, { memo, useMemo, useState } from 'react';
 import { TileProps } from '@/types/game';
 import {
-	BIOMES,
 	GRID_SIZE,
 	GRID_HEIGHT,
-	SCALING_CONFIG,
-	BIOME_ICONS,
 	GRID_CENTER_X,
 	GRID_CENTER_Y,
 	BUILDINGS,
-	RESOURCE_ICONS,
 	BuildingType,
+	TILE_TAP,
+	CASTLE_UPGRADE,
+	CASTLE_RANGE,
 } from '@/config/gameConfig';
+import '@/styles/Buildings.css';
 import { useGameStore } from '@/stores/gameStore';
-import { countOwnedTiles } from '@/utils/gameUtils';
+import {
+	calculateTileCost,
+	canAffordBundle,
+	countOwnedTiles,
+	tileCostAsResources,
+} from '@/utils/gameUtils';
 import { cn } from '@/lib/utils';
 import audioManager from '@/utils/audioManager';
+import { queueTileTap } from '@/lib/floatText';
+import ResourceIcon from './ResourceIcon';
+import PixelIcon from './PixelIcon';
+import CastleSprite from './CastleSprite';
+import { BIOME_PIXEL_ICONS, BUILDING_PIXEL_ICONS, BUILDING_GLOW } from '@/config/pixelIcons';
 import { TileStatus } from './TileStatus';
 import CastleUpgradeDialog from './CastleUpgradeDialog';
 import BuildingSelectionDialog from './BuildingSelectionDialog';
@@ -35,6 +45,7 @@ const Tile: React.FC<TileProps> = ({
 	const characterStats = useGameStore((state) => state.characterStats);
 	const upgradeGroundsTile = useGameStore((state) => state.upgradeGroundsTile);
 	const collectChest = useGameStore((state) => state.collectChest);
+	const tapTile = useGameStore((state) => state.tapTile);
 	const isBiomeSelectionActive = useGameStore(
 		(state) => state.biomeSelectionActive
 	);
@@ -44,6 +55,8 @@ const Tile: React.FC<TileProps> = ({
 	const [showCastleDialog, setShowCastleDialog] = useState(false);
 	const [showBuildingDialog, setShowBuildingDialog] = useState(false);
 	const [showChestTooltip, setShowChestTooltip] = useState(false);
+	const [tapped, setTapped] = useState(false);
+	const [cooling, setCooling] = useState(false);
 
 	// Check if this tile has a chest
 	const hasChest = tiles?.[y]?.[x]?.hasChest || false;
@@ -68,25 +81,27 @@ const Tile: React.FC<TileProps> = ({
 		);
 	}, [x, y, isOwned, tiles]);
 
-	const backgroundColor = useMemo(() => {
-		const baseColor = BIOMES[biome].baseColor;
-		if (isOwned) {
-			return baseColor;
-		}
-		return isAdjacent ? `${baseColor}BF` : `${baseColor}40`;
-	}, [biome, isOwned, isAdjacent]);
+	const hasBuilding = biome === 'grounds' && !!building && (level ?? 1) > 1;
+	const castleLevel = tiles?.[GRID_CENTER_Y]?.[GRID_CENTER_X]?.level ?? 1;
+	const isMaxCastle = biome === 'castle' && castleLevel >= CASTLE_UPGRADE.maxLevel;
+
+	// Owned neighbours of the castle get gold sparkles: they are inside the castle's range
+	const inCastleRange =
+		isOwned &&
+		biome !== 'castle' &&
+		Math.abs(x - GRID_CENTER_X) <= CASTLE_RANGE.radius &&
+		Math.abs(y - GRID_CENTER_Y) <= CASTLE_RANGE.radius;
 
 	const ownedTilesCount = useMemo(() => countOwnedTiles(tiles), [tiles]);
 
-	const cost = useMemo(() => {
-		const baseCost = SCALING_CONFIG.costFormula(ownedTilesCount);
-		const discountMultiplier = 1 - characterStats.tileCostDiscount / 100;
-		return Math.floor(baseCost * discountMultiplier);
-	}, [ownedTilesCount, characterStats.tileCostDiscount]);
+	const tileCost = useMemo(
+		() => calculateTileCost(ownedTilesCount, characterStats.tileCostDiscount),
+		[ownedTilesCount, characterStats.tileCostDiscount]
+	);
 
-	const canAfford = resources.gold >= cost;
+	const canAfford = canAffordBundle(resources, tileCostAsResources(tileCost));
 
-	const handleClick = () => {
+	const handleClick = (e: React.MouseEvent) => {
 		// First priority: If in biome selection mode, handle selection
 		if (isBiomeSelectionActive && pendingTileCoords) {
 			selectBiome(biome);
@@ -101,6 +116,23 @@ const Tile: React.FC<TileProps> = ({
 				// You could add a special chest collection sound here
 			}
 			return;
+		}
+
+		// Tapping an owned tile also yields a slice of that tile's own output (rate-limited per tile)
+		if (isOwned) {
+			const tap = tapTile(x, y, {
+				eventId: e.nativeEvent.timeStamp,
+				now: performance.now(),
+				trusted: e.nativeEvent.isTrusted,
+			});
+			if (tap) {
+				audioManager.playSound('click');
+				queueTileTap(tap.items, tap.lucky);
+				setTapped(true);
+				setCooling(true);
+				setTimeout(() => setTapped(false), 160);
+				setTimeout(() => setCooling(false), TILE_TAP.cooldownMs);
+			}
 		}
 
 		// Prioritize owned tiles for special interactions
@@ -132,7 +164,7 @@ const Tile: React.FC<TileProps> = ({
 				if (result && !useGameStore.getState().biomeSelectionActive) {
 					audioManager.playSound('purchase');
 				}
-			} else if (cost > 0) {
+			} else if (tileCost.gold > 0) {
 				// Only play wrong sound and shake for adjacent unaffordable tiles
 				setIsShaking(true);
 				audioManager.playSound('wrong');
@@ -144,8 +176,11 @@ const Tile: React.FC<TileProps> = ({
 	const handleBuildingSelect = (buildingType: string) => {
 		// Upgrade the grounds tile with the selected building
 		if (biome === 'grounds') {
-			upgradeGroundsTile(x, y, buildingType);
-			audioManager.playSound('purchase');
+			if (upgradeGroundsTile(x, y, buildingType)) {
+				audioManager.playSound('purchase');
+			} else {
+				audioManager.playSound('wrong');
+			}
 		}
 		setShowBuildingDialog(false);
 	};
@@ -160,7 +195,8 @@ const Tile: React.FC<TileProps> = ({
 					'absolute transition-all duration-200 ease-in-out select-none',
 					{
 						'opacity-100': isOwned,
-						'opacity-50 hover:opacity-100': !isOwned && isAdjacent,
+						'tile-unknown': !isOwned && isAdjacent,
+						[`tile-ground tile-ground-${hasBuilding ? 'yard' : biome} tile-owned`]: isOwned,
 						'opacity-75': farAwayTile,
 						'hover:z-10 cursor-pointer border border-gray-800':
 							!isOwned && isAdjacent,
@@ -176,84 +212,84 @@ const Tile: React.FC<TileProps> = ({
 						'cursor-pointer':
 							isOwned && (biome === 'castle' || biome === 'grounds' || hasChest),
 						'castle-tile': isOwned && biome === 'castle',
-						'border-2 border-amber-400': isOwned && hasChest
+						'castle-max-tile': isOwned && isMaxCastle,
+						'border-2 border-amber-400': isOwned && hasChest,
+						'tile-cooldown': cooling,
 					}
 				)}
 				style={{
 					...style,
-					backgroundColor,
-					...(farAwayTile && {
-						backgroundColor: '#090c13',
-						backgroundImage:
-							'linear-gradient(45deg, #0b0d14 25%, transparent 25%, transparent 75%, #0b0d14 75%, #0b0d14), linear-gradient(-45deg, #0b0d14 25%, transparent 25%, transparent 75%, #0b0d14 75%, #0b0d14)',
-						backgroundSize: '48px 48px',
-					}),
+					...({ '--cd': `${TILE_TAP.cooldownMs}ms` } as React.CSSProperties),
 				}}
 				onClick={handleClick}
 				onMouseEnter={() => hasChest && setShowChestTooltip(true)}
 				onMouseLeave={() => setShowChestTooltip(false)}
 				role='button'>
-				<div className='w-full h-full flex items-center justify-center relative'>
-					{isOwned &&
-						BIOME_ICONS[BIOMES[biome].name as keyof typeof BIOME_ICONS]}
-					{!isOwned && isAdjacent && '❔'}
+				<div
+					className={cn(
+						'w-full h-full flex items-center justify-center relative',
+						{ 'tile-tapped': tapped }
+					)}>
+					{isOwned && biome === 'castle' && <CastleSprite level={castleLevel} />}
+					{isOwned && !hasBuilding && BIOME_PIXEL_ICONS[biome] && (
+						<PixelIcon name={BIOME_PIXEL_ICONS[biome]!} alt={biome} className='tile-icon' />
+					)}
+					{!isOwned && isAdjacent && (
+						<PixelIcon name='unknown' alt='Unexplored' scale={2} className='unknown-mark' />
+					)}
 					{biome === 'castle' && (
-						<span className='absolute top-0.5 right-0.5 text-[8px] bg-amber-400 w-3 h-3 aspect-square flex items-center justify-center leading-0 font-bold text-purple-600 rounded-full'>
-							{tiles[GRID_CENTER_Y]?.[GRID_CENTER_X]?.level}
+						<span className='tile-badge'>{castleLevel}</span>
+					)}
+
+					{inCastleRange && (
+						<span className='range-sparks' aria-hidden>
+							{[0, 1].map((k) => {
+								const h = (x * 7 + y * 13 + k * 5) % 11;
+								return (
+									<i
+										key={k}
+										className='range-spark'
+										style={
+											{
+												'--x': `${22 + ((h * 9 + k * 31) % 60)}%`,
+												'--d': `${-((h * 0.53 + k * 1.7) % 3.6).toFixed(2)}s`,
+											} as React.CSSProperties
+										}
+									/>
+								);
+							})}
 						</span>
 					)}
-					
-					{/* Chest icon on tile */}
+
+					{/* Bonus cash bag on the tile */}
 					{isOwned && hasChest && (
-						<span className='absolute bottom-0 right-0 text-[14px] z-10'>
-							💰
-						</span>
+						<PixelIcon name='cash_bag' alt='Bonus gold' className='tile-bag' />
 					)}
-					
+
 					{/* Chest tooltip */}
 					{isOwned && hasChest && showChestTooltip && (
-						<div className='absolute -top-6 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-80 text-yellow-400 text-[9px] px-2 py-1 rounded z-50 whitespace-nowrap'>
-							CLICK TO COLLECT BONUS GOLD 💰
+						<div className='absolute -top-11 left-1/2 -translate-x-1/2 z-[60] px-tooltip whitespace-nowrap text-xs flex items-center gap-1 text-[#f0d27a]'>
+							Click to collect bonus gold
+							<ResourceIcon resource='gold' />
 						</div>
 					)}
 					
-					{biome === 'grounds' && level && level > 1 && (
-						<>
-							{level > 1 && (
-								<span className='opacity-75 absolute top-0.5 right-0.5 text-[6px] bg-black w-3 h-3 aspect-square flex items-center justify-center leading-0 font-bold text-purple-600 rounded-full'>
-									⭐
-								</span>
-							)}
-
-							{/* Building icon */}
-							<span className='absolute bottom-0.5 right-0.5 text-[10px]'>
-								{BUILDINGS[building as BuildingType]?.icon}
-							</span>
-							{/* Resource icons for building bonuses */}
-							<div className='absolute bottom-0.5 left-0.5 flex gap-0.5 text-[8px]'>
-								{BUILDINGS[building as BuildingType]?.resourceGeneration &&
-									Object.entries(
-										BUILDINGS[building as BuildingType].resourceGeneration
-									).map(([resource, rate]) => {
-										if (!rate) return null;
-										return (
-											<span key={resource} className='text-green-400'>
-												{
-													RESOURCE_ICONS[
-														resource as keyof typeof RESOURCE_ICONS
-													]
-												}
-											</span>
-										);
-									})}
-							</div>
-						</>
+					{hasBuilding && (
+						<span
+							className='tile-building'
+							style={{ '--glow': BUILDING_GLOW[building as string] ?? '#ffd860' } as React.CSSProperties}>
+							<PixelIcon
+								name={BUILDING_PIXEL_ICONS[building as string]}
+								alt={BUILDINGS[building as BuildingType]?.label ?? 'Building'}
+								className='tile-icon'
+							/>
+						</span>
 					)}
 				</div>
 
 				{(isOwned || isAdjacent) && (
-					<div className='absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 pointer-events-none z-50 transition-opacity duration-200'>
-						<div className='bg-gray-900 rounded-lg shadow-xl p-2 whitespace-nowrap border border-gray-700'>
+					<div className='absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 pointer-events-none z-[60] transition-opacity duration-150'>
+						<div className='px-tooltip whitespace-nowrap'>
 							<TileStatus
 								biome={biome}
 								isOwned={isOwned}

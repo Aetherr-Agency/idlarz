@@ -1,7 +1,6 @@
 import {
 	BIOMES,
 	CASTLE_UPGRADE,
-	CASTLE_BASE_RATES,
 	GRID_SIZE,
 	GRID_HEIGHT,
 	BASE_GENERATION_RATES,
@@ -16,6 +15,10 @@ import {
 	GRID_CENTER_X,
 	BUILDINGS,
 	BuildingType,
+	BIOME_YIELD,
+	BUILDING_COST,
+	CHARACTER_STAT_CONFIG,
+	TILE_RESOURCE_COST,
 } from '@/config/gameConfig';
 import {
 	Animal,
@@ -25,6 +28,7 @@ import {
 	ResourceRates,
 	Resources,
 	Tile,
+	TileCost,
 } from '@/types/game';
 
 /**
@@ -66,6 +70,21 @@ export const countOwnedBiomeTypes = (
  * @param stat The character stat key
  * @returns Description of what the stat does
  */
+const titleCase = (s: string) => s[0].toUpperCase() + s.slice(1);
+
+/** "+2.5% Stone & Coal production per point / +0.2% XP production per point / +0.2% XP gained per point" */
+const resourceEffect = (stat: keyof typeof CHARACTER_STAT_CONFIG.resourceTargets): string => {
+	const cfg = CHARACTER_STAT_CONFIG;
+	const parts = [
+		`+${+(cfg.resourceModifierPerPoint * 100).toFixed(2)}% ${cfg.resourceTargets[stat].map(titleCase).join(' & ')} production per point`,
+	];
+	if (stat === 'intelligence' || stat === 'charisma') {
+		parts.push(`+${+(cfg.xpModifierPerPoint[stat] * 100).toFixed(2)}% XP production per point`);
+		parts.push(`+${cfg.xpGainPercentPerPoint[stat]}% XP gained per point`);
+	}
+	return parts.join(' / ');
+};
+
 export const getStatDescription = (
 	stat: keyof Omit<CharacterStats, 'availablePoints'>
 ): string => {
@@ -73,16 +92,12 @@ export const getStatDescription = (
 		keyof Omit<CharacterStats, 'availablePoints'>,
 		string
 	> = {
-		strength:
-			'+ 1 Physical ATK +1 per point / + 0.5 DEF per point / +1% Crit DMG per point / 2.5% Stone & Coal Modifier per point',
-		dexterity:
-			'+ 1 DEF +1 per point / +0.25 ATK Speed per point / +0.25% Crit Chance per point / +0.5% Crit DMG per point / 2.5% Wood & Food Modifier per point',
-		intelligence:
-			'+ 1 Magic ATK +1 per point / +1 Magic DEF per point / +2 MP per point / +0.2% XP Modifier per point / 2.5% Gold Modifier per point',
-		vitality:
-			'+ 3 HP per point / +0.5 DEF per point / +0.5 Magic DEF per point / 2.5% Food & Wood Modifier per point',
-		charisma:
-			'+ 1 HP & DEF & Magic DEF +0.25 per point / +1 Luck per point / +0.5% Crit Chance & Crit DMG per point /  +0.1% Tile  Discount per point [max 25%] / +0.25% XP Modifier per point / 2.5% Gold & Coal Modifier per point',
+		// Resource, XP and discount effects come from CHARACTER_STAT_CONFIG (the same constants the maths uses)
+		strength: `${resourceEffect('strength')} / +1 Physical ATK per point / +0.5 DEF per point / +1% Crit DMG per point`,
+		dexterity: `${resourceEffect('dexterity')} / +1 DEF per point / +0.25% ATK Speed per point / +0.25% Crit Chance per point / +0.5% Crit DMG per point`,
+		intelligence: `${resourceEffect('intelligence')} / +1 Magic ATK per point / +1 Magic DEF per point / +2 MP per point`,
+		vitality: `${resourceEffect('vitality')} / +3 HP per point / +0.5 DEF per point / +0.5 Magic DEF per point`,
+		charisma: `${resourceEffect('charisma')} / +${CHARACTER_STAT_CONFIG.tileDiscountPercentPerCharisma}% Tile Cost Discount per point (max ${CHARACTER_STAT_CONFIG.tileDiscountCapPercent}%) / +1 Luck per point (bigger chests) / +0.25 HP, DEF & Magic DEF per point / +0.5% Crit Chance & Crit DMG per point`,
 		// Combat stats
 		physicalAtk:
 			'Your physical attack power. Determines damage dealt with physical attacks.',
@@ -251,26 +266,14 @@ export const calculateStatResourceModifiers = (
 		xp: 0,
 	};
 
-	// Strength: Stone & Coal +2.5% per point
-	modifiers.stone += stats.strength * 0.025;
-	modifiers.coal += stats.strength * 0.025;
-
-	// Dexterity: Wood & Food +2.5% per point
-	modifiers.wood += stats.dexterity * 0.025;
-	modifiers.food += stats.dexterity * 0.025;
-
-	// Intelligence: Gold +2.5% per point, XP +0.2% per point
-	modifiers.gold += stats.intelligence * 0.025;
-	modifiers.xp += stats.intelligence * 0.002;
-
-	// Vitality: Food & Wood +2.5% per point
-	modifiers.food += stats.vitality * 0.025;
-	modifiers.wood += stats.vitality * 0.025;
-
-	// Charisma: Gold & Coal +2.5% per point, XP +0.25% per point
-	modifiers.gold += stats.charisma * 0.025;
-	modifiers.coal += stats.charisma * 0.025;
-	modifiers.xp += stats.charisma * 0.0025;
+	const cfg = CHARACTER_STAT_CONFIG;
+	(Object.keys(cfg.resourceTargets) as (keyof typeof cfg.resourceTargets)[]).forEach((stat) => {
+		cfg.resourceTargets[stat].forEach((resource) => {
+			modifiers[resource] += stats[stat] * cfg.resourceModifierPerPoint;
+		});
+	});
+	modifiers.xp += stats.intelligence * cfg.xpModifierPerPoint.intelligence;
+	modifiers.xp += stats.charisma * cfg.xpModifierPerPoint.charisma;
 
 	return modifiers;
 };
@@ -279,13 +282,13 @@ export const calculateAnimalCost = (animal: Animal, level: number): number => {
 	return Math.floor(animal.baseCost * Math.pow(animal.costScaling, level));
 };
 
-// Helper to calculate production at a specific level
+// Meat/s of `level` animals of one kind (every purchase adds one more animal)
 export const calculateAnimalProduction = (
 	animal: Animal,
 	level: number
 ): number => {
 	if (level <= 0) return 0;
-	return animal.baseProduction * Math.pow(animal.productionScaling, level - 1);
+	return animal.baseProduction * level;
 };
 
 // Calculate combat stats from base stats
@@ -308,8 +311,13 @@ export const calculateCombatStats = (
 		critDmgMultiplier:
 			100 + stats.strength + stats.dexterity * 0.5 + stats.charisma * 0.5, // Base 100% + str + dex/2 + cha/2
 		atkSpeedIncrease: stats.dexterity * 0.25, // +0.25% per dex
-		xpGainMultiplier: stats.intelligence * 0.2 + stats.charisma * 0.25, // +0.2% per int, +0.25% per cha
-		tileCostDiscount: Math.min(stats.charisma * 0.005, 0.25) * 100, // +0.5% per cha, capped at 25%, convert to percentage
+		xpGainMultiplier:
+			stats.intelligence * CHARACTER_STAT_CONFIG.xpGainPercentPerPoint.intelligence +
+			stats.charisma * CHARACTER_STAT_CONFIG.xpGainPercentPerPoint.charisma,
+		tileCostDiscount: Math.min(
+			stats.charisma * CHARACTER_STAT_CONFIG.tileDiscountPercentPerCharisma,
+			CHARACTER_STAT_CONFIG.tileDiscountCapPercent
+		),
 	};
 };
 
@@ -335,7 +343,7 @@ export const calculateResourceRates = (
 	farmLevels: Record<string, number> = {}
 ): ResourceRates => {
 	const base = { ...BASE_GENERATION_RATES };
-	const modifiers = { ...BASE_GENERATION_RATES };
+	const modifiers: Resources = { gold: 0, wood: 0, stone: 0, coal: 0, food: 0, meat: 0, xp: 0 };
 	const total = { ...BASE_GENERATION_RATES };
 
 	// Add meat production from animals to base rates
@@ -352,18 +360,14 @@ export const calculateResourceRates = (
 				const adjacencyMultiplier =
 					1 + SCALING_CONFIG.adjacencyBonus * adjacentCount;
 
-				Object.entries(biome.resourceGeneration).forEach(([resource, rate]) => {
-					// Skip castle base rates since we already added them
-					if (
-						tile.biome === 'castle' &&
-						CASTLE_BASE_RATES[resource as keyof Resources]
-					) {
-						return;
-					}
+				// Biome output is boosted by BIOME_YIELD.scale; the castle (unique tile) is not
+				const yieldScale = tile.biome === 'castle' ? 1 : BIOME_YIELD.scale;
 
+				Object.entries(biome.resourceGeneration).forEach(([resource, rate]) => {
 					if (rate) {
 						// Add to base rate with adjacency bonus
-						base[resource as keyof Resources] += rate * adjacencyMultiplier;
+						base[resource as keyof Resources] +=
+							rate * adjacencyMultiplier * yieldScale;
 					}
 				});
 
@@ -375,7 +379,8 @@ export const calculateResourceRates = (
 						Object.entries(building.resourceGeneration).forEach(([resource, rate]) => {
 							if (rate && typeof rate === 'number') {
 								// Add to base rate with adjacency bonus
-								base[resource as keyof Resources] += rate * adjacencyMultiplier;
+								base[resource as keyof Resources] +=
+									rate * adjacencyMultiplier * BIOME_YIELD.scale;
 							}
 						});
 					}
@@ -383,12 +388,6 @@ export const calculateResourceRates = (
 			}
 		}
 	}
-
-	// Add castle base rates to base generation
-	Object.entries(CASTLE_BASE_RATES).forEach(([resource, rate]) => {
-		const key = resource as keyof Resources;
-		base[key] += rate;
-	});
 
 	// Calculate castle modifier (exponential growth - doubles each level after level 1)
 	let castleLevel = 1;
@@ -420,12 +419,15 @@ export const calculateResourceRates = (
 		modifiers[key] += castleModifier;
 	});
 
+	// Castle levels above 1 add flat XP/s
+	base.xp += CASTLE_UPGRADE.xpBonus * Math.max(castleLevel - 1, 0);
+
 	// Add Plains biome bonus for meat production
 	// Each owned Plains tile provides a 5% bonus to meat production
 	const plainsCount = countOwnedBiomeTypes(tiles, 'plains');
 	if (plainsCount > 0) {
 		// 5% per plains tile
-		modifiers.meat += plainsCount * 0.05;
+		modifiers.meat += plainsCount * CHARACTER_STAT_CONFIG.plainsMeatModifier;
 	}
 
 	// Apply stat-based resource modifiers if stats are provided
@@ -455,3 +457,107 @@ export const getRandomBiome = (): BiomeType => {
 	const randomIndex = Math.floor(Math.random() * availableBiomes.length);
 	return availableBiomes[randomIndex];
 };
+
+// Per-second output of one owned tile (biome + building, adjacency bonus, global modifiers).
+// Used for the tile-tap bonus and the tile tooltip. XP is excluded on purpose.
+export const calculateTileTapYield = (
+	tiles: Tile[][],
+	x: number,
+	y: number,
+	rates: ResourceRates
+): Partial<Resources> => {
+	const tile = tiles[y]?.[x];
+	if (!tile || !tile.isOwned) return {};
+
+	const out: Partial<Resources> = {};
+	const adjacent = countAdjacentSameBiomes(tiles, x, y, tile.biome);
+	const adjacency = 1 + SCALING_CONFIG.adjacencyBonus * adjacent;
+	const addRate = (resource: string, rate: number) => {
+		if (!rate || resource === 'xp') return;
+		const key = resource as keyof Resources;
+		out[key] =
+			(out[key] || 0) +
+			rate * adjacency * yieldScale * (1 + (rates.modifiers[key] || 0));
+	};
+	const yieldScale = tile.biome === 'castle' ? 1 : BIOME_YIELD.scale;
+
+	Object.entries(BIOMES[tile.biome].resourceGeneration).forEach(([resource, rate]) =>
+		addRate(resource, rate as number)
+	);
+	if (tile.biome === 'grounds' && tile.level === 2 && tile.building) {
+		const building = BUILDINGS[tile.building as BuildingType];
+		if (building?.resourceGeneration) {
+			Object.entries(building.resourceGeneration).forEach(([resource, rate]) =>
+				addRate(resource, rate as number)
+			);
+		}
+	}
+	return out;
+};
+
+// ---------------------------------------------------------------------------
+// Costs
+
+/** Everything buying the next tile costs, given how many tiles are owned and the Charisma discount (percent). */
+export const calculateTileCost = (
+	ownedTiles: number,
+	discountPercent = 0
+): TileCost => {
+	const keep = 1 - discountPercent / 100;
+	const base = SCALING_CONFIG.costFormula(ownedTiles);
+	const resources: Partial<Resources> = {};
+	TILE_RESOURCE_COST.forEach(({ from, resource, share }) => {
+		if (ownedTiles >= from) resources[resource] = Math.floor(base * share * keep);
+	});
+	return { gold: Math.floor(base * keep), resources };
+};
+
+/** Cost of a bundle of resources (gold included) as a flat partial-resources object. */
+export const tileCostAsResources = (cost: TileCost): Partial<Resources> => ({
+	...cost.resources,
+	gold: cost.gold,
+});
+
+export const canAffordBundle = (
+	resources: Resources,
+	cost: Partial<Resources>
+): boolean =>
+	Object.entries(cost).every(
+		([resource, amount]) => resources[resource as keyof Resources] >= (amount || 0)
+	);
+
+/** Returns a copy of `resources` with `cost` subtracted (callers check affordability first). */
+export const subtractBundle = (
+	resources: Resources,
+	cost: Partial<Resources>
+): Resources => {
+	const next = { ...resources };
+	Object.entries(cost).forEach(([resource, amount]) => {
+		next[resource as keyof Resources] -= amount || 0;
+	});
+	return next;
+};
+
+export const countBuildings = (tiles: Tile[][]): number => {
+	let count = 0;
+	for (let y = 0; y < GRID_HEIGHT; y++) {
+		for (let x = 0; x < GRID_SIZE; x++) {
+			if (tiles[y][x].isOwned && tiles[y][x].building) count++;
+		}
+	}
+	return count;
+};
+
+/** Cost of the next building: base cost x growth^(buildings already built). */
+export const calculateBuildingCost = (tiles: Tile[][]): Partial<Resources> => {
+	const factor = Math.pow(BUILDING_COST.growth, countBuildings(tiles));
+	const cost: Partial<Resources> = {};
+	Object.entries(BUILDING_COST.base).forEach(([resource, amount]) => {
+		cost[resource as keyof Resources] = Math.floor((amount || 0) * factor);
+	});
+	return cost;
+};
+
+/** Seconds the castle needs to go from `fromLevel` to `fromLevel + 1`. */
+export const castleUpgradeDuration = (fromLevel: number): number =>
+	CASTLE_UPGRADE.durationsSec[fromLevel - 1] ?? 0;

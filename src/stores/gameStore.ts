@@ -1,44 +1,131 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 import {
-	CASTLE_UPGRADE,
-	GRID_SIZE,
-	GRID_HEIGHT,
-	INITIAL_RESOURCES,
-	SCALING_CONFIG,
-	INITIAL_INVENTORY_ITEMS,
-	DEFAULT_PLAYER_NAME,
-	INITIAL_CHARACTER_STATS,
+	DEFAULT_PLAYER_CLASS,
+	PLAYER_CLASSES,
+	type PlayerClassId,
+} from '@/config/playerClasses';
+import {
 	ANIMALS,
-	SPECIAL_SINGLE_TYPE_BIOMES,
-	EMPTY_BIOMES,
 	BIOMES,
+	BUILDINGS,
+	CASTLE_UPGRADE,
+	CHEST,
+	CLICK_LADDER,
+	DEFAULT_PLAYER_NAME,
+	EMPTY_BIOMES,
+	GRID_HEIGHT,
+	GRID_SIZE,
+	INITIAL_CHARACTER_STATS,
+	INITIAL_INVENTORY_ITEMS,
+	INITIAL_RESOURCES,
+	MAX_CATCHUP_SEC,
+	MERCHANT_BUY_MULTIPLIER,
 	MERCHANT_RESOURCE_PRICES,
+	RESOURCE_CAP,
+	SPECIAL_SINGLE_TYPE_BIOMES,
+	TILE_TAP,
 } from '@/config/gameConfig';
 import {
+	calculateAnimalCost,
+	calculateBuildingCost,
+	calculateCombatStats,
 	calculateLevel,
 	calculateResourceRates,
+	calculateTileCost,
+	calculateTileTapYield,
 	calculateXpGain,
-	canAffordCost,
+	canAffordBundle,
+	castleUpgradeDuration,
 	countOwnedTiles,
 	createInitialGrid,
 	getRandomBiome,
-	validateGrid,
-	calculateCombatStats,
-	calculateTotalMeatProduction,
-	calculateAnimalCost,
+	subtractBundle,
+	tileCostAsResources,
 } from '@/utils/gameUtils';
+import { createClickLimiter } from '@/lib/clickLimiter';
+import { markVaultReady, SAVE_NAME, SAVE_VERSION, vaultStorage } from '@/lib/saveVault';
+import { pickPersisted, type PersistedGame } from '@/lib/sanitizeSave';
 import type {
+	BiomeType,
+	CharacterStats,
+	ClickInput,
 	GameState,
 	Resources,
+	TapResult,
 	Tile,
-	CharacterStats,
-	BiomeType,
 } from '@/types/game';
 
-// Helper to calculate cost at a specific level
+// Last tap time per tile (not persisted) - enforces TILE_TAP.cooldownMs
+const lastTapAt: Record<string, number> = {};
 
-// Calculate total meat production from all animals
+// Shared by the gold click and the tile tap: one token per physical click
+const clickLimiter = createClickLimiter();
+
+const BASE_STATS = [
+	'strength',
+	'dexterity',
+	'intelligence',
+	'vitality',
+	'charisma',
+] as const;
+
+const isPositiveNumber = (n: unknown): n is number =>
+	typeof n === 'number' && Number.isFinite(n) && n > 0;
+
+const neighbours = (x: number, y: number) => [
+	[x - 1, y],
+	[x + 1, y],
+	[x, y - 1],
+	[x, y + 1],
+];
+
+/** All game data of a brand-new game (no actions). */
+export const createInitialData = () => {
+	const grid = createInitialGrid();
+	const stats = { ...INITIAL_CHARACTER_STATS };
+	Object.assign(stats, calculateCombatStats(stats)); // derived stats always follow the formulas
+	const rates = calculateResourceRates(grid, stats, {});
+	return {
+		tiles: grid,
+		resources: { ...INITIAL_RESOURCES },
+		resourceRates: rates,
+		resourceModifiers: rates.modifiers,
+		level: calculateLevel(0),
+		previousLevel: 0,
+		playerName: DEFAULT_PLAYER_NAME,
+		playerClass: DEFAULT_PLAYER_CLASS,
+		characterStats: stats,
+		equipment: {},
+		inventory: INITIAL_INVENTORY_ITEMS.map((item) => ({ ...item })),
+		farmLevels: {} as Record<string, number>,
+		showCharacterWindow: false,
+		showStatisticsWindow: false,
+		showMerchantWindow: false,
+		showFarmWindow: false,
+		isHydrated: false,
+		biomeSelectionActive: false,
+		pendingTileCoords: null,
+		selectableBiomes: null,
+		clickLevel: 0,
+		castleUpgrade: null,
+		playSeconds: 0,
+		chestSpawnTimer: 0,
+		activeChests: 0,
+		lastChestReward: 0,
+		lastChestGoldRate: 0,
+		lastChestMinutesAwarded: 0,
+	};
+};
+
+const findCastle = (tiles: Tile[][]) => {
+	for (let y = 0; y < GRID_HEIGHT; y++) {
+		for (let x = 0; x < GRID_SIZE; x++) {
+			if (tiles[y][x].biome === 'castle') return { tile: tiles[y][x], x, y };
+		}
+	}
+	return null;
+};
 
 const createGameSlice = (
 	set: (
@@ -46,93 +133,81 @@ const createGameSlice = (
 	) => void,
 	get: () => GameState
 ) => {
-	const initialGrid = createInitialGrid();
-	const initialRates = calculateResourceRates(
-		initialGrid,
-		INITIAL_CHARACTER_STATS,
-		{}
-	);
+	/** Shared tail of buyTile / selectBiome: charge, claim the tile, award XP + reputation. */
+	const completePurchase = (x: number, y: number, biome: BiomeType): boolean => {
+		const state = get();
+		const owned = countOwnedTiles(state.tiles);
+		const cost = calculateTileCost(owned, state.characterStats.tileCostDiscount);
+		const bundle = tileCostAsResources(cost);
+		if (!canAffordBundle(state.resources, bundle)) return false;
+
+		const newTiles = state.tiles.map((row) => [...row]);
+		newTiles[y][x] = { ...newTiles[y][x], biome, isOwned: true };
+
+		const newRates = calculateResourceRates(
+			newTiles,
+			state.characterStats,
+			state.farmLevels
+		);
+
+		const xpGain =
+			calculateXpGain(owned + 1) * (1 + state.characterStats.xpGainMultiplier / 100);
+		const resources = subtractBundle(state.resources, bundle);
+		resources.xp += xpGain;
+
+		set({
+			tiles: newTiles,
+			resources,
+			resourceRates: newRates,
+			resourceModifiers: newRates.modifiers,
+			characterStats: {
+				...state.characterStats,
+				reputation: state.characterStats.reputation + 100,
+			},
+			biomeSelectionActive: false,
+			pendingTileCoords: null,
+			selectableBiomes: null,
+		});
+		return true;
+	};
 
 	return {
-		tiles: initialGrid,
-		resources: { ...INITIAL_RESOURCES },
-		resourceRates: initialRates,
-		resourceModifiers: initialRates.modifiers,
-		level: calculateLevel(0),
-		previousLevel: 0,
-		playerName: DEFAULT_PLAYER_NAME,
-		characterStats: INITIAL_CHARACTER_STATS,
-		equipment: {},
-		inventory: INITIAL_INVENTORY_ITEMS,
-		farmLevels: {}, // Initialize farm levels (animal counts)
-		showCharacterWindow: false,
-		showStatisticsWindow: false,
-		showMerchantWindow: false,
-		showFarmWindow: false, // Initialize farm window visibility
-		isHydrated: false,
-		// Biome selection feature state
-		biomeSelectionActive: false,
-		pendingTileCoords: null,
-		selectableBiomes: null,
-		clickMultiplier: 2, // Initialize with default multiplier of 2
-		chestSpawnTimer: 0, // Initialize chest spawn timer
-		activeChests: 0, // Initialize active chest count
-		lastChestReward: 0,
-		lastChestGoldRate: 0,
-		lastChestMinutesAwarded: 0,
+		...createInitialData(),
 
-		// Add a new method to purchase or upgrade an animal
+		resetGame: () => {
+			clickLimiter.reset();
+			Object.keys(lastTapAt).forEach((key) => delete lastTapAt[key]);
+			set({ ...createInitialData(), isHydrated: true });
+		},
+
+		// Buy one more animal of a kind (each purchase adds one animal)
 		purchaseAnimal: (animalId: string) => {
 			const state = get();
-			const animal = ANIMALS.find((animal) => animal.id === animalId);
-
+			const animal = ANIMALS.find((a) => a.id === animalId);
 			if (!animal) return false;
 
-			// Get current level of the animal (0 if not owned yet)
 			const currentLevel = state.farmLevels[animalId] || 0;
-
-			// Calculate cost to purchase/upgrade the animal
 			const cost = calculateAnimalCost(animal, currentLevel);
-
-			// Check if player can afford it
 			if (state.resources.food < cost) return false;
 
-			// Update farm levels and deduct cost
-			const newFarmLevels = { ...state.farmLevels };
-			newFarmLevels[animalId] = currentLevel + 1;
+			const newFarmLevels = { ...state.farmLevels, [animalId]: currentLevel + 1 };
+			const newRates = calculateResourceRates(
+				state.tiles,
+				state.characterStats,
+				newFarmLevels
+			);
 
-			// Deduct food cost
-			const newResources = { ...state.resources };
-			newResources.food -= cost;
-
-			// Calculate new total meat production rate
-			const meatProductionRate = calculateTotalMeatProduction(newFarmLevels);
-
-			// Update resource rates with new meat production
-			const newRates = { ...state.resourceRates };
-			newRates.base = { ...newRates.base, meat: meatProductionRate };
-
-			// Calculate the total with modifiers
-			const meatModifier = newRates.modifiers.meat || 0;
-			newRates.total = {
-				...newRates.total,
-				meat: meatProductionRate * (1 + meatModifier),
-			};
-
-			// Update state
 			set({
 				farmLevels: newFarmLevels,
-				resources: newResources,
+				resources: { ...state.resources, food: state.resources.food - cost },
 				resourceRates: newRates,
+				resourceModifiers: newRates.modifiers,
 			});
-
 			return true;
 		},
 
-		// Add methods to control farm overlay visibility
 		toggleFarmWindow: () => {
-			const state = get();
-			set({ showFarmWindow: !state.showFarmWindow });
+			set({ showFarmWindow: !get().showFarmWindow });
 		},
 
 		setShowFarmWindow: (show: boolean) => {
@@ -141,18 +216,14 @@ const createGameSlice = (
 
 		addStatPoint: (stat: keyof CharacterStats) => {
 			const state = get();
+			if (!(BASE_STATS as readonly string[]).includes(stat)) return;
 			if (state.characterStats.availablePoints <= 0) return;
 
-			// Create new stats object with incremented stat
 			const newStats = { ...state.characterStats };
 			newStats[stat]++;
 			newStats.availablePoints--;
+			Object.assign(newStats, calculateCombatStats(newStats));
 
-			// Recalculate combat stats
-			const combatStats = calculateCombatStats(newStats);
-			Object.assign(newStats, combatStats);
-
-			// Recalculate resource rates with new stats
 			const newRates = calculateResourceRates(
 				state.tiles,
 				newStats,
@@ -168,125 +239,53 @@ const createGameSlice = (
 
 		buyTile: (x: number, y: number) => {
 			const state = get();
-			const ownedTilesCount = countOwnedTiles(state.tiles);
-			const baseCost = SCALING_CONFIG.costFormula(ownedTilesCount);
+			if (!Number.isInteger(x) || !Number.isInteger(y)) return false;
+			const target = state.tiles[y]?.[x];
+			if (!target || target.isOwned) return false;
+			if (state.biomeSelectionActive) return false;
 
-			// Apply tile cost discount from character stats
-			const discountMultiplier =
-				1 - state.characterStats.tileCostDiscount / 100;
-			const cost = Math.floor(baseCost * discountMultiplier);
-
-			if (state.resources.gold < cost) {
-				return false;
-			}
-
-			const isAdjacent = [
-				[x - 1, y],
-				[x + 1, y],
-				[x, y - 1],
-				[x, y + 1],
-			].some(
-				([adjX, adjY]) =>
-					adjX >= 0 &&
-					adjX < GRID_SIZE &&
-					adjY >= 0 &&
-					adjY < GRID_HEIGHT &&
-					state.tiles[adjY]?.[adjX]?.isOwned
+			const isAdjacent = neighbours(x, y).some(
+				([ax, ay]) => state.tiles[ay]?.[ax]?.isOwned
 			);
+			if (!isAdjacent) return false;
 
-			if (!isAdjacent) {
-				return false;
-			}
+			const owned = countOwnedTiles(state.tiles);
+			const cost = calculateTileCost(owned, state.characterStats.tileCostDiscount);
+			if (!canAffordBundle(state.resources, tileCostAsResources(cost))) return false;
 
-			// Check if this is the 4th tile purchase (tiles are 0-indexed)
-			// Every 4th tile (3, 7, 11, etc. - so we need to check if ownedTilesCount % 4 === 3)
-			if (ownedTilesCount % 4 === 3) {
-				// Get available biomes for selection
-				const availableBiomes = Object.entries(BIOMES)
-					.filter(
-						([name]) =>
-							!SPECIAL_SINGLE_TYPE_BIOMES.includes(name as BiomeType) &&
-							!EMPTY_BIOMES.includes(name as BiomeType)
-					)
-					.map(([name]) => name as BiomeType);
+			// Every 4th owned count (3, 7, 11 ...) the player picks the biome; payment happens on selection
+			if (owned % 4 === 3) {
+				const availableBiomes = Object.keys(BIOMES).filter(
+					(name) =>
+						!SPECIAL_SINGLE_TYPE_BIOMES.includes(name as BiomeType) &&
+						!EMPTY_BIOMES.includes(name as BiomeType)
+				) as BiomeType[];
 
-				// Activate biome selection mode
 				set({
 					biomeSelectionActive: true,
 					pendingTileCoords: { x, y },
 					selectableBiomes: availableBiomes,
 				});
-
 				return true;
 			}
 
-			// Regular tile purchase - random biome
-			const newTiles = state.tiles.map((row) => [...row]);
-			const randomBiome = getRandomBiome();
-			newTiles[y][x] = {
-				...newTiles[y][x],
-				biome: randomBiome,
-				isOwned: true,
-			};
-
-			// Recalculate resource rates with the new tile and current stats
-			const newRates = calculateResourceRates(
-				newTiles,
-				state.characterStats,
-				state.farmLevels
-			);
-
-			// Calculate XP gain based on new owned tiles count
-			const newOwnedTilesCount = ownedTilesCount + 1;
-			const xpGain = calculateXpGain(newOwnedTilesCount);
-
-			// Apply XP gain multiplier from stats
-			const xpMultiplier = 1 + state.characterStats.xpGainMultiplier / 100;
-			const totalXpGain = xpGain * xpMultiplier;
-
-			// Update character stats with new reputation
-			const newStats = { ...state.characterStats };
-			newStats.reputation += 100; // +100 reputation for each tile purchased
-
-			set({
-				tiles: newTiles,
-				resources: {
-					...state.resources,
-					gold: state.resources.gold - cost,
-					xp: state.resources.xp + totalXpGain,
-				},
-				resourceRates: newRates,
-				resourceModifiers: newRates.modifiers,
-				level: calculateLevel(state.resources.xp + totalXpGain),
-				characterStats: newStats,
-			});
-
-			return true;
+			return completePurchase(x, y, getRandomBiome());
 		},
 
-		// New methods for biome selection
 		selectBiome: (biome: BiomeType) => {
 			const state = get();
-
 			if (
 				!state.biomeSelectionActive ||
 				!state.pendingTileCoords ||
-				!state.selectableBiomes
+				!state.selectableBiomes ||
+				!state.selectableBiomes.includes(biome)
 			) {
 				return false;
 			}
 
 			const { x, y } = state.pendingTileCoords;
-			const ownedTilesCount = countOwnedTiles(state.tiles);
-			const baseCost = SCALING_CONFIG.costFormula(ownedTilesCount);
-
-			// Apply tile cost discount from character stats
-			const discountMultiplier =
-				1 - state.characterStats.tileCostDiscount / 100;
-			const cost = Math.floor(baseCost * discountMultiplier);
-
-			if (state.resources.gold < cost) {
-				// Reset biome selection state
+			if (!completePurchase(x, y, biome)) {
+				// Could not pay any more: drop the pending selection
 				set({
 					biomeSelectionActive: false,
 					pendingTileCoords: null,
@@ -294,50 +293,6 @@ const createGameSlice = (
 				});
 				return false;
 			}
-
-			// Create new tile with the selected biome
-			const newTiles = state.tiles.map((row) => [...row]);
-			newTiles[y][x] = {
-				...newTiles[y][x],
-				biome: biome,
-				isOwned: true,
-			};
-
-			// Recalculate resource rates with the new tile and current stats
-			const newRates = calculateResourceRates(
-				newTiles,
-				state.characterStats,
-				state.farmLevels
-			);
-
-			// Calculate XP gain based on new owned tiles count
-			const newOwnedTilesCount = ownedTilesCount + 1;
-			const xpGain = calculateXpGain(newOwnedTilesCount);
-
-			// Apply XP gain multiplier from stats
-			const xpMultiplier = 1 + state.characterStats.xpGainMultiplier / 100;
-			const totalXpGain = xpGain * xpMultiplier;
-
-			// Update character stats with new reputation
-			const newStats = { ...state.characterStats };
-			newStats.reputation += 100; // +100 reputation for each tile purchased
-
-			set({
-				tiles: newTiles,
-				resources: {
-					...state.resources,
-					gold: state.resources.gold - cost,
-					xp: state.resources.xp + totalXpGain,
-				},
-				resourceRates: newRates,
-				resourceModifiers: newRates.modifiers,
-				level: calculateLevel(state.resources.xp + totalXpGain),
-				characterStats: newStats,
-				biomeSelectionActive: false,
-				pendingTileCoords: null,
-				selectableBiomes: null,
-			});
-
 			return true;
 		},
 
@@ -349,204 +304,207 @@ const createGameSlice = (
 			});
 		},
 
+		// Starts the (timed) castle upgrade: resources are paid now, the level changes when the timer ends
 		upgradeCastle: () => {
 			const state = get();
+			if (state.castleUpgrade) return false;
 
-			// Find castle
-			let castle: Tile | null = null;
-			let castleX = -1,
-				castleY = -1;
+			const castle = findCastle(state.tiles);
+			if (!castle || !castle.tile.upgradeCost || !castle.tile.level) return false;
+			if (castle.tile.level >= CASTLE_UPGRADE.maxLevel) return false;
+			if (!canAffordBundle(state.resources, castle.tile.upgradeCost)) return false;
 
-			for (let y = 0; y < GRID_HEIGHT; y++) {
-				for (let x = 0; x < GRID_SIZE; x++) {
-					if (state.tiles[y][x].biome === 'castle') {
-						castle = state.tiles[y][x];
-						castleX = x;
-						castleY = y;
-						break;
-					}
-				}
-				if (castle) break;
-			}
-
-			if (!castle || !castle.upgradeCost || !castle.level) return false;
-			if (castle.level >= CASTLE_UPGRADE.maxLevel) return false;
-			if (!canAffordCost(state.resources, castle.upgradeCost)) return false;
-
-			const newTiles = state.tiles.map((row) => [...row]);
-			newTiles[castleY][castleX] = {
-				...castle,
-				level: castle.level + 1,
-				upgradeCost: CASTLE_UPGRADE.upgradeCosts[castle.level] || null,
-			} as Tile;
-
-			// Deduct resources
-			const newResources = { ...state.resources };
-			Object.entries(castle.upgradeCost).forEach(([resource, amount]) => {
-				newResources[resource as keyof Resources] -= amount;
+			set({
+				resources: subtractBundle(state.resources, castle.tile.upgradeCost),
+				castleUpgrade: {
+					toLevel: castle.tile.level + 1,
+					remainingSec: castleUpgradeDuration(castle.tile.level),
+				},
 			});
+			return true;
+		},
 
-			// Recalculate resource rates with current stats and farm levels
+		upgradeGroundsTile: (x: number, y: number, buildingType: string) => {
+			const state = get();
+			const tile = state.tiles[y]?.[x];
+			if (!tile || !tile.isOwned || tile.biome !== 'grounds') return false;
+			if (tile.building || !(buildingType in BUILDINGS)) return false;
+
+			const cost = calculateBuildingCost(state.tiles);
+			if (!canAffordBundle(state.resources, cost)) return false;
+
+			const updatedTiles = state.tiles.map((row) => [...row]);
+			updatedTiles[y][x] = { ...tile, level: 2, building: buildingType };
 			const newRates = calculateResourceRates(
-				newTiles,
+				updatedTiles,
 				state.characterStats,
 				state.farmLevels
 			);
 
 			set({
-				tiles: newTiles,
-				resources: newResources,
+				tiles: updatedTiles,
+				resources: subtractBundle(state.resources, cost),
 				resourceRates: newRates,
 				resourceModifiers: newRates.modifiers,
 			});
-
 			return true;
 		},
 
-		upgradeGroundsTile: (x: number, y: number, buildingType: string) => {
-			set((state) => {
-				// Make sure the tile exists and is a grounds tile
-				const tile = state.tiles[y]?.[x];
-				if (!tile || tile.biome !== 'grounds') {
-					return state;
-				}
-
-				// Update the tile level to 2 and assign the building
-				const updatedTiles = [...state.tiles];
-				updatedTiles[y] = [...updatedTiles[y]];
-				updatedTiles[y][x] = {
-					...updatedTiles[y][x],
-					level: 2,
-					building: buildingType,
-				};
-
-				// Recalculate resource rates with the updated tiles and building
-				const newResourceRates = calculateResourceRates(
-					updatedTiles,
-					state.characterStats,
-					state.farmLevels
-				);
-
-				// Return updated state
-				return {
-					...state,
-					tiles: updatedTiles,
-					resourceRates: newResourceRates,
-					resourceModifiers: newResourceRates.modifiers,
-				};
-			});
-		},
-
-		// Method to collect chest from a tile
+		// Collect a chest: reward = passive gold/s x random minutes, plus a small bonus per Luck
 		collectChest: (x: number, y: number) => {
 			const state = get();
 			const tile = state.tiles[y]?.[x];
+			if (!tile || !tile.isOwned || !tile.hasChest) return false;
 
-			// If the tile doesn't exist or doesn't have a chest, return false
-			if (!tile || !tile.hasChest) return false;
-
-			// Get player's gold income rate per second
 			const goldIncomeRate = state.resourceRates.total.gold;
-
-			// Generate random time between 5 and 50 minutes (in seconds)
-			const minTime = 5 * 60; // 5 minutes in seconds
-			const maxTime = 50 * 60; // 50 minutes in seconds
+			const minSec = CHEST.minMinutes * 60;
+			const maxSec = CHEST.maxMinutes * 60;
 			const randomTimeInSeconds =
-				Math.floor(Math.random() * (maxTime - minTime + 1)) + minTime;
-			const minutesAwarded = randomTimeInSeconds / 60;
+				Math.floor(Math.random() * (maxSec - minSec + 1)) + minSec;
+			const luck = 1 + state.characterStats.luck * CHEST.luckBonusPerPoint;
+			const goldReward = Math.floor(goldIncomeRate * randomTimeInSeconds * luck);
 
-			// Calculate gold reward based on income rate * time
-			const goldReward = Math.floor(goldIncomeRate * randomTimeInSeconds);
-
-			// Create a new copy of the tiles array to ensure immutability
 			const newTiles = [...state.tiles];
 			newTiles[y] = [...newTiles[y]];
 			newTiles[y][x] = { ...newTiles[y][x], hasChest: false };
 
-			// Set the latest chest reward for notification
 			set({
 				tiles: newTiles,
-				activeChests: state.activeChests - 1,
+				activeChests: Math.max(0, state.activeChests - 1),
 				resources: {
 					...state.resources,
 					gold: state.resources.gold + goldReward,
 				},
 				lastChestReward: goldReward,
 				lastChestGoldRate: goldIncomeRate,
-				lastChestMinutesAwarded: minutesAwarded,
+				lastChestMinutesAwarded: randomTimeInSeconds / 60,
 			});
-
 			return true;
+		},
+
+		// Gold for a click on the map: gold/s x click power. Rate limited (see lib/clickLimiter).
+		clickForGold: (input: ClickInput) => {
+			if (!clickLimiter.take(input)) return 0;
+			const state = get();
+			const power = CLICK_LADDER[state.clickLevel]?.power ?? CLICK_LADDER[0].power;
+			const gold = state.resourceRates.total.gold * power;
+			if (!(gold > 0)) return 0;
+			set({
+				resources: { ...state.resources, gold: state.resources.gold + gold },
+			});
+			return gold;
+		},
+
+		// Tapping an owned tile yields a slice of its own output (per-tile cooldown + the shared click limiter)
+		tapTile: (x: number, y: number, input?: ClickInput): TapResult | null => {
+			if (!input || !clickLimiter.take(input)) return null;
+
+			const state = get();
+			const key = `${x},${y}`;
+			if (input.now - (lastTapAt[key] ?? -Infinity) < TILE_TAP.cooldownMs) return null;
+
+			const perSecond = calculateTileTapYield(state.tiles, x, y, state.resourceRates);
+			const lucky =
+				TILE_TAP.luckyEnabled && Math.random() * 100 < state.characterStats.critChance;
+			const mult =
+				TILE_TAP.seconds *
+				(lucky ? 1 + state.characterStats.critDmgMultiplier / 100 : 1);
+
+			const items = (Object.entries(perSecond) as [keyof Resources, number][])
+				.map(([resource, rate]) => ({ resource, amount: rate * mult }))
+				.filter((item) => item.amount > 0);
+			if (items.length === 0) return null;
+
+			lastTapAt[key] = input.now;
+			const gained: Partial<Resources> = {};
+			items.forEach(({ resource, amount }) => {
+				gained[resource] = amount;
+			});
+			get().addResources(gained);
+			return { items, lucky };
 		},
 
 		tick: (deltaTime: number) => {
 			const state = get();
-			const secondsElapsed = deltaTime / 1000;
+			// Bounded, never negative: editing the system clock cannot grant (or remove) progress
+			const deltaMs = Number.isFinite(deltaTime) ? deltaTime : 0;
+			const secondsElapsed = Math.min(Math.max(0, deltaMs), MAX_CATCHUP_SEC * 1000) / 1000;
+			if (secondsElapsed === 0) return;
 
-			// Resource accumulation
+			// Resource accumulation (xp has its own multiplier)
 			const newResources = { ...state.resources };
-
-			// Add resources based on rates
-			Object.entries(state.resourceRates.total).forEach(([resource, rate]) => {
-				// Skip XP as it's handled separately
-				if (resource !== 'xp') {
-					const resourceKey = resource as keyof Resources;
-					newResources[resourceKey] += rate * secondsElapsed;
+			(Object.entries(state.resourceRates.total) as [keyof Resources, number][]).forEach(
+				([resource, rate]) => {
+					if (resource === 'xp') return;
+					newResources[resource] = Math.min(
+						newResources[resource] + rate * secondsElapsed,
+						RESOURCE_CAP
+					);
 				}
-			});
-
-			// Handle XP gain with multiplier from character stats
+			);
 			const xpGain =
-				state.resourceRates.total.xp *
-				(1 + state.characterStats.xpGainMultiplier / 100);
+				state.resourceRates.total.xp * (1 + state.characterStats.xpGainMultiplier / 100);
 			newResources.xp += xpGain * secondsElapsed;
 
-			// Chest spawning system
-			// Constants for chest system (in seconds)
-			const CHEST_SPAWN_INTERVAL = 600; // 10 minutes (configurable)
-			const MAX_ACTIVE_CHESTS = 5;
-
-			let newChestSpawnTimer = state.chestSpawnTimer + secondsElapsed;
-			let newActiveChestsCount = state.activeChests;
 			let newTiles = state.tiles;
+			let newRates = state.resourceRates;
+			let newCastleUpgrade = state.castleUpgrade;
 
-			// If it's time to spawn a chest and we haven't reached the maximum
-			if (
-				newChestSpawnTimer >= CHEST_SPAWN_INTERVAL &&
-				newActiveChestsCount < MAX_ACTIVE_CHESTS
-			) {
-				// Reset timer
-				newChestSpawnTimer = 0;
-
-				// Find all owned tiles except castle
-				const eligibleTiles: { x: number; y: number }[] = [];
-				state.tiles.forEach((row, y) => {
-					row.forEach((tile, x) => {
-						if (tile.isOwned && tile.biome !== 'castle' && !tile.hasChest) {
-							eligibleTiles.push({ x, y });
-						}
-					});
-				});
-
-				// If there are eligible tiles, select one randomly and add a chest
-				if (eligibleTiles.length > 0) {
-					const randomIndex = Math.floor(Math.random() * eligibleTiles.length);
-					const { x, y } = eligibleTiles[randomIndex];
-
-					// Create a new copy of the tiles array to ensure immutability
-					newTiles = [...state.tiles];
-					newTiles[y] = [...newTiles[y]];
-					newTiles[y][x] = { ...newTiles[y][x], hasChest: true };
-
-					// Increment active chest count
-					newActiveChestsCount++;
+			// Castle upgrade timer (counted from tick deltas, so changing the clock cannot skip it)
+			if (newCastleUpgrade) {
+				const remaining = newCastleUpgrade.remainingSec - secondsElapsed;
+				if (remaining <= 0) {
+					const castle = findCastle(state.tiles);
+					if (castle) {
+						newTiles = state.tiles.map((row) => [...row]);
+						newTiles[castle.y][castle.x] = {
+							...castle.tile,
+							level: newCastleUpgrade.toLevel,
+							upgradeCost:
+								CASTLE_UPGRADE.upgradeCosts[newCastleUpgrade.toLevel - 1] ?? undefined,
+						};
+						newRates = calculateResourceRates(
+							newTiles,
+							state.characterStats,
+							state.farmLevels
+						);
+					}
+					newCastleUpgrade = null;
+				} else {
+					newCastleUpgrade = { ...newCastleUpgrade, remainingSec: remaining };
 				}
 			}
 
-			// Calculate current level and progress
-			const { level, progress } = calculateLevel(newResources.xp);
+			// Chests: the spawn timer only runs while there is room for another chest
+			let newChestSpawnTimer = state.chestSpawnTimer;
+			let newActiveChestsCount = state.activeChests;
+			if (newActiveChestsCount >= CHEST.max) {
+				newChestSpawnTimer = 0;
+			} else {
+				newChestSpawnTimer += secondsElapsed;
+				if (newChestSpawnTimer >= CHEST.intervalSec) {
+					newChestSpawnTimer = 0;
+					const eligibleTiles: { x: number; y: number }[] = [];
+					newTiles.forEach((row, y) => {
+						row.forEach((tile, x) => {
+							if (tile.isOwned && tile.biome !== 'castle' && !tile.hasChest) {
+								eligibleTiles.push({ x, y });
+							}
+						});
+					});
+					if (eligibleTiles.length > 0) {
+						const { x, y } =
+							eligibleTiles[Math.floor(Math.random() * eligibleTiles.length)];
+						newTiles = newTiles === state.tiles ? [...state.tiles] : newTiles;
+						newTiles[y] = [...newTiles[y]];
+						newTiles[y][x] = { ...newTiles[y][x], hasChest: true };
+						newActiveChestsCount++;
+					}
+				}
+			}
 
-			// Add a stat point if level has increased
+			// Level and stat points
+			const { level, progress } = calculateLevel(newResources.xp);
 			const newCharacterStats = { ...state.characterStats };
 			if (level > state.level.level) {
 				newCharacterStats.availablePoints += level - state.level.level;
@@ -554,46 +512,50 @@ const createGameSlice = (
 
 			set({
 				resources: newResources,
+				resourceRates: newRates,
+				resourceModifiers: newRates.modifiers,
 				level: { level, progress },
 				previousLevel: state.level.level,
 				characterStats: newCharacterStats,
 				tiles: newTiles,
+				castleUpgrade: newCastleUpgrade,
 				chestSpawnTimer: newChestSpawnTimer,
 				activeChests: newActiveChestsCount,
+				playSeconds: state.playSeconds + secondsElapsed,
 			});
 		},
 
 		setPlayerName: (name: string) => {
-			// Ensure name is not empty and within length limits
 			if (name && name.trim().length > 0) {
-				const trimmedName = name.trim().substring(0, 9); // Max 9 characters
-				set({ playerName: trimmedName });
+				set({ playerName: name.trim().substring(0, 9) }); // max 9 characters
 			}
 		},
-		addResources: (resourceToAdd: Partial<Resources>) => {
-			set((state) => ({
-				resources: {
-					...state.resources,
-					...Object.keys(resourceToAdd).reduce(
-						(acc, key) => ({
-							...acc,
-							[key]:
-								state.resources[key as keyof Resources] +
-								(resourceToAdd[key as keyof Resources] || 0),
-						}),
-						{} as Partial<Resources>
-					),
-				},
-			}));
+
+		setPlayerClass: (playerClass: PlayerClassId) => {
+			if (PLAYER_CLASSES[playerClass]) set({ playerClass });
 		},
+
+		// Adds (or subtracts) resources. Rejects non-finite input and never lets a stockpile go negative.
+		addResources: (resourceToAdd: Partial<Resources>) => {
+			const state = get();
+			const next = { ...state.resources };
+			for (const [key, value] of Object.entries(resourceToAdd)) {
+				if (!(key in next) || typeof value !== 'number' || !Number.isFinite(value)) return;
+				const k = key as keyof Resources;
+				const updated = next[k] + value;
+				if (updated < 0) return;
+				next[k] = Math.min(updated, RESOURCE_CAP);
+			}
+			set({ resources: next });
+		},
+
 		toggleCharacterWindow: () =>
 			set((state) => ({ showCharacterWindow: !state.showCharacterWindow })),
 		toggleStatisticsWindow: () =>
 			set((state) => ({ showStatisticsWindow: !state.showStatisticsWindow })),
 		toggleMerchantWindow: () => {
 			// Close other windows if merchant window is being opened
-			const isMerchantOpen = get().showMerchantWindow;
-			if (!isMerchantOpen) {
+			if (!get().showMerchantWindow) {
 				set({
 					showCharacterWindow: false,
 					showStatisticsWindow: false,
@@ -603,84 +565,91 @@ const createGameSlice = (
 				set({ showMerchantWindow: false });
 			}
 		},
+
+		// Sell resources to the merchant for gold. Gold and XP cannot be sold.
 		sellResources: (resource: keyof Resources, amount: number) => {
-			if (resource === 'gold' || resource === 'xp') return; // Cannot sell gold or xp
+			if (!(resource in MERCHANT_RESOURCE_PRICES)) return false;
+			if (!isPositiveNumber(amount)) return false;
 
 			const state = get();
-			if (state.resources[resource] < amount) return; // Not enough resources
+			if (state.resources[resource] < amount) return false;
 
-			// Resource pricing (different for each resource)
-			const prices = {
-				wood: MERCHANT_RESOURCE_PRICES.wood,
-				stone: MERCHANT_RESOURCE_PRICES.stone,
-				coal: MERCHANT_RESOURCE_PRICES.coal,
-				food: MERCHANT_RESOURCE_PRICES.food,
-				meat: MERCHANT_RESOURCE_PRICES.meat,
-			};
-
-			const goldGained = Math.floor(
-				amount * prices[resource as keyof typeof prices]
-			);
+			const price =
+				MERCHANT_RESOURCE_PRICES[resource as keyof typeof MERCHANT_RESOURCE_PRICES];
+			const goldGained = Math.floor(amount * price);
 
 			set({
 				resources: {
 					...state.resources,
 					[resource]: state.resources[resource] - amount,
-					gold: state.resources.gold + goldGained,
+					gold: Math.min(state.resources.gold + goldGained, RESOURCE_CAP),
 				},
 			});
+			return true;
+		},
+
+		// Buy whole units of a resource from the merchant (price rounds UP in the merchant's favour)
+		buyResource: (resource: keyof Resources, amount: number) => {
+			if (!(resource in MERCHANT_RESOURCE_PRICES)) return false;
+			if (!isPositiveNumber(amount)) return false;
+			const units = Math.floor(amount);
+			if (units < 1) return false;
+
+			const state = get();
+			const price = Math.ceil(
+				units *
+					MERCHANT_RESOURCE_PRICES[resource as keyof typeof MERCHANT_RESOURCE_PRICES] *
+					MERCHANT_BUY_MULTIPLIER
+			);
+			if (state.resources.gold < price) return false;
+
+			set({
+				resources: {
+					...state.resources,
+					gold: state.resources.gold - price,
+					[resource]: Math.min(state.resources[resource] + units, RESOURCE_CAP),
+				},
+			});
+			return true;
+		},
+
+		buyClickUpgrade: () => {
+			const state = get();
+			const next = CLICK_LADDER[state.clickLevel + 1];
+			if (!next || state.resources.gold < next.price) return false;
+			set({
+				resources: {
+					...state.resources,
+					gold: state.resources.gold - next.price,
+				},
+				clickLevel: state.clickLevel + 1,
+			});
+			return true;
 		},
 	};
 };
 
 export const useGameStore = create(
-	persist<GameState>((set, get) => createGameSlice(set, get), {
-		name: 'idle-explorer-v11',
-		version: 11,
-		storage: createJSONStorage(() => localStorage),
-		onRehydrateStorage: () => (state) => {
-			// Validate and fix state if needed
-			if (!state || !validateGrid(state.tiles)) {
-				const initialGrid = createInitialGrid();
-				const initialRates = calculateResourceRates(
-					initialGrid,
-					INITIAL_CHARACTER_STATS,
-					{}
-				);
-
-				return {
-					tiles: initialGrid,
-					resources: { ...INITIAL_RESOURCES },
-					resourceRates: initialRates,
-					resourceModifiers: initialRates.modifiers,
-					xp: 0,
-					level: calculateLevel(0),
-					previousLevel: 0,
-					playerName: DEFAULT_PLAYER_NAME,
-					characterStats: INITIAL_CHARACTER_STATS,
-					equipment: {},
-					inventory: INITIAL_INVENTORY_ITEMS,
-					farmLevels: {}, // Initialize farm levels (animal counts)
-					showCharacterWindow: false,
-					showStatisticsWindow: false,
-					showMerchantWindow: false,
-					showFarmWindow: false, // Initialize farm window visibility
-					isHydrated: true,
-					buyTile: state?.buyTile,
-					upgradeCastle: state?.upgradeCastle,
-					tick: state?.tick,
-					biomeSelectionActive: false,
-					pendingTileCoords: null,
-					selectableBiomes: null,
-					clickMultiplier: 2, // Initialize with default multiplier of 2
-					chestSpawnTimer: 0, // Initialize chest spawn timer
-					activeChests: 0, // Initialize active chest count
-					lastChestReward: 0,
-					lastChestGoldRate: 0,
-					lastChestMinutesAwarded: 0,
-				};
-			}
-			return state;
+	persist<GameState, [], [], PersistedGame>((set, get) => createGameSlice(set, get), {
+		name: SAVE_NAME,
+		version: SAVE_VERSION,
+		// Encrypted IndexedDB vault (already validated by sanitizeSave when it is read)
+		storage: vaultStorage,
+		// Only game data is saved; rates, UI flags and actions are rebuilt on load
+		partialize: (state) => pickPersisted(state),
+		merge: (persisted, current) => {
+			const saved = persisted as PersistedGame | undefined;
+			if (!saved) return { ...current, isHydrated: true };
+			const rates = calculateResourceRates(saved.tiles, saved.characterStats, saved.farmLevels);
+			return {
+				...current,
+				...saved,
+				resourceRates: rates,
+				resourceModifiers: rates.modifiers,
+				isHydrated: true,
+			};
 		},
+		// From here on changes are written (nothing is saved before the first load has finished)
+		onRehydrateStorage: () => () => markVaultReady(),
 	})
 );
