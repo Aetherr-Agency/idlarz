@@ -120,7 +120,11 @@ Reference images in this folder: `icons.png` (icon set), `characters.png` (heroe
 - **Biome transitions** (`reference/biome-blend.png`: hard edges left, blended right): a tile bordering a different
   ground draws the NEIGHBOUR's own ground texture through a dithered mask (`bg/blend_<n|e|s|w|ne|se|sw|nw>_<0-2>.png`,
   50% coverage at the seam fading ~8 art px in, chunky 2x2 dither, jittered edge). Masks carry no colour, so every biome
-  pair (and `mystery` clouds toward unexplored tiles) works with no extra art. The castle keeps crisp edges. The 1px tile
+  pair (and `mystery` clouds toward unexplored tiles) works with no extra art. Two seams use coloured trims instead of the dither (`trim_art.py`, 48px PNGs, no mask): **shorelines** (`shore-land_*` / `shore-water_*`: a ragged
+  bay bite of flat water + foam line + wet-sand beach on the land tile, faint foam halo on the water tile; both tiles share
+  one jittered shoreline) and **kerbs** (`curb-yard_*` / `curb-castle_*`: dark outline + lit lip + shade on every side of a
+  yard/castle tile that faces a different ground or fog, plus a corner notch for a differing diagonal). Neighbours of a
+  yard/castle stay crisp. The 1px tile
   bevel only stays on sides facing land we don't own. Logic: `src/utils/biomeBlend.ts` (tested in `tests/biomeBlend.test.ts`),
   rendered by `Tile.tsx` as `.tile-blend` spans (CSS `mask`). Both tiles on a seam share one jitter variant.
 - Remaining emoji: only the Merchant tab icons.
@@ -136,6 +140,7 @@ shadows, contours, rim light, coloured outlines), so every asset shares one ligh
 | `sprites_resources.py` `sprites_props.py` `sprites_characters.py` `sprites_equipment.py` `sprites_animals.py` `sprites_map.py` `sprites_castle.py` `sprites_buildings.py` `sprites_farm.py` | Sprites as lists of primitives (boxes, ellipsoids, cylinders, cones). `sprites_props` also draws the purple orb in 2D; `sprites_farm` renders the pen in two layers. |
 | `ground_art.py` | Seamless biome ground textures, the unexplored cloud tile and the fog tiles (flat-banded cloud generator). |
 | `blend_art.py` | Biome edge-blend masks (4 edges + 4 inner corners x 3 variants) and the mock-map preview that composes them like the game. |
+| `trim_art.py` | Shoreline (water<->land) and kerb (yard / castle) trims, same piece names as the masks. |
 | `ui_art.py` | 2D UI art: frames, header chrome, flask parts, stone XP bar, hero scene, torch, castle-range parts, gold sparkle strip, level-up ribbon. |
 | `build.py` | Builds everything into `public/pixel/{icons,ui,bg}` (wipes them first). `--refs` also refreshes this folder. |
 

@@ -5,7 +5,9 @@ import type { Tile } from '@/types/game';
  * texture through a dithered mask (public/pixel/bg/blend_<piece>_<variant>.png, built by scripts/pixel/blend_art.py).
  *   n/e/s/w   : the neighbour on that side differs
  *   ne/se/sw/nw: only the diagonal neighbour differs (inner corner)
- * Unexplored neighbours blend in the cloud texture ('mystery'). The castle keeps crisp edges.
+ * Special seams use coloured trims instead (scripts/pixel/trim_art.py): water <-> land get a foam + beach shoreline
+ * ('shore-land' / 'shore-water'), and yard / castle tiles get a stone kerb ('curb-yard' / 'curb-castle') on every side
+ * facing a different ground. Unexplored neighbours blend in the cloud texture ('mystery').
  */
 export type BlendPiece = 'n' | 'e' | 's' | 'w' | 'ne' | 'se' | 'sw' | 'nw';
 
@@ -54,33 +56,48 @@ export function groundOf(tile: Tile | undefined): string | null {
 	return tile.biome === 'grounds' && tile.building && (tile.level ?? 1) > 1 ? 'yard' : tile.biome;
 }
 
+const CURBED = ['yard', 'castle'];
+
+/** What a tile of ground `me` draws toward a differing owned neighbour of ground `nb`. */
+function pairGround(me: string, nb: string): string {
+	if ((me === 'lake') !== (nb === 'lake')) return me === 'lake' ? 'shore-water' : 'shore-land';
+	return nb;
+}
+
 export function getBlendPieces(tiles: Tile[][] | undefined, x: number, y: number): BlendSpec[] {
 	const me = groundOf(tiles?.[y]?.[x]);
-	if (!tiles || !me || me === 'castle') return [];
+	if (!tiles || !me) return [];
 
 	const inGrid = (cx: number, cy: number) => !!tiles[cy]?.[cx];
-	// what a neighbour contributes: its ground, the cloud texture if unexplored, nothing if off the map or the castle
-	const source = (cx: number, cy: number): string | null => {
-		if (!inGrid(cx, cy)) return null;
-		const g = groundOf(tiles[cy][cx]);
-		if (g === 'castle') return null;
-		return g ?? UNEXPLORED;
-	};
 	const ground = (cx: number, cy: number) => groundOf(tiles[cy]?.[cx]);
+	const curbed = CURBED.includes(me);
+	const spec = (piece: BlendPiece, g: string): BlendSpec => ({
+		piece,
+		ground: g,
+		// kerbs are straight: a single variant
+		variant: g.startsWith('curb-') ? 0 : variantFor(x, y, piece),
+	});
 
 	const out: BlendSpec[] = [];
 	for (const [piece, dx, dy] of SIDES) {
-		const src = source(x + dx, y + dy);
-		if (src && src !== me) out.push({ piece, ground: src, variant: variantFor(x, y, piece) });
+		if (!inGrid(x + dx, y + dy)) continue;
+		const nb = ground(x + dx, y + dy);
+		if (curbed) {
+			if (nb !== me) out.push(spec(piece, `curb-${me}`));
+		} else if (nb === null) {
+			out.push(spec(piece, UNEXPLORED));
+		} else if (nb !== me && !CURBED.includes(nb)) {
+			out.push(spec(piece, pairGround(me, nb)));
+		}
 	}
 	for (const [piece, dx, dy, a, b] of DIAGONALS) {
 		const [, ax, ay] = SIDES.find(([p]) => p === a)!;
 		const [, bx, by] = SIDES.find(([p]) => p === b)!;
 		if (ground(x + ax, y + ay) !== me || ground(x + bx, y + by) !== me) continue;
-		const src = ground(x + dx, y + dy);
-		if (src && src !== me && src !== 'castle') {
-			out.push({ piece, ground: src, variant: variantFor(x, y, piece) });
-		}
+		const nb = ground(x + dx, y + dy);
+		if (!nb || nb === me) continue;
+		if (curbed) out.push(spec(piece, `curb-${me}`));
+		else if (!CURBED.includes(nb)) out.push(spec(piece, pairGround(me, nb)));
 	}
 	return out;
 }

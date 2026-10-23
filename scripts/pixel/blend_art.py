@@ -82,32 +82,54 @@ SIDE = {'n': (0, -1), 'e': (1, 0), 's': (0, 1), 'w': (-1, 0)}
 CORNER_SIDES = {'ne': ('n', 'e'), 'se': ('s', 'e'), 'sw': ('s', 'w'), 'nw': ('n', 'w')}
 
 
+CURBED = ('Y', 'C')
+KIND = {'Y': 'yard', 'C': 'castle'}
+
+
 def blend_pieces(grid, x, y, rim=None):
-    """[(piece, source_ground)] for tile (x, y). grid[y][x] is a ground key, or None when not owned.
-    rim = ground key drawn in from unexplored neighbours (None = leave the hard edge)."""
+    """[(piece, ground)] for tile (x, y); mirrors getBlendPieces in biomeBlend.ts. grid[y][x] is a ground letter,
+    or None when not owned. ground is a texture letter ('M' = clouds, only when rim) or 'shore-land' / 'shore-water'
+    / 'curb-yard' / 'curb-castle'. Yards and the castle get kerbs instead of blends; lake<->land get a shoreline."""
     h, w = len(grid), len(grid[0])
 
     def at(cx, cy):
         return grid[cy][cx] if 0 <= cx < w and 0 <= cy < h else None
 
+    def inside(cx, cy):
+        return 0 <= cx < w and 0 <= cy < h
+
     me = grid[y][x]
-    if me == 'C':                                           # the castle keeps crisp edges
-        return []
     out = []
     for p, (dx, dy) in SIDE.items():
+        if not inside(x + dx, y + dy):
+            continue
         nb = at(x + dx, y + dy)
-        if nb is None:
+        if me in CURBED:
+            if nb != me:
+                out.append((p, 'curb-' + KIND[me]))
+        elif nb is None:
             if rim:
-                out.append((p, rim))
-        elif nb != me and nb != 'C':
-            out.append((p, nb))
+                out.append((p, 'M'))
+        elif nb != me and nb not in CURBED:
+            out.append((p, _pair(me, nb)))
     for p, (dx, dy) in DIAG.items():
         a, b = CORNER_SIDES[p]
-        if at(x + SIDE[a][0], y + SIDE[a][1]) == me and at(x + SIDE[b][0], y + SIDE[b][1]) == me:
-            nb = at(x + dx, y + dy)
-            if nb is not None and nb != me and nb != 'C':
-                out.append((p, nb))
+        if at(x + SIDE[a][0], y + SIDE[a][1]) != me or at(x + SIDE[b][0], y + SIDE[b][1]) != me:
+            continue
+        nb = at(x + dx, y + dy)
+        if nb is None or nb == me:
+            continue
+        if me in CURBED:
+            out.append((p, 'curb-' + KIND[me]))
+        elif nb not in CURBED:
+            out.append((p, _pair(me, nb)))
     return out
+
+
+def _pair(me, nb):
+    if (me == 'L') != (nb == 'L'):
+        return 'shore-water' if me == 'L' else 'shore-land'
+    return nb
 
 
 def variant_for(x, y, piece):
@@ -157,9 +179,14 @@ def mock_map(blend=True, rim=False, k=3):
                 if not owned[y][x]:
                     continue
                 for piece, src in blend_pieces(owned, x, y, rim='M' if rim else None):
-                    m = mask(piece, variant_for(x, y, piece))
-                    tex = textures['M'] if src == 'M' else textures[src]
-                    _paste_masked(out, tex, m, x * S, y * S)
+                    v = variant_for(x, y, piece)
+                    if src.startswith(('shore-', 'curb-')):
+                        import trim_art
+                        key = f'{src}_{piece}_{0 if src.startswith("curb") else v}'
+                        trim = trim_art.TRIMS[key]().resize((S, S), Image.NEAREST)
+                        out.alpha_composite(trim, (x * S, y * S))
+                    else:
+                        _paste_masked(out, textures[src], mask(piece, v), x * S, y * S)
     big = out.resize((out.size[0] * k, out.size[1] * k), Image.NEAREST)
     px = big.load()
     t = S * k

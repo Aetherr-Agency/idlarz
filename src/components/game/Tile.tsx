@@ -241,19 +241,28 @@ const Tile: React.FC<TileProps> = ({
 						'w-full h-full flex items-center justify-center relative',
 						{ 'tile-tapped': tapped }
 					)}>
-					{blendPieces.map((b) => (
-						<span
-							key={b.piece}
-							className='tile-blend'
-							aria-hidden
-							style={
-								{
-									'--src': `url('/pixel/bg/${b.ground === 'mystery' ? 'mystery' : `ground_${b.ground}`}.png')`,
-									'--mask': `url('/pixel/bg/blend_${b.piece}_${b.variant}.png')`,
-								} as React.CSSProperties
-							}
-						/>
-					))}
+					{blendPieces.map((b) =>
+						b.ground.startsWith('shore-') || b.ground.startsWith('curb-') ? (
+							<span
+								key={b.piece}
+								className='tile-trim'
+								aria-hidden
+								style={{ backgroundImage: `url('/pixel/bg/${b.ground}_${b.piece}_${b.variant}.png')` }}
+							/>
+						) : (
+							<span
+								key={b.piece}
+								className='tile-blend'
+								aria-hidden
+								style={
+									{
+										'--src': `url('/pixel/bg/${b.ground === 'mystery' ? 'mystery' : `ground_${b.ground}`}.png')`,
+										'--mask': `url('/pixel/bg/blend_${b.piece}_${b.variant}.png')`,
+									} as React.CSSProperties
+								}
+							/>
+						)
+					)}
 					{isOwned && biome === 'castle' && <CastleSprite level={castleLevel} />}
 					{isOwned && !hasBuilding && BIOME_PIXEL_ICONS[biome] && (
 						<PixelIcon name={BIOME_PIXEL_ICONS[biome]!} alt={biome} className='tile-icon' />

@@ -1184,6 +1184,14 @@ body {
 	image-rendering: pixelated;
 }
 
+.tile-trim {
+	position: absolute;
+	inset: 0;
+	pointer-events: none;
+	background: center / 100% 100% no-repeat;
+	image-rendering: pixelated;
+}
+
 .tile-icon {
 	filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.4));
 }

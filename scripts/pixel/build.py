@@ -2,7 +2,7 @@
 
   public/pixel/icons/  sprites (resources, menu, equipment, portraits, animals, gold shine strip)
   public/pixel/ui/     frames, header chrome, HP/MP flask parts, stone XP bar, hero scene
-  public/pixel/bg/     cracked-stone header tile, fog mist, biome grounds + edge-blend masks
+  public/pixel/bg/     cracked-stone header tile, fog mist, biome grounds, edge-blend masks, shore + kerb trims
   scripts/pixel/previews/  contact sheets for review (git-ignored)
   --refs                   also refresh the curated images in scripts/pixel/reference/
 
@@ -33,6 +33,7 @@ import sprites_map  # noqa: E402
 import sprites_meadow  # noqa: E402
 import sprites_props  # noqa: E402
 import sprites_resources  # noqa: E402
+import trim_art  # noqa: E402
 from common import upscale  # noqa: E402
 
 ROOT = os.path.abspath(os.path.join(HERE, '..', '..'))
@@ -76,6 +77,7 @@ BG = {
     'mystery': ground_art.mystery,
     **{f'ground_{name}': fn for name, fn in ground_art.GROUNDS.items()},
     **blend_art.MASKS,
+    **trim_art.TRIMS,
 }
 
 
