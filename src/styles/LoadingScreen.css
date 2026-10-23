@@ -1,76 +1,210 @@
-/* Loading Screen Styles */
+/* Loading screen: rune circle (SVG, pixelated by an SVG filter), castle growing level by level, fog, stone bar */
 
 .loading-screen {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #111827;
-  background-image: 
-    radial-gradient(rgba(35, 60, 100, 0.2) 1px, transparent 1px),
-    radial-gradient(rgba(35, 60, 100, 0.15) 1px, transparent 1px);
-  background-size: 50px 50px;
-  background-position: 0 0, 25px 25px;
+  inset: 0;
   z-index: 9999;
-}
-
-.loading-content {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  gap: 24px;
-  padding: 40px;
-  border-radius: 16px;
-  background-color: rgba(30, 41, 59, 0.8);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  align-items: center;
+  gap: 18px;
+  overflow: hidden;
+  font-family: var(--font-pixel);
+  background:
+    radial-gradient(ellipse at center, rgba(10, 6, 20, 0) 30%, rgba(4, 2, 8, 0.85) 100%),
+    #0a0605 url('/pixel/bg/crack.png') repeat;
+  image-rendering: pixelated;
 }
 
+.loading-stage {
+  position: relative;
+  width: 400px;
+  height: 400px;
+  max-width: 90vw;
+  max-height: 90vw;
+}
+
+.loading-runes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+/* rings turn inside the filter, so the pixels re-form every frame */
+.rune-ring {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+}
+
+.rune-a {
+  animation: rune-spin 28s linear infinite;
+}
+
+.rune-b {
+  animation: rune-spin 18s linear infinite reverse;
+}
+
+@keyframes rune-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* the castle grows through its six levels: 72px cells shown at 3x, one per step */
 .loading-castle {
-  font-size: 64px;
-  animation: float 3s ease-in-out infinite;
-  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.6));
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 216px;
+  height: 216px;
+  margin: -118px 0 0 -108px;
+  background: url('/pixel/icons/castle_loading.png') 0 0 / 1296px 216px no-repeat;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 6px 0 rgba(0, 0, 0, 0.4)) drop-shadow(0 0 14px rgba(255, 210, 100, 0.55));
+  animation: castle-grow 4.8s steps(6) infinite;
 }
 
-.loading-text {
-  font-size: 24px;
-  font-weight: bold;
-  color: white;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  animation: pulse 2s ease-in-out infinite;
+@keyframes castle-grow {
+  to {
+    background-position-x: -1296px;
+  }
 }
 
-.loading-spinner {
-  margin-top: 16px;
+.loading-sparks i {
+  position: absolute;
+  bottom: 22%;
+  width: 6px;
+  height: 6px;
+  background: #fff6c0;
+  box-shadow: 0 0 8px 2px #ffd860;
+  opacity: 0;
+  animation: loading-spark 3s linear infinite;
 }
 
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  border-top-color: #3b82f6;
-  animation: spin 1s ease-in-out infinite;
+@keyframes loading-spark {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-150px);
+    opacity: 0;
+  }
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+.loading-title {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #f0d27a;
+  text-shadow: 0 3px 0 #3a1708, 0 0 18px rgba(255, 190, 70, 0.4);
 }
 
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+.loading-dots::after {
+  content: '';
+  display: inline-block;
+  width: 1.6em;
+  text-align: left;
+  animation: loading-dots 1.2s steps(1) infinite;
 }
 
-@keyframes pulse {
-  0% { opacity: 0.8; }
-  50% { opacity: 1; }
-  100% { opacity: 0.8; }
+@keyframes loading-dots {
+  0% {
+    content: '';
+  }
+  25% {
+    content: '.';
+  }
+  50% {
+    content: '..';
+  }
+  75% {
+    content: '...';
+  }
+}
+
+/* stone bar with an emerald block sweeping through */
+.loading-bar {
+  position: relative;
+  width: 320px;
+  max-width: 80vw;
+  height: 28px;
+  overflow: hidden;
+  border: 8px solid transparent;
+  border-image: url('/pixel/ui/bar_frame.png') 4 / 8px round;
+  background: #0a0706;
+  background-clip: padding-box;
+}
+
+.loading-bar-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -40%;
+  width: 40%;
+  background: url('/pixel/ui/bar_fill.png') 0 0 / 16px 12px repeat-x;
+  box-shadow: 2px 0 0 rgba(212, 255, 150, 0.9), 0 0 8px rgba(130, 255, 90, 0.55);
+  animation: loading-sweep 1.8s cubic-bezier(0.5, 0, 0.5, 1) infinite, bar-flow 1.6s steps(8) infinite;
+}
+
+@keyframes loading-sweep {
+  to {
+    left: 100%;
+  }
+}
+
+.loading-tips {
+  position: relative;
+  height: 1.4em;
+  width: 90vw;
+  text-align: center;
+  font-size: 0.95rem;
+  color: #a89878;
+}
+
+.loading-tips span {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation: loading-tip 9s infinite;
+}
+
+.loading-tips span:nth-child(2) {
+  animation-delay: 3s;
+}
+
+.loading-tips span:nth-child(3) {
+  animation-delay: 6s;
+}
+
+@keyframes loading-tip {
+  0% {
+    opacity: 0;
+  }
+  6%,
+  30% {
+    opacity: 1;
+  }
+  36%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rune-a,
+  .rune-b,
+  .loading-castle,
+  .loading-sparks i,
+  .loading-bar-fill {
+    animation: none;
+  }
 }

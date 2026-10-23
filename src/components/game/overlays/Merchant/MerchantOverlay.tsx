@@ -10,6 +10,9 @@ import {
 } from '@/config/gameConfig';
 import { Resources } from '@/types/game';
 import { cn } from '@/lib/utils';
+import PixelModal from '../../PixelModal';
+import PixelIcon from '../../PixelIcon';
+import ResourceIcon from '../../ResourceIcon';
 
 // Merchant tab options
 type MerchantTab = 'exchange' | 'buy' | 'upgrade' | 'quests' | 'gambling';
@@ -28,12 +31,12 @@ const PlaceholderTabContent: React.FC<PlaceholderTabContentProps> = ({
 }) => {
 	return (
 		<>
-			<h2 className='text-white font-semibold mb-4 text-center border-b border-gray-700 pb-2'>
+			<h2 className='px-h text-center'>
 				{title}
 			</h2>
 			<div className='flex flex-col items-center justify-center h-[60vh]'>
 				<div className='text-6xl mb-6'>{emoji}</div>
-				<p className='text-gray-400 text-center'>{description}</p>
+				<p className='text-[#a89878] text-center'>{description}</p>
 			</div>
 		</>
 	);
@@ -64,22 +67,22 @@ const ResourceBuyingSection: React.FC<ResourceBuyingSectionProps> = ({
 	const canAfford = useGameStore((state) => state.resources.gold >= goldPrice);
 
 	return (
-		<div className='p-3 bg-gray-800 rounded-lg border border-gray-700'>
+		<div className='px-card'>
 			<div className='flex items-center justify-between mb-3'>
 				<div className='flex items-center'>
-					<span className='text-2xl mr-2'>{resourceInfo.icon}</span>
+					<span className='mr-2'><ResourceIcon resource={resource} scale={1} /></span>
 					<div>
 						<h3 className='text-white font-bold text-sm'>
 							{resourceInfo.label}
 						</h3>
-						<p className='text-xs text-gray-400 mr-4'>{resourceInfo.description}</p>
+						<p className='text-xs text-[#a89878] mr-4'>{resourceInfo.description}</p>
 					</div>
 				</div>
 				<div className='text-right'>
 					<div className='text-yellow-400 font-medium text-xs'>
-						{MERCHANT_RESOURCE_PRICES[resource] * 2} 💰 each
+						<span className='inline-flex items-center gap-1'>{MERCHANT_RESOURCE_PRICES[resource] * 2} <ResourceIcon resource='gold' /> each</span>
 					</div>
-					<div className='text-[10px] text-gray-400 whitespace-nowrap'>
+					<div className='text-xs text-[#a89878] whitespace-nowrap'>
 						Max: {formatNumber(maxAmount)}
 					</div>
 				</div>
@@ -93,7 +96,7 @@ const ResourceBuyingSection: React.FC<ResourceBuyingSectionProps> = ({
 					value={currentAmount}
 					onChange={(e) => onAmountChange(resource, parseInt(e.target.value))}
 					disabled={maxAmount <= 0}
-					className='flex-grow h-2 rounded-lg appearance-none bg-gray-700 disabled:opacity-50'
+					className='px-range flex-grow'
 				/>
 				<div className='w-20 text-center'>
 					<span
@@ -107,13 +110,13 @@ const ResourceBuyingSection: React.FC<ResourceBuyingSectionProps> = ({
 
 			<div className='flex justify-between items-center'>
 				<div className='text-yellow-400 text-sm'>
-					<span className='font-medium'>{formatNumber(goldPrice)}</span> 💰
+					<span className='inline-flex items-center gap-1'><span className='font-medium'>{formatNumber(goldPrice)}</span> <ResourceIcon resource='gold' /></span>
 				</div>
 				<div className='flex gap-2 font-bold'>
 					<button
 						onClick={() => onBuy(resource)}
 						disabled={currentAmount <= 0 || !canAfford}
-						className='text-[10px] uppercase cursor-pointer px-3 py-1 bg-green-600 hover:bg-green-500 text-white rounded text-xs disabled:opacity-50 disabled:bg-gray-700 disabled:cursor-not-allowed'>
+						className='px-btn px-btn-sm'>
 						Buy
 					</button>
 				</div>
@@ -393,13 +396,13 @@ const MerchantOverlay: React.FC = () => {
 			case 'exchange':
 				return (
 					<>
-						<h2 className='text-white font-semibold mb-4 text-center border-b border-gray-700 pb-2'>
+						<h2 className='px-h text-center'>
 							Sell resources
 						</h2>
 
 						{/* Sale success message */}
 						{saleMessage && (
-							<div className='mb-4 p-3 bg-green-900 bg-opacity-50 border border-green-700 rounded-lg text-center'>
+							<div className='mb-4 px-card text-center'>
 								<p className='text-green-400'>
 									Sold {formatNumber(saleMessage.amount)} {saleMessage.resource}{' '}
 									for {formatNumber(saleMessage.gold)} Gold!
@@ -435,13 +438,13 @@ const MerchantOverlay: React.FC = () => {
 			case 'buy':
 				return (
 					<>
-						<h2 className='text-white font-semibold mb-4 text-center border-b border-gray-700 pb-2'>
+						<h2 className='px-h text-center'>
 							Buy Goods
 						</h2>
 
 						{/* Purchase success message */}
 						{purchaseMessage && (
-							<div className='mb-4 p-3 bg-green-900 bg-opacity-50 border border-green-700 rounded-lg text-center'>
+							<div className='mb-4 px-card text-center'>
 								<p className='text-green-400'>
 									Purchased {purchaseMessage.item} for{' '}
 									{formatNumber(purchaseMessage.price)} Gold!
@@ -449,37 +452,33 @@ const MerchantOverlay: React.FC = () => {
 							</div>
 						)}
 
-						<div className='xxx'>
+						<div>
 							{/* Gold click multiplier upgrade */}
 							<div className="grid grid-cols-2 gap-4 mb-6">
-								<div className={cn('bg-gray-700 bg-opacity-30 p-4 rounded-lg border border-gray-600 text-white', {
-									'border-purple-500 bg-purple-900 text-white': getClickMultiplierLevel() >= 3
+								<div className={cn('px-card text-white', {
+									'!border-purple-500': getClickMultiplierLevel() >= 3
 								})}>
 									<h3 className='font-semibold mb-2 flex items-center text-sm'>
-										<span className='text-md mr-2'>💰✨</span> Gold Click Multiplier
+										<span className='mr-2'><ResourceIcon resource='gold' /></span> Gold Click Multiplier
 										{getClickMultiplierLevel() >= 3 && (
-										<span className='ml-2 text-[10px] uppercase text-purple-500'>
+										<span className='ml-2 text-xs uppercase text-purple-500'>
 										(Max level)
 									</span>
 										)}
 									</h3>
-									<p className='text-sm text-gray-300 mb-4'>
+									<p className='text-sm text-[#d8c8a0] mb-4'>
 									{getClickMultiplierText()}
 								</p>
 								
 									{getClickMultiplierLevel() < 3 ? (
 										<div className='flex justify-between items-center text-sm mt-2'>
 											<p className='text-yellow-400 font-medium'>
-												{formatNumber(getClickMultiplierPrice())} 💰
+												<span className='inline-flex items-center gap-1'>{formatNumber(getClickMultiplierPrice())} <ResourceIcon resource='gold' /></span>
 											</p>
 											<button
 												onClick={handleBuyClickMultiplier}
 												disabled={resources.gold < getClickMultiplierPrice()}
-												className={`px-3 py-1 text-xs rounded ${
-													resources.gold >= getClickMultiplierPrice()
-														? 'bg-green-700 hover:bg-green-600 text-white'
-														: 'bg-gray-700 text-gray-400 cursor-not-allowed'
-												}`}>
+												className='px-btn px-btn-sm'>
 												{resources.gold >= getClickMultiplierPrice() ? 'Purchase' : 'Get more gold!'}
 											</button>
 										</div>
@@ -492,11 +491,11 @@ const MerchantOverlay: React.FC = () => {
 							</div>
 
 							{/* Resource packs */}
-							<div className='bg-gray-700 bg-opacity-30 p-4 rounded-lg border border-gray-600'>
+							<div className='px-card'>
 								<h3 className='text-white font-semibold mb-2'>
 									Resource Packs
 								</h3>
-								<p className='text-sm text-gray-300 mb-4'>
+								<p className='text-sm text-[#d8c8a0] mb-4'>
 									Purchase resources in bulk (prices are 2x sell value).
 								</p>
 
@@ -561,27 +560,21 @@ const MerchantOverlay: React.FC = () => {
 	};
 
 	return (
-		<div className='fixed inset-[8vh] inset-x-[17vw] bg-gray-900 bg-opacity-95 rounded-3xl z-50 flex items-start justify-center overflow-y-auto'>
-			<div className='absolute top-4 right-4'>
-				<button
-					onClick={toggleMerchantWindow}
-					className='text-white hover:text-gray-300 transition-colors p-2 text-md focus:outline-none cursor-pointer border border-red-500 bg-red-700 aspect-square leading-0 rounded-sm'
-					aria-label='Close merchant window'>
-					✕
-				</button>
-			</div>
-
-			<div className='w-full h-full p-8 flex flex-col'>
-				<div className='grid grid-cols-5 gap-6 h-full'>
+		<PixelModal
+			title='Merchant'
+			icon={<PixelIcon name='menu_merchant' alt='' />}
+			size='lg'
+			onClose={toggleMerchantWindow}>
+				<div className='grid grid-cols-5 gap-5'>
 					{/* Merchant Avatar and Navigation */}
 					<div className='col-span-1 flex flex-col gap-4'>
 						{/* Merchant Avatar */}
-						<div className='bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-700 flex flex-col items-center'>
-							<div className='text-6xl mb-4'>🧙‍♂️</div>
-							<h3 className='text-white font-semibold text-center mb-2'>
+						<div className='px-panel flex flex-col items-center'>
+							<div className='mb-3'><PixelIcon name='merchant' alt='Merchant' scale={2} /></div>
+							<h3 className='px-h text-center w-full'>
 								Merchant
 							</h3>
-							<p className='text-gray-400 text-xs text-center mb-4'>
+							<p className='text-[#a89878] text-xs text-center mb-4'>
 								{`"I'll give you gold for your resources, traveler!"`}
 							</p>
 
@@ -596,12 +589,11 @@ const MerchantOverlay: React.FC = () => {
 					</div>
 
 					{/* Content Area - Changes based on selected tab */}
-					<div className='col-span-4 bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-700 flex flex-col'>
+					<div className='col-span-4 px-panel flex flex-col'>
 						{renderTabContent()}
 					</div>
 				</div>
-			</div>
-		</div>
+		</PixelModal>
 	);
 };
 

@@ -251,18 +251,6 @@ export const BIOMES: Record<string, BiomeInfo> = {
 	},
 } as const;
 
-export const BIOME_ICONS = {
-	castle: '🏰',
-	forest: '🌲',
-	plains: '🌾',
-	hills: '⛰️',
-	swamp: '🌿',
-	tundra: '❄️',
-	lake: '💧',
-	empty: '⬛',
-	grounds: '🛠️',
-};
-
 export const INITIAL_RESOURCES = {
 	gold: 125,
 	wood: 0,
@@ -294,6 +282,9 @@ export const CASTLE_BASE_RATES = {
 	meat: 0,
 	xp: 0.5, // Castle provides more base XP
 };
+
+// Castle range: tiles within this many steps of the castle (3x3 at radius 1) will get the castle's range bonus
+export const CASTLE_RANGE = { radius: 1 };
 
 // Exponential castle upgrade system
 export const CASTLE_UPGRADE = {
@@ -378,7 +369,6 @@ export const ANIMALS: Animal[] = [
 	{
 		id: 'chicken',
 		name: 'Chicken',
-		icon: '🐔',
 		description: 'A simple farm animal that produces a small amount of meat.',
 		baseCost: 10000, // Starting at 10k food as requested
 		costScaling: 1.5, // Each level costs 1.5x more
@@ -388,7 +378,6 @@ export const ANIMALS: Animal[] = [
 	{
 		id: 'deer',
 		name: 'Deer',
-		icon: '🦌',
 		description: 'A wild animal that produces more meat than a chicken.',
 		baseCost: 50000,
 		costScaling: 1.6,
@@ -398,7 +387,6 @@ export const ANIMALS: Animal[] = [
 	{
 		id: 'pig',
 		name: 'Pig',
-		icon: '🐖',
 		description: 'A domestic animal that produces a good amount of meat.',
 		baseCost: 200000,
 		costScaling: 1.7,
@@ -408,7 +396,6 @@ export const ANIMALS: Animal[] = [
 	{
 		id: 'cow',
 		name: 'Cow',
-		icon: '🐄',
 		description: 'A large animal that produces a significant amount of meat.',
 		baseCost: 1000000,
 		costScaling: 1.8,
@@ -420,31 +407,26 @@ export const ANIMALS: Animal[] = [
 // Resource display information
 export const MERCHANT_RESOURCE_INFO = {
 	wood: {
-		icon: RESOURCE_ICONS.wood,
 		label: 'Wood',
 		description: 'A basic construction material, available in forests.',
 		priceDescription: 'Common but always in demand.',
 	},
 	stone: {
-		icon: RESOURCE_ICONS.stone,
 		label: 'Stone',
 		description: 'Durable and versatile building material from quarries.',
 		priceDescription: 'Premium quality building material.',
 	},
 	coal: {
-		icon: RESOURCE_ICONS.coal,
 		label: 'Coal',
 		description: 'Valuable fuel source used for advanced applications.',
 		priceDescription: 'Highly sought after for its energy properties.',
 	},
 	food: {
-		icon: RESOURCE_ICONS.food,
 		label: 'Food',
 		description: 'Sustains population and enables growth.',
 		priceDescription: 'Plentiful but essential for survival.',
 	},
 	meat: {
-		icon: RESOURCE_ICONS.meat,
 		label: 'Meat',
 		description: 'A source of protein for a healthy diet.',
 		priceDescription: 'High demand for a nutritious meal.',
@@ -463,7 +445,6 @@ export type BuildingType =
 export interface Building {
 	name: BuildingType;
 	label: string;
-	icon: string;
 	description: string;
 	resourceGeneration: Partial<Resources>;
 }
@@ -473,7 +454,6 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 	farm: {
 		name: 'farm',
 		label: 'Farm',
-		icon: '🌱',
 		description: 'Produces +0.2 food per second',
 		resourceGeneration: {
 			food: 0.2,
@@ -482,7 +462,6 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 	mine: {
 		name: 'mine',
 		label: 'Mine',
-		icon: '⚫',
 		description: 'Produces +0.2 stone and coal per second',
 		resourceGeneration: {
 			stone: 0.2,
@@ -492,7 +471,6 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 	lumbermill: {
 		name: 'lumbermill',
 		label: 'Lumber Mill',
-		icon: '🪓',
 		description: 'Produces +0.2 wood per second',
 		resourceGeneration: {
 			wood: 0.2,
@@ -501,7 +479,6 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 	market: {
 		name: 'market',
 		label: 'Market',
-		icon: '🏪',
 		description: 'Produces +0.2 gold per second',
 		resourceGeneration: {
 			gold: 0.2,
@@ -510,7 +487,6 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 	blacksmith: {
 		name: 'blacksmith',
 		label: 'Blacksmith',
-		icon: '🔨',
 		description: 'Produces +0.1 to all resources per second',
 		resourceGeneration: {
 			stone: 0.1,
@@ -523,7 +499,6 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 	workshop: {
 		name: 'workshop',
 		label: 'Workshop',
-		icon: '🏭',
 		description: 'Produces +0.2 XP per second',
 		resourceGeneration: {
 			xp: 0.2,
@@ -541,22 +516,21 @@ export const EQUIPMENT_RARITY_COLORS = {
 };
 
 export const EQUIPMENT_SLOT_INFO = {
-	head: { label: 'Head', icon: '🪖' },
-	neck: { label: 'Neck', icon: '📿' },
-	chest: { label: 'Chest', icon: '👕' },
-	mainHand: { label: 'Main Hand', icon: '🗡️' },
-	offHand: { label: 'Off Hand', icon: '🛡️' },
-	legs: { label: 'Legs', icon: '👖' },
-	feet: { label: 'Feet', icon: '👢' },
-	ring1: { label: 'Ring 1', icon: '💍' },
-	ring2: { label: 'Ring 2', icon: '💍' },
+	head: { label: 'Head' },
+	neck: { label: 'Neck' },
+	chest: { label: 'Chest' },
+	mainHand: { label: 'Main Hand' },
+	offHand: { label: 'Off Hand' },
+	legs: { label: 'Legs' },
+	feet: { label: 'Feet' },
+	ring1: { label: 'Ring 1' },
+	ring2: { label: 'Ring 2' },
 };
 
 export const INITIAL_INVENTORY_ITEMS = [
 	{
 		id: 'wooden-sword',
 		name: 'Wooden Sword',
-		icon: '🗡️',
 		slot: 'mainHand' as EquipmentSlot,
 		stats: { gold: 0.05 },
 		description: 'A simple training sword',
@@ -565,7 +539,6 @@ export const INITIAL_INVENTORY_ITEMS = [
 	{
 		id: 'leather-cap',
 		name: 'Leather Cap',
-		icon: '🪖',
 		slot: 'head' as EquipmentSlot,
 		stats: { wood: 0.1 },
 		description: 'Basic head protection',
@@ -574,7 +547,6 @@ export const INITIAL_INVENTORY_ITEMS = [
 	{
 		id: 'steel-breastplate',
 		name: 'Steel Breastplate',
-		icon: '👕',
 		slot: 'chest' as EquipmentSlot,
 		stats: { gold: 0.1, stone: 0.2 },
 		description: 'Solid protection for your torso',
@@ -583,7 +555,6 @@ export const INITIAL_INVENTORY_ITEMS = [
 	{
 		id: 'gold-ring',
 		name: 'Gold Ring',
-		icon: '💍',
 		slot: 'ring1' as EquipmentSlot,
 		stats: { gold: 0.2 },
 		description: 'Increases gold generation',
@@ -592,7 +563,6 @@ export const INITIAL_INVENTORY_ITEMS = [
 	{
 		id: 'leather-boots',
 		name: 'Leather Boots',
-		icon: '👢',
 		slot: 'feet' as EquipmentSlot,
 		stats: { food: 0.1 },
 		description: 'Comfortable footwear',
@@ -601,10 +571,39 @@ export const INITIAL_INVENTORY_ITEMS = [
 	{
 		id: 'wooden-shield',
 		name: 'Wooden Shield',
-		icon: '🛡️',
 		slot: 'offHand' as EquipmentSlot,
 		stats: { wood: 0.15 },
 		description: 'Simple defensive gear',
 		rarity: 'common' as EquipmentRarity,
 	},
 ];
+
+// Tile tapping: clicking an owned tile also yields a small slice of that tile's own output.
+// A tap = `seconds` worth of the tile's per-second production, with a per-tile cooldown so
+// spam-clicking can add at most seconds/cooldown (~42%) on top of a tile's passive income.
+export const TILE_TAP = {
+	seconds: 0.5,
+	cooldownMs: 1200,
+	// Lucky tap: chance = the player's crit chance (%), payout = 1 + crit damage multiplier (%)/100
+	luckyEnabled: true,
+};
+
+// Farm meadow bonuses: little critters wander into the meadow while the Farm window is open; click one before
+// it leaves (lifetimeMs) for a gift worth `seconds` of that resource's income (at least `min`).
+export const FARM_BONUS = {
+	lifetimeMs: 10000,
+	firstDelayMs: 3500,
+	minGapMs: 6000,
+	maxGapMs: 13000,
+	maxActive: 2,
+	goldenChance: 0.12,
+	goldenMultiplier: 3,
+	critters: {
+		butterfly: { label: 'Butterfly', resource: 'gold', seconds: 45, min: 40, weight: 3 },
+		bee: { label: 'Bee', resource: 'food', seconds: 45, min: 30, weight: 3 },
+		ladybug: { label: 'Ladybug', resource: 'xp', seconds: 40, min: 25, weight: 2 },
+		rabbit: { label: 'Rabbit', resource: 'meat', seconds: 45, min: 12, weight: 2 },
+	},
+} as const;
+
+export type FarmCritterType = keyof typeof FARM_BONUS.critters;

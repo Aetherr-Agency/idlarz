@@ -11,6 +11,11 @@ import {
 	BuildingType,
 } from '@/config/gameConfig';
 import { useGameStore } from '@/stores/gameStore';
+import { calculateTileTapYield } from '@/utils/gameUtils';
+import { TILE_TAP } from '@/config/gameConfig';
+import ResourceIcon from './ResourceIcon';
+import PixelIcon from './PixelIcon';
+import { BUILDING_PIXEL_ICONS } from '@/config/pixelIcons';
 
 const formatRate = (rate: number) => {
 	if (rate === 0) return '0/s';
@@ -33,6 +38,11 @@ export const BiomeTooltip = memo(
 		const multiplier = level ? Math.pow(1.5, level - 1) : 1;
 		const tiles = useGameStore((state) => state.tiles);
 		const building = x !== undefined && y !== undefined ? tiles[y][x].building : undefined;
+		const resourceRates = useGameStore((state) => state.resourceRates);
+		const tapYield =
+			x !== undefined && y !== undefined
+				? calculateTileTapYield(tiles, x, y, resourceRates)
+				: {};
 		
 		// Get building info if we have one
 		const buildingInfo = building ? BUILDINGS[building as BuildingType] : undefined;
@@ -68,15 +78,15 @@ export const BiomeTooltip = memo(
 		return (
 			<div className='space-y-1 text-sm'>
 				{biome === 'castle' && level && (
-					<div className='mb-2 text-purple-400 font-semibold text-[11px]'>
+					<div className='mb-2 text-purple-300 font-semibold text-xs'>
 						Level {level} Castle
 					</div>
 				)}
 				
 				{/* Display building info for upgraded grounds */}
 				{biome === 'grounds' && level === 2 && buildingInfo && (
-					<div className='mb-2 text-purple-400 font-semibold text-[11px] flex items-center gap-1'>
-						<span>{buildingInfo.icon}</span>
+					<div className='mb-2 text-purple-300 font-semibold text-xs flex items-center gap-1'>
+						<PixelIcon name={BUILDING_PIXEL_ICONS[buildingInfo.name]} alt='' scale={0.5} />
 						<span>Grounds level 2 with {buildingInfo.label}</span>
 					</div>
 				)}
@@ -102,15 +112,13 @@ export const BiomeTooltip = memo(
 					return (
 						<div key={resource} className='flex flex-col gap-1'>
 							<div className='flex items-center gap-1'>
-								<span className='text-gray-400'>
-									{RESOURCE_ICONS[resource]}
-								</span>
+								<ResourceIcon resource={resource} />
 
 								<span className='text-gray-400 font-semibold'>
 									{formatRate(baseRate)}
 								</span>
 
-								<span className='text-[9px] text-gray-500 mt-0.5'>(base)</span>
+								<span className='text-xs text-gray-500 mt-0.5'>(base)</span>
 							</div>
 						</div>
 					);
@@ -119,7 +127,7 @@ export const BiomeTooltip = memo(
 				{/* Display building resource bonuses */}
 				{biome === 'grounds' && level === 2 && buildingInfo && buildingInfo.resourceGeneration && (
 					<>
-						<div className='mt-2 mb-1 text-green-400 text-[11px]'>
+						<div className='mt-2 mb-1 text-green-400 text-xs'>
 							Building Bonuses:
 						</div>
 						{Object.entries(buildingInfo.resourceGeneration).map(([resource, rate]) => {
@@ -129,10 +137,8 @@ export const BiomeTooltip = memo(
 							const effectiveRate = rate * adjacencyMultiplier;
 							
 							return (
-								<div key={`building-${resource}`} className='flex items-center gap-1 text-[9px]'>
-									<span className='text-green-400'>
-										{RESOURCE_ICONS[resource as keyof typeof RESOURCE_ICONS]}
-									</span>
+								<div key={`building-${resource}`} className='flex items-center gap-1 text-xs'>
+									<ResourceIcon resource={resource} />
 									<span className='text-green-400 font-semibold'>
 										+{formatRate(rate)}
 									</span>
@@ -148,7 +154,7 @@ export const BiomeTooltip = memo(
 				)}
 
 				{biome === 'castle' && level && level > 1 && (
-					<div className='mt-2 text-purple-400 text-[9px]'>
+					<div className='mt-2 text-purple-400 text-xs'>
 						Castle Bonus:{' '}
 						{Math.round(
 							CASTLE_UPGRADE.baseResourceMultiplier *
@@ -159,14 +165,28 @@ export const BiomeTooltip = memo(
 					</div>
 				)}
 				{biome === 'grounds' && (!level || level === 1) && (
-										<div className='text-amber-400 text-[11px]'>
+										<div className='text-amber-400 text-xs'>
 										This grounds can be expanded with a building
 									</div>
 				)}
 				{adjacentCount > 0 && (
-					<div className='mt-0.5 text-yellow-500 text-[11px]'>
+					<div className='mt-0.5 text-yellow-500 text-xs'>
 						+{(adjacencyMultiplier - 1).toFixed(2)}x bonus from {adjacentCount}{' '}
 						adjacent {biomeInfo.label}
+					</div>
+				)}
+				{Object.keys(tapYield).length > 0 && (
+					<div className='mt-2 pt-2 border-t px-rule text-xs'>
+						<div className='text-[#f0d27a] mb-1'>
+							Click bonus <span className='px-tip-muted'>({(TILE_TAP.cooldownMs / 1000).toFixed(1)}s cooldown)</span>
+						</div>
+						<div className='flex flex-wrap gap-x-3 gap-y-1'>
+							{(Object.entries(tapYield) as [string, number][]).map(([resource, perSecond]) => (
+								<span key={resource} className='flex items-center gap-1 text-green-300'>
+									<ResourceIcon resource={resource} />+{(perSecond * TILE_TAP.seconds).toFixed(2)}
+								</span>
+							))}
+						</div>
 					</div>
 				)}
 				{biomeInfo.description && (

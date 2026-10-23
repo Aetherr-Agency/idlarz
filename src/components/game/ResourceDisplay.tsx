@@ -1,15 +1,12 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { Resources } from '@/types/game';
 import { formatNumber } from '@/utils/formatters';
 import { HEADER_DISPLAYED_RESOURCES_INFO, RESOURCE_ICONS } from '@/config/gameConfig';
-
-// Animation item type to track multiple animations
-interface AnimationItem {
-	id: number;
-	amount: number;
-	position: { x: number; y: number };
-}
+import { RESOURCE_PIXEL_ICONS } from '@/config/pixelIcons';
+import { emitFloat, mergeItems, takeTileTap, FloatItem } from '@/lib/floatText';
+import PixelIcon from './PixelIcon';
+import StableNumber from './StableNumber';
 
 const ResourceDisplay: React.FC = () => {
 	const resources = useGameStore((state) => state.resources);
@@ -17,56 +14,39 @@ const ResourceDisplay: React.FC = () => {
 	const addResources = useGameStore((state) => state.addResources);
 	const clickMultiplier = useGameStore((state) => state.clickMultiplier);
 
-	// State for click animations (now an array to support multiple)
-	const [animations, setAnimations] = useState<AnimationItem[]>([]);
-	const nextAnimationId = useRef(0);
-	const goldElementRef = useRef<HTMLDivElement>(null);
-
 	// Define resources to display (including meat)
 	const resourcesToDisplay = Object.keys(resources) as Array<keyof Resources>;
 
-	// Function to handle click and award gold (now supports multiple animations)
-	const handleGameClick = useCallback(() => {
-		// Get the total gold rate per second
-		const goldRate = resourceRates.total.gold;
-		if (goldRate <= 0) return;
+	// Every click earns gold; a click on an owned tile also carries that tile's tap bonus
+	// (already applied by the store). Both show up as one popup under the cursor.
+	const handleGameClick = useCallback(
+		(e: MouseEvent) => {
+			const items: FloatItem[] = [];
 
-		// Apply the clickMultiplier to the gold earned per click
-		const goldToAdd = goldRate * clickMultiplier;
-		addResources({ gold: goldToAdd });
-		
-		// Calculate position for animation relative to gold element
-		// Add slight randomness to position for visual variety when overlapping
-		if (goldElementRef.current) {
-			const rect = goldElementRef.current.getBoundingClientRect();
-			const xOffset = Math.random() * 20 - 10; // Random offset between -10 and 10
-			const yOffset = Math.random() * 10 - 5;  // Random offset between -5 and 5
-			
-			const newAnimation: AnimationItem = {
-				id: nextAnimationId.current++,
-				amount: goldToAdd,
-				position: {
-					x: rect.right + 10 + xOffset,
-					y: rect.top + (rect.height / 2) - 10 + yOffset
-				}
-			};
-			
-			// Add the new animation to the array
-			setAnimations(prevAnimations => [...prevAnimations, newAnimation]);
-			
-			// Remove this specific animation after 700ms
-			setTimeout(() => {
-				setAnimations(prevAnimations => 
-					prevAnimations.filter(anim => anim.id !== newAnimation.id)
-				);
-			}, 700);
-		}
-	}, [resourceRates.total.gold, addResources, clickMultiplier]);
+			const goldRate = resourceRates.total.gold;
+			if (goldRate > 0) {
+				const goldToAdd = goldRate * clickMultiplier;
+				addResources({ gold: goldToAdd });
+				items.push({ resource: 'gold', amount: goldToAdd });
+			}
+
+			const tap = takeTileTap();
+			if (items.length === 0 && !tap) return;
+
+			emitFloat({
+				x: e.clientX,
+				y: e.clientY,
+				items: mergeItems(items, tap?.items ?? []),
+				lucky: tap?.lucky,
+			});
+		},
+		[resourceRates.total.gold, addResources, clickMultiplier]
+	);
 
 	// Add global click listener
 	useEffect(() => {
 		window.addEventListener('click', handleGameClick);
-		
+
 		return () => {
 			window.removeEventListener('click', handleGameClick);
 		};
@@ -96,49 +76,62 @@ const ResourceDisplay: React.FC = () => {
 				return (
 					<div
 						key={resource}
-						ref={resource === 'gold' ? goldElementRef : undefined}
 						className='group relative flex items-center justify-center gap-2 text-sm'>
-						<div
-							className='text-xl md:text-2xl'
-							role='img'
-							aria-label={resource}>
-							{resourceInfo.icon}
-						</div>
-						<div className='flex flex-col'>
-							<div className='font-medium text-sm md:text-base text-white'>
-								{formatNumber(resources[resource])}
-							</div>
+						{RESOURCE_PIXEL_ICONS[resource] ? (
+							resource === 'gold' ? (
+								<div
+									className='pixel-gold-shine'
+									role='img'
+									aria-label={resource}
+								/>
+							) : (
+								<PixelIcon
+									name={RESOURCE_PIXEL_ICONS[resource]!}
+									alt={resource}
+								/>
+							)
+						) : (
 							<div
-								className={`text-xs ${
-									totalRate > 0 ? 'text-green-400' : 'text-gray-400'
-								}`}>
-								{formatNumber(totalRate)}/s
+								className='text-xl md:text-2xl'
+								role='img'
+								aria-label={resource}>
+								{resourceInfo.icon}
 							</div>
+						)}
+						{/* Fixed-width text block: digits sit in equal cells and the block reserves room for
+						    the widest value, so growing numbers never shift the icon or the next resource */}
+						<div className='flex flex-col'>
+							<StableNumber
+								value={formatNumber(resources[resource])}
+								className='font-semibold text-sm md:text-base text-[#f1e6c8] min-w-[4.6em]'
+							/>
+							<StableNumber
+								value={`${formatNumber(totalRate)}/s`}
+								className={`text-xs min-w-[5.6em] ${
+									totalRate > 0 ? 'text-green-400' : 'text-gray-400'
+								}`}
+							/>
 						</div>
 
-						{/* Enhanced Tooltip */}
-						<div className='absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 pointer-events-none z-50 transition-opacity duration-200 text-xs'>
-							<div className='bg-gray-800 rounded-lg shadow-xl p-3 whitespace-nowrap border border-gray-700'>
-								<div className='font-medium mb-1 text-white'>
-									{resourceInfo.label}
-								</div>
-								<div className='text-xs text-gray-400 mb-1 text-[11px]'>
+						{/* Tooltip */}
+						<div className='absolute top-full left-1/2 -translate-x-1/2 mt-1 opacity-0 group-hover:opacity-100 pointer-events-none z-[60] transition-opacity duration-150'>
+							<div className='px-tooltip whitespace-nowrap text-sm min-w-[200px]'>
+								<div className='px-tip-title mb-1'>{resourceInfo.label}</div>
+								<div className='px-tip-muted text-xs mb-2'>
 									{resourceInfo.description}
 								</div>
-								<div className='space-y-1 text-[11px]'>
+								<div className='space-y-1 text-xs'>
 									<div className='flex justify-between gap-4'>
-										<span className='text-gray-400'>Base Rate:</span>
-										<span className='text-gray-400'>
-											{formatNumber(baseRate)}/s
-										</span>
+										<span className='px-tip-muted'>Base Rate</span>
+										<span>{formatNumber(baseRate)}/s</span>
 									</div>
-									<div className='flex justify-between gap-4 mt-1'>
-										<span className='text-gray-400'>Modifier:</span>
+									<div className='flex justify-between gap-4'>
+										<span className='px-tip-muted'>Modifier</span>
 										<span className='text-green-400'>{modifierPercent}%</span>
 									</div>
-									<div className='flex justify-between gap-4 mt-1'>
-										<span className='text-white'>Total Rate:</span>
-										<span className='text-white'>
+									<div className='flex justify-between gap-4 pt-1 border-t px-rule'>
+										<span className='text-[#f0d27a]'>Total Rate</span>
+										<span className='text-[#f0d27a]'>
 											{formatNumber(totalRate)}/s
 										</span>
 									</div>
@@ -148,19 +141,6 @@ const ResourceDisplay: React.FC = () => {
 					</div>
 				);
 			})}
-
-			{/* Multiple Click Animations */}
-			{animations.map(anim => (
-				<div 
-					key={anim.id}
-					className="absolute animate-gold-click font-medium text-yellow-400 z-50"
-					style={{ 
-						left: `${anim.position.x}px`, 
-						top: `${anim.position.y}px` 
-					}}>
-					+{formatNumber(anim.amount)} 💰
-				</div>
-			))}
 		</>
 	);
 };

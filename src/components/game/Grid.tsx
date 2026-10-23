@@ -9,6 +9,7 @@ import React, {
 import { useGameStore } from '@/stores/gameStore';
 import { GRID_SIZE, GRID_HEIGHT, TILE_SIZE } from '@/config/gameConfig';
 import Tile from './Tile';
+import CastleRange from './CastleRange';
 
 interface Position {
 	x: number;
@@ -205,6 +206,7 @@ const Grid: React.FC = () => {
 						x={x}
 						y={y}
 						level={tile.level}
+							building={tile.building}
 						style={{
 							width: TILE_SIZE,
 							height: TILE_SIZE,
@@ -236,6 +238,12 @@ const Grid: React.FC = () => {
 			onTouchStart={handleMouseDown}
 			onTouchMove={handleMouseMove}
 			onTouchEnd={handleMouseUp}>
+			{/* Fog of war: drifting mist behind the map; far-away tiles are transparent so it shows through */}
+			<div className='fog-layer fog-a' />
+			<div
+				className='fog-layer fog-b'
+				style={{ backgroundPosition: `${position.x * 0.35}px ${position.y * 0.35}px` }}
+			/>
 			<div
 				className='absolute'
 				style={{
@@ -244,6 +252,7 @@ const Grid: React.FC = () => {
 					height: GRID_HEIGHT * TILE_SIZE,
 				}}>
 				{visibleTiles}
+				<CastleRange />
 			</div>
 		</div>
 	);

@@ -2,6 +2,9 @@ import React from 'react';
 import type { FC } from 'react';
 import audioManager from '@/utils/audioManager';
 import { BUILDINGS } from '@/config/gameConfig';
+import { BUILDING_PIXEL_ICONS } from '@/config/pixelIcons';
+import PixelIcon from './PixelIcon';
+import PixelModal from './PixelModal';
 
 interface BuildingSelectionDialogProps {
 	isOpen: boolean;
@@ -23,39 +26,28 @@ const BuildingSelectionDialog: FC<BuildingSelectionDialogProps> = ({
 	};
 
 	return (
-		<div className='fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50'>
-			<div className='bg-gray-800 p-6 rounded-lg max-w-[720px] w-full shadow-xl'>
-				<div className='flex justify-between items-center mb-4'>
-					<h2 className='text-xl font-bold text-white'>Select Building</h2>
-					<button onClick={onClose} className='p-1 rounded hover:bg-gray-700'>
-						<span className='text-white text-xl'>×</span>
+		<PixelModal title='Select Building' size='md' onClose={onClose}>
+			<p className='text-[#a89878] mb-4'>
+				Select a building to construct on this grounds tile.
+			</p>
+
+			<div className='grid grid-cols-2 gap-3'>
+				{Object.values(BUILDINGS).map((building) => (
+					<button
+						key={building.name}
+						onClick={() => handleSelect(building.name)}
+						className='px-card flex items-start gap-3 text-left cursor-pointer hover:brightness-125 transition'>
+						<div className='tile-ground tile-ground-yard shrink-0 w-[48px] h-[48px] flex items-center justify-center'>
+							<PixelIcon name={BUILDING_PIXEL_ICONS[building.name]} alt={building.label} className='tile-icon' />
+						</div>
+						<div className='flex-1'>
+							<span className='px-tip-title block'>{building.label}</span>
+							<div className='text-sm text-[#a89878] mt-1'>{building.description}</div>
+						</div>
 					</button>
-				</div>
-
-				<p className='text-gray-400 mb-4'>
-					Select a building to construct on this grounds tile.
-				</p>
-
-				<div className='grid grid-cols-2 gap-4'>
-					{Object.values(BUILDINGS).map((building) => (
-						<button
-							key={building.name}
-							onClick={() => handleSelect(building.name)}
-							className='transition-all border-2 border-transparent hover:border-amber-400 flex items-start p-3 rounded bg-gray-700 hover:bg-gray-600 transition-colors cursor-pointer'>
-							<div className='text-2xl mr-3 mt-1'>{building.icon}</div>
-							<div className='flex-1 text-left'>
-								<span className='text-xs font-bold block text-white'>
-									{building.label}
-								</span>
-								<div className='text-xs mt-1'>
-									<div className='text-gray-400'>{building.description}</div>
-								</div>
-							</div>
-						</button>
-					))}
-				</div>
+				))}
 			</div>
-		</div>
+		</PixelModal>
 	);
 };
 

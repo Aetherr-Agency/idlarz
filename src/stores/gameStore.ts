@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import {
+	DEFAULT_PLAYER_CLASS,
+	PLAYER_CLASSES,
+	type PlayerClassId,
+} from '@/config/playerClasses';
+import {
 	CASTLE_UPGRADE,
 	GRID_SIZE,
 	GRID_HEIGHT,
@@ -14,6 +19,7 @@ import {
 	EMPTY_BIOMES,
 	BIOMES,
 	MERCHANT_RESOURCE_PRICES,
+	TILE_TAP,
 } from '@/config/gameConfig';
 import {
 	calculateLevel,
@@ -27,6 +33,7 @@ import {
 	calculateCombatStats,
 	calculateTotalMeatProduction,
 	calculateAnimalCost,
+	calculateTileTapYield,
 } from '@/utils/gameUtils';
 import type {
 	GameState,
@@ -34,7 +41,11 @@ import type {
 	Tile,
 	CharacterStats,
 	BiomeType,
+	TapResult,
 } from '@/types/game';
+
+// Last tap time per tile (not persisted) - enforces TILE_TAP.cooldownMs
+const lastTapAt: Record<string, number> = {};
 
 // Helper to calculate cost at a specific level
 
@@ -61,6 +72,7 @@ const createGameSlice = (
 		level: calculateLevel(0),
 		previousLevel: 0,
 		playerName: DEFAULT_PLAYER_NAME,
+		playerClass: DEFAULT_PLAYER_CLASS,
 		characterStats: INITIAL_CHARACTER_STATS,
 		equipment: {},
 		inventory: INITIAL_INVENTORY_ITEMS,
@@ -479,6 +491,33 @@ const createGameSlice = (
 			return true;
 		},
 
+		tapTile: (x: number, y: number): TapResult | null => {
+			const state = get();
+			const now = Date.now();
+			const key = `${x},${y}`;
+			if (now - (lastTapAt[key] || 0) < TILE_TAP.cooldownMs) return null;
+
+			const perSecond = calculateTileTapYield(state.tiles, x, y, state.resourceRates);
+			const lucky =
+				TILE_TAP.luckyEnabled &&
+				Math.random() * 100 < state.characterStats.critChance;
+			const mult =
+				TILE_TAP.seconds * (lucky ? 1 + state.characterStats.critDmgMultiplier / 100 : 1);
+
+			const items = (Object.entries(perSecond) as [keyof Resources, number][])
+				.map(([resource, rate]) => ({ resource, amount: rate * mult }))
+				.filter((item) => item.amount > 0);
+			if (items.length === 0) return null;
+
+			lastTapAt[key] = now;
+			const gained: Partial<Resources> = {};
+			items.forEach(({ resource, amount }) => {
+				gained[resource] = amount;
+			});
+			get().addResources(gained);
+			return { items, lucky };
+		},
+
 		tick: (deltaTime: number) => {
 			const state = get();
 			const secondsElapsed = deltaTime / 1000;
@@ -570,6 +609,9 @@ const createGameSlice = (
 				set({ playerName: trimmedName });
 			}
 		},
+		setPlayerClass: (playerClass: PlayerClassId) => {
+			if (PLAYER_CLASSES[playerClass]) set({ playerClass });
+		},
 		addResources: (resourceToAdd: Partial<Resources>) => {
 			set((state) => ({
 				resources: {
@@ -657,6 +699,7 @@ export const useGameStore = create(
 					level: calculateLevel(0),
 					previousLevel: 0,
 					playerName: DEFAULT_PLAYER_NAME,
+					playerClass: DEFAULT_PLAYER_CLASS,
 					characterStats: INITIAL_CHARACTER_STATS,
 					equipment: {},
 					inventory: INITIAL_INVENTORY_ITEMS,
