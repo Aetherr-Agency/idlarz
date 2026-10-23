@@ -65,16 +65,16 @@ MASKS = {f'blend_{p}_{v}': (lambda p=p, v=v: _scaled(p, v)) for p in PIECES for 
 # ------------------------------------------------------------------ mock map (mirrors Tile.tsx / biomeBlend.ts)
 OWN = {c: ground_art.GROUNDS[n] for c, n in (
     ('F', 'forest'), ('P', 'plains'), ('H', 'hills'), ('S', 'swamp'), ('T', 'tundra'),
-    ('L', 'lake'), ('G', 'grounds'), ('Y', 'yard'), ('C', 'castle'))}
+    ('L', 'lake'), ('B', 'coast'), ('G', 'grounds'), ('Y', 'yard'), ('C', 'castle'))}
 
 LAYOUT = [
     'FFFPPHHTTT',
-    'FFPPPHHTLT',
-    'SFPCPYHLLT',
-    'SSPPGGHLLT',
-    'SSLPGYHHTT',
-    'LLLPGGFFFT',
-    'LLLLSSFFFF',
+    'FFPPPHHTBT',
+    'SFPCPYHBLB',
+    'SSPPGGHBLB',
+    'SSBPGYHHBT',
+    'BLLBGGFFFT',
+    'LLLLBSFFFF',
 ]
 
 DIAG = {'ne': (1, -1), 'se': (1, 1), 'sw': (-1, 1), 'nw': (-1, -1)}

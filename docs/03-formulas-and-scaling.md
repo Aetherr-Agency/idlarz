@@ -7,7 +7,7 @@ Notation: `n` = tiles owned (castle included), `L` = player level, `C` = castle 
 ## 1. Tile cost
 
 ```
-base(n)  = floor(55 × 1.45^min(n, 20) × 1.27^max(n − 20, 0))          SCALING_CONFIG.costFormula
+base(n)  = floor(55 × 1.45^min(n, 20) × 1.27^(min(n, 40) − 20, ≥0) × 1.17^max(n − 40, 0))   SCALING_CONFIG.costFormula
 gold     = floor(base × (1 − discount%/100))
 extra    = floor(base × share × (1 − discount%/100))  for each TILE_RESOURCE_COST row with n ≥ from
 discount%= min(0.5 × Charisma, 25)
@@ -17,7 +17,9 @@ discount%= min(0.5 × Charisma, 25)
 
 | n | 1 | 5 | 10 | 15 | 20 | 25 | 30 | 40 | 50 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| gold (cha 5) | 77 | 343 | 2.2 K | 14.1 K | 90.5 K | 299 K | 988 K | 10.8 M | 118 M |
+| gold (cha 5) | 77 | 343 | 2.2 K | 14.1 K | 90.5 K | 299 K | 988 K | 10.8 M | 51 M |
+
+Past 40 tiles growth drops from ×1.27 to ×1.17 per tile (`growthEndgame`, `lateTiles`), so tile 50 costs ~51 M instead of 118 M and tile 60 ~0.2 B instead of 1.5 B; the first 40 tiles are unchanged, so the pacing milestones in [06](06-playtest-and-pacing-report.md) still hold.
 
 Biome pick every purchase with `n % 4 === 3`. XP and reputation per purchase in §2.
 

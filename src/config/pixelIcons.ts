@@ -52,6 +52,7 @@ export const PIXEL_ICON_SIZES = {
 	biome_swamp: [32, 32],
 	biome_tundra: [32, 32],
 	biome_lake: [32, 32],
+	biome_coast: [32, 32],
 	biome_grounds: [32, 32],
 	// grounds buildings (picker icon + tile graphic)
 	building_farm: [40, 40],
@@ -123,6 +124,7 @@ export const BIOME_PIXEL_ICONS: Record<string, PixelIconName | undefined> = {
 	swamp: 'biome_swamp',
 	tundra: 'biome_tundra',
 	lake: 'biome_lake',
+	coast: 'biome_coast',
 	grounds: 'biome_grounds',
 };
 

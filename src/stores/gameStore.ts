@@ -269,7 +269,7 @@ const createGameSlice = (
 				return true;
 			}
 
-			return completePurchase(x, y, getRandomBiome());
+			return completePurchase(x, y, getRandomBiome(state.tiles, x, y));
 		},
 
 		selectBiome: (biome: BiomeType) => {

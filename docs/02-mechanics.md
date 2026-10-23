@@ -12,7 +12,7 @@ You start with a castle on a 50×50 map and 125 gold. Gold, other resources and 
 - A tile can be bought only if it is **4-neighbour adjacent** to an owned tile and you can pay its whole cost: gold, plus **extra resources from larger territories** (`TILE_RESOURCE_COST`: wood + stone from the 15th owned tile, coal from 30, food from 40). Charisma discounts every part of the cost (0.5 %/point, max 25 %). The hover card and the biome picker show all costs, green when affordable.
 - Cost curve: ×1.45 per owned tile up to 20 tiles, ×1.27 per tile after that ([03 §1](03-formulas-and-scaling.md#1-tile-cost)).
 - Not enough → shake + `wrong` sound. Success → `purchase` sound, XP, +100 reputation.
-- **Biome assignment**: random among the 7 non-special biomes, except when `owned % 4 === 3` (owned = 3, 7, 11 … because the castle counts): then you **choose**. Nothing is charged until you choose; cancel is free; only offered biomes are accepted.
+- **Biome assignment**: random (weighted) among the 8 non-special biomes, except when `owned % 4 === 3` (owned = 3, 7, 11 … because the castle counts): then you **choose**. Nothing is charged until you choose; cancel is free; only offered biomes are accepted. **Weights** (`BIOME_SPAWN`): every biome 1, Coast 0.6; next to an owned Lake, Lake and Coast ×3; next to an owned Coast, Lake and Coast ×2 - so water clusters into bays with beaches. Water/coast are placeholders for later mechanics (fishing huts etc.).
 - Name prompt + tutorial at exactly 2 owned tiles while the name is still `Explorer`.
 
 ## 3. Biomes, adjacency, buildings
@@ -27,6 +27,7 @@ You start with a castle on a 50×50 map and 125 gold. Gold, other resources and 
 | Swamp | food 0.13, wood 0.26 |
 | Tundra | gold 0.13, coal 0.455 |
 | Lake | gold 0.065, food 0.325 |
+| Coast | gold 0.13, food 0.26 |
 
 (Config values × `BIOME_YIELD.scale` = 1.3.) **Adjacency**: each owned same-biome 4-neighbour adds +25 % to that tile's output, including its building.
 

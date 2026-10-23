@@ -1129,6 +1129,10 @@ body {
 	animation: lake-flow 9s steps(24) infinite; /* waves drift one texture period -> seamless */
 }
 
+.tile-ground-coast {
+	background-image: url('/pixel/bg/ground_coast.png');
+}
+
 .tile-ground-grounds {
 	background-image: url('/pixel/bg/ground_grounds.png');
 }

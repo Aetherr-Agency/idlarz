@@ -1,5 +1,6 @@
 import {
 	BIOMES,
+	BIOME_SPAWN,
 	CASTLE_UPGRADE,
 	GRID_SIZE,
 	GRID_HEIGHT,
@@ -447,15 +448,34 @@ export const calculateResourceRates = (
 	return { base, modifiers, total };
 };
 
-// Biome Generation
-export const getRandomBiome = (): BiomeType => {
+// Biome Generation: a random purchase picks a biome by weight; water and shores cluster around existing water
+export const getRandomBiome = (
+	tiles?: Tile[][],
+	x = 0,
+	y = 0,
+	random: () => number = Math.random
+): BiomeType => {
 	const BIOMES_TO_EXCLUDE = [...SPECIAL_SINGLE_TYPE_BIOMES, ...EMPTY_BIOMES];
-	const availableBiomes = Object.entries(BIOMES)
-		.filter(([name]) => !BIOMES_TO_EXCLUDE.includes(name))
-		.map(([name]) => name as BiomeType);
+	const available = Object.keys(BIOMES).filter((name) => !BIOMES_TO_EXCLUDE.includes(name as BiomeType));
 
-	const randomIndex = Math.floor(Math.random() * availableBiomes.length);
-	return availableBiomes[randomIndex];
+	const around = tiles
+		? ([[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]] as const).map(([ax, ay]) => tiles[ay]?.[ax])
+		: [];
+	const nearLake = around.some((t) => t?.isOwned && t.biome === 'lake');
+	const nearCoast = around.some((t) => t?.isOwned && t.biome === 'coast');
+
+	const weights = available.map((name) => {
+		let w = BIOME_SPAWN.weights[name] ?? 1;
+		if (nearLake) w *= BIOME_SPAWN.nearLake[name] ?? 1;
+		if (nearCoast) w *= BIOME_SPAWN.nearCoast[name] ?? 1;
+		return w;
+	});
+	let roll = random() * weights.reduce((a, b) => a + b, 0);
+	for (let i = 0; i < available.length; i++) {
+		roll -= weights[i];
+		if (roll < 0) return available[i] as BiomeType;
+	}
+	return available[available.length - 1] as BiomeType;
 };
 
 // Per-second output of one owned tile (biome + building, adjacency bonus, global modifiers).

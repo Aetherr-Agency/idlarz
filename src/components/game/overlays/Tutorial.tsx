@@ -112,11 +112,13 @@ const Tutorial: React.FC = () => {
 				<h3 className='px-h'>Tile Cost</h3>
 				<p className='text-[#d8c8a0] mb-1'>
 					Each new tile costs more than the last: about x{SCALING_CONFIG.growthEarly} per tile you own up to{' '}
-					{SCALING_CONFIG.earlyTiles} tiles, then x{SCALING_CONFIG.growthLate} per tile.
+					{SCALING_CONFIG.earlyTiles} tiles, then x{SCALING_CONFIG.growthLate} per tile up to {SCALING_CONFIG.lateTiles}, and
+					x{SCALING_CONFIG.growthEndgame} beyond that.
 				</p>
 				<p className='text-[#d8c8a0] text-xs px-card font-mono'>
 					gold = {BASE_TILE_COST} x {SCALING_CONFIG.growthEarly}^min(tiles, {SCALING_CONFIG.earlyTiles}) x{' '}
-					{SCALING_CONFIG.growthLate}^max(tiles - {SCALING_CONFIG.earlyTiles}, 0)
+					{SCALING_CONFIG.growthLate}^(min(tiles, {SCALING_CONFIG.lateTiles}) - {SCALING_CONFIG.earlyTiles}) x{' '}
+					{SCALING_CONFIG.growthEndgame}^max(tiles - {SCALING_CONFIG.lateTiles}, 0)
 				</p>
 				<p className='text-[#a89878] mt-1'>
 					Bigger territories also need materials ({firstTileResources}). Each Charisma point removes{' '}

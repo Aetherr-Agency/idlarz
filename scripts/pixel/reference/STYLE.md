@@ -127,6 +127,8 @@ Reference images in this folder: `icons.png` (icon set), `characters.png` (heroe
   yard/castle stay crisp. The 1px tile
   bevel only stays on sides facing land we don't own. Logic: `src/utils/biomeBlend.ts` (tested in `tests/biomeBlend.test.ts`),
   rendered by `Tile.tsx` as `.tile-blend` spans (CSS `mask`). Both tiles on a seam share one jitter variant.
+- **Coast biome** (`biome_coast` palm/driftwood/shell sprite + `ground_coast` pale rippled sand): the dry side of a lake. Water is
+  also likelier next to water (`BIOME_SPAWN`), so lakes grow into bays with beaches.
 - Remaining emoji: only the Merchant tab icons.
 
 ## Pipeline (`scripts/pixel`)

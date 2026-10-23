@@ -63,11 +63,14 @@ export const EMPTY_BIOMES: BiomeType[] = ['empty'];
 export const MAX_CATCHUP_SEC = 300; // one tick never advances the game by more than this (clock edits, device sleep)
 export const RESOURCE_CAP = 1e15; // anything above this in a save is considered tampered
 
-// Tile cost curve: exponential growth that is steep early (cheap first tiles) and gentler after `earlyTiles`
+// Tile cost curve: exponential growth that is steep early (cheap first tiles), gentler through the mid game and
+// gentler again past `lateTiles`, so a big territory stays a goal instead of an unreachable number
 export const SCALING_CONFIG = {
 	growthEarly: 1.45, // cost multiplier per owned tile up to `earlyTiles`
 	earlyTiles: 20,
-	growthLate: 1.27, // cost multiplier per owned tile after `earlyTiles`
+	growthLate: 1.27, // cost multiplier per owned tile from `earlyTiles` to `lateTiles`
+	lateTiles: 40,
+	growthEndgame: 1.17, // cost multiplier per owned tile after `lateTiles`
 
 	// Gold cost of the next tile when `ownedTiles` tiles are owned (castle counts), before discounts
 	costFormula: (ownedTiles: number) =>
@@ -79,10 +82,25 @@ export const SCALING_CONFIG = {
 				) *
 				Math.pow(
 					SCALING_CONFIG.growthLate,
-					Math.max(ownedTiles - SCALING_CONFIG.earlyTiles, 0)
+					Math.max(
+						Math.min(ownedTiles, SCALING_CONFIG.lateTiles) - SCALING_CONFIG.earlyTiles,
+						0
+					)
+				) *
+				Math.pow(
+					SCALING_CONFIG.growthEndgame,
+					Math.max(ownedTiles - SCALING_CONFIG.lateTiles, 0)
 				)
 		),
 	adjacencyBonus: ADJACENCY_BONUS,
+};
+
+// Which biome a random purchase turns up. Everything weighs 1 unless listed; water clusters and gets a shore:
+// next to a lake or a coast both become likelier, so ponds grow into bays with beaches instead of single specks.
+export const BIOME_SPAWN = {
+	weights: { coast: 0.6 } as Record<string, number>,
+	nearLake: { lake: 3, coast: 3 } as Record<string, number>,
+	nearCoast: { lake: 2, coast: 2 } as Record<string, number>,
 };
 
 // Extra resources a tile purchase costs once enough tiles are owned. amount = gold cost x share
@@ -271,6 +289,19 @@ export const BIOMES: Record<string, BiomeInfo> = {
 		},
 		resourceIcons: [RESOURCE_ICONS.gold, RESOURCE_ICONS.food],
 		description: 'Lakes provide gold and food',
+	},
+	coast: {
+		name: 'coast',
+		label: 'Coast',
+		baseColor: '#d8bc7c',
+		unique: false,
+		upgradeable: false,
+		resourceGeneration: {
+			gold: 0.1,
+			food: 0.2,
+		},
+		resourceIcons: [RESOURCE_ICONS.gold, RESOURCE_ICONS.food],
+		description: 'Sandy shores provide gold and food, and border the water',
 	},
 } as const;
 
