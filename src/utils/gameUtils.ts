@@ -455,3 +455,41 @@ export const getRandomBiome = (): BiomeType => {
 	const randomIndex = Math.floor(Math.random() * availableBiomes.length);
 	return availableBiomes[randomIndex];
 };
+
+// Per-second output of one owned tile (biome + building, adjacency bonus, global modifiers).
+// Used for the tile-tap bonus and the tile tooltip. XP is excluded on purpose.
+export const calculateTileTapYield = (
+	tiles: Tile[][],
+	x: number,
+	y: number,
+	rates: ResourceRates
+): Partial<Resources> => {
+	const tile = tiles[y]?.[x];
+	if (!tile || !tile.isOwned) return {};
+
+	const out: Partial<Resources> = {};
+	const adjacent = countAdjacentSameBiomes(tiles, x, y, tile.biome);
+	const adjacency = 1 + SCALING_CONFIG.adjacencyBonus * adjacent;
+	const addRate = (resource: string, rate: number) => {
+		if (!rate || resource === 'xp') return;
+		const key = resource as keyof Resources;
+		out[key] = (out[key] || 0) + rate * adjacency * (1 + (rates.modifiers[key] || 0));
+	};
+
+	if (tile.biome === 'castle') {
+		Object.entries(CASTLE_BASE_RATES).forEach(([resource, rate]) => addRate(resource, rate));
+	} else {
+		Object.entries(BIOMES[tile.biome].resourceGeneration).forEach(([resource, rate]) =>
+			addRate(resource, rate as number)
+		);
+	}
+	if (tile.biome === 'grounds' && tile.level === 2 && tile.building) {
+		const building = BUILDINGS[tile.building as BuildingType];
+		if (building?.resourceGeneration) {
+			Object.entries(building.resourceGeneration).forEach(([resource, rate]) =>
+				addRate(resource, rate as number)
+			);
+		}
+	}
+	return out;
+};

@@ -1,113 +1,135 @@
 import React, { useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
-import {
-	EQUIPMENT_RARITY_COLORS,
-	EQUIPMENT_SLOT_INFO,
-} from '@/config/gameConfig';
+import { EQUIPMENT_SLOT_INFO } from '@/config/gameConfig';
+import { EQUIPMENT_PIXEL_ICONS } from '@/config/pixelIcons';
 import { EquipmentSlot, Item } from '@/types/game';
 import LevelDetails from '../LevelDetails';
+import PixelModal from '../PixelModal';
+import PixelIcon from '../PixelIcon';
+import ResourceIcon from '../ResourceIcon';
 
-const ItemTooltip: React.FC<{ item: Item }> = ({ item }) => {
-	return (
-		<div className='absolute z-50 w-48 p-2 bg-gray-900 border border-gray-600 rounded shadow-lg text-sm -mt-24 ml-4'>
-			<div className='font-semibold mb-1'>{item.name}</div>
-			<div className='text-gray-400'>
-				Slot: {EQUIPMENT_SLOT_INFO[item.slot].label}
+// Rarity -> accent colour for the slot glow
+const RARITY_GLOW: Record<string, string> = {
+	common: '#9a9a9a',
+	uncommon: '#4ade80',
+	rare: '#60a5fa',
+	epic: '#c084fc',
+	legendary: '#fb923c',
+};
+
+const ItemTooltip: React.FC<{ item: Item }> = ({ item }) => (
+	<div className='absolute left-full top-0 ml-2 z-[60] w-56 px-tooltip text-sm pointer-events-none'>
+		<div className='px-tip-title mb-1'>{item.name}</div>
+		<div className='px-tip-muted text-xs'>Slot: {EQUIPMENT_SLOT_INFO[item.slot].label}</div>
+		{item.description && <div className='px-tip-muted text-xs mb-1'>{item.description}</div>}
+		{Object.entries(item.stats).map(([resource, value]) => (
+			<div
+				key={resource}
+				className={`flex items-center gap-1 text-xs ${value > 0 ? 'text-green-400' : 'text-red-400'}`}>
+				<ResourceIcon resource={resource} />
+				{value > 0 ? '+' : ''}
+				{value}/s
 			</div>
-			{item.description && (
-				<div className='text-gray-400 text-xs mb-1'>{item.description}</div>
-			)}
-			{Object.entries(item.stats).map(([resource, value]) => (
-				<div
-					key={resource}
-					className={`${value > 0 ? 'text-green-400' : 'text-red-400'}`}>
-					{resource}: {value > 0 ? '+' : ''}
-					{value}/s
-				</div>
-			))}
+		))}
+	</div>
+);
+
+const EquipmentCard: React.FC<{ slot: EquipmentSlot; label: string; item?: Item }> = ({
+	slot,
+	label,
+	item,
+}) => {
+	const [hover, setHover] = useState(false);
+	return (
+		<div
+			className='px-card px-equip relative'
+			onMouseEnter={() => item && setHover(true)}
+			onMouseLeave={() => setHover(false)}
+			style={
+				item?.rarity
+					? { boxShadow: `0 0 10px ${RARITY_GLOW[item.rarity] ?? 'transparent'}55` }
+					: undefined
+			}>
+			<div className='px-equip-slot' data-filled={!!item}>
+				<PixelIcon
+					name={EQUIPMENT_PIXEL_ICONS[slot]}
+					alt={label}
+					className={item ? '' : 'px-equip-empty'}
+				/>
+			</div>
+			<div className='min-w-0'>
+				<div className='text-xs uppercase tracking-wide text-[#a89878]'>{label}</div>
+				{item ? (
+					<div className='truncate text-[#f1e6c8]'>{item.name}</div>
+				) : (
+					<div className='text-[#6a5a48]'>Empty</div>
+				)}
+			</div>
+			{hover && item && <ItemTooltip item={item} />}
 		</div>
 	);
 };
 
 const CharacterOverlay: React.FC = () => {
-	const { showCharacterWindow, toggleCharacterWindow, equipment } =
-		useGameStore();
-
-	const [hoveredItem, setHoveredItem] = useState<Item | null>(null);
+	const { showCharacterWindow, toggleCharacterWindow, equipment } = useGameStore();
 
 	if (!showCharacterWindow) return null;
 
-	// Calculate total equipment bonuses
+	// Sum the per-second bonuses granted by everything equipped
+	const bonuses: Record<string, number> = {};
+	Object.values(equipment).forEach((item) => {
+		if (!item) return;
+		Object.entries(item.stats).forEach(([resource, value]) => {
+			bonuses[resource] = (bonuses[resource] || 0) + (value as number);
+		});
+	});
 
 	return (
-		<div className='fixed inset-[8vh] inset-x-[17vw] bg-black bg-opacity-90 rounded-3xl z-50 flex items-start justify-center overflow-y-auto'>
-			<div className='absolute top-4 right-4'>
-				<button
-					onClick={toggleCharacterWindow}
-					className='text-white hover:text-gray-300 transition-colors p-2 text-md focus:outline-none cursor-pointer border border-red-500 bg-red-700 aspect-square leading-0 rounded-sm'
-					aria-label='Close character window'>
-					✕
-				</button>
-			</div>
-
-			<div className='w-full h-full p-8 flex flex-col'>
-				<div className='grid grid-cols-4 gap-6 h-full'>
-					{/* Character Stats Section */}
-					<div className='col-span-1 bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-700 min-w-[200px]'>
-						<LevelDetails />
-						<div className='mt-4 border-t border-gray-700 pt-4'>
-							<div className='text-gray-400 text-sm mb-2'>
-								Equipment Bonuses
-							</div>
-							<div className='text-gray-500 text-sm'>No bonuses yet</div>
-						</div>
+		<PixelModal
+			title='Character'
+			icon={<PixelIcon name='menu_character' alt='' />}
+			size='lg'
+			onClose={toggleCharacterWindow}>
+			<div className='grid grid-cols-[300px_1fr] gap-5 h-full'>
+				{/* Level medallion + HP/MP flasks + bonuses */}
+				<div className='px-panel flex flex-col gap-4 overflow-y-auto'>
+					<LevelDetails />
+					<div className='border-t-2 px-rule pt-3'>
+						<div className='px-h'>Equipment Bonuses</div>
+						{Object.keys(bonuses).length === 0 ? (
+							<div className='text-[#6a5a48] text-sm'>No bonuses yet</div>
+						) : (
+							Object.entries(bonuses).map(([resource, value]) => (
+								<div
+									key={resource}
+									className={`flex items-center gap-1 text-sm ${
+										value > 0 ? 'text-green-400' : 'text-red-400'
+									}`}>
+									<ResourceIcon resource={resource} />
+									{value > 0 ? '+' : ''}
+									{value.toFixed(2)}/s
+								</div>
+							))
+						)}
 					</div>
+				</div>
 
-					{/* Equipment Section */}
-					<div className='col-span-3 bg-gray-800 bg-opacity-50 p-4 rounded-lg border border-gray-700 flex flex-col'>
-						<h2 className='text-white font-semibold mb-4 text-center border-b border-gray-700 pb-2'>
-							Equipment
-						</h2>
-
-						<div className='grid grid-cols-3 gap-2 mb-6'>
-							{Object.entries(EQUIPMENT_SLOT_INFO).map(([slotKey, info]) => {
-								const slot = slotKey as EquipmentSlot;
-								const item = equipment[slot] as unknown as Item;
-
-								return (
-									<div
-										key={slot}
-										className='bg-gray-700 p-2 rounded border border-gray-600 transition-colors duration-150'>
-										<div className='text-xs text-gray-400 mb-1'>
-											{info.label}
-										</div>
-										{item ? (
-											<div
-												onMouseEnter={() => setHoveredItem(item)}
-												onMouseLeave={() => setHoveredItem(null)}
-												className={`flex items-center p-1 rounded cursor-grab relative ${
-													item.rarity
-														? EQUIPMENT_RARITY_COLORS[item.rarity]
-														: 'border-gray-500'
-												} border`}>
-												<span className='text-2xl mr-2'>{item.icon}</span>
-												<span className='text-sm text-white'>{item.name}</span>
-												{hoveredItem === item && <ItemTooltip item={item} />}
-											</div>
-										) : (
-											<div className='h-10 flex items-center justify-center text-gray-500 border border-dashed border-gray-500 rounded p-1'>
-												<span className='text-lg opacity-50'>{info.icon}</span>
-												<span className='text-xs ml-2'>Empty</span>
-											</div>
-										)}
-									</div>
-								);
-							})}
-						</div>
+				{/* Equipment slots */}
+				<div className='px-panel'>
+					<div className='px-h text-center'>Equipment</div>
+					<div className='grid grid-cols-3 gap-3'>
+						{Object.entries(EQUIPMENT_SLOT_INFO).map(([slotKey, info]) => (
+							<EquipmentCard
+								key={slotKey}
+								slot={slotKey as EquipmentSlot}
+								label={info.label}
+								item={equipment[slotKey as EquipmentSlot] as Item | undefined}
+							/>
+						))}
 					</div>
 				</div>
 			</div>
-		</div>
+		</PixelModal>
 	);
 };
 

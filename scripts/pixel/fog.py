@@ -32,7 +32,7 @@ def _smooth(a, b, v):
     return t * t * (3 - 2 * t)
 
 
-def fog_tile(size=256, seed=1, tint=(128, 160, 210), alphas=(0, 14, 30, 50, 74)):
+def fog_tile(size=256, seed=1, tint=(128, 160, 210), alphas=(0, 14, 30, 50, 74), fine=False):
     """Soft drifting mist, quantised + dithered into a few alpha bands (RGBA, transparent where clear)."""
     img = Image.new('RGBA', (size, size), (0, 0, 0, 0))
     px = img.load()
@@ -42,12 +42,22 @@ def fog_tile(size=256, seed=1, tint=(128, 160, 210), alphas=(0, 14, 30, 50, 74))
             wx = (tnoise(x, y, size, 3, seed + 11) - 0.5) * 70
             wy = (tnoise(x, y, size, 3, seed + 23) - 0.5) * 70
             xs, ys = x + wx, y + wy
-            v = (0.34 * tnoise(xs, ys, size, 4, seed)
-                 + 0.30 * tnoise(xs, ys, size, 8, seed + 5)
-                 + 0.22 * tnoise(xs, ys, size, 16, seed + 9)
-                 + 0.14 * tnoise(xs, ys, size, 32, seed + 13))
-            m = _smooth(0.44, 0.82, v)
-            lvl = int(m * (k - 0.001) + (BAYER[y % 4][x % 4] / 16.0 - 0.5) * 0.9)
+            if fine:
+                # small, wispy mist: higher-frequency octaves, softer banding, almost no dither
+                v = (0.26 * tnoise(xs, ys, size, 4, seed)
+                     + 0.28 * tnoise(xs, ys, size, 8, seed + 5)
+                     + 0.26 * tnoise(xs, ys, size, 16, seed + 9)
+                     + 0.20 * tnoise(xs, ys, size, 32, seed + 13))
+                m = _smooth(0.40, 0.80, v)
+                dither = 0.35
+            else:
+                v = (0.34 * tnoise(xs, ys, size, 4, seed)
+                     + 0.30 * tnoise(xs, ys, size, 8, seed + 5)
+                     + 0.22 * tnoise(xs, ys, size, 16, seed + 9)
+                     + 0.14 * tnoise(xs, ys, size, 32, seed + 13))
+                m = _smooth(0.44, 0.82, v)
+                dither = 0.9
+            lvl = int(m * (k - 0.001) + (BAYER[y % 4][x % 4] / 16.0 - 0.5) * dither)
             lvl = max(0, min(k - 1, lvl))
             if lvl:
                 lift = lvl / (k - 1)

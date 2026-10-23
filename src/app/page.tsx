@@ -15,6 +15,7 @@ import FarmOverlay from '@/components/game/overlays/FarmOverlay';
 import GameHeader from '@/components/game/GameHeader';
 import BiomeSelectionDialog from '@/components/game/BiomeSelectionDialog';
 import ChestNotification from '@/components/game/overlays/ChestNotification';
+import FloatingText from '@/components/game/FloatingText';
 
 export default function Home() {
 	const tick = useGameStore((state) => state.tick);
@@ -105,6 +106,7 @@ export default function Home() {
 				<GameHeader />
 			</div>
 			<Grid />
+			<FloatingText />
 			<CharacterOverlay />
 			<StatisticsOverlay />
 			<MerchantOverlay />

@@ -14,6 +14,7 @@ import {
 	EMPTY_BIOMES,
 	BIOMES,
 	MERCHANT_RESOURCE_PRICES,
+	TILE_TAP,
 } from '@/config/gameConfig';
 import {
 	calculateLevel,
@@ -27,6 +28,7 @@ import {
 	calculateCombatStats,
 	calculateTotalMeatProduction,
 	calculateAnimalCost,
+	calculateTileTapYield,
 } from '@/utils/gameUtils';
 import type {
 	GameState,
@@ -34,7 +36,11 @@ import type {
 	Tile,
 	CharacterStats,
 	BiomeType,
+	TapResult,
 } from '@/types/game';
+
+// Last tap time per tile (not persisted) - enforces TILE_TAP.cooldownMs
+const lastTapAt: Record<string, number> = {};
 
 // Helper to calculate cost at a specific level
 
@@ -477,6 +483,33 @@ const createGameSlice = (
 			});
 
 			return true;
+		},
+
+		tapTile: (x: number, y: number): TapResult | null => {
+			const state = get();
+			const now = Date.now();
+			const key = `${x},${y}`;
+			if (now - (lastTapAt[key] || 0) < TILE_TAP.cooldownMs) return null;
+
+			const perSecond = calculateTileTapYield(state.tiles, x, y, state.resourceRates);
+			const lucky =
+				TILE_TAP.luckyEnabled &&
+				Math.random() * 100 < state.characterStats.critChance;
+			const mult =
+				TILE_TAP.seconds * (lucky ? 1 + state.characterStats.critDmgMultiplier / 100 : 1);
+
+			const items = (Object.entries(perSecond) as [keyof Resources, number][])
+				.map(([resource, rate]) => ({ resource, amount: rate * mult }))
+				.filter((item) => item.amount > 0);
+			if (items.length === 0) return null;
+
+			lastTapAt[key] = now;
+			const gained: Partial<Resources> = {};
+			items.forEach(({ resource, amount }) => {
+				gained[resource] = amount;
+			});
+			get().addResources(gained);
+			return { items, lucky };
 		},
 
 		tick: (deltaTime: number) => {

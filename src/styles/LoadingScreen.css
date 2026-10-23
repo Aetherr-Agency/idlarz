@@ -9,12 +9,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #111827;
-  background-image: 
-    radial-gradient(rgba(35, 60, 100, 0.2) 1px, transparent 1px),
-    radial-gradient(rgba(35, 60, 100, 0.15) 1px, transparent 1px);
-  background-size: 50px 50px;
-  background-position: 0 0, 25px 25px;
+  background: #0a0605 url('/pixel/v3/topbar_bg.png') repeat;
+  image-rendering: pixelated;
+  font-family: var(--font-pixel);
   z-index: 9999;
 }
 
@@ -24,12 +21,12 @@
   align-items: center;
   justify-content: center;
   gap: 24px;
-  padding: 40px;
-  border-radius: 16px;
-  background-color: rgba(30, 41, 59, 0.8);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  padding: 24px 40px;
+  border: 24px solid transparent;
+  border-image: url('/pixel/ui/frame_modal.png') 12 / 24px round;
+  background: rgba(10, 7, 5, 0.85);
+  background-clip: padding-box;
+  image-rendering: pixelated;
 }
 
 .loading-castle {
@@ -39,9 +36,11 @@
 }
 
 .loading-text {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: bold;
-  color: white;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #f0d27a;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   animation: pulse 2s ease-in-out infinite;
 }
@@ -53,10 +52,9 @@
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  border-top-color: #3b82f6;
-  animation: spin 1s ease-in-out infinite;
+  border: 6px solid #2b1d0e;
+  border-top-color: #f0d27a;
+  animation: spin 1s steps(8) infinite;
 }
 
 @keyframes spin {

@@ -1,13 +1,16 @@
 import React from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { formatNumber } from '@/utils/formatters';
-import { ANIMALS, RESOURCE_ICONS } from '@/config/gameConfig';
+import { ANIMALS } from '@/config/gameConfig';
 import {
 	calculateAnimalCost,
 	calculateAnimalProduction,
 	countOwnedBiomeTypes,
 } from '@/utils/gameUtils';
 import audioManager from '@/utils/audioManager';
+import PixelModal from '../PixelModal';
+import PixelIcon from '../PixelIcon';
+import ResourceIcon from '../ResourceIcon';
 import { Animal } from '@/types/game';
 
 // Farm Animal Card component for each animal
@@ -24,51 +27,50 @@ const FarmAnimalCard: React.FC<{
 	const productionIncrease = nextLevelProduction - currentProduction;
 
 	return (
-		<div className='p-4 bg-gray-800 rounded-lg border border-gray-700 relative'>
+		<div className='px-card relative'>
 			<div className='flex items-center gap-4 mb-3'>
 				<div className='text-4xl'>{animal.icon}</div>
 				<div>
-					<h3 className='text-white font-bold'>{animal.name}</h3>
-					<p className='text-gray-400 text-sm'>{animal.description}</p>
+					<h3 className='px-tip-title text-base'>{animal.name}</h3>
+					<p className='text-[#a89878] text-sm'>{animal.description}</p>
 				</div>
 			</div>
 
 			<div className='mt-4 space-y-2'>
 				{level > 0 && (
 					<div className='flex justify-between text-sm'>
-						<span className='text-gray-400'>Current Level:</span>
+						<span className='text-[#a89878]'>Current Level:</span>
 						<span className='text-white font-medium'>{level}</span>
 					</div>
 				)}
 
 				<div className='flex justify-between text-sm'>
-					<span className='text-gray-400'>
+					<span className='text-[#a89878]'>
 						{level > 0 ? 'Current Production:' : 'Base Production:'}
 					</span>
 					<span className='text-red-400 font-medium'>
-						{formatNumber(currentProduction)}/s {RESOURCE_ICONS.meat}
+						<span className='inline-flex items-center gap-1'>{formatNumber(currentProduction)}/s <ResourceIcon resource='meat' /></span>
 					</span>
 				</div>
 
 				{level > 0 && (
 					<div className='flex justify-between text-sm'>
-						<span className='text-gray-400'>Next Level Production:</span>
+						<span className='text-[#a89878]'>Next Level Production:</span>
 						<span className='text-green-400 font-medium'>
-							{formatNumber(nextLevelProduction)}/s {RESOURCE_ICONS.meat} (+
-							{formatNumber(productionIncrease)}/s)
+							<span className='inline-flex items-center gap-1'>{formatNumber(nextLevelProduction)}/s <ResourceIcon resource='meat' /> (+{formatNumber(productionIncrease)}/s)</span>
 						</span>
 					</div>
 				)}
 
 				<div className='flex justify-between text-sm'>
-					<span className='text-gray-400'>
+					<span className='text-[#a89878]'>
 						{level > 0 ? 'Upgrade Cost:' : 'Purchase Cost:'}
 					</span>
 					<span
 						className={`font-medium ${
 							canAfford ? 'text-green-400' : 'text-red-400'
 						}`}>
-						{formatNumber(nextLevelCost)} {RESOURCE_ICONS.food}
+						<span className='inline-flex items-center gap-1'>{formatNumber(nextLevelCost)} <ResourceIcon resource='food' /></span>
 					</span>
 				</div>
 			</div>
@@ -84,11 +86,7 @@ const FarmAnimalCard: React.FC<{
 						}
 					}}
 					disabled={!canAfford}
-					className={`w-full py-2 px-4 rounded font-bold text-sm uppercase ${
-						canAfford
-							? 'bg-green-600 hover:bg-green-500 text-white'
-							: 'bg-gray-700 text-gray-500 cursor-not-allowed'
-					}`}>
+					className='px-btn w-full py-2'>
 					{level > 0 ? 'Upgrade' : 'Purchase'}
 				</button>
 			</div>
@@ -103,22 +101,22 @@ interface FarmStatsProps {
 
 const FarmStats: React.FC<FarmStatsProps> = ({ totalProduction }) => {
 	return (
-		<div className='p-4 bg-gray-800 rounded-lg border border-gray-700'>
-			<h3 className='text-white font-bold mb-2'>Farm Statistics</h3>
+		<div className='px-panel'>
+			<h3 className='px-h'>Farm Statistics</h3>
 			<div className='flex justify-between text-sm'>
-				<span className='text-gray-400'>Meat Production:</span>
+				<span className='text-[#a89878]'>Meat Production:</span>
 				<span className='text-red-400 font-medium'>
 					{formatNumber(totalProduction)}/s
 				</span>
 			</div>
 			<div className='flex justify-between text-sm mt-2'>
-				<span className='text-gray-400'>Per Minute:</span>
+				<span className='text-[#a89878]'>Per Minute:</span>
 				<span className='text-red-400 font-medium'>
 					{formatNumber(totalProduction * 60)}/min
 				</span>
 			</div>
 			<div className='flex justify-between text-sm mt-2'>
-				<span className='text-gray-400'>Per Hour:</span>
+				<span className='text-[#a89878]'>Per Hour:</span>
 				<span className='text-red-400 font-medium'>
 					{formatNumber(totalProduction * 60 * 60)}/hr
 				</span>
@@ -168,32 +166,13 @@ const FarmOverlay: React.FC = () => {
 	if (!showFarmWindow) return null;
 
 	return (
-		<div className='fixed inset-0 flex items-center justify-center z-50 bg-black/60 backdrop-blur-sm'>
-			<div className='bg-gray-900 rounded-lg shadow-xl w-[90%] max-w-4xl max-h-[90vh] overflow-auto p-6'>
-				<div className='flex justify-between items-center mb-6'>
-					<h2 className='text-2xl font-semibold text-white flex items-center'>
-						<span className='mr-2'>🧑‍🌾</span> Farm
-					</h2>
-					<button
-						onClick={() => setShowFarmWindow(false)}
-						className='text-gray-400 hover:text-white focus:outline-none'>
-						<svg
-							className='w-6 h-6'
-							fill='none'
-							stroke='currentColor'
-							viewBox='0 0 24 24'
-							xmlns='http://www.w3.org/2000/svg'>
-							<path
-								strokeLinecap='round'
-								strokeLinejoin='round'
-								strokeWidth='2'
-								d='M6 18L18 6M6 6l12 12'></path>
-						</svg>
-					</button>
-				</div>
-
+		<PixelModal
+			title='Farm'
+			icon={<PixelIcon name='menu_farm' alt='' />}
+			size='lg'
+			onClose={() => setShowFarmWindow(false)}>
 				<div className='mb-6'>
-					<p className='text-gray-400 text-sm'>
+					<p className='text-[#a89878] text-sm'>
 						Purchase and upgrade animals to increase your meat production. Each
 						animal produces meat automatically.
 					</p>
@@ -201,30 +180,30 @@ const FarmOverlay: React.FC = () => {
 
 				<div className='grid grid-cols-1 md:grid-cols-2 gap-6 mb-6'>
 					<FarmStats totalProduction={totalMeatProduction} />
-					<div className='p-4 bg-gray-800 rounded-lg border border-gray-700'>
-						<h3 className='text-white font-bold mb-2'>Resources</h3>
+					<div className='px-panel'>
+						<h3 className='px-h'>Resources</h3>
 						<div className='flex justify-between text-sm'>
-							<span className='text-gray-400'>Available Food:</span>
+							<span className='text-[#a89878]'>Available Food:</span>
 							<span className='text-green-400 font-medium'>
-								{formatNumber(resources.food)} {RESOURCE_ICONS.food}
+								<span className='inline-flex items-center gap-1'>{formatNumber(resources.food)} <ResourceIcon resource='food' /></span>
 							</span>
 						</div>
 						<div className='flex justify-between text-sm mt-2'>
-							<span className='text-gray-400'>Current Meat:</span>
+							<span className='text-[#a89878]'>Current Meat:</span>
 							<span className='text-red-400 font-medium'>
-								{formatNumber(resources.meat)} {RESOURCE_ICONS.meat}
+								<span className='inline-flex items-center gap-1'>{formatNumber(resources.meat)} <ResourceIcon resource='meat' /></span>
 							</span>
 						</div>
 						{hasPlainsBonus && (
 							<div className='flex justify-between text-sm mt-2'>
-								<span className='text-gray-400'>Plains Bonus:</span>
+								<span className='text-[#a89878]'>Plains Bonus:</span>
 								<span className='text-yellow-400 font-medium'>
-									+{plainsBonusPercentage}% {RESOURCE_ICONS.meat}
+									<span className='inline-flex items-center gap-1'>+{plainsBonusPercentage}% <ResourceIcon resource='meat' /></span>
 								</span>
 							</div>
 						)}
 						{hasPlainsBonus && (
-							<div className='mt-2 text-xs text-gray-500'>
+							<div className='mt-2 text-xs text-[#7a6a52]'>
 								Each Plains tile provides +5% meat production
 							</div>
 						)}
@@ -242,8 +221,7 @@ const FarmOverlay: React.FC = () => {
 						/>
 					))}
 				</div>
-			</div>
-		</div>
+		</PixelModal>
 	);
 };
 

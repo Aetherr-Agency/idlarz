@@ -11,11 +11,14 @@ import {
 	BUILDINGS,
 	RESOURCE_ICONS,
 	BuildingType,
+	TILE_TAP,
 } from '@/config/gameConfig';
 import { useGameStore } from '@/stores/gameStore';
 import { countOwnedTiles } from '@/utils/gameUtils';
 import { cn } from '@/lib/utils';
 import audioManager from '@/utils/audioManager';
+import { queueTileTap } from '@/lib/floatText';
+import ResourceIcon from './ResourceIcon';
 import { TileStatus } from './TileStatus';
 import CastleUpgradeDialog from './CastleUpgradeDialog';
 import BuildingSelectionDialog from './BuildingSelectionDialog';
@@ -35,6 +38,7 @@ const Tile: React.FC<TileProps> = ({
 	const characterStats = useGameStore((state) => state.characterStats);
 	const upgradeGroundsTile = useGameStore((state) => state.upgradeGroundsTile);
 	const collectChest = useGameStore((state) => state.collectChest);
+	const tapTile = useGameStore((state) => state.tapTile);
 	const isBiomeSelectionActive = useGameStore(
 		(state) => state.biomeSelectionActive
 	);
@@ -44,6 +48,8 @@ const Tile: React.FC<TileProps> = ({
 	const [showCastleDialog, setShowCastleDialog] = useState(false);
 	const [showBuildingDialog, setShowBuildingDialog] = useState(false);
 	const [showChestTooltip, setShowChestTooltip] = useState(false);
+	const [tapped, setTapped] = useState(false);
+	const [cooling, setCooling] = useState(false);
 
 	// Check if this tile has a chest
 	const hasChest = tiles?.[y]?.[x]?.hasChest || false;
@@ -101,6 +107,19 @@ const Tile: React.FC<TileProps> = ({
 				// You could add a special chest collection sound here
 			}
 			return;
+		}
+
+		// Tapping an owned tile also yields a slice of that tile's own output (rate-limited per tile)
+		if (isOwned) {
+			const tap = tapTile(x, y);
+			if (tap) {
+				audioManager.playSound('click');
+				queueTileTap(tap.items, tap.lucky);
+				setTapped(true);
+				setCooling(true);
+				setTimeout(() => setTapped(false), 160);
+				setTimeout(() => setCooling(false), TILE_TAP.cooldownMs);
+			}
 		}
 
 		// Prioritize owned tiles for special interactions
@@ -176,11 +195,13 @@ const Tile: React.FC<TileProps> = ({
 						'cursor-pointer':
 							isOwned && (biome === 'castle' || biome === 'grounds' || hasChest),
 						'castle-tile': isOwned && biome === 'castle',
-						'border-2 border-amber-400': isOwned && hasChest
+						'border-2 border-amber-400': isOwned && hasChest,
+						'tile-cooldown': cooling,
 					}
 				)}
 				style={{
 					...style,
+					...({ '--cd': `${TILE_TAP.cooldownMs}ms` } as React.CSSProperties),
 					backgroundColor,
 					// Unexplored land is left clear so the fog-of-war mist behind the grid shows through
 					...(farAwayTile && { backgroundColor: 'transparent' }),
@@ -189,7 +210,11 @@ const Tile: React.FC<TileProps> = ({
 				onMouseEnter={() => hasChest && setShowChestTooltip(true)}
 				onMouseLeave={() => setShowChestTooltip(false)}
 				role='button'>
-				<div className='w-full h-full flex items-center justify-center relative'>
+				<div
+					className={cn(
+						'w-full h-full flex items-center justify-center relative',
+						{ 'tile-tapped': tapped }
+					)}>
 					{isOwned &&
 						BIOME_ICONS[BIOMES[biome].name as keyof typeof BIOME_ICONS]}
 					{!isOwned && isAdjacent && '❔'}
@@ -208,8 +233,9 @@ const Tile: React.FC<TileProps> = ({
 					
 					{/* Chest tooltip */}
 					{isOwned && hasChest && showChestTooltip && (
-						<div className='absolute -top-6 left-1/2 transform -translate-x-1/2 bg-black bg-opacity-80 text-yellow-400 text-[9px] px-2 py-1 rounded z-50 whitespace-nowrap'>
-							CLICK TO COLLECT BONUS GOLD 💰
+						<div className='absolute -top-11 left-1/2 -translate-x-1/2 z-[60] px-tooltip whitespace-nowrap text-xs flex items-center gap-1 text-[#f0d27a]'>
+							Click to collect bonus gold
+							<ResourceIcon resource='gold' />
 						</div>
 					)}
 					
@@ -248,8 +274,8 @@ const Tile: React.FC<TileProps> = ({
 				</div>
 
 				{(isOwned || isAdjacent) && (
-					<div className='absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 pointer-events-none z-50 transition-opacity duration-200'>
-						<div className='bg-gray-900 rounded-lg shadow-xl p-2 whitespace-nowrap border border-gray-700'>
+					<div className='absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 pointer-events-none z-[60] transition-opacity duration-150'>
+						<div className='px-tooltip whitespace-nowrap'>
 							<TileStatus
 								biome={biome}
 								isOwned={isOwned}

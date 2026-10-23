@@ -608,3 +608,13 @@ export const INITIAL_INVENTORY_ITEMS = [
 		rarity: 'common' as EquipmentRarity,
 	},
 ];
+
+// Tile tapping: clicking an owned tile also yields a small slice of that tile's own output.
+// A tap = `seconds` worth of the tile's per-second production, with a per-tile cooldown so
+// spam-clicking can add at most seconds/cooldown (~42%) on top of a tile's passive income.
+export const TILE_TAP = {
+	seconds: 0.5,
+	cooldownMs: 1200,
+	// Lucky tap: chance = the player's crit chance (%), payout = 1 + crit damage multiplier (%)/100
+	luckyEnabled: true,
+};

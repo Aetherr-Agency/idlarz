@@ -48,6 +48,37 @@ Numbers use fixed-width digit cells (`StableNumber`) so ticking counters never c
 cursor (portalled to body), animate with transform + opacity only. Sprites display at integer scale with
 `image-rendering: pixelated`.
 
+## UI kit (windows, dialogs, tooltips, HUD widgets) - approved 2026-10-23
+Reference images: `approved-v3-set.png` (all 20 icons incl. equipment + merchant portrait),
+`approved-ui-kit.png` (HP/MP flasks + XP medallion art), `approved-v3-fog.png` (current fine fog tile).
+
+- **Font**: Pixelify Sans (self-hosted via `@fontsource-variable/pixelify-sans`, CSS var `--font-pixel`). The Tailwind
+  text scale is nudged up one notch in `globals.css` (`@theme`) because the font reads small. Never use sub-12px text.
+- **Modal shell** (`PixelModal.tsx`): one bronze 9-slice frame (`public/pixel/ui/frame_modal.png`, 12px slice drawn at 2x)
+  over the cracked-stone tile, ornamented title bar, red pixel close button hanging off the corner, Esc/backdrop to
+  dismiss. Backdrop sits *under* the header (z-45) so resources stay visible. Sizes: `sm` 440 (confirmations),
+  `md` 760 (pickers), `lg` 1080 x full height (Character, Statistics, Merchant, Farm). Do not hand-roll new modals.
+- **Panels/cards**: `.px-panel` / `.px-card` (9-slice `frame_panel.png`), headings `.px-h` (gold, uppercase, rule).
+- **Buttons/tabs/inputs**: `.px-btn` (+ `-gold/-red/-blue/-gray/-sm`) with stepped corners and a 2px pixel bevel,
+  `.px-tab`, `.px-range` (square thumb), `.px-input`. Palette: parchment text `#d8c8a0`, muted `#a89878`, gold `#f0d27a`.
+- **Tooltips/toasts**: `.px-tooltip` / `.px-toast` (gold 9-slice `frame_tip.png`), `.px-tip-title`, `.px-tip-muted`.
+  Every hover card uses it. Resource icons inside UI text use `ResourceIcon` (20px) rather than emoji.
+  Map glyphs (biome/castle emojis) are intentionally still emoji.
+- **HP/MP flasks**: glass overlay + mask PNG with CSS liquid (`--p` fill, hard-stop pixel bands, rippling surface,
+  rising bubbles). Always an integer scale (`--s`).
+- **XP medallion**: bronze ring + 40-segment band; progress is a conic-gradient mask over `medal_fill.png`.
+- **Equipment slots**: 8 icons `equip_*` (head kettle hat, neck amulet, chest cuirass, main-hand sword, off-hand round
+  shield, legs greaves, feet boots, ring) in the 48px slot frame; empty = dim grayscale silhouette, filled = glow frame.
+- **Fog of war**: fine 128px seamless mist tiles (`fog_c`/`fog_d`) at 1x/1.5x, two layers drifting in opposite directions
+  and breathing; unexplored tiles are transparent. Drift distance must equal one tile period.
+- **Motion rules**: transform/opacity only; integer pixel scales; honour `prefers-reduced-motion`.
+- **Tile tap feedback**: cursor popup (lines per resource, lucky header), tile pulse on the *inner* element (the outer
+  one carries the grid translate), darkening cooldown overlay.
+
+Generators: `ui_art.py` + `generate_ui.py` (frames, flasks, medallion -> `public/pixel/ui/`), `icons5.py` (equipment +
+merchant portrait), `fog.py` (fine fog via `fine=True`). Re-run `generate_v3.py` and `generate_ui.py` after edits.
+
+
 ## Don'ts
 No black outlines, no ground shadows, no smooth gradients, no AI-looking noise dither, no emoji-style flat icons.
 New icons need an approval sample before a full batch is rendered.

@@ -130,6 +130,11 @@ export interface Animal {
 	productionScaling: number;
 }
 
+export interface TapResult {
+	items: { resource: keyof Resources; amount: number }[];
+	lucky: boolean;
+}
+
 export interface GameState {
 	previousLevel: number;
 	tiles: Tile[][];
@@ -178,4 +183,6 @@ export interface GameState {
 	setPlayerName: (name: string) => void;
 	addResources: (resourceToAdd: Partial<Resources>) => void;
 	collectChest: (x: number, y: number) => boolean;
+	// Tap an owned tile: grants a slice of its output. Returns null while on cooldown / nothing to give.
+	tapTile: (x: number, y: number) => TapResult | null;
 }

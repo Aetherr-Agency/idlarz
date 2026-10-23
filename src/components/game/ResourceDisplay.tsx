@@ -1,22 +1,12 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useEffect, useCallback } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { Resources } from '@/types/game';
 import { formatNumber } from '@/utils/formatters';
 import { HEADER_DISPLAYED_RESOURCES_INFO, RESOURCE_ICONS } from '@/config/gameConfig';
 import { RESOURCE_PIXEL_ICONS } from '@/config/pixelIcons';
+import { emitFloat, mergeItems, takeTileTap, FloatItem } from '@/lib/floatText';
 import PixelIcon from './PixelIcon';
 import StableNumber from './StableNumber';
-
-// Income popup spawned where the player clicked
-interface AnimationItem {
-	id: number;
-	amount: number;
-	position: { x: number; y: number };
-	drift: number;
-}
-
-const POPUP_DURATION_MS = 900;
 
 const ResourceDisplay: React.FC = () => {
 	const resources = useGameStore((state) => state.resources);
@@ -24,32 +14,31 @@ const ResourceDisplay: React.FC = () => {
 	const addResources = useGameStore((state) => state.addResources);
 	const clickMultiplier = useGameStore((state) => state.clickMultiplier);
 
-	const [animations, setAnimations] = useState<AnimationItem[]>([]);
-	const nextAnimationId = useRef(0);
-
 	// Define resources to display (including meat)
 	const resourcesToDisplay = Object.keys(resources) as Array<keyof Resources>;
 
-	// Award gold on every click and show the income right under the cursor
+	// Every click earns gold; a click on an owned tile also carries that tile's tap bonus
+	// (already applied by the store). Both show up as one popup under the cursor.
 	const handleGameClick = useCallback(
 		(e: MouseEvent) => {
+			const items: FloatItem[] = [];
+
 			const goldRate = resourceRates.total.gold;
-			if (goldRate <= 0) return;
+			if (goldRate > 0) {
+				const goldToAdd = goldRate * clickMultiplier;
+				addResources({ gold: goldToAdd });
+				items.push({ resource: 'gold', amount: goldToAdd });
+			}
 
-			const goldToAdd = goldRate * clickMultiplier;
-			addResources({ gold: goldToAdd });
+			const tap = takeTileTap();
+			if (items.length === 0 && !tap) return;
 
-			const newAnimation: AnimationItem = {
-				id: nextAnimationId.current++,
-				amount: goldToAdd,
-				position: { x: e.clientX, y: e.clientY },
-				drift: Math.round((Math.random() - 0.5) * 36), // sideways wander so rapid clicks fan out
-			};
-
-			setAnimations((prev) => [...prev, newAnimation]);
-			setTimeout(() => {
-				setAnimations((prev) => prev.filter((anim) => anim.id !== newAnimation.id));
-			}, POPUP_DURATION_MS);
+			emitFloat({
+				x: e.clientX,
+				y: e.clientY,
+				items: mergeItems(items, tap?.items ?? []),
+				lucky: tap?.lucky,
+			});
 		},
 		[resourceRates.total.gold, addResources, clickMultiplier]
 	);
@@ -124,29 +113,25 @@ const ResourceDisplay: React.FC = () => {
 							/>
 						</div>
 
-						{/* Enhanced Tooltip */}
-						<div className='absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 pointer-events-none z-50 transition-opacity duration-200 text-xs'>
-							<div className='bg-gray-800 rounded-lg shadow-xl p-3 whitespace-nowrap border border-gray-700'>
-								<div className='font-medium mb-1 text-white'>
-									{resourceInfo.label}
-								</div>
-								<div className='text-xs text-gray-400 mb-1 text-[11px]'>
+						{/* Tooltip */}
+						<div className='absolute top-full left-1/2 -translate-x-1/2 mt-1 opacity-0 group-hover:opacity-100 pointer-events-none z-[60] transition-opacity duration-150'>
+							<div className='px-tooltip whitespace-nowrap text-sm min-w-[200px]'>
+								<div className='px-tip-title mb-1'>{resourceInfo.label}</div>
+								<div className='px-tip-muted text-xs mb-2'>
 									{resourceInfo.description}
 								</div>
-								<div className='space-y-1 text-[11px]'>
+								<div className='space-y-1 text-xs'>
 									<div className='flex justify-between gap-4'>
-										<span className='text-gray-400'>Base Rate:</span>
-										<span className='text-gray-400'>
-											{formatNumber(baseRate)}/s
-										</span>
+										<span className='px-tip-muted'>Base Rate</span>
+										<span>{formatNumber(baseRate)}/s</span>
 									</div>
-									<div className='flex justify-between gap-4 mt-1'>
-										<span className='text-gray-400'>Modifier:</span>
+									<div className='flex justify-between gap-4'>
+										<span className='px-tip-muted'>Modifier</span>
 										<span className='text-green-400'>{modifierPercent}%</span>
 									</div>
-									<div className='flex justify-between gap-4 mt-1'>
-										<span className='text-white'>Total Rate:</span>
-										<span className='text-white'>
+									<div className='flex justify-between gap-4 pt-1 border-t px-rule'>
+										<span className='text-[#f0d27a]'>Total Rate</span>
+										<span className='text-[#f0d27a]'>
 											{formatNumber(totalRate)}/s
 										</span>
 									</div>
@@ -156,31 +141,6 @@ const ResourceDisplay: React.FC = () => {
 					</div>
 				);
 			})}
-
-			{/* Income popups: portalled to <body> so they are positioned against the viewport,
-			    exactly where the player clicked, whatever the header layout does */}
-			{animations.length > 0 &&
-				createPortal(
-					animations.map((anim) => (
-						<div
-							key={anim.id}
-							className='gold-popup'
-							style={
-								{
-									left: anim.position.x,
-									top: anim.position.y,
-									'--drift': `${anim.drift}px`,
-									animationDuration: `${POPUP_DURATION_MS}ms`,
-								} as React.CSSProperties
-							}>
-							<span className='gold-popup-inner'>
-								<PixelIcon name='gold' alt='' scale={0.5} />
-								+{formatNumber(anim.amount)}
-							</span>
-						</div>
-					)),
-					document.body
-				)}
 		</>
 	);
 };

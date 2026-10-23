@@ -1,10 +1,11 @@
 import React, { memo, useMemo } from 'react';
 import { BiomeType } from '@/types/game';
-import { BIOMES, SCALING_CONFIG, RESOURCE_ICONS } from '@/config/gameConfig';
+import { BIOMES, SCALING_CONFIG } from '@/config/gameConfig';
 import { useGameStore } from '@/stores/gameStore';
 import { countOwnedTiles } from '@/utils/gameUtils';
 import { formatNumber } from '@/utils/formatters';
 import { BiomeTooltip } from './BiomeTooltip';
+import ResourceIcon from './ResourceIcon';
 import { cn } from '@/lib/utils';
 
 export const TileStatus = memo(
@@ -46,9 +47,7 @@ export const TileStatus = memo(
 			const biomeInfo = BIOMES[biome];
 			return (
 				<div className='space-y-1'>
-					<div className='font-bold flex items-center gap-2 text-white text-[13px] uppercase'>
-						<p>{biomeInfo.label}</p>
-					</div>
+					<div className='px-tip-title text-sm'>{biomeInfo.label}</div>
 					<BiomeTooltip biome={biome} level={level} x={x} y={y} />
 				</div>
 			);
@@ -57,32 +56,31 @@ export const TileStatus = memo(
 		if (isAdjacent) {
 			const canAfford = resources.gold >= cost;
 			return (
-				<div className='space-y-1'>
-					<div className='text-blue-300 text-[12px] uppercase leading-4'>
-						🔎 Unexplored Land
-					</div>
-					<div className='text-sm font-bold text-[12px] mb-3'>
+				<div className='space-y-1 text-sm'>
+					<div className='px-tip-title'>Unexplored Land</div>
+					<div className='flex items-center gap-1 mb-2'>
+						<ResourceIcon resource='gold' />
 						<span className={canAfford ? 'text-green-400' : 'text-red-400'}>
-							{RESOURCE_ICONS.gold} Cost: {formatNumber(cost)} gold
+							Cost: {formatNumber(cost)} gold
 						</span>
 						{characterStats.tileCostDiscount > 0 && (
-							<span className='text-amber-400 text-[10px] ml-1'>
+							<span className='text-amber-400 text-xs ml-1'>
 								(-{characterStats.tileCostDiscount.toFixed(2)}%)
 							</span>
 						)}
 					</div>
-					<div className={cn('text-sm text-gray-300 text-[12px] mb-1', {
-						'text-amber-300': canManuallySelect,
-						'text-white': tilesUntilManualSelection === 1,
-						'text-gray-500': tilesUntilManualSelection > 1,
-					})}>
-						{canManuallySelect && '✨ This tile can be selected upon purchase'}
-						{tilesUntilManualSelection === 1 && '🔄 Next tile will be selectable'}
-						{tilesUntilManualSelection > 1 && `🔄 ${tilesUntilManualSelection} tiles until manual selection`}
+					<div
+						className={cn('text-xs mb-1', {
+							'text-amber-300': canManuallySelect,
+							'text-white': tilesUntilManualSelection === 1,
+							'text-gray-500': tilesUntilManualSelection > 1,
+						})}>
+						{canManuallySelect && '◆ This tile can be selected upon purchase'}
+						{tilesUntilManualSelection === 1 && '◇ Next tile will be selectable'}
+						{tilesUntilManualSelection > 1 &&
+							`◇ ${tilesUntilManualSelection} tiles until manual selection`}
 					</div>
-					<div className='text-sm text-gray-400 text-[12px] text-center'>
-						Click to explore
-					</div>
+					<div className='px-tip-muted text-xs text-center'>Click to explore</div>
 				</div>
 			);
 		}

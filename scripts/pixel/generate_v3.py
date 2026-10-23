@@ -14,7 +14,10 @@ from PIL import Image  # noqa: E402
 import icons3  # noqa: E402
 import icons4  # noqa: E402
 
-icons3.ICONS.update(icons4.ICONS)   # second polish pass overrides the matching v3 entries
+import icons5  # noqa: E402
+
+icons3.ICONS.update(icons4.ICONS)
+icons3.ICONS.update(icons5.ICONS)   # equipment-slot icons   # second polish pass overrides the matching v3 entries
 import fx  # noqa: E402
 import icons2  # noqa: E402
 from common import upscale  # noqa: E402
@@ -60,6 +63,10 @@ if not only:
     # fog-of-war mist layers (256px tiles, drawn at 2x and drifted in CSS)
     fog.fog_tile(seed=1).save(os.path.join(OUT, 'fog_a.png'))
     fog.fog_tile(seed=7, tint=(112, 168, 188)).save(os.path.join(OUT, 'fog_b.png'))
+    # v2 mist: small 128px seamless tiles with fine wisps (displayed 1x / 1.5x)
+    fine_alphas = (0, 10, 20, 32, 46, 62)
+    fog.fog_tile(size=128, seed=3, alphas=fine_alphas, fine=True).save(os.path.join(OUT, 'fog_c.png'))
+    fog.fog_tile(size=128, seed=11, tint=(110, 170, 190), alphas=fine_alphas, fine=True).save(os.path.join(OUT, 'fog_d.png'))
 parts = mockup_v2.chrome_parts()
 for name, img in parts.items():
     img.save(os.path.join(OUT, f'{name}.png'))

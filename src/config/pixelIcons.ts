@@ -14,6 +14,15 @@ export const PIXEL_ICON_SIZES = {
 	menu_farm: [40, 40],
 	level_star: [24, 24],
 	hero: [40, 56],
+	merchant_portrait: [40, 56],
+	equip_head: [40, 40],
+	equip_neck: [40, 40],
+	equip_chest: [40, 40],
+	equip_mainHand: [40, 40],
+	equip_offHand: [40, 40],
+	equip_legs: [40, 40],
+	equip_feet: [40, 40],
+	equip_ring: [40, 40],
 } as const;
 
 export type PixelIconName = keyof typeof PIXEL_ICON_SIZES;
@@ -28,4 +37,17 @@ export const RESOURCE_PIXEL_ICONS: Partial<Record<string, PixelIconName>> = {
 	coal: 'coal',
 	food: 'food',
 	meat: 'meat',
+};
+
+// Equipment slot -> its pixel icon (both ring slots share one sprite)
+export const EQUIPMENT_PIXEL_ICONS: Record<string, PixelIconName> = {
+	head: 'equip_head',
+	neck: 'equip_neck',
+	chest: 'equip_chest',
+	mainHand: 'equip_mainHand',
+	offHand: 'equip_offHand',
+	legs: 'equip_legs',
+	feet: 'equip_feet',
+	ring1: 'equip_ring',
+	ring2: 'equip_ring',
 };
