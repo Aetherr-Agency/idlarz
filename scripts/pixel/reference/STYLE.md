@@ -14,8 +14,10 @@ graphics for anything that isn't a map glyph. Match the references in this folde
 | `ui-parts.png` | Frames, stone bar, slot frames, divider, torch - the 9-slice/chrome parts. |
 | `fog.png`, `map-tiles.png`, `castle-levels.png`, `gold-shine.png` | Fog tile, biome ground + unexplored tiles, and the coin twinkle strip. |
 
+Reference images in this folder: `icons.png` (icon set), `characters.png` (heroes, merchant, busts), `farm.png` (pen back + front layers), `hero-hud.png`, `castle-levels.png`, `map-tiles.png`, `fog.png`, `ui-parts.png`, `gold-shine.png`.
+
 ## Sprite look
-- **Canvas**: 40x40 (portraits 40x56, level gem 24x24). Artwork fills ~34-36px. Sprites float on transparency -
+- **Canvas**: 40x40 (hero/merchant figures 56x80, busts 40x40, level orb 24x24, farm pen 256x184). Artwork fills ~34-36px. Sprites float on transparency -
   **no ground shadows**. Displayed at integer scale only (`image-rendering: pixelated`).
 - **Outline**: 1px, *coloured*, never pure black - the darkest hue-shifted tone of the object's own material.
   Overlapping pieces get an inner contour.
@@ -25,8 +27,13 @@ graphics for anything that isn't a map glyph. Match the references in this folde
   twinkle glints (white core, pale arms, 1-3px). Animals and people get none.
 - **Detail**: every shape has internal detail - coin rings, bark fissures, stone cracks, bread scores, plank lines,
   feather/fur breaks, facets. Silhouettes are chunky, never perfect ellipses. 1-3 pieces per resource icon.
-- **People**: big friendly heads, readable eyes, one signature prop (staff, coin). The player is a regular guy
-  adventurer (feathered green cap, red scarf, leather vest, pack, staff) - not royalty.
+- **People**: big friendly heads with readable eyes (white + pupil, flat brows), hair with streak texture, jointed limbs
+  (round-ended rods), one signature prop each. Built from the shared body kit in `sprites_characters.py`; no royalty.
+  The four hero classes (cosmetic for now, picked by double-clicking the character): **Warrior/Human** (steel breastplate,
+  red cape, round shield, sword), **Paladin/Angel** (fanned white wings, halo of gold beads, gold + white plate, mace,
+  kite shield), **Ranger/Elf** (green hood, pointed ears, red hair, longbow, quiver), **Mage/Dark Elf** (lavender skin,
+  white hair, glowing eyes, pointed purple hood, crystal staff, floating orb). Each also has a 40x40 bust for the header.
+  The merchant uses the same kit: round green coat, bushy white beard, wide hat with feather, ledger, held coin.
 - **Animals**: 3/4 view, head to the lower-left, simple hard-shaded forms with one clear marking each
   (hen: red comb + tail fan; pig: snout + curl tail; cow: black patches + pink muzzle; deer: antlers + dapples).
 
@@ -44,13 +51,13 @@ graphics for anything that isn't a map glyph. Match the references in this folde
 - **Resources**: gold (coin stacks + standing coin, twinkles), wood (log pile with end rings), stone (cut blocks),
   coal (dark chunks, blue sheen), food (baguette + cross-cut boule), meat (roast drumstick).
 - **Menu**: character = plumed great helm (T-visor), merchant = stitched coin pouch, farm = shingled barn.
-- **Badges/portraits**: level star (animated), adventurer (`hero`), merchant (green robe, wide hat, held coin).
+- **Badges/portraits**: level orb (`level_orb`, animated), heroes `hero_<class>` + `bust_<class>`, `merchant`.
 - **Equipment slots**: `equip_head/neck/chest/mainHand/offHand/legs/feet/ring` - kettle hat, amulet, cuirass, sword,
   round shield, greaves, boots, ring. Empty = dim grayscale silhouette, filled = glowing slot frame.
 - **Animals**: `animal_chicken/pig/cow/deer`.
-- **Character HUD** (`LevelDetails.tsx`): 144x96 stone alcove scene shown at 2x - hero standing on the floor (idle bob),
+- **Character HUD** (`LevelDetails.tsx`): 144x112 stone alcove scene shown at 2x - the hero (class sprite, idle bob, double-click = class picker) standing on the floor under a name plate (double-click = rename),
   two flickering torches (3-frame strip), HP/MP flasks flanking him, stony XP bar along the floor with a flowing emerald
-  fill and 10% ticks, level on an amethyst gem. Flask scale is an integer (`--s`).
+  fill and 10% ticks, level on the purple orb. Flask scale is an integer (`--s`).
 - **Map** (48px tiles, art at 2x):
   - *Ground*: every biome has a seamless 24px pixel texture in the biome's colour family with its own "noise" (forest leaf
     flecks, plains grass blades + flowers, hills rock clusters + moss, swamp murky pools + reeds, tundra snow patches +
@@ -78,8 +85,19 @@ graphics for anything that isn't a map glyph. Match the references in this folde
   (`feFlood` + `feTile` + `feMorphology` = a 6px grid, applied inside the SVG so the pixels re-form every frame), the castle
   growing through its six levels (`castle_loading` strip, stepped), drifting fog, rising sparks, an emerald block sweeping
   through the stone bar, and rotating tips.
-- **XP**: green glowing orb sprite (`xp`), used wherever XP appears in text. **Level**: an animated shining star
-  (6-frame sweep + glint strip, `ShiningStar`), never a gem.
+- **XP / level**: one purple glass orb. `xp` (40px, bright core) is the XP icon wherever XP appears; `level_orb` (24px, dark
+  socket so the number reads) with a 6-frame rim sweep + glint strip (`LevelOrb`, number centred, outlined) is the level
+  badge. No stars, no gems. The shine sweep must never cross the socket.
+- **Converted tiles**: no badge - the building sprite itself glows in a per-building colour (`BUILDING_GLOW`, CSS drop-shadow
+  + blurred halo, slow pulse).
+- **Castle range** (`CastleRange.tsx`): the tiles within `CASTLE_RANGE.radius` of the castle get a violet wash (`range_tint`),
+  marching dashes, `range_corner` brackets and a label; owned tiles in range show rising gold twinkles (`spark_sheet`).
+- **Farm** (`FarmScene.tsx`): an isometric pen ray-cast like the animals (`farm_back` everything, `farm_front` the near fences,
+  cut from the same render so animals walk between them). Ground to screen: `sx = OX + (x-y)*0.7071*S`, `sy = OY - (x+y)*0.3536*S`
+  (constants in `farmGeometry.ts`). Animals wander, flip by screen direction, get more copies as they level; selected = 1px gold
+  outline + ring; unowned = pale silhouette with price tag. Side panel holds the selected animal's numbers and button.
+- **Level-up** (`LevelUpNotification.tsx`): white flash, pixelated god-rays (SVG block filter, 6px grid), orb pop, stepped
+  shockwave rings, crimson banner (`banner_left/mid/right`, 3x) with dropping letters, spark burst, points earned.
 - **Header**: cracked-stone bar, bronze/iron edge with rivets, 48px slot frames (active glows gold), ornamental divider,
   slim bronze XP bar, twinkling coin.
 - **Backgrounds**: cracked dark stone tile (`bg/crack.png`) for header/modals. Fog drift distance must equal one tile period.
@@ -109,12 +127,12 @@ shadows, contours, rim light, coloured outlines), so every asset shares one ligh
 |---|---|
 | `render3d.py` | Engine. `common.py`, `fx.py` (glints), `fog.py` (tileable noise + cracked stone). |
 | `materials.py` | Every material: 5-tone ramp + outline + shading hints. One palette for the whole game. |
-| `sprites_resources.py` `sprites_props.py` `sprites_characters.py` `sprites_equipment.py` `sprites_animals.py` `sprites_map.py` `sprites_castle.py` `sprites_buildings.py` | Sprites as lists of primitives (boxes, ellipsoids, cylinders, cones). `sprites_props` also draws the animated star in 2D. |
+| `sprites_resources.py` `sprites_props.py` `sprites_characters.py` `sprites_equipment.py` `sprites_animals.py` `sprites_map.py` `sprites_castle.py` `sprites_buildings.py` `sprites_farm.py` | Sprites as lists of primitives (boxes, ellipsoids, cylinders, cones). `sprites_props` also draws the purple orb in 2D; `sprites_farm` renders the pen in two layers. |
 | `ground_art.py` | Seamless biome ground textures, the unexplored cloud tile and the fog tiles (flat-banded cloud generator). |
-| `ui_art.py` | 2D UI art: frames, header chrome, flask parts, stone XP bar, hero scene, torch. |
+| `ui_art.py` | 2D UI art: frames, header chrome, flask parts, stone XP bar, hero scene, torch, castle-range parts, gold sparkle strip, level-up ribbon. |
 | `build.py` | Builds everything into `public/pixel/{icons,ui,bg}` (wipes them first). `--refs` also refreshes this folder. |
 
-Commands: `python scripts/pixel/build.py` (all), `python scripts/pixel/build.py hero gold` (just those),
+Commands: `python scripts/pixel/build.py` (all), `python scripts/pixel/build.py hero_mage gold` (just those),
 `python scripts/pixel/build.py --refs` (also refresh references). Review sheets land in `scripts/pixel/previews/` (git-ignored).
 
 **Adding a sprite**: add materials to `materials.py`, a function returning a 40x40 `Scene.render()` in the right
