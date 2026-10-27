@@ -6,13 +6,16 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "sim": "tsx scripts/sim.ts",
+    "perf": "tsx scripts/perf-world.ts",
     "test": "tsx --test \"tests/**/*.test.ts\"",
-    "report": "tsx scripts/balance-report.ts"
+    "report": "tsx scripts/balance-report.ts",
+    "fight-sim": "tsx scripts/fight-sim.ts",
+    "catalog-report": "tsx scripts/catalog-report.ts"
   },
   "dependencies": {
-    "@fontsource-variable/pixelify-sans": "^5.3.0",
+    "@fontsource-variable/mozilla-headline": "^5.3.0",
     "@tailwindcss/postcss": "^4.0.11",
     "clsx": "^2.1.1",
     "next": "15.5.28",

@@ -1,37 +1,44 @@
 # 04 · Unfinished mechanics & open issues
 
-Only what is **still open** is listed here; items that were fixed are removed (see the PR / git history). Legend: 🚧 unfinished feature · 🔧 small fix · ⚠️ needs a decision.
+Only what is **still open** is listed here; items that were fixed are removed (see the PR / git history). Legend: 🚧 unfinished feature · 🔧 small fix · ⚠️ needs a decision. The order in which to tackle them is in [08](08-followup-plan.md).
 
-## A. Unfinished features (shipped half-built; left as they are for the 2nd pass)
+## A. Unfinished features (shipped half-built; left as they are for the next pass)
 
 | # | Feature | State today | Where | To finish |
 | --- | --- | --- | --- | --- |
-| U1 | **Equipment & inventory** | 9 slots, always "Empty"; 6 starter items in `INITIAL_INVENTORY_ITEMS` whose stats are resource rates; no inventory UI, no equip action, no drops; equipment/inventory are not saved | `CharacterOverlay.tsx`, `gameConfig.ts`, `types/game.ts` | inventory grid + equip/unequip, sum equipped stats into `calculateResourceRates`, add to `PERSISTED_KEYS` + `sanitizeSave` |
+| U1 | **Items beyond gear** | equipment, the 36-slot bag, drops and potions work (Damage / Armor / Max HP / Crit / Super Crit / Regen / Luck); the merchant buys and sells bag items and Pack Rat expands the bag; no upgrading or crafting; gear gives no resource income | `src/catalog`, `inventory.ts` | see the roadmap in the combat spec; rebirth keeps gear (decided) |
 | U2 | **Merchant → Upgrade Items** | "Coming soon" | `MerchantOverlay.tsx` | needs U1; gold/resource sink |
 | U3 | **Merchant → Quests** | placeholder | same | quest model, rewards (items), tracking in store |
 | U4 | **Merchant → Gambling** | placeholder | same | RNG games using `luck`; must stay inside the exploit rules ([07](07-security-and-exploits.md)) |
-| U5 | **Combat stats** | `physicalAtk, magicAtk, hp, mp, def, magicDef, critChance, critDmg, atkSpeed` computed and shown; no combat exists; HP/MP bars always full | `calculateCombatStats`, `LevelDetails.tsx` | build combat/expeditions or fold into economy bonuses. (`luck` → chests and crit → lucky tile taps already have an effect.) |
+| U5 | **Stat points in combat** | click combat exists (rats, Rat King) but fight damage and armor come from gear only; `physicalAtk, magicAtk, mp, def, magicDef, critChance, critDmg, atkSpeed` are still display-only; `vitality` adds a little HP, `luck` raises kill gold | `calculateCombatStats`, `combat.ts` (`damagePerClick` is the hook) | stat rework: let the five stats feed damage, armor, crit and speed |
 | U6 | **Reputation** | +100 per tile (derived on load); shown; nothing reads it | `StatisticsOverlay.tsx` | tie to quests/merchant discounts or remove |
-| U8 | **Castle levels 7–10** | 4 extra rows in `CASTLE_UPGRADE.upgradeCosts` (and `durationsSec` has none); Tile has a level-10 border | `gameConfig.ts`, `Tile.tsx` | raise `maxLevel` after the content exists, or delete the rows |
-| U9 | **Offline progress** | none (a closed tab does not progress; a throttled tab catches up in 5-min steps) | `tick`, `saveVault.ts` | needs trusted time (see [07 §6](07-security-and-exploits.md)) to avoid a clock exploit; cap e.g. 8 h at 50 % |
-| U10 | **Prestige / long-term loop** | none; after the finish line (castle 6, ~40 tiles) only more tiles remain | — | prestige/rebirth, or more castle levels (U8) |
-| U12 | **Settings** | no volume/mute, no visible save menu (the hidden Control×5 menu has export/import/reset) | `audioManager.ts` | settings dialog |
-| U13 | **Building management** | buildings are permanent (no demolish/swap/upgrade); `BiomeInfo.maxLevel` unused | `Tile.tsx`, `BuildingSelectionDialog.tsx` | demolish with refund, building levels |
+| U9 | **Offline progress** | none (a closed tab does not progress; a throttled tab catches up in 5-min steps) | `tick`, `saveStorage.ts` | needs trusted time (see [07 §6](07-security-and-exploits.md)) to avoid a clock exploit; cap e.g. 8 h at 50 % |
+| U13 | **Building management** | buildings are permanent (no demolish/swap/upgrade) | `Tile.tsx`, `BuildingSelectionDialog.tsx` | demolish with refund, building levels |
 | U14 | **Mobile / small screens** | pixel UI is desktop-first; touch pan exists, rest untested | `Grid.tsx`, modals | responsive pass |
 
 ## B. Open issues
 
 | # | Issue | Notes |
 | --- | --- | --- |
-| 🔧 B3 | Dead code/config: `VIEWPORT_SIZE`, `ADJACENCY_BONUS` (duplicates `SCALING_CONFIG.adjacencyBonus`), `BiomeInfo.maxLevel`, `isDefaultPlayerName`, `resourceModifiers` state (duplicate of `resourceRates.modifiers`), duplicated `MerchantTab` type, `GameHeader`'s unused level-up detection | cleanup |
 | 🔧 B4 | The castle upgrade is only visible inside the castle dialog and tooltip | add a small timer badge on the castle tile / header |
-| 🔧 B5 | `next lint` is deprecated in Next 15.5 and removed in 16 | migrate with `npx @next/codemod@canary next-lint-to-eslint-cli .` when upgrading |
 | ⚠️ B6 | Chests and tile taps are small next to the rest of the economy | decide whether they should scale with progress ([05](05-balance-backlog-and-roadmap.md)) |
-| ⚠️ B7 | `sim.ts` bots do not play critters, tile taps or the class picker; their play style (reserve resources for the castle, top up with the merchant) is one reasonable strategy, not the optimum | extend the bot before using the sim for fine tuning |
+| ⚠️ B7 | `sim.ts` bots tap tiles, catch map/farm critter gifts and buy Legacy upgrades, but they build on the first free explored tile (round-robin through six buildings), they do not use the class picker, the stat-point allocation is a fixed policy, and their play style (reserve resources for the castle, top up with the merchant) is one reasonable strategy, not the optimum | fine for pacing checks, extend the bot before tuning small effects |
+| 🔧 B8 | Rebirth wipes the character level, stat points and class-bound progress; the class itself is kept | decide with the equipment work (U1) what a rebirth keeps |
+| 🔧 B9 | Rebirth has no confirmation of unspent legacy points beyond the dialog; there is no "undo" or respec of the Legacy shop | add a respec (costs one rebirth) if players complain |
 
 ## C. Technical risks
 
-- **Performance**: every visible `Tile` re-renders on each tick (subscribes to `tiles` + `resources`). Save writes are already debounced, so only rendering remains; use per-tile selectors if the viewport grows.
-- **No UI tests**: logic is covered by `npm test` (limiter, economy/exploit, save validation/crypto); components are verified manually. Add Playwright if the UI starts changing a lot.
-- **Save compatibility**: the loader refuses invalid saves silently (falls back to the previous slot, then a new game). Any change to persisted fields needs `sanitizeSave` + a `SAVE_VERSION` decision ([07 §7](07-security-and-exploits.md)).
-- **Float drift**: resources are doubles capped at 10¹⁵; revisit if prestige/long-term loops are added.
+- **Performance on a big map**: measured with `npm run perf` (Node) and in the browser with synthetic maps (admin panel: +500 / +5k / +50k tiles). At 50,000 tiles: a purchase ~16 ms, the income pass ~11 ms, saving 12 ms (75 KB of text, a repeat save of the same map 2 ms), loading and validating a save ~80 ms, the minimap ~4 ms, a tick ~0 ms; the screen mounts ~550 tile elements and ~20 terrain canvases. Panning stays at 60 fps with an occasional 33-60 ms frame while tiles enter the view (mounting ~25 tile components per tile of travel) or a terrain chunk is drawn; the first picture after loading a big map fills in over a few seconds (flat colours first). Known follow-ups if it matters: make plain explored tiles one lightweight component or use event delegation, recompute income incrementally on a purchase instead of in one pass, draw chunks off the main thread (OffscreenCanvas). The ambient critters add at most 5 small DOM nodes and no timers beyond one spawn timeout.
+- **No UI tests**: logic is covered by `npm test` (limiter, economy/exploit, save validation/crypto, castle, rebirth, ambient). Components are verified manually; add Playwright if the UI starts changing a lot.
+- **Save compatibility**: a save that cannot be read falls back to the backup, then to a new game, and the damaged text is kept and offered in the Save dialog. A new field is optional in `sanitizeSave` (no bump); a renamed or removed one needs `SAVE_SCHEMA` + `MIGRATIONS` and a frozen fixture ([07 §7](07-security-and-exploits.md)). Content that is removed from the game (an item, a building) still makes `sanitizeSave` reject old saves unless a migration replaces it.
+- **Float drift**: resources are doubles capped at 10²¹ (`RESOURCE_CAP`; it was 10¹⁵ until the tile price was made payable past ~157 tiles). With castle 10 and Legacy bonuses the income grows by orders of magnitude, so watch the cap if more multipliers are added. Numbers above 10²¹ show in scientific form, ∞ is never shown by accident.
+- **Map size limits**: ±16,000 tiles from the origin (`COORD_LIMIT`, 768,000 px, well inside what CSS transforms and canvas coordinates handle) and 250,000 explored tiles (`MAX_OWNED_TILES`; a full map saves as ~350 KB and loads in ~0.3 s). Zoom 0.5 for overview is deferred (the minimap covers it); the wheel zoom is four fixed steps.
+- **Dependencies held back**: Next 16, TypeScript 7, ESLint 10 (see [05 §3](05-balance-backlog-and-roadmap.md)).
+
+## D. Combat and items: known limits
+
+- Monsters are one family (rats); there is one weapon per tier of rarity and no item selling or upgrading yet.
+- The sim bots do not fight or equip, so combat rewards (gold / XP as seconds of income) are not part of `docs/generated/sim-milestones.md`; measure before tuning them ([05 BL12](05-balance-backlog-and-roadmap.md)).
+- A fight does not survive a reload (the monster is full HP again); your HP does.
+- The Rat King (5200 HP, 75 s) is the only source of Rattatui pieces. Fight clicks are not rate limited, so a hardware auto-clicker (trusted clicks) can out-click a human; the King is tuned so even 25 clicks/s without gear loses. If that becomes an exploit, add a generous anti-bot ceiling to `lib/hitGuard.ts`. When gear or monsters change, rerun `npm run fight-sim` and revisit `tests/fightBalance.test.ts`.
+- Ability slots are locked placeholders; MP has no use yet.

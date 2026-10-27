@@ -1,110 +1,111 @@
-import React, { memo, useMemo, useState } from 'react';
+import React, { memo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { TileProps } from '@/types/game';
 import {
-	GRID_SIZE,
-	GRID_HEIGHT,
-	GRID_CENTER_X,
-	GRID_CENTER_Y,
+	CASTLE_X,
+	CASTLE_Y,
+	BIOMES,
 	BUILDINGS,
 	BuildingType,
 	TILE_TAP,
+	CASTLE_FORTRESS,
 	CASTLE_UPGRADE,
-	CASTLE_RANGE,
+	TILE_SIZE,
 } from '@/config/gameConfig';
 import '@/styles/Buildings.css';
 import { useGameStore } from '@/stores/gameStore';
-import {
-	calculateTileCost,
-	canAffordBundle,
-	countOwnedTiles,
-	tileCostAsResources,
-} from '@/utils/gameUtils';
+import { castleLevelOf, inCastleRange, MAX_CASTLE_RANGE_RADIUS } from '@/lib/castleWard';
+import { getTile } from '@/utils/world';
+import { canBuildOn } from '@/utils/gameUtils';
 import { cn } from '@/lib/utils';
 import audioManager from '@/utils/audioManager';
 import { queueTileTap } from '@/lib/floatText';
-import ResourceIcon from './ResourceIcon';
-import PixelIcon from './PixelIcon';
+import PixelIcon, { PixelSheet } from './PixelIcon';
 import CastleSprite from './CastleSprite';
-import { BIOME_PIXEL_ICONS, BUILDING_PIXEL_ICONS, BUILDING_GLOW } from '@/config/pixelIcons';
+import { BUILDING_PIXEL_ICONS, BUILDING_GLOW } from '@/config/pixelIcons';
 import { TileStatus } from './TileStatus';
+import MonsterSprite from './MonsterSprite';
+import { monsterAt, monsterStats, tierSecondsLeft } from '@/lib/monsters';
+import { MONSTERS } from '@/config/combatConfig';
 import CastleUpgradeDialog from './CastleUpgradeDialog';
-import BuildingSelectionDialog from './BuildingSelectionDialog';
+import { useMapTipLayer } from './MapTipLayer';
+import { useUiStore, type ContextMenuItem } from '@/stores/uiStore';
+import { openMenuAt } from '@/lib/globalMenu';
+import '@/styles/ContextMenu.css';
+
+/** Hover card of a monster: tier, HP, time to the next tier and the call to fight. Reads the age at render time. */
+const MonsterTip: React.FC<{ id: number; type: 'rat' | 'ratKing'; tier: number }> = ({ id, type, tier }) => {
+	const monster = useGameStore.getState().monsters.find((m) => m.id === id);
+	const nextTier = monster ? tierSecondsLeft(monster) : null;
+	return (
+		<div className='map-tip map-tip-up map-tip-in absolute bottom-full mb-1 left-1/2 -translate-x-1/2 w-max px-tooltip text-xs'>
+			<div className='px-tip-title'>
+				{MONSTERS[type].label}
+				{type === 'rat' ? ` - Tier ${tier}` : ''} - {monsterStats(type, tier).maxHp} HP
+			</div>
+			{nextTier !== null && (
+				<div className='px-tip-muted'>Grows stronger in {Math.max(1, Math.ceil(nextTier / 60))} min</div>
+			)}
+			{type === 'ratKing' && <div className='px-tip-muted'>Beat it within {MONSTERS.ratKing.timeLimitSec} seconds for a Rattatui piece</div>}
+			<div className='text-[#f0d27a]'>Click to fight</div>
+		</div>
+	);
+};
 
 const Tile: React.FC<TileProps> = ({
 	biome,
 	isOwned,
 	x,
 	y,
-	style,
 	level,
 	building,
+	canAfford = false,
 }) => {
-	const tiles = useGameStore((state) => state.tiles);
+	// Only primitives are read from the store: a tile re-renders for its own chest, monster or castle level, not for every change of the map
 	const buyTile = useGameStore((state) => state.buyTile);
-	const resources = useGameStore((state) => state.resources);
-	const characterStats = useGameStore((state) => state.characterStats);
-	const upgradeGroundsTile = useGameStore((state) => state.upgradeGroundsTile);
 	const collectChest = useGameStore((state) => state.collectChest);
 	const tapTile = useGameStore((state) => state.tapTile);
-	const isBiomeSelectionActive = useGameStore(
-		(state) => state.biomeSelectionActive
-	);
-	const pendingTileCoords = useGameStore((state) => state.pendingTileCoords);
-	const selectBiome = useGameStore((state) => state.selectBiome);
+	const startFight = useGameStore((state) => state.startFight);
+	// string selector: the tile re-renders when its monster appears, changes tier or leaves, not on every tick
+	const monsterKey = useGameStore((state) => {
+		const m = monsterAt(state.monsters, x, y);
+		return m ? `${m.id}:${m.type}:${m.tier}` : '';
+	});
+	const [monsterId, monsterType, monsterTier] = monsterKey ? monsterKey.split(':') : [];
 	const [isShaking, setIsShaking] = useState(false);
 	const [showCastleDialog, setShowCastleDialog] = useState(false);
-	const [showBuildingDialog, setShowBuildingDialog] = useState(false);
 	const [showChestTooltip, setShowChestTooltip] = useState(false);
+	const [hovered, setHovered] = useState(false);
+	const tipLayer = useMapTipLayer();
 	const [tapped, setTapped] = useState(false);
 	const [cooling, setCooling] = useState(false);
 
 	// Check if this tile has a chest
-	const hasChest = tiles?.[y]?.[x]?.hasChest || false;
+	const hasChest = useGameStore((state) => isOwned && !!getTile(state.tiles, x, y)?.hasChest);
 
-	const isAdjacent = useMemo(() => {
-		if (isOwned || !tiles) return false;
+	// The map only mounts a tile that is not explored when it touches explored land: it can be bought
+	const isAdjacent = !isOwned;
 
-		const directions = [
-			[x - 1, y],
-			[x + 1, y],
-			[x, y - 1],
-			[x, y + 1],
-		];
+	const hasBuilding = !!building;
+	const castleLevel = useGameStore((state) => (biome === 'castle' ? castleLevelOf(state.tiles) : 1));
+	const isGlowingCastle = biome === 'castle' && castleLevel >= CASTLE_UPGRADE.glowFromLevel;
+	// from the fortress level the castle stands on cobbles inside walls: no purple border, no golden tile aura
+	const isFortress = biome === 'castle' && castleLevel >= CASTLE_FORTRESS.fromLevel;
 
-		return directions.some(
-			([adjX, adjY]) =>
-				adjX >= 0 &&
-				adjX < GRID_SIZE &&
-				adjY >= 0 &&
-				adjY < GRID_HEIGHT &&
-				tiles[adjY]?.[adjX]?.isOwned
-		);
-	}, [x, y, isOwned, tiles]);
-
-	const hasBuilding = biome === 'grounds' && !!building && (level ?? 1) > 1;
-	const castleLevel = tiles?.[GRID_CENTER_Y]?.[GRID_CENTER_X]?.level ?? 1;
-	const isMaxCastle = biome === 'castle' && castleLevel >= CASTLE_UPGRADE.maxLevel;
-
-	// Owned neighbours of the castle get gold sparkles: they are inside the castle's range
-	const inCastleRange =
+	// Owned tiles around the castle get gold sparkles: they are inside the castle's range (it grows from castle level 8). A tile
+	// farther than the biggest range never reads the castle level.
+	const mayBeInRange =
 		isOwned &&
 		biome !== 'castle' &&
-		Math.abs(x - GRID_CENTER_X) <= CASTLE_RANGE.radius &&
-		Math.abs(y - GRID_CENTER_Y) <= CASTLE_RANGE.radius;
-
-	const ownedTilesCount = useMemo(() => countOwnedTiles(tiles), [tiles]);
-
-	const tileCost = useMemo(
-		() => calculateTileCost(ownedTilesCount, characterStats.tileCostDiscount),
-		[ownedTilesCount, characterStats.tileCostDiscount]
-	);
-
-	const canAfford = canAffordBundle(resources, tileCostAsResources(tileCost));
+		Math.max(Math.abs(x - CASTLE_X), Math.abs(y - CASTLE_Y)) <= MAX_CASTLE_RANGE_RADIUS;
+	const inRange = useGameStore((state) => mayBeInRange && inCastleRange(x, y, castleLevelOf(state.tiles)));
 
 	const handleClick = (e: React.MouseEvent) => {
-		// First priority: If in biome selection mode, handle selection
-		if (isBiomeSelectionActive && pendingTileCoords) {
-			selectBiome(biome);
+		// A monster on this tile: clicking it opens the fight (no tile tap, no chest)
+		if (isOwned && monsterKey) {
+			// starting a fight is not a map click: keep it from reaching the window-level gold click listener
+			e.stopPropagation();
+			if (startFight(Number(monsterId))) audioManager.playSound('click');
 			return;
 		}
 
@@ -118,8 +119,8 @@ const Tile: React.FC<TileProps> = ({
 			return;
 		}
 
-		// Tapping an owned tile also yields a slice of that tile's own output (rate-limited per tile)
-		if (isOwned) {
+		// Tapping an owned tile also yields a slice of that tile's own output (rate-limited per tile); the castle opens its dialog instead
+		if (isOwned && biome !== 'castle') {
 			const tap = tapTile(x, y, {
 				eventId: e.nativeEvent.timeStamp,
 				now: performance.now(),
@@ -137,17 +138,11 @@ const Tile: React.FC<TileProps> = ({
 
 		// Prioritize owned tiles for special interactions
 		if (isOwned) {
-			// Castle tile - show castle dialog
+			// Castle tile: the upgrade dialog; a castle that cannot be upgraded any further opens the rebirth (Legacy) window
 			if (biome === 'castle') {
 				audioManager.playSound('click');
-				setShowCastleDialog(true);
-				return;
-			}
-
-			// Grounds tile - show building dialog ONLY if not already upgraded
-			if (biome === 'grounds' && (!level || level < 2) && !building) {
-				audioManager.playSound('click');
-				setShowBuildingDialog(true);
+				if (castleLevel >= CASTLE_UPGRADE.maxLevel) useUiStore.getState().toggleLegacy();
+				else setShowCastleDialog(true);
 				return;
 			}
 
@@ -158,13 +153,8 @@ const Tile: React.FC<TileProps> = ({
 
 		if (isAdjacent && !isOwned) {
 			if (canAfford) {
-				const result = buyTile(x, y);
-				// Only play the purchase sound if the tile was actually purchased
-				// (not when biome selection was triggered)
-				if (result && !useGameStore.getState().biomeSelectionActive) {
-					audioManager.playSound('purchase');
-				}
-			} else if (tileCost.gold > 0) {
+				if (buyTile(x, y)) audioManager.playSound('purchase');
+			} else {
 				// Only play wrong sound and shake for adjacent unaffordable tiles
 				setIsShaking(true);
 				audioManager.playSound('wrong');
@@ -173,19 +163,41 @@ const Tile: React.FC<TileProps> = ({
 		}
 	};
 
-	const handleBuildingSelect = (buildingType: string) => {
-		// Upgrade the grounds tile with the selected building
-		if (biome === 'grounds') {
-			if (upgradeGroundsTile(x, y, buildingType)) {
-				audioManager.playSound('purchase');
-			} else {
-				audioManager.playSound('wrong');
-			}
+	// Right click on an explored tile: what can be done here (fight / dismiss a monster, open a chest, build, highlight the area),
+	// then the global entries. Unexplored tiles fall through to the global menu alone.
+	const handleContextMenu = (e: React.MouseEvent) => {
+		if (!isOwned) return;
+		e.preventDefault();
+		const ui = useUiStore.getState();
+		const own: ContextMenuItem[] = [];
+		if (monsterKey) {
+			const id = Number(monsterId);
+			own.push(
+				{ id: 'fight', label: 'Fight', onSelect: () => void startFight(id) },
+				{ id: 'dismiss', label: `Dismiss ${MONSTERS[monsterType as 'rat' | 'ratKing'].label}...`, danger: true, onSelect: () => ui.askDismissMonster(id) }
+			);
+		} else if (hasChest) {
+			own.push({ id: 'chest', label: 'Open chest', onSelect: () => void collectChest(x, y) });
 		}
-		setShowBuildingDialog(false);
+		if (biome !== 'castle') {
+			if (!hasBuilding) {
+				const blocked = !!monsterKey || hasChest;
+				own.push({
+					id: 'build',
+					label: 'Build here...',
+					disabled: blocked || !canBuildOn(getTile(useGameStore.getState().tiles, x, y)),
+					hint: blocked ? 'tile in use' : undefined,
+					onSelect: () => ui.openBuildDialog(x, y),
+				});
+			}
+			own.push({
+				id: 'highlight',
+				label: `Highlight this ${BIOMES[biome]?.label ?? biome} area`,
+				onSelect: () => ui.flashCluster(useGameStore.getState().tiles, x, y),
+			});
+		}
+		openMenuAt(e.clientX, e.clientY, biome === 'castle' ? 'Castle' : BIOMES[biome]?.label ?? biome, own);
 	};
-
-	const farAwayTile = !isOwned && !isAdjacent;
 
 	return (
 		<>
@@ -195,35 +207,45 @@ const Tile: React.FC<TileProps> = ({
 					'absolute transition-all duration-200 ease-in-out select-none',
 					{
 						'opacity-100': isOwned,
+						// the ground itself is drawn by TerrainLayer; a tile is a transparent hit area with its overlays
 						'tile-unknown': !isOwned && isAdjacent,
-						[`tile-ground tile-ground-${hasBuilding ? 'yard' : biome} tile-owned`]: isOwned,
-						'opacity-75': farAwayTile,
-						'hover:z-10 cursor-pointer border border-gray-800':
+						'tile-owned': isOwned,
+						'hover:z-10 cursor-pointer border border-transparent':
 							!isOwned && isAdjacent,
-						'hover:border-green-800': !isOwned && isAdjacent && canAfford,
-						'hover:border-red-800 cursor-not-allowed':
+						'hover:border-green-700': !isOwned && isAdjacent && canAfford,
+						'hover:border-red-700 cursor-not-allowed':
 							!isOwned && isAdjacent && !canAfford,
-						'border border-purple-400': biome === 'castle',
 						'border-2 border-amber-300':
-							(tiles[GRID_CENTER_Y]?.[GRID_CENTER_X]?.level ?? 0) === 10 &&
-							biome === 'castle',
+							castleLevel >= CASTLE_UPGRADE.maxLevel &&
+							biome === 'castle' &&
+							!isFortress,
 						'group hover:z-20': true,
 						'opacity-75 border-2 border-red-500': isShaking,
 						'cursor-pointer':
-							isOwned && (biome === 'castle' || biome === 'grounds' || hasChest),
+							isOwned && (biome === 'castle' || hasChest || !!monsterKey),
+						'tile-has-monster': isOwned && !!monsterKey,
 						'castle-tile': isOwned && biome === 'castle',
-						'castle-max-tile': isOwned && isMaxCastle,
-						'border-2 border-amber-400': isOwned && hasChest,
+						'castle-max-tile': isOwned && isGlowingCastle && !isFortress,
+						'tile-fortress': isOwned && isFortress,
 						'tile-cooldown': cooling,
-					}
+									}
 				)}
 				style={{
-					...style,
+					width: TILE_SIZE,
+					height: TILE_SIZE,
+					transform: `translate(${x * TILE_SIZE}px, ${y * TILE_SIZE}px)`,
 					...({ '--cd': `${TILE_TAP.cooldownMs}ms` } as React.CSSProperties),
 				}}
 				onClick={handleClick}
-				onMouseEnter={() => hasChest && setShowChestTooltip(true)}
-				onMouseLeave={() => setShowChestTooltip(false)}
+				onContextMenu={handleContextMenu}
+				onMouseEnter={() => {
+					setHovered(true);
+					if (hasChest) setShowChestTooltip(true);
+				}}
+				onMouseLeave={() => {
+					setHovered(false);
+					setShowChestTooltip(false);
+				}}
 				role='button'>
 				<div
 					className={cn(
@@ -231,20 +253,17 @@ const Tile: React.FC<TileProps> = ({
 						{ 'tile-tapped': tapped }
 					)}>
 					{isOwned && biome === 'castle' && <CastleSprite level={castleLevel} />}
-					{isOwned && !hasBuilding && BIOME_PIXEL_ICONS[biome] && (
-						<PixelIcon name={BIOME_PIXEL_ICONS[biome]!} alt={biome} className='tile-icon' />
-					)}
 					{!isOwned && isAdjacent && (
-						<PixelIcon name='unknown' alt='Unexplored' scale={2} className='unknown-mark' />
+						<PixelIcon name='unknown' alt='Unexplored' className='unknown-mark' />
 					)}
 					{biome === 'castle' && (
 						<span className='tile-badge'>{castleLevel}</span>
 					)}
 
-					{inCastleRange && (
+					{inRange && (
 						<span className='range-sparks' aria-hidden>
 							{[0, 1].map((k) => {
-								const h = (x * 7 + y * 13 + k * 5) % 11;
+								const h = (((x * 7 + y * 13 + k * 5) % 11) + 11) % 11; // 0..10, also for negative tiles
 								return (
 									<i
 										key={k}
@@ -261,19 +280,26 @@ const Tile: React.FC<TileProps> = ({
 						</span>
 					)}
 
-					{/* Bonus cash bag on the tile */}
-					{isOwned && hasChest && (
-						<PixelIcon name='cash_bag' alt='Bonus gold' className='tile-bag' />
+					{isOwned && monsterKey && (
+						<MonsterSprite type={monsterType as 'rat' | 'ratKing'} tier={Number(monsterTier)} />
 					)}
 
-					{/* Chest tooltip */}
-					{isOwned && hasChest && showChestTooltip && (
-						<div className='absolute -top-11 left-1/2 -translate-x-1/2 z-[60] px-tooltip whitespace-nowrap text-xs flex items-center gap-1 text-[#f0d27a]'>
-							Click to collect bonus gold
-							<ResourceIcon resource='gold' />
-						</div>
+					{/* Bonus treasure chest on the tile */}
+					{isOwned && hasChest && biome === 'lake' && (
+							<span className='tile-chest-ripple' aria-label='Something glints in the water'>
+								<i />
+								<i />
+								<i />
+							</span>
+						)}
+						{isOwned && hasChest && biome !== 'lake' && (
+						<span className='tile-chest-wrap'>
+							<span className='tile-chest'>
+								<PixelSheet name='chest_map_anim' frames={4} durationMs={1600} alt='Treasure chest' />
+							</span>
+						</span>
 					)}
-					
+
 					{hasBuilding && (
 						<span
 							className='tile-building'
@@ -287,35 +313,41 @@ const Tile: React.FC<TileProps> = ({
 					)}
 				</div>
 
-				{(isOwned || isAdjacent) && (
-					<div className='absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 pointer-events-none z-[60] transition-opacity duration-150'>
-						<div className='px-tooltip whitespace-nowrap'>
-							<TileStatus
-								biome={biome}
-								isOwned={isOwned}
-								isAdjacent={isAdjacent}
-								level={level}
-								x={x}
-								y={y}
-							/>
-						</div>
-					</div>
-				)}
 			</div>
 
-			{/* Castle Upgrade Dialog */}
-			{showCastleDialog && (
-				<CastleUpgradeDialog onClose={() => setShowCastleDialog(false)} />
-			)}
+			{/* Tooltips live in the map's tooltip layer (above the ambient critters), anchored to this tile */}
+			{tipLayer &&
+				hovered &&
+				(isOwned || isAdjacent) &&
+				createPortal(
+					<div className='absolute' style={{ left: x * TILE_SIZE, top: y * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE }}>
+						{isOwned && monsterKey && (
+							<MonsterTip id={Number(monsterId)} type={monsterType as 'rat' | 'ratKing'} tier={Number(monsterTier)} />
+						)}
+						{isOwned && hasChest && showChestTooltip && (
+							<div className='map-tip map-tip-up map-tip-in absolute bottom-full mb-1 left-1/2 -translate-x-1/2 w-max px-tooltip text-xs text-[#f0d27a]'>
+								{biome === 'lake' ? 'Something glints in the water. Click to open' : 'Click to open the treasure chest'}
+							</div>
+						)}
+						<div className='map-tip map-tip-in absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full w-max min-w-[190px] max-w-[290px]'>
+							<div className='px-tooltip break-words'>
+								<TileStatus
+									biome={biome}
+									isOwned={isOwned}
+									isAdjacent={isAdjacent}
+									level={level}
+									x={x}
+									y={y}
+								/>
+							</div>
+						</div>
+					</div>,
+					tipLayer
+				)}
 
-			{/* Building Selection Dialog */}
-			{showBuildingDialog && (
-				<BuildingSelectionDialog
-					isOpen={showBuildingDialog}
-					onClose={() => setShowBuildingDialog(false)}
-					onSelect={handleBuildingSelect}
-				/>
-			)}
+			{/* Dialogs go to <body>: inside the map they would be scaled and panned together with the tiles */}
+			{showCastleDialog &&
+				createPortal(<CastleUpgradeDialog onClose={() => setShowCastleDialog(false)} />, document.body)}
 		</>
 	);
 };

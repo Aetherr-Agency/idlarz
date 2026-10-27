@@ -1,22 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { formatNumber } from '@/utils/formatters';
 import { ResourceSellingSection } from './ResourceSellingSection';
 import { MerchantPriceList } from './MerchantPriceList';
 import { MerchantTabButtons } from './MerchantTabButtons';
+import { MerchantItemsSection } from './MerchantItemsSection';
+import { MerchantShop, MerchantUpgradeCards } from './MerchantShop';
+import { sellMultiplier, sellPayout } from '@/utils/gameUtils';
 import {
 	CLICK_LADDER,
+	MERCHANT_BUYABLE,
 	MERCHANT_BUY_MULTIPLIER,
 	MERCHANT_RESOURCE_INFO,
 	MERCHANT_RESOURCE_PRICES,
 } from '@/config/gameConfig';
 import { cn } from '@/lib/utils';
-import PixelModal from '../../PixelModal';
-import PixelIcon from '../../PixelIcon';
+import type { MerchantTab } from '@/types/game';
 import ResourceIcon from '../../ResourceIcon';
-
-// Merchant tab options
-type MerchantTab = 'exchange' | 'buy' | 'upgrade' | 'quests' | 'gambling';
 
 // Extracted component for tab content placeholders
 interface PlaceholderTabContentProps {
@@ -128,37 +128,21 @@ const ResourceBuyingSection: React.FC<ResourceBuyingSectionProps> = ({
 
 const MerchantOverlay: React.FC = () => {
 	const {
-		showMerchantWindow,
-		toggleMerchantWindow,
 		resources,
 		sellResources,
 		buyResource,
 		buyClickUpgrade,
 		clickLevel,
+		merchantUpgrades,
 	} = useGameStore();
 
 	// State for current merchant tab
 	const [activeTab, setActiveTab] = useState<MerchantTab>('exchange');
 
-	// State for the amount to sell for each resource
-	const [sellAmounts, setSellAmounts] = useState<
-		Record<keyof typeof MERCHANT_RESOURCE_PRICES, number>
-	>({
-		wood: 0,
-		stone: 0,
-		coal: 0,
-		food: 0,
-		meat: 0,
-	});
-
-	// Create state for buy amounts using sliders
-	const [buyAmounts, setBuyAmounts] = useState<Record<string, number>>({
-		wood: 0,
-		stone: 0,
-		coal: 0,
-		food: 0,
-		meat: 0,
-	});
+	// Slider amounts for selling and buying, one entry per resource the merchant trades
+	const zero = (keys: readonly string[]): Record<string, number> => Object.fromEntries(keys.map((k) => [k, 0]));
+	const [sellAmounts, setSellAmounts] = useState<Record<string, number>>(() => zero(Object.keys(MERCHANT_RESOURCE_PRICES)));
+	const [buyAmounts, setBuyAmounts] = useState<Record<string, number>>(() => zero(MERCHANT_BUYABLE));
 
 	// For showing success message after selling
 	const [saleMessage, setSaleMessage] = useState<{
@@ -173,21 +157,8 @@ const MerchantOverlay: React.FC = () => {
 		price: number;
 	} | null>(null);
 
-	// Always reopen on the Sell tab (the overlay stays mounted while closed)
-	useEffect(() => {
-		if (showMerchantWindow) setActiveTab('exchange');
-	}, [showMerchantWindow]);
-
-	if (!showMerchantWindow) return null;
-
 	// Calculate the max for each resource (current owned amount)
-	const maxAmounts = {
-		wood: resources.wood,
-		stone: resources.stone,
-		coal: resources.coal,
-		food: resources.food,
-		meat: resources.meat,
-	};
+	const maxAmounts = resources as unknown as Record<string, number>;
 
 	// Handle selling the specified amount of a resource
 	const handleSell = (resource: keyof typeof MERCHANT_RESOURCE_PRICES) => {
@@ -270,7 +241,7 @@ const MerchantOverlay: React.FC = () => {
 		resource: keyof typeof MERCHANT_RESOURCE_PRICES,
 		amount: number
 	) => {
-		return Math.floor(amount * MERCHANT_RESOURCE_PRICES[resource]);
+		return sellPayout(MERCHANT_RESOURCE_PRICES[resource], amount, merchantUpgrades);
 	};
 
 	// Price of a resource pack (rounded up, same as the store's buyResource)
@@ -379,8 +350,8 @@ const MerchantOverlay: React.FC = () => {
 							{Object.keys(MERCHANT_RESOURCE_PRICES).map((resource) => {
 								const typedResource =
 									resource as keyof typeof MERCHANT_RESOURCE_PRICES;
-								const maxAmount = maxAmounts[typedResource];
-								const currentAmount = sellAmounts[typedResource];
+								const maxAmount = Math.floor(maxAmounts[typedResource]);
+								const currentAmount = sellAmounts[typedResource] ?? 0;
 								const goldValue = calculateGold(typedResource, currentAmount);
 
 								return (
@@ -390,6 +361,7 @@ const MerchantOverlay: React.FC = () => {
 										maxAmount={maxAmount}
 										currentAmount={currentAmount}
 										goldValue={goldValue}
+										priceMultiplier={sellMultiplier(merchantUpgrades)}
 										onAmountChange={handleAmountChange}
 										onSell={handleSell}
 										onSellAll={handleSellAll}
@@ -397,6 +369,9 @@ const MerchantOverlay: React.FC = () => {
 								);
 							})}
 						</div>
+
+						{/* Sell bag items */}
+						<MerchantItemsSection />
 					</>
 				);
 			case 'buy':
@@ -452,7 +427,21 @@ const MerchantOverlay: React.FC = () => {
 										</div>
 									)}
 								</div>
+								<MerchantUpgradeCards
+									onBought={(item, price) => {
+										setPurchaseMessage({ item, price });
+										setTimeout(() => setPurchaseMessage(null), 3000);
+									}}
+								/>
 							</div>
+
+							{/* Gear and potions */}
+							<MerchantShop
+								onBought={(item, price) => {
+									setPurchaseMessage({ item, price });
+									setTimeout(() => setPurchaseMessage(null), 3000);
+								}}
+							/>
 
 							{/* Resource packs */}
 							<div className='px-card'>
@@ -465,13 +454,11 @@ const MerchantOverlay: React.FC = () => {
 
 								<div className='grid grid-cols-2 gap-4'>
 									{/* Resource buying sections with sliders */}
-									{Object.keys(MERCHANT_RESOURCE_PRICES)
-										.filter((resource) => resource !== 'xp') // Exclude XP
-										.map((resource) => {
+									{MERCHANT_BUYABLE.map((resource) => {
 											const typedResource =
 												resource as keyof typeof MERCHANT_RESOURCE_PRICES;
 											const maxAmount = calculateMaxBuyAmount(typedResource);
-											const currentAmount = buyAmounts[typedResource];
+											const currentAmount = buyAmounts[typedResource] ?? 0;
 											const goldPrice = calculateResourcePackPrice(
 												typedResource,
 												currentAmount
@@ -524,24 +511,11 @@ const MerchantOverlay: React.FC = () => {
 	};
 
 	return (
-		<PixelModal
-			title='Merchant'
-			icon={<PixelIcon name='menu_merchant' alt='' />}
-			size='lg'
-			onClose={toggleMerchantWindow}>
 				<div className='grid grid-cols-5 gap-5'>
 					{/* Merchant Avatar and Navigation */}
 					<div className='col-span-1 flex flex-col gap-4'>
 						{/* Merchant Avatar */}
 						<div className='px-panel flex flex-col items-center'>
-							<div className='mb-3'><PixelIcon name='merchant' alt='Merchant' scale={2} /></div>
-							<h3 className='px-h text-center w-full'>
-								Merchant
-							</h3>
-							<p className='text-[#a89878] text-xs text-center mb-4'>
-								{`"I'll give you gold for your resources, traveler!"`}
-							</p>
-
 							<MerchantPriceList />
 						</div>
 
@@ -557,7 +531,6 @@ const MerchantOverlay: React.FC = () => {
 						{renderTabContent()}
 					</div>
 				</div>
-		</PixelModal>
 	);
 };
 

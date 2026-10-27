@@ -1,17 +1,17 @@
 import React from 'react';
-import { TILE_SIZE, CASTLE_RANGE, GRID_CENTER_X, GRID_CENTER_Y } from '@/config/gameConfig';
+import { TILE_SIZE, CASTLE_RANGE, CASTLE_X, CASTLE_Y } from '@/config/gameConfig';
 import '@/styles/CastleRange.css';
 
-/** Violet patch drawn over the tiles the castle's range bonus covers (the bonus itself comes later). */
-const CastleRange: React.FC = () => {
-	const r = CASTLE_RANGE.radius;
+/** Violet patch drawn over the tiles the castle's range bonus covers (the bonus itself comes later): 3x3, growing with the castle from level 8. */
+const CastleRange: React.FC<{ radius?: number }> = ({ radius = CASTLE_RANGE.radius }) => {
+	const r = radius;
 	const side = (r * 2 + 1) * TILE_SIZE;
 	return (
 		<div
 			className='castle-range'
 			style={{
-				left: (GRID_CENTER_X - r) * TILE_SIZE,
-				top: (GRID_CENTER_Y - r) * TILE_SIZE,
+				left: (CASTLE_X - r) * TILE_SIZE,
+				top: (CASTLE_Y - r) * TILE_SIZE,
 				width: side,
 				height: side,
 			}}
@@ -24,7 +24,6 @@ const CastleRange: React.FC = () => {
 			<i className='range-corner tr' />
 			<i className='range-corner bl' />
 			<i className='range-corner br' />
-			<span className='range-label'>Castle range</span>
 		</div>
 	);
 };

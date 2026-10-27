@@ -19,11 +19,24 @@ import {
 	CASTLE_UPGRADE,
 	CHARACTER_STAT_CONFIG,
 	CLICK_LADDER,
+	FARM,
+	FARM_UPGRADES,
+	type FarmUpgradeId,
+	MERCHANT_SHOP_ITEMS,
+	MERCHANT_UPGRADES,
+	type MerchantUpgradeId,
+	LEGACY_UPGRADES,
+	REBIRTH,
+	type LegacyUpgradeId,
 	INITIAL_CHARACTER_STATS,
 	MERCHANT_BUY_MULTIPLIER,
 	MERCHANT_RESOURCE_PRICES,
 	TILE_RESOURCE_COST,
+	TILE_PRICE,
+	RESOURCE_CAP,
+	SCALING_CONFIG,
 	XP_GROWTH_FACTOR,
+	XP_TILE,
 } from '../src/config/gameConfig';
 import {
 	calculateAnimalCost,
@@ -32,9 +45,16 @@ import {
 	calculateResourceRates,
 	calculateStatResourceModifiers,
 	calculateTileCost,
+	buildingCostFactor,
 	calculateXpGain,
-	createInitialGrid,
+	castleModifier,
+	createInitialWorld,
+	farmUpgradeCost,
+	merchantUpgradeCost,
+	legacyGain,
+	legacyUpgradeCost,
 } from '../src/utils/gameUtils';
+import { ITEM_CATALOG } from '../src/config/itemCatalog';
 import { formatTime } from '../src/utils/formatters';
 import type { Resources } from '../src/types/game';
 
@@ -44,7 +64,9 @@ const line = (s = '') => out.push(s);
 const fmt = (n: number): string => {
 	if (!isFinite(n)) return '∞';
 	const a = Math.abs(n);
-	if (a >= 1e12) return `${(n / 1e12).toFixed(2)}T`;
+	if (a >= 1e24) return n.toExponential(2).replace('e+', 'e');
+	const big = ['Sx', 'Qi', 'Qa', 'T'].find((_, i) => a >= Math.pow(10, 21 - 3 * i));
+	if (big) return `${(n / Math.pow(10, 21 - 3 * ['Sx', 'Qi', 'Qa', 'T'].indexOf(big))).toFixed(2)}${big}`;
 	if (a >= 1e9) return `${(n / 1e9).toFixed(2)}B`;
 	if (a >= 1e6) return `${(n / 1e6).toFixed(2)}M`;
 	if (a >= 1e4) return `${(n / 1e3).toFixed(2)}K`;
@@ -80,7 +102,7 @@ line();
 line(
 	'`n` = tiles owned *before* the purchase (the castle counts, so the first purchase is n = 1). ' +
 		'Costs are with the starting Charisma (5 -> 2.5% discount). Extra resources are required from the tile counts in `TILE_RESOURCE_COST`. ' +
-		'"Pick" marks purchases where the player chooses the biome (`n % 4 === 3`). XP is before the XP-gain multiplier.'
+		'XP is before the XP-gain multiplier. The biome of every purchase is rolled (there is no biome picker).'
 );
 line();
 {
@@ -92,9 +114,28 @@ line();
 		const extras = TILE_RESOURCE_COST.filter((r) => n >= r.from)
 			.map((r) => `${fmt(c.resources[r.resource] ?? 0)} ${r.resource}`)
 			.join(', ');
-		rows.push([n, fmt(c.gold), fmt(cumulative), extras || '—', fmt(calculateXpGain(n + 1)), n % 4 === 3 ? 'pick' : '']);
+		rows.push([n, fmt(c.gold), fmt(cumulative), extras || '—', fmt(calculateXpGain(n + 1))]);
 	}
-	table(['n', 'gold', 'cumulative gold', 'extra resources', 'XP gained', 'Pick'], rows);
+	table(['n', 'gold', 'cumulative gold', 'extra resources', 'XP gained'], rows);
+
+	line('### Late tiles (the polynomial tail)');
+	line();
+	line(
+		`Past ${TILE_PRICE.tailFrom} tiles the price grows like (n / ${TILE_PRICE.tailFrom})^${TILE_PRICE.tailExponent} instead of ×${SCALING_CONFIG.growthEndgame} per tile, capped at ${TILE_PRICE.ceiling.toExponential(0).replace('e+', 'e')}; ` +
+			`XP per tile has the same shape past ${XP_TILE.growthUntil} tiles (exponent ${XP_TILE.tailExponent}). Knobs: \`TILE_PRICE\`, \`XP_TILE\`, \`RESOURCE_CAP\` (${fmt(RESOURCE_CAP)}). See docs/05 BL16.`
+	);
+	line();
+	const late: (string | number)[][] = [];
+	let sum = 0;
+	let from = 1;
+	for (const n of [100, 157, 300, 1000, 3000, 10_000, 30_000, 50_000]) {
+		for (; from < n; from++) sum += calculateTileCost(from, 2.5).gold;
+		const c = calculateTileCost(n, 2.5);
+		late.push([n, fmt(c.gold), fmt(sum + c.gold), fmt(calculateXpGain(n + 1))]);
+		sum += c.gold;
+		from = n + 1;
+	}
+	table(['n', 'gold', 'cumulative gold', 'XP gained'], late);
 }
 
 // ---------------------------------------------------------------------------
@@ -117,7 +158,7 @@ line();
 line('## 3. Castle');
 line();
 line(
-	`Resource modifier at level L = \`${CASTLE_UPGRADE.baseResourceMultiplier} × 2^(L-1)\` (added to **every** resource). ` +
+	`Resource modifier: +${CASTLE_UPGRADE.baseResourceMultiplier * 100}% at level 1, doubling each level up to level ${CASTLE_UPGRADE.doublingUntil}, then +${CASTLE_UPGRADE.lateLevelStep * 100}% per level (added to **every** resource). ` +
 		`Flat XP: +${CASTLE_UPGRADE.xpBonus}/s per level above 1. Max level ${CASTLE_UPGRADE.maxLevel}; each upgrade is a timed build paid up front.`
 );
 line();
@@ -129,14 +170,14 @@ line();
 		rows.push([
 			`${from} → ${from + 1}`,
 			formatTime(CASTLE_UPGRADE.durationsSec[i]),
-			`+${(CASTLE_UPGRADE.baseResourceMultiplier * Math.pow(2, from) * 100).toFixed(0)}%`,
+			`+${(castleModifier(from + 1) * 100).toFixed(0)}%`,
 			...RES.map((k) => (cost[k] ? fmt(cost[k] as number) : '—')),
 		]);
 	});
 	table(['Upgrade', 'Build time', 'Modifier after', ...RES], rows);
 	line(
-		`Total build time: ${formatTime(CASTLE_UPGRADE.durationsSec.slice(0, CASTLE_UPGRADE.maxLevel - 1).reduce((a, b) => a + b, 0))}. ` +
-			`(\`upgradeCosts\` has ${CASTLE_UPGRADE.upgradeCosts.length - (CASTLE_UPGRADE.maxLevel - 1)} further rows that are unreachable while max level is ${CASTLE_UPGRADE.maxLevel}.)`
+		`Total build time to level ${CASTLE_UPGRADE.maxLevel}: ${formatTime(CASTLE_UPGRADE.durationsSec.slice(0, CASTLE_UPGRADE.maxLevel - 1).reduce((a, b) => a + b, 0))} ` +
+			`(to level 6: ${formatTime(CASTLE_UPGRADE.durationsSec.slice(0, 5).reduce((a, b) => a + b, 0))}).`
 	);
 	line();
 }
@@ -164,6 +205,40 @@ ANIMALS.forEach((a) => {
 	table(['Count', 'cost of this one (food)', 'cumulative food', 'meat/s total', 'payback'], rows);
 });
 
+line('### Farm products and upgrades');
+line();
+line(
+	`The pen holds ${FARM.baseCap} animals per kind (+4 per Pen Expansion level). Every animal also yields a product; once sold it is worth about a third of its meat.`
+);
+line();
+table(
+	['Animal', 'product', 'per second each', 'sells for', 'gold/s each (sold)', 'meat gold/s each', 'share of meat'],
+	ANIMALS.map((a) => {
+		const price = MERCHANT_RESOURCE_PRICES[a.product.resource];
+		const sold = a.product.perSec * price;
+		return [
+			a.name,
+			a.product.resource,
+			a.product.perSec,
+			price,
+			sold.toFixed(3),
+			(a.baseProduction * MERCHANT_RESOURCE_PRICES.meat).toFixed(2),
+			`${((sold / (a.baseProduction * MERCHANT_RESOURCE_PRICES.meat)) * 100).toFixed(0)}%`,
+		];
+	})
+);
+table(
+	['Upgrade', 'effect per level', 'max level', 'cost of level 1', 'cost of the last level'],
+	(Object.keys(FARM_UPGRADES) as FarmUpgradeId[]).map((id) => {
+		const def = FARM_UPGRADES[id];
+		const fmtCost = (c: Partial<Resources>) =>
+			Object.entries(c)
+				.map(([r, v]) => `${fmt(v as number)} ${r}`)
+				.join(' + ');
+		return [def.label, def.description(1), def.maxLevel, fmtCost(farmUpgradeCost(id, 0)), fmtCost(farmUpgradeCost(id, def.maxLevel - 1))];
+	})
+);
+
 // ---------------------------------------------------------------------------
 line('## 5. Biomes and buildings');
 line();
@@ -180,7 +255,7 @@ line();
 	line(
 		`Building cost: ${Object.entries(BUILDING_COST.base)
 			.map(([r, v]) => `${fmt(v as number)} ${r}`)
-			.join(', ')} for the first, ×${BUILDING_COST.growth} for each further building.`
+			.join(', ')} as the base price. Building number n costs base × ${[0, 1, 2, 3, 4, 8, 16, 32].map((n) => `${n + 1}: ×${+buildingCostFactor(n).toFixed(2)}`).join(', ')} (first ${BUILDING_COST.starter.length} cheap, then ×${BUILDING_COST.growthEarly} for ${BUILDING_COST.earlyCount}, ×${BUILDING_COST.growthMid} for ${BUILDING_COST.midCount}, ×${BUILDING_COST.growthLate} after).`
 	);
 	line();
 }
@@ -219,7 +294,7 @@ line();
 line('## 7. Rates of a brand-new game');
 line();
 {
-	const r = calculateResourceRates(createInitialGrid(), INITIAL_CHARACTER_STATS, {});
+	const r = calculateResourceRates(createInitialWorld(), INITIAL_CHARACTER_STATS, {});
 	const keys = Object.keys(r.total) as (keyof Resources)[];
 	table(
 		['Resource', 'BASE_GENERATION_RATES', 'CASTLE_BASE_RATES', 'base (computed)', 'modifier (computed)', 'total /s'],
@@ -243,8 +318,58 @@ table(
 );
 table(
 	['Resource', 'sells for', `costs (x${MERCHANT_BUY_MULTIPLIER})`],
-	Object.entries(MERCHANT_RESOURCE_PRICES).map(([r, p]) => [r, p, p * MERCHANT_BUY_MULTIPLIER])
+	Object.entries(MERCHANT_RESOURCE_PRICES).map(([r, p]) => [
+		r,
+		p,
+		(['wood', 'stone', 'coal', 'food', 'meat'] as string[]).includes(r) ? p * MERCHANT_BUY_MULTIPLIER : 'not for sale',
+	])
 );
+line('### Merchant bonuses and gear shop');
+line();
+table(
+	['Bonus', 'effect per level', 'max level', 'price of level 1', 'price of the last level'],
+	(Object.keys(MERCHANT_UPGRADES) as MerchantUpgradeId[]).map((id) => {
+		const def = MERCHANT_UPGRADES[id];
+		return [def.label, def.description(1), def.maxLevel, fmt(merchantUpgradeCost(id, 0)), fmt(merchantUpgradeCost(id, def.maxLevel - 1))];
+	})
+);
+table(
+	['Item', 'rarity', 'sells for', 'shop price', 'shop / sell'],
+	MERCHANT_SHOP_ITEMS.map(({ id, price }) => {
+		const def = ITEM_CATALOG[id];
+		return [def.name, def.rarity, def.sellValue, fmt(price), `${(price / def.sellValue).toFixed(1)}x`];
+	})
+);
+
+// ---------------------------------------------------------------------------
+line('## 9. Rebirth and Legacy');
+line();
+line(
+	`Rebirth needs castle level ≥ ${REBIRTH.minCastleLevel} and ≥ ${REBIRTH.minTiles} tiles. Legacy points = \`floor(${REBIRTH.gainScale} × (castle − 5) × sqrt(tiles / 10))\`; ` +
+		`each point earned is +${REBIRTH.incomePerPoint * 100}% income for ever.`
+);
+line();
+{
+	const tilesList = [20, 30, 40, 50, 60, 80];
+	table(
+		['castle level', ...tilesList.map((n) => `${n} tiles`)],
+		[6, 7, 8, 9, 10].map((c) => [c, ...tilesList.map((n) => legacyGain(c, n))])
+	);
+	const ids = Object.keys(LEGACY_UPGRADES) as LegacyUpgradeId[];
+	line('Shop (cost in points of the next level, by current level):');
+	line();
+	table(
+		['upgrade', 'effect per level', 'max', ...[0, 1, 2, 3, 5, 9].map((l) => `cost at level ${l}`)],
+		ids.map((id) => [
+			LEGACY_UPGRADES[id].label,
+			id === 'provisions'
+				? Object.entries(LEGACY_UPGRADES.provisions.bundle).map(([r, v]) => `${fmt(v as number)} ${r}`).join(' + ')
+				: `${LEGACY_UPGRADES[id].effectPerLevel * 100}%`,
+			LEGACY_UPGRADES[id].maxLevel,
+			...[0, 1, 2, 3, 5, 9].map((l) => legacyUpgradeCost(id, l)),
+		])
+	);
+}
 
 const target = resolve(
 	dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')),

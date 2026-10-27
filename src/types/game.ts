@@ -1,5 +1,12 @@
 import { BIOMES } from '@/config/gameConfig';
 import type { PlayerClassId } from '@/config/playerClasses';
+import type { FarmUpgradeId, LegacyUpgradeId, MerchantUpgradeId } from '@/config/gameConfig';
+import type { PixelIconName } from '@/config/pixelIcons';
+import type { ItemStats } from '@/catalog/stats';
+import type { CritKind } from '@/lib/combat';
+import type { World } from '@/utils/world';
+
+export type { ItemStats };
 
 export type BiomeType = keyof typeof BIOMES;
 
@@ -10,6 +17,9 @@ export interface Resources {
 	coal: number;
 	food: number;
 	meat: number;
+	eggs: number; // farm products: produced by animals, sold to the merchant, spent on farm upgrades
+	milk: number;
+	hide: number;
 	xp: number;
 }
 
@@ -50,7 +60,6 @@ export interface BiomeInfo {
 	resourceIcons: string[];
 	unique?: boolean;
 	upgradeable?: boolean;
-	maxLevel?: number;
 	description?: string;
 }
 
@@ -65,14 +74,18 @@ export interface Tile {
 
 export type EquipmentSlot =
 	| 'head'
-	| 'neck'
+	| 'shoulder'
 	| 'chest'
-	| 'mainHand'
-	| 'offHand'
+	| 'hands'
 	| 'legs'
 	| 'feet'
+	| 'neck'
+	| 'cape'
 	| 'ring1'
-	| 'ring2';
+	| 'ring2'
+	| 'charm'
+	| 'mainHand'
+	| 'offHand';
 
 export type EquipmentRarity =
 	| 'common'
@@ -81,17 +94,84 @@ export type EquipmentRarity =
 	| 'epic'
 	| 'legendary';
 
-export type Equipment = {
-	[key in EquipmentSlot]?: Item;
-};
+export type ItemKind = 'weapon' | 'offhand' | 'armor' | 'accessory' | 'consumable';
 
-export interface Item {
+export type WeaponType = 'sword' | 'dagger' | 'mace' | 'maul' | 'axe' | 'spear' | 'bow' | 'crossbow' | 'staff' | 'wand' | 'shield' | 'tome';
+
+/** Where an item can drop from: a monster type or a map chest. */
+export type DropSource = MonsterType | 'chest';
+
+/** Relative drop weight inside a source's loot pool; `minTier` / `maxTier` bound the monster tier that can drop it. */
+export interface DropRule {
+	weight: number;
+	/** Consumables the Rat King always drops: how many */
+	qty?: number;
+	minTier?: number;
+	maxTier?: number;
+}
+
+/** Static definition of an item; saves only ever store the `id`. Everything about an item lives here (see src/catalog). */
+export interface ItemDef {
 	id: string;
 	name: string;
-	slot: EquipmentSlot;
-	stats: Partial<Resources>;
+	kind: ItemKind;
+	/** Gear slot; 'ring' fits ring1 or ring2. Consumables have none. */
+	slot?: EquipmentSlot | 'ring';
+	rarity: EquipmentRarity;
+	/** Grade of the material family: 1 wooden / cloth, 2 steel, 3 obsidian, 4 Rattatui, 5 legendary (consumables: 0) */
+	tier: number;
+	weaponType?: WeaponType;
+	stats?: ItemStats;
+	set?: string;
 	description?: string;
-	rarity?: EquipmentRarity;
+	consumable?: { healHp: number };
+	stackMax?: number;
+	sellValue: number;
+	icon?: PixelIconName;
+	/** Loot pools this item is in */
+	drops?: Partial<Record<DropSource, DropRule>>;
+	/** Merchant price in gold; absent = not sold */
+	shop?: number;
+}
+
+/** Equipped item ids by slot */
+export type Equipment = Partial<Record<EquipmentSlot, string>>;
+
+export type BagSlot = { id: string; qty: number } | null;
+
+export type MonsterType = 'rat' | 'ratKing';
+
+export interface Monster {
+	id: number;
+	type: MonsterType;
+	tier: number;
+	x: number;
+	y: number;
+	ageSec: number;
+}
+
+export interface KillSummary {
+	gold: number;
+	xp: number;
+	items: { id: string; qty: number }[];
+	/** Gold paid for drops that did not fit into the bag */
+	convertedGold: number;
+}
+
+export type FightPhase = 'active' | 'won' | 'knockedOut' | 'timeout';
+
+export interface FightState {
+	monsterId: number;
+	type: MonsterType;
+	tier: number;
+	monsterHp: number;
+	monsterMaxHp: number;
+	attackTimer: number;
+	timeLeftSec: number | null;
+	potionCd: number;
+	phase: FightPhase;
+	summary: KillSummary | null;
+	taunt: string | null;
 }
 
 export interface TileProps {
@@ -99,9 +179,10 @@ export interface TileProps {
 	isOwned: boolean;
 	x: number;
 	y: number;
-	style: React.CSSProperties;
 	level?: number;
 	building?: string;
+	/** For a tile that is not explored yet: whether the next tile is affordable (the map works that out once for all of them) */
+	canAfford?: boolean;
 }
 
 export type MerchantTab =
@@ -126,7 +207,10 @@ export interface Animal {
 	baseCost: number;
 	costScaling: number;
 	baseProduction: number; // meat/s per animal; every purchase adds one more animal
+	product: { resource: FarmProduct; perSec: number }; // a farm product trickling out of every animal
 }
+
+export type FarmProduct = 'eggs' | 'milk' | 'hide';
 
 // One physical click, as seen by the click limiter. `eventId` is shared by every handler of the same DOM event.
 export interface ClickInput {
@@ -147,17 +231,38 @@ export interface TileCost {
 	resources: Partial<Resources>;
 }
 
+// Rebirth / Legacy (kept across rebirths)
+export interface PrestigeState {
+	rebirths: number;
+	legacyPoints: number; // unspent
+	legacyEarned: number; // ever earned; drives the income bonus. earned = unspent + cost of all shop levels
+	upgrades: Partial<Record<LegacyUpgradeId, number>>;
+}
+
+// A bonus critter that was clicked (farm meadow or map)
+export interface CritterGift {
+	source: 'farm' | 'map';
+	type: 'butterfly' | 'bee' | 'ladybug' | 'rabbit';
+	golden: boolean;
+}
+
+export interface GiftResult {
+	resource: keyof Resources;
+	amount: number;
+}
+
 export interface TapResult {
 	items: { resource: keyof Resources; amount: number }[];
 	lucky: boolean;
 }
 
+import type { ChestLoot } from '@/lib/chests';
+
 export interface GameState {
 	previousLevel: number;
-	tiles: Tile[][];
+	tiles: World; // the explored map: sparse, unbounded (see src/utils/world.ts)
 	resources: Resources;
 	resourceRates: ResourceRates;
-	resourceModifiers: Resources;
 	level: {
 		level: number;
 		progress: number;
@@ -166,24 +271,24 @@ export interface GameState {
 	playerClass: PlayerClassId;
 	characterStats: CharacterStats;
 	equipment: Equipment;
-	inventory: Item[];
-	farmLevels: Record<string, number>;
-	showCharacterWindow: boolean;
-	showStatisticsWindow: boolean;
-	showMerchantWindow: boolean;
-	showFarmWindow: boolean;
+	bag: BagSlot[];
+	playerHp: number;
+	monsters: Monster[];
+	monsterSpawnTimer: number;
+	nextMonsterId: number;
+	fight: FightState | null; // transient: never saved
+	farmLevels: Record<string, number>; // animals owned per kind
+	farmUpgrades: Record<string, number>; // level per FARM_UPGRADES id
+	merchantUpgrades: Record<string, number>; // level per MERCHANT_UPGRADES id
 	isHydrated: boolean;
-	biomeSelectionActive: boolean;
-	pendingTileCoords: { x: number; y: number } | null;
-	selectableBiomes: BiomeType[] | null;
+	freeTiles: number; // owned tiles that cost nothing (castle + starting ring); see economyTiles()
+	prestige: PrestigeState;
 	clickLevel: number; // Index into CLICK_LADDER (gold per click = gold/s x power)
 	castleUpgrade: CastleUpgradeState | null;
 	playSeconds: number; // accumulated game time (tick deltas); kept for save plausibility checks
 	chestSpawnTimer: number;
 	activeChests: number;
-	lastChestReward: number;
-	lastChestGoldRate: number;
-	lastChestMinutesAwarded: number;
+	lastChestLoot: ChestLoot | null; // transient: the last chest's contents, shown by the toast (never saved)
 
 	// Methods
 	buyTile: (x: number, y: number) => boolean;
@@ -191,23 +296,33 @@ export interface GameState {
 	buyResource: (resource: keyof Resources, amount: number) => boolean;
 	clickForGold: (input: ClickInput) => number;
 	resetGame: () => void;
-	selectBiome: (biome: BiomeType) => boolean;
-	cancelBiomeSelection: () => void;
+	rebirth: () => boolean;
+	buyLegacyUpgrade: (id: LegacyUpgradeId) => boolean;
+	claimCritterGift: (gift: CritterGift, input: ClickInput) => GiftResult | null;
 	upgradeCastle: () => boolean;
-	purchaseAnimal: (animalId: string) => boolean;
-	upgradeGroundsTile: (x: number, y: number, buildingType: string) => boolean;
+	purchaseAnimal: (animalId: string, count?: number | 'max') => number; // animals bought
+	buyFarmUpgrade: (id: FarmUpgradeId) => boolean;
+	buyMerchantUpgrade: (id: MerchantUpgradeId) => boolean;
+	sellItem: (bagIndex: number, qty?: number) => number; // sells `qty` (default 1) of the stack; returns the gold paid (0 = nothing sold)
+	discardItem: (bagIndex: number, qty?: number) => boolean; // throws away `qty` (default 1) of the stack for nothing; refused during a fight
+	sellJunk: (maxRarity: EquipmentRarity) => { gold: number; count: number };
+	buyItem: (id: string, qty?: number) => boolean;
+	buildOnTile: (x: number, y: number, buildingType: string) => boolean;
 	tick: (deltaTime: number) => void;
-	toggleCharacterWindow: () => void;
-	toggleStatisticsWindow: () => void;
-	toggleMerchantWindow: () => void;
-	toggleFarmWindow: () => void;
-	setShowFarmWindow: (show: boolean) => void;
 	sellResources: (resource: keyof Resources, amount: number) => boolean;
 	addStatPoint: (stat: keyof CharacterStats) => void;
 	setPlayerName: (name: string) => void;
 	setPlayerClass: (playerClass: PlayerClassId) => void;
 	addResources: (resourceToAdd: Partial<Resources>) => void;
 	collectChest: (x: number, y: number) => boolean;
+	startFight: (monsterId: number) => boolean;
+	hitMonster: (input: ClickInput) => { damage: number; killed: boolean; crit: CritKind } | null;
+	leaveFight: () => void;
+	dismissMonster: (id: number) => boolean; // removes a monster from the map, no loot; false for the one being fought
+	drinkPotion: (bagIndex: number) => boolean;
+	equipItem: (bagIndex: number) => boolean;
+	unequipItem: (slot: EquipmentSlot) => boolean;
+	moveBagItem: (from: number, to: number) => boolean;
 	// Tap an owned tile: grants a slice of its output. Returns null while on cooldown / nothing to give.
 	tapTile: (x: number, y: number, input?: ClickInput) => TapResult | null;
 }

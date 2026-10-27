@@ -7,7 +7,8 @@ Notation: `n` = tiles owned (castle included), `L` = player level, `C` = castle 
 ## 1. Tile cost
 
 ```
-base(n)  = floor(55 × 1.45^min(n, 20) × 1.27^max(n − 20, 0))          SCALING_CONFIG.costFormula
+base(n)  = floor(min(55 × 1.45^min(m, 20) × 1.27^(min(m, 40) − 20, ≥0) × 1.17^max(m − 40, 0) × (n / 100)^2.5 if n > 100, ceiling))
+           with m = min(n, 100)                                                              SCALING_CONFIG.costFormula (tilePrice)
 gold     = floor(base × (1 − discount%/100))
 extra    = floor(base × share × (1 − discount%/100))  for each TILE_RESOURCE_COST row with n ≥ from
 discount%= min(0.5 × Charisma, 25)
@@ -17,14 +18,18 @@ discount%= min(0.5 × Charisma, 25)
 
 | n | 1 | 5 | 10 | 15 | 20 | 25 | 30 | 40 | 50 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| gold (cha 5) | 77 | 343 | 2.2 K | 14.1 K | 90.5 K | 299 K | 988 K | 10.8 M | 118 M |
+| gold (cha 5) | 77 | 343 | 2.2 K | 14.1 K | 90.5 K | 299 K | 988 K | 10.8 M | 51 M |
 
-Biome pick every purchase with `n % 4 === 3`. XP and reputation per purchase in §2.
+**The tail (no tile limit).** Up to 100 tiles the price is exactly the old three-stage exponential. Past `TILE_PRICE.tailFrom` (100) it grows like `(n / 100)^2.5` (`TILE_PRICE.tailExponent`) and is capped at `TILE_PRICE.ceiling` (`RESOURCE_CAP / 100`), so it is always finite and a map of tens of thousands of tiles stays buyable (tile 157 ≈ 4e11 instead of 1e15, tile 1,000 ≈ 4e13, tile 10,000 ≈ 1.4e16, tile 50,000 ≈ 8e17; table in [generated/balance-tables.md](generated/balance-tables.md)). `RESOURCE_CAP` was raised from 1e15 to 1e21 for it. There is no tile limit any more (see 02 §1, map). The numbers are first guesses for a game that will later be built around rebirths (bigger starting resources, much bigger maps): see BL16 in [05](05-balance-backlog-and-roadmap.md).
+
+Past 40 tiles growth drops from ×1.27 to ×1.17 per tile (`growthEndgame`, `lateTiles`), so tile 50 costs ~51 M instead of 118 M and tile 60 ~0.2 B instead of 1.5 B; the first 40 tiles are unchanged, so the pacing milestones in [06](06-playtest-and-pacing-report.md) still hold.
+
+Every purchase rolls its biome (no picker). XP and reputation per purchase in §2.
 
 ## 2. XP and levels
 
 ```
-tileXP(k)   = 125 × 1.02^(k−1) × k/4          k = owned count AFTER the purchase
+tileXP(k)   = 125 × 1.02^(min(k,300)−1) × min(k,300)/4 × (k/300)^1.5 if k > 300      k = owned count AFTER the purchase (XP_TILE)
 awardedXP   = tileXP × (1 + xpGainMultiplier/100)
 xpGainMultiplier (%) = 0.2·INT + 0.25·CHA
 passive xp/s = rates.total.xp × (1 + xpGainMultiplier/100)
@@ -40,26 +45,31 @@ stat points = 1 per level; reputation = 1000 + 100 per tile bought
 base[r]  = BASE_GENERATION_RATES[r]                                 gold 0.1, xp 0.25
          + Σ owned tiles of  (biome output[r] × scale + building output[r] × scale) × (1 + 0.25 × sameBiomeNeighbours)
               scale = 1.3 (BIOME_YIELD.scale); the castle uses its own output unscaled, without adjacency
+         + Σ tiles inside the castle range  tileOutput[r] × castleAreaBonus(C)      (C ≥ 7: radius 1/2/3/4 at C = 7/8/9/10 → +100 % … +400 %)
          + 0.5 × (C − 1)   (r = xp only; CASTLE_UPGRADE.xpBonus)
          + Σ animals (r = meat only)
 
-modifiers[r] = 0.2 × 2^(C − 1)                    castle, all resources
+modifiers[r] = castleModifier(C)                    castle, all resources (§4)
              + stat modifiers                       2.5 % per point, see 02 §11 (XP: +0.2 %/INT, +0.25 %/CHA)
              + 0.05 × plainsTiles                   (r = meat only)
 
-total[r] = base[r] × (1 + modifiers[r])
+total[r] = base[r] × (1 + modifiers[r]) × (1 + 0.05 × legacyPointsEarned)     (second factor only after a Rebirth, §9)
 ```
 
 The old hidden +10 % gold / +25 % XP modifier is gone (modifiers start at 0). Everything is additive inside the single `(1 + Σ)`.
+
+`calculateResourceBreakdown` (`src/utils/gameUtils.ts`) is the one place this formula lives: per resource it returns the pieces (realm start, farm, biome tiles, buildings, castle-level XP), the bonuses (castle, plains, attributes, the Legacy factor) and the totals, and `calculateResourceRates` is built on it (`tests/uiActions.test.ts` checks that base, modifier and total are identical and that the pieces add up). The Stats tab's *Where the income comes from* section shows exactly these numbers per resource.
 
 **New game**: gold 0.2 base × 1.45 = **0.29/s**, wood and food 0.05 × 1.45, stone 0.1 × 1.325, xp 0.75 × 1.223 = 0.92/s.
 
 ## 4. Castle
 
 ```
-modifier(C)        = 0.2 × 2^(C−1)        → +20 %, +40 %, +80 %, +160 %, +320 %, +640 %
+castleModifier(C)  = 0.2 × 2^(C−1)   for C ≤ 6  → +20 %, +40 %, +80 %, +160 %, +320 %, +640 %
+                   = 6.4 + 3.2 × (C−6)  for C > 6  → +960 %, +1280 %, +1600 %, +1920 %      (lateLevelStep)
 xp/s (flat)        = 0.5 × (C − 1)
-upgrade C→C+1      = pay upgradeCosts[C−1] up front, then wait durationsSec[C−1] (tick-counted)
+castleAreaBonus(C) = 0 for C < 7, else castleRangeRadius(C) × 1   → 1, 2, 3, 4 at levels 7-10 (extra output of every tile and building in range)
+upgrade C→C+1      = pay upgradeCosts[C−1] up front, then wait durationsSec[C−1] × (1 − 0.05 × MasterBuilders) (tick-counted)
 ```
 
 | Upgrade | Build time | gold | wood | stone | coal | food | meat |
@@ -69,37 +79,61 @@ upgrade C→C+1      = pay upgradeCosts[C−1] up front, then wait durationsSec[
 | 3→4 | 12 h | 5 M | 500 K | 500 K | 250 K | 1 M | 200 K |
 | 4→5 | 1 d 12 h | 20 M | 2 M | 2 M | 1 M | 10 M | 500 K |
 | 5→6 | 3 d | 100 M | 10 M | 10 M | 5 M | 50 M | 2.5 M |
+| 6→7 | 3 d | 150 M | 15 M | 15 M | 8 M | 80 M | 4 M |
+| 7→8 | 4 d | 240 M | 24 M | 24 M | 13 M | 128 M | 6.4 M |
+| 8→9 | 5 d | 384 M | 38 M | 38 M | 20 M | 205 M | 10 M |
+| 9→10 | 7 d | 614 M | 61 M | 61 M | 33 M | 328 M | 16 M |
+
+Build time to level 6 is 5 d 5 h, to level 10 24 d 5 h (before Legacy discounts). Cost rows come straight from `CASTLE_UPGRADE.upgradeCosts`; the generated tables show the same numbers.
 
 ## 5. Farm animals
 
 ```
 cost of the N-th animal of a kind = floor(baseCost × costScaling^(N−1))   food
-meat/s of N animals               = baseProduction × N
+meat/s of N animals               = baseProduction × N × (1 + 0.02 × pen) × (1 + 0.05 × feed)
+product/s of N animals            = perSec × N × (1 + 0.02 × pen) × (1 + 0.10 × coop|dairy|tannery)
 meat total                        = base × (1 + castle modifier + 0.05 × plainsTiles)
+products total                    = base × (1 + castle modifier)          (eggs, milk, hide)
+cap per kind                      = 12 + 4 × pen level
+upgrade cost (level N → N+1)      = ceil(base × growth^N) per resource
 ```
 
-| Animal | first cost | cost × | meat/s each |
-| --- | --- | --- | --- |
-| Chicken | 10 K | 1.5 | 0.2 |
-| Deer | 50 K | 1.6 | 0.5 |
-| Pig | 200 K | 1.7 | 1 |
-| Cow | 1 M | 1.8 | 2 |
+| Animal | first cost | cost × | meat/s each | product/s each |
+| --- | --- | --- | --- | --- |
+| Chicken | 10 K | 1.5 | 0.2 | 0.02 eggs |
+| Deer | 50 K | 1.6 | 0.5 | 0.025 hide |
+| Pig | 200 K | 1.7 | 1 | 0.05 hide |
+| Cow | 1 M | 1.8 | 2 | 0.15 milk |
+
+| Upgrade | per level | levels | base cost | cost × |
+| --- | --- | --- | --- | --- |
+| Feed Trough | +5 % meat | 10 | 20 K food | 1.8 |
+| Hen House | +10 % eggs | 10 | 4 K wood + 40 eggs | 1.7 |
+| Dairy | +10 % milk | 10 | 4 K stone + 30 milk | 1.7 |
+| Tannery | +10 % hide | 10 | 3 K coal + 20 hide | 1.7 |
+| Pen Expansion | +2 % all farm output, +4 animals per kind | 8 | 50 K food + 10 K wood + 10 K stone | 2 |
+
+A product sells for 3 / 4 / 6 gold (eggs / milk / hide), which is 25–40 % of the meat value of the animal that makes it.
 
 Payback (food valued at its sell price 0.75, meat at 1) is ≈ 10 h for the first chicken and grows with each extra animal (generated §4).
 
 ## 6. Merchant, clicks, chests, buildings
 
 ```
-sell:  gold = floor(amount × price)        wood .5, stone .5, coal 1, food .75, meat 1
-buy:   gold = ceil(amount × price × 2)
+sell:  gold = floor(amount × price × (1 + 0.03 × Haggler))    wood .5, stone .5, coal 1, food .75, meat 1, eggs 3, milk 4, hide 6
+buy:   gold = ceil(amount × price × 2)                         wood, stone, coal, food, meat only
+item:  sell = floor(sellValue × qty × Haggler)   common 8, uncommon 90, rare 250, epic 700, legendary 2000, potion 20
+       shop price >= 3 × sellValue (> 3.9 × with a max Haggler), so buy + sell never gains gold
+bonuses: price = ceil(base × growth^level)   Haggler 100 K ×1.9, Bulk Discount 250 K ×2.1, Lucky Charm 150 K ×1.9, Pack Rat 500 K ×3
 click: gold = total gold/s × clickPower    0.5 → 0.9 → 1.3 → 1.8   (750 K, 2.5 M, 10 M)
 tap:   resource = tile output/s × 0.5 s    (+ crit multiplier on lucky taps), tile cooldown 1.2 s
 chest: gold = floor(total gold/s × U{600…3600} s × (1 + 0.005 × Luck))      one per 600 s, ≤ 5 waiting
 building cost = floor({500 gold, 250 wood, 150 stone} × 1.6^(buildings already built))
-critter gift = max(min, ~10 s of that resource's income)  (×2 golden)
+critter gift = max(min, N s of that resource's income)  (×2 golden); N = 10 on the farm, 5 on the map (AMBIENT_LIFE.giftSeconds)
+             cooldown: farm 8 s, map 20 s, both gated by the click limiter, amount computed in the store
 ```
 
-Click limiter: burst bucket 8 tokens refilling 5/s × stamina bucket 20 000 refilling 1.5/s; each paid click takes one token from both.
+Click limiter (gold clicks, tile taps, critter gifts; NOT fight hits): burst bucket 8 tokens refilling 5/s × stamina bucket 20 000 refilling 1.5/s; each paid click takes one token from both.
 
 ## 7. Character-derived stats
 
@@ -107,4 +141,82 @@ Click limiter: burst bucket 8 tokens refilling 5/s × stamina bucket 20 000 refi
 
 ## 8. What the pacing looks like
 
-From `npm run sim` (bot players, real store; see [06](06-playtest-and-pacing-report.md)): castle 2 ≈ 19 h, castle 3 ≈ 2–3 d, castle 4 ≈ 5–7 d, castle 5 ≈ 12–16 d, castle 6 ≈ 27–36 d, with the dedicated human about 20 % faster than a player who never clicks, and a 20-clicks/s auto-clicker no better than a dedicated human.
+From `npm run sim` (bot players, real store; see [06](06-playtest-and-pacing-report.md)): castle 2 ≈ 17–21 h, castle 3 ≈ 2–3 d, castle 4 ≈ 5–8 d, castle 5 ≈ 13–18 d, castle 6 ≈ 32–40 d, castle 10 ≈ 100–125 d, with the dedicated human about 20 % faster than a player who never clicks. The 24 h/day auto-clicker bot is faster still (castle 6 ≈ 24 d) because it also manages the economy around the clock, see [06 §3](06-playtest-and-pacing-report.md).
+
+## 9. Rebirth and Legacy
+
+```
+available   : castle ≥ 6 (REBIRTH.minCastleLevel), tiles ≥ 20 (REBIRTH.minTiles), no castle upgrade running
+points      = floor(4.5 × (C − 5) × sqrt(n / 10))                     REBIRTH.gain
+income      × (1 + 0.05 × legacyEarned)                                folded into the modifiers, spending never lowers it
+shop cost   = ceil(base × 1.4^level)        base: thrift 2, builders 3, mastery 2, provisions 2; max level 10
+thrift      : tile and building cost × (1 − 0.02 × level), summed with the Charisma discount, capped at 45 %
+builders    : castle build time × (1 − 0.05 × level)
+mastery     : click power × (1 + 0.10 × level)
+provisions  : start each run with level × (1500 gold, 400 wood, 400 stone)
+```
+
+| castle | 20 tiles | 40 tiles | 60 tiles |
+| --- | --- | --- | --- |
+| 6 | 6 | 9 | 11 |
+| 8 | 19 | 27 | 33 |
+| 10 | 31 | 45 | 55 |
+
+Conservation rule used by the save check: `legacyPoints + Σ shop spending = legacyEarned`, and `rebirths = 0` implies `legacyEarned = 0` ([07 §3](07-security-and-exploits.md)). More tables in [generated/balance-tables.md](generated/balance-tables.md).
+
+## 10. Combat, monsters and items
+
+```
+maxHp        = round(85 + characterStats.hp + Σ gear maxHp + set bonuses)       COMBAT.baseHp   (101 at the start)
+damage/click = max(1, Σ gear damage + set bonuses)                              Wooden Sword 2 ... Titan Maul 15 (COMBAT.maxItemDamage 16 is a sanity ceiling)
+click        : crit with  (character critChance + gear critChance) %  (max 75 %)  → damage × 2
+               then a super crit with (5 + gear superCrit) %  (max 50 %)          → damage × 5   (COMBAT.crit)
+fight hits   : not rate limited; trusted real clicks only, one DOM event counts once (lib/hitGuard.ts)
+hit taken    = max(1, round(attack × (1 − armor / (armor + 40))))               COMBAT.armorK
+regen        = (1 + gear regen) HP/s with no active fight, gear regen only during one; knockout restores 30 % of max HP
+potion       = +35 / +90 HP (not above max), 8 s cooldown shared by all potions in a fight
+rat tier t   : HP = round(100 × 1.5^(t−1))  → 100 / 150 / 225 / 338 / 506
+               attack = round(4 × 1.25^(t−1)) every 2 s → 4 / 5 / 6 / 8 / 10
+tier         = min(5, 1 + floor(age / 1800 s))                                  age counts only while not being fought
+rewards      : rewardSec = 90 × 1.5^(t−1)
+               gold = floor(max(10, gold/s × rewardSec × (1 + 0.005 × Luck)))   Luck = character + merchant + gear
+               xp   = max(5, xp/s × (1 + xpGain%) × rewardSec)
+drops        : rat: gear 12 % + 2 % per tier above 1, picked by weight from the catalog's rat pool (common 10, uncommon 4 from T3, rare 1.2 from T5);
+               potion 25 % + 3 % per tier (Greater from T4)                      (tier 1: 90 s of income, tier 5: ~456 s)
+               Rat King: 1 Rattatui piece (missing ones first) + 40 % a second one + 5 % a legendary weapon + 2 Minor and 1 Greater potion
+               chest (item result, 8 % of chests): the chest pool by weight - see generated/item-catalog.md
+spawn        : first rat 120 s after 5 owned tiles, then 900 s; max 8; Rat King check every 600 s of age after tier 5 (7200 s), 35 %
+Rat King     : 5200 HP, attack 14 every 3 s, 75 s limit
+```
+
+The King's numbers were tuned with `npm run fight-sim` (a bot with the real combat rules; tables in [generated/fight-sim.md](generated/fight-sim.md)) and are
+held by `tests/fightBalance.test.ts`: the starter kit and plain wood never win, steel needs fast clicking, obsidian a steady pace, the Rattatui set is comfortable,
+and no loadout trivialises him. Rats are basic enemies and are not tuned around him.
+
+Items, sets, rarities, stats, drop pools and the merchant stock are generated into [generated/item-catalog.md](generated/item-catalog.md) from `src/catalog`.
+Combat numbers live in `src/config/combatConfig.ts`.
+
+## Building cost
+
+```
+building number n (1-based, `built = n - 1` already stand)   factor(built) =
+  built < 4              : starter[built]                       x0.4, x0.6, x0.8, x1.0     (BUILDING_COST.starter)
+  k = built - 3           : 1.35^min(k, 12) x 1.25^clamp(k - 12, 0, 16) x 1.15^max(k - 28, 0)
+cost (gold / wood / stone) = floor(base x factor x (1 - Thrift))     base = 500 / 250 / 150
+```
+
+| Building | factor | gold |
+| --- | --- | --- |
+| 1 | 0.4 | 200 |
+| 2 | 0.6 | 300 |
+| 3 | 0.8 | 400 |
+| 4 | 1.0 | 500 |
+| 5 | 1.35 | 675 |
+| 10 | 6.05 | 3.0K |
+| 16 | 36.6 | 18.3K |
+| 20 | 89.5 | 44.7K |
+| 32 | 1302 | 651K |
+| 40 | 3982 | 1.99M |
+
+The price follows the tile curve in shape (steep, then gentler, then gentler again) but starts lower, so a building is a fraction of a tile at the same point of the game.
+`src/config/gameConfig.ts` `BUILDING_COST` and `buildingCostFactor` in `src/utils/gameUtils.ts`; `tests/buildOnTile.test.ts` holds the shape.

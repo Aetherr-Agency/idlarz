@@ -5,12 +5,12 @@ import { useGameStore } from '@/stores/gameStore';
 import {
 	calculateTileCost,
 	canAffordBundle,
-	countOwnedTiles,
+	effectiveTileDiscount,
+	economyTiles,
 	tileCostAsResources,
 } from '@/utils/gameUtils';
 import { BiomeTooltip } from './BiomeTooltip';
 import CostList from './CostList';
-import { cn } from '@/lib/utils';
 
 export const TileStatus = memo(
 	({
@@ -31,22 +31,15 @@ export const TileStatus = memo(
 		const tiles = useGameStore((state) => state.tiles);
 		const resources = useGameStore((state) => state.resources);
 		const characterStats = useGameStore((state) => state.characterStats);
+		const prestige = useGameStore((state) => state.prestige);
+		const merchantUpgrades = useGameStore((state) => state.merchantUpgrades);
+		const freeTiles = useGameStore((state) => state.freeTiles);
+		const discount = effectiveTileDiscount(characterStats, prestige, merchantUpgrades);
 
-		const { cost, tilesUntilManualSelection, canManuallySelect } = useMemo(() => {
-			const ownedTilesCount = countOwnedTiles(tiles);
-			const discountedCost = calculateTileCost(
-				ownedTilesCount,
-				characterStats.tileCostDiscount
-			);
-			const tilesUntilManualSelection = (3 - (ownedTilesCount % 4)) % 4;
-			const canManuallySelect = tilesUntilManualSelection === 0;
-
-			return {
-				cost: discountedCost,
-				tilesUntilManualSelection,
-				canManuallySelect,
-			};
-		}, [tiles, characterStats.tileCostDiscount]);
+		const cost = useMemo(
+			() => calculateTileCost(economyTiles(tiles, freeTiles), discount),
+			[tiles, discount, freeTiles]
+		);
 
 		if (isOwned) {
 			const biomeInfo = BIOMES[biome];
@@ -66,22 +59,11 @@ export const TileStatus = memo(
 					<div className='flex flex-wrap items-center gap-1 mb-2'>
 						<span className={canAfford ? 'text-green-400' : 'text-red-400'}>Cost:</span>
 						<CostList cost={tileCostAsResources(cost)} />
-						{characterStats.tileCostDiscount > 0 && (
+						{discount > 0 && (
 							<span className='text-amber-400 text-xs ml-1'>
-								(-{characterStats.tileCostDiscount.toFixed(2)}%)
+								(-{discount.toFixed(2)}%)
 							</span>
 						)}
-					</div>
-					<div
-						className={cn('text-xs mb-1', {
-							'text-amber-300': canManuallySelect,
-							'text-white': tilesUntilManualSelection === 1,
-							'text-gray-500': tilesUntilManualSelection > 1,
-						})}>
-						{canManuallySelect && '◆ This tile can be selected upon purchase'}
-						{tilesUntilManualSelection === 1 && '◇ Next tile will be selectable'}
-						{tilesUntilManualSelection > 1 &&
-							`◇ ${tilesUntilManualSelection} tiles until manual selection`}
 					</div>
 					<div className='px-tip-muted text-xs text-center'>Click to explore</div>
 				</div>

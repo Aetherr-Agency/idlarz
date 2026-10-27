@@ -3,58 +3,52 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import Grid from '@/components/game/Grid';
-import CharacterOverlay from '@/components/game/overlays/CharacterOverlay';
-import StatisticsOverlay from '@/components/game/overlays/StatisticsOverlay';
+import MenuOverlay from '@/components/game/overlays/MenuOverlay';
+import FightModal from '@/components/game/overlays/FightModal';
 import LevelUpNotification from '@/components/game/overlays/LevelUpNotification';
 import LoadingScreen from '@/components/game/overlays/LoadingScreen';
 import NamePrompt from '@/components/game/overlays/NamePrompt';
 import GameDebug from '@/components/game/GameDebug';
 import { TICK_RATE } from '@/config/gameConfig';
-import { calculateTileCost } from '@/utils/gameUtils';
-import MerchantOverlay from '@/components/game/overlays/Merchant/MerchantOverlay';
-import FarmOverlay from '@/components/game/overlays/FarmOverlay';
 import GameHeader from '@/components/game/GameHeader';
-import BiomeSelectionDialog from '@/components/game/BiomeSelectionDialog';
 import ChestNotification from '@/components/game/overlays/ChestNotification';
 import FloatingText from '@/components/game/FloatingText';
 import ClassPickerDialog from '@/components/game/ClassPickerDialog';
 import SaveMenuDialog from '@/components/game/overlays/SaveMenuDialog';
+import SettingsDialog from '@/components/game/overlays/SettingsDialog';
+import LegacyDialog from '@/components/game/overlays/LegacyDialog';
+import TutorialDialog from '@/components/game/overlays/TutorialDialog';
+import { useSettingsStore } from '@/stores/settingsStore';
 import TabLockOverlay from '@/components/game/overlays/TabLockOverlay';
 import { useSingleTab } from '@/hooks/useSingleTab';
 import { useCtrlSequence } from '@/hooks/useCtrlSequence';
 import { useUiStore } from '@/stores/uiStore';
+import { useGlobalContextMenu } from '@/hooks/useGlobalContextMenu';
+import ContextMenu from '@/components/game/ContextMenu';
+import BuildDialog from '@/components/game/BuildDialog';
+import ConfirmDialogs from '@/components/game/ConfirmDialogs';
+import BottomRightStack from '@/components/game/BottomRightStack';
+import CastleCompass from '@/components/game/CastleCompass';
+import Toast from '@/components/game/Toast';
 
 export default function Home() {
 	const tick = useGameStore((state) => state.tick);
 	const isHydrated = useGameStore((state) => state.isHydrated);
 	const { status: tabStatus, takeOver } = useSingleTab();
 	const toggleSaveMenu = useUiStore((state) => state.toggleSaveMenu);
+	const loadSettings = useSettingsStore((state) => state.load);
+	useEffect(() => loadSettings(), [loadSettings]);
+	const loadPrefs = useUiStore((state) => state.loadPrefs);
+	useEffect(() => loadPrefs(), [loadPrefs]);
+	// no browser menu anywhere: the right click belongs to the game (tiles and bag slots add their own entries)
+	useGlobalContextMenu();
 	// Hidden shortcut: Control x5 within 2.5 s opens the save tools (export / import / reset)
 	useCtrlSequence(5, 2500, toggleSaveMenu);
-	const lastChestReward = useGameStore((state) => state.lastChestReward);
-	const lastChestGoldRate = useGameStore((state) => state.lastChestGoldRate);
-	const lastChestMinutesAwarded = useGameStore((state) => state.lastChestMinutesAwarded);
+	const lastChestLoot = useGameStore((state) => state.lastChestLoot);
 	// Monotonic clock: changing the system clock must not change game speed
 	const lastTickTime = useRef(performance.now());
 	const [showChestNotification, setShowChestNotification] = useState(false);
-	const [chestRewardAmount, setChestRewardAmount] = useState(0);
-	const [minutesAwarded, setMinutesAwarded] = useState(0);
-	const [goldPerSecond, setGoldPerSecond] = useState(0);
-	const prevLastChestRewardRef = useRef(0);
-
-	const biomeSelectionActive = useGameStore((state) => state.biomeSelectionActive);
-	const selectableBiomes = useGameStore((state) => state.selectableBiomes);
-	const selectBiome = useGameStore((state) => state.selectBiome);
-	const cancelBiomeSelection = useGameStore((state) => state.cancelBiomeSelection);
-	const pendingTileCoords = useGameStore((state) => state.pendingTileCoords);
-	const characterStats = useGameStore((state) => state.characterStats);
-	const tiles = useGameStore((state) => state.tiles);
-	const [clickPosition, setClickPosition] = React.useState<{x: number, y: number} | undefined>(undefined);
-	
-	const tileCost = calculateTileCost(
-		tiles.flat().filter((tile) => tile.isOwned).length,
-		characterStats.tileCostDiscount
-	);
+	const shownLootRef = useRef<typeof lastChestLoot>(null);
 
 	useEffect(() => {
 		// Only the owning tab runs the game, and only once the saved game has been loaded
@@ -73,80 +67,41 @@ export default function Home() {
 	}, [tick, isHydrated, tabStatus]);
 
 	useEffect(() => {
-		if (biomeSelectionActive && pendingTileCoords) {
-			// Get the tile element by its coordinates
-			const tileElement = document.getElementById(`tile-${pendingTileCoords.x}-${pendingTileCoords.y}`);
-			if (tileElement) {
-				const rect = tileElement.getBoundingClientRect();
-				setClickPosition({
-					x: rect.left + rect.width / 2,
-					y: rect.top
-				});
-			}
-		} else {
-			setClickPosition(undefined);
-		}
-	}, [biomeSelectionActive, pendingTileCoords]);
-
-	useEffect(() => {
-		// Only proceed if there's a real change (not just initial value)
-		// and if the reward is greater than zero
-		if (lastChestReward > 0 && lastChestReward !== prevLastChestRewardRef.current) {
-			// Update the notification values
-			setChestRewardAmount(lastChestReward);
-			setGoldPerSecond(lastChestGoldRate);
-			setMinutesAwarded(lastChestMinutesAwarded);
-			
-			// Show the notification
-			setShowChestNotification(true);
-			
-			// Store the current value for future comparison
-			prevLastChestRewardRef.current = lastChestReward;
-			
-			// Auto-hide after 3 seconds
-			const timer = setTimeout(() => {
-				setShowChestNotification(false);
-			}, 3000);
-			
-			return () => clearTimeout(timer);
-		}
-	}, [lastChestReward, lastChestGoldRate, lastChestMinutesAwarded]);
+		// A new chest result (a fresh object every time one is opened) shows the toast for 3 seconds
+		if (!lastChestLoot || lastChestLoot === shownLootRef.current) return;
+		shownLootRef.current = lastChestLoot;
+		setShowChestNotification(true);
+		const timer = setTimeout(() => setShowChestNotification(false), 3000);
+		return () => clearTimeout(timer);
+	}, [lastChestLoot]);
 
 	return (
 		<main className='h-screen w-screen overflow-hidden relative'>
-			<div className='fixed top-0 left-0 right-0 z-10 bg-gray-900/80 backdrop-blur-sm'>
+			{/* z-50 puts the header above the window backdrop (z-45): resources stay visible and the Menu button toggles */}
+			<div className='fixed top-0 left-0 right-0 z-50 bg-gray-900/80 backdrop-blur-sm'>
 				<GameHeader />
 			</div>
 			<Grid />
 			<FloatingText />
-			<CharacterOverlay />
-			<StatisticsOverlay />
-			<MerchantOverlay />
-			<FarmOverlay />
+			<MenuOverlay />
+			<FightModal />
 			<ClassPickerDialog />
 			<LevelUpNotification />
 			<LoadingScreen />
 			<NamePrompt />
 			<GameDebug />
 			<SaveMenuDialog />
+			<SettingsDialog />
+			<LegacyDialog />
+			<TutorialDialog />
+			<BuildDialog />
+			<ConfirmDialogs />
+			<BottomRightStack />
+			<CastleCompass />
+			<ContextMenu />
+			<Toast />
 			{tabStatus === 'blocked' && <TabLockOverlay onTakeOver={takeOver} />}
-			<ChestNotification 
-				show={showChestNotification} 
-				amount={chestRewardAmount} 
-				goldPerSecond={goldPerSecond}
-				minutesAwarded={minutesAwarded}
-				onClose={() => setShowChestNotification(false)}
-			/>
-			{/* Biome Selection Dialog */}
-			{biomeSelectionActive && selectableBiomes && (
-				<BiomeSelectionDialog
-					availableBiomes={selectableBiomes}
-					onSelect={selectBiome}
-					onCancel={cancelBiomeSelection}
-					cost={tileCost}
-					position={clickPosition}
-				/>
-			)}
+			<ChestNotification loot={lastChestLoot} show={showChestNotification} onClose={() => setShowChestNotification(false)} />
 		</main>
 	);
 }

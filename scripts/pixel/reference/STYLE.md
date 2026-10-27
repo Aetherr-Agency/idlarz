@@ -12,9 +12,12 @@ graphics for anything that isn't a map glyph. Match the references in this folde
 | `icons.png` | Current approved sprite set (resources, menu, portraits, equipment, animals, map). |
 | `hero-hud.png` | Current approved Character HUD (alcove scene, flasks, stone XP bar, level gem). |
 | `ui-parts.png` | Frames, stone bar, slot frames, divider, torch - the 9-slice/chrome parts. |
-| `fog.png`, `map-tiles.png`, `castle-levels.png`, `gold-shine.png` | Fog tile, biome ground + unexplored tiles, and the coin twinkle strip. |
+| `map-terrain.png`, `map-sprites.png` | **Map direction**: the dual-grid terrain sample island (organic edges, depth tiers, trees, docks, fog sea) and its sprite sheet at 3x. |
+| `town.png` | The 16 town buildings (48x60, transparent, no ground) at 3x on meadow green. |
+| `fog.png`, `castle-levels.png`, `gold-shine.png` | Fog tile, castle levels and the coin twinkle strip. |
+| `gear.png` | The gear tiers: wooden/leather, cloth, steel and obsidian sets (10 icons each), the weapons and the potions, labelled, at 4x. |
 
-Reference images in this folder: `icons.png` (icon set), `characters.png` (heroes, merchant, busts), `farm.png` (pen back + front layers), `hero-hud.png`, `castle-levels.png`, `map-tiles.png`, `fog.png`, `ui-parts.png`, `gold-shine.png`.
+Reference images in this folder: `icons.png` (icon set), `characters.png` (heroes, merchant, busts), `farm.png` (pen back + front layers), `hero-hud.png`, `castle-levels.png`, `map-terrain.png`, `map-sprites.png`, `town.png`, `fog.png`, `ui-parts.png`, `gold-shine.png`.
 
 ## Sprite look
 - **Canvas**: 40x40 (hero/merchant figures 56x80, busts 40x40, level orb 24x24, farm pen 256x184). Artwork fills ~34-36px. Sprites float on transparency -
@@ -48,39 +51,80 @@ Reference images in this folder: `icons.png` (icon set), `characters.png` (heroe
 - Textures are *stone and metal*: speckled grey-brown with hairline cracks; avoid flat gradients and glossy plastic.
 
 ## Approved set
-- **Resources**: gold (coin stacks + standing coin, twinkles), wood (log pile with end rings), stone (cut blocks),
-  coal (dark chunks, blue sheen), food (baguette + cross-cut boule), meat (roast drumstick).
+- **Resources and currencies** come from a supplied pixel-art sheet (`reference/resource-sheet.jpg`), cut out by `extract_sheet.py` into 40px sprites with
+  hard alpha, a 28-colour palette and a 1px dark outline, no ground shadow (`assets/*.png`, committed; `sprites_sheet.py` hands them to `build.py`):
+  gold (faceted nuggets), wood (log pile), stone (grey boulders), coal (charcoal lumps), meat (roast drumstick), gems (the green gem on its moss, the **rebirth currency**).
+  The sheet has no bread or emerald shard, so `food` (baguette + boule) and `res_shard` stay procedural, as do the farm products `eggs` (three eggs on straw),
+  `milk` (a stoppered bottle) and `hide` (a rolled, corded hide). xp is the purple orb.
+  **Reserved, art only** (`res_iron`, `res_fish`, `res_mana`, `res_crystal`, `res_sapphire`, `res_shard`, `res_mystery`; no game resource yet, see `RESERVED_RESOURCES` and docs/05 BL14): navy iron ore,
+  a blue fish, a violet crystal cluster, a blue crystal cluster, a tall blue crystal, a green ability shard and a gold-cornered crate with a "?" plaque.
+  **Twinkle strips** (`<name>_shine.png`, 6 frames, `sprites_sheet.py`): gold, gems, both blue crystals, mana and the crate; played by the generic stepped `.px-shine` / `PixelSheet`
+  (`PixelIcon shine`), reduced-motion safe.
 - **Menu**: character = plumed great helm (T-visor), merchant = stitched coin pouch, farm = shingled barn.
 - **Badges/portraits**: level orb (`level_orb`, animated), heroes `hero_<class>` + `bust_<class>`, `merchant`.
 - **Equipment slots**: `equip_head/neck/chest/mainHand/offHand/legs/feet/ring` - kettle hat, amulet, cuirass, sword,
   round shield, greaves, boots, ring. Empty = dim grayscale silhouette, filled = glowing slot frame.
 - **Animals**: `animal_chicken/pig/cow/deer`.
+- **Monsters** (`sprites_monsters.py`): `monster_rat` (2-frame idle sheet, 2 x 40x40) and `monster_ratking` (2 x 56x56, crowned, red cape,
+  fur collar). Same 3/4 view as the farm animals, head to the lower-left; grey-brown fur ramp (`rat_fur`), pink ears/paws/tail (`rat_pink`),
+  cream buck teeth, one glowing red eye. Shown through `MonsterArt` (CSS sheet animation, 520 ms per frame) on the map tile (red glow, tier badge)
+  and in the fight modal (3-5x).
+- **Slots and items**: four more empty-slot silhouettes (`equip_shoulder/hands/cape/charm`: pauldrons, gauntlet, cloak with clasp, bead on a cord).
+  Item icons are `item_*` 40px sprites: `item_potion_hp` (red flask, cork), the wooden starter kit (`item_wooden_sword/shield`) and the 12
+  **Rattatui** set icons (`item_rattatui_<piece>`), which are the slot icons re-skinned through `_skin()` in `sprites_monsters.py`
+  (steel -> `rat_fur`, gold -> `rat_tan`, cloth -> `rat_pink`, leather -> `rat_fur_dk`, shield face -> `cheese`; the fang blade is bone).
+  New materials: `rat_fur`, `rat_fur_dk`, `rat_pink`, `rat_tan`, `cheese`, `glass`.
 - **Character HUD** (`LevelDetails.tsx`): 144x112 stone alcove scene shown at 2x - the hero (class sprite, idle bob, double-click = class picker) standing on the floor under a name plate (double-click = rename),
   two flickering torches (3-frame strip), HP/MP flasks flanking him, stony XP bar along the floor with a flowing emerald
   fill and 10% ticks, level on the purple orb. Flask scale is an integer (`--s`).
-- **Map** (48px tiles, art at 2x):
-  - *Ground*: every biome has a seamless 24px pixel texture in the biome's colour family with its own "noise" (forest leaf
-    flecks, plains grass blades + flowers, hills rock clusters + moss, swamp murky pools + reeds, tundra snow patches +
-    ice cracks, lake wave dashes that drift, grounds tilled furrows, castle purple flagstones). Same-biome neighbours
-    join into one continuous field.
-  - *Icons*: one 32px sprite per biome (`biome_*`: fir trees, wheat + flowers, rocky peak with snow cap, reeds + lily pond,
-    ice crystals, pond with shore, tilled plot with stakes); the castle tile uses the level castles below. Drawn on top of the ground
-    with a 2px hard drop shadow.
-  - *Unexplored land*: dark indigo with soft flat-banded pixel clouds drifting (two layers, hover = faster + brighter) and a
-    floating "?" mark that glows on hover. Calm on purpose so the "?" stays the focus.
+- **Map terrain** (48px tiles, art 1:1; `terrain_*.py`, drawn by `TerrainLayer` on one canvas - see `reference/map-terrain.png`
+  and `map-sprites.png`): saturated top-down 16-bit pixel art with soft organic edges, matched to the Gemini island
+  reference the user supplied. **Dual grid**: terrain cells sit on the corner shared by four tiles and pick one of 16
+  shapes per ground, so shorelines, treelines and cliffs curve across tile borders and clusters read as one lake / forest / ridge.
+  - *Ground per biome* (seamless 192px textures sampled at world coordinates): plains bright meadow + tufts + flowers; forest dark
+    floor under the trees; hills a grassy plateau; swamp murky olive with winding teal channels; tundra speckled snow; coast
+    speckled sand; lake cyan with wave ticks; grounds tilled furrows; yard cobbles; castle violet flagstones.
+  - *Rims* (one device per ground): grass fringe (plains/forest), **cliff** (every hills tier: lit lip, dark stone face south/east),
+    ragged mud (swamp), pale snow with a cool shadow (tundra), sand edge (coast), **foam + wet sand + sand bank** (lake), a
+    bubbly edge (the dark fog sea), a square **kerb** (yard / castle).
+  - *Depth tiers*: where a tile has the same ground 1-2 rings around it a deeper tier is drawn through the same shapes -
+    `lake` shallow / mid / abyss, `hills` plateau / rocky terrace / stone summit, `forest`, `swamp`, `tundra` richer interiors.
+  - *Sprites* (`terrain_props.py`, packed into `terrain/props.png`): oaks, pines, snow pines, palms, dead trees, boulders, grey
+    peaks, ice crystals, ponds, a lighthouse, flowers, bushes, reeds, logs; piers with moored rowboats on lake shores; sea rocks, an
+    islet and ice floes in the fog sea. Placed deterministically by hash (`terrain_logic.py` = `src/utils/terrain.ts`), never one per
+    tile: edge tiles get fewer, interiors more, and a sprite keeps clear of neighbouring grounds. Outlines are 1px of a darker tone
+    of the sprite's own colour, 3-tone shading lit from the top-left, crisp leaf speckle.
+  - *Decor* (second hash pass, `tile_decor` = `decorSprites`, so the props above never move): tiny bare 3x4 flowers (white, yellow, pink, violet) and grass tufts
+    on plains, fallen grey-brown dead trees (16x7 / 22x8, pale cut end, a patch of moss) on swamps. They keep clear of props, buildings and neighbouring grounds.
+  - *Water ripples* (`sprites_water.py`, `WaterLayer.tsx`): an 8-frame ring that opens, breaks up and rests (`water_ripple` 16x6 on open lake, `water_ripple_swamp` 12x5 on
+    deep-swamp pools found in the texture), hard alpha, no outline, stepped CSS, placed by hash and culled to the screen; off with Settings > Life on the map or reduced motion.
+  - *Unexplored land*: buyable tiles form a dark navy "sea" ring (the lowest terrain layer) with a bubbly edge, scattered rocks and
+    ice floes, and a quiet slate-blue "?" (11x14, 80% opacity) that brightens on hover. Farther tiles show only the drifting fog.
   - *Fog of war*: chunky low-res clouds (48px/64px art shown at 3x, 3 flat alpha bands, no outlines, no dither), two layers
-    drifting opposite ways and breathing.
-  - *Pickups*: bonus gold is a bobbing cash bag (24px, gold glow). Castle level and grounds level use pixel plaques/stars.
-- **Castle** (`castle_1`-`castle_6`, `sprites_castle.py`): grows every upgrade level - timber-roofed keep (32px), keep + tower
-  (32), keep + two towers with battlements (40), walled courtyard (48), banner-flying fortress (56), and the **max-level grand
-  castle** (72px): gold roofs, gilded bands, glowing windows, crystal spire. Max level is a 4-frame sheet
-  (`castle_6_anim`, flags wave, crystal pulses), drawn larger than its 48px tile so it overlaps the neighbours (the sprite is
-  `pointer-events: none`), with a pulsing golden drop-shadow glow, a golden aura on the tile and sparkles rising. The upgrade
-  dialog previews current -> next castle. Reference: `castle-levels.png`.
-- **Buildings** (`building_*`, `sprites_buildings.py`, 40px): thatched farm cottage with crops + haystack, mine with a timbered
-  tunnel and coal cart, lumber mill with a saw blade and log pile, striped-awning market stall, stone forge with glowing fire
-  + anvil + chimney smoke, gear workshop with a floating XP orb. The same sprite is the picker icon and the tile graphic. A
-  converted grounds tile switches to a packed-earth cobble ground (`ground_yard`) and carries the shining star.
+    drifting opposite ways and gently breathing.
+  - *Hill details*: besides boulders and the grey peaks, hills get brown and grey rock piles (`rock_pile`), bigger brown boulders and rare **caves** (`cave`: a rocky knoll with a dark mouth framed by two timbers and a lintel, placed on interior hill tiles).
+  - *Ambient critters* (`sprites_meadow.py`, 2-frame sheets stepped by CSS, drawn at native size): the four gift critters (butterfly, bee, ladybug, rabbit) plus decoration-only fish (blue, tail swing, with a CSS ripple), frog, crab (drawn pixel by pixel from above), goat (tan with bone horns) and wolf (dark grey). Fish only appear on open-water lake tiles.
+  - *Pickups*: the treasure chest is `chest_map` (48x40 from the sheet: a banded wooden chest with a gold lock on its own grass patch with rocks, a soft glow, a slow 1px bob and the 4-frame `chest_map_anim` lock/lid glints; no tile border), `bonus_chest` (32px, the same chest alone) is for toasts. Castle level uses a pixel plaque.
+  - The `biome_*` 32px icons are no longer stamped on tiles; they remain for the biome picker, tutorial and building dialogs.
+- **Castle** (`castle_1`-`castle_6`, `sprites_castle.py`): seen from above (ray-cast at pitch 78), every level a full 48px tile on a
+  paved plinth, growing with each upgrade - crenellated keep with timber roof, keep + round watchtower, keep + two towers and a
+  gate wall, walled courtyard with four crowned corner towers, fortress with tall watchtowers / central tower / gold trim, and the
+  **max-level grand castle**: gold roofs, gilded bands, glowing windows, crystal spire. Max level is a 4-frame sheet
+  (`castle_6_anim`, flags wave, crystal pulses) with a pulsing golden glow, a golden aura on the tile and sparkles rising.
+  The upgrade dialog previews current -> next castle. Reference: `castle-levels.png`.
+- **Fortress** (`sprites_fortress.py`, castle levels 7-10): the castle stops being one big tile sprite and takes its 3x3 bonus area, drawn by `CastleFortress.tsx` instead of the violet
+  range marker (no violet wash, dashes or border; the castle tile switches to the cobbled `yard` ground). Parts, all 1x pixel art seen from a lower camera (pitch 58) so brickwork,
+  windows and banners show: `castle_keep` / `castle_keep_anim` (64px keep, 4-frame sheet: great hall with slate gable roof, gold donjon with crystal, two flag turrets, banners; spills 8px over
+  its neighbours), `castle_tower_7..10` (40x56 round towers on the area corners: red cone roof / slate roof + crown + banner / gold roof, glowing slits, gold bands / crystal spire, three bands, two flags),
+  `castle_wall_h_a|b` + `castle_wall_v_a|b` (48x12 crenellated wall pieces, tiled; south and east are CSS flips; `b` is gold-trimmed for levels 9-10) and `castle_gate_a|b`
+  (52x30 gatehouse, exactly one tile wide so it joins the south wall). `python scripts/pixel/sprites_fortress.py out.png [parts.png]` renders a 3x3 review mock on real biome ground.
+- **Buildings** (`building_*`, `sprites_buildings.py`, 16 of them, 48x60 on a transparent canvas anchored at the tile bottom, so a roof rises ~12px over the tile above): little 3/4-view
+  scenes ray-cast from a camera looking north and down at 48 degrees - terracotta / blue / slate / plum roofs, whitewash, timber and stone walls, a trade-specific prop set, a tree or two
+  at the edges. Farm (cottage, windmill, wheat), Mine (rock face, timbered shaft, cart), Lumber Mill (wheel and stream), Market (two striped stalls), Blacksmith, Workshop (cogs, orb),
+  Lumber Camp (lean-to), Quarry (cut face, crane), Fishing Hut (own pond, pier, boat), Hunter's Lodge, Tavern, Tower, Well, Alchemy Lab, Stone Craft, Barracks (tent, banners).
+  Keep silhouettes chunky: at 48px a building is ~30px wide and props are few and big. The same sprite is the picker icon and the tile graphic. **Foundation**: the ground under a building is
+  terrain art, not part of the sprite - a built-on grounds tile takes the most common land biome around it and gets a hashed pad decal (`terrain_pads.py`: 48x48, six styles x two outlines -
+  earth and cobbles, forest litter, gravel, plank walkway, trampled snow, sand with planks). The old square cobbled `yard` now belongs to the castle fortress only.
 - **Loading screen** (`LoadingScreen.tsx`): a rotating rune circle drawn as smooth SVG and pixelated by an SVG block filter
   (`feFlood` + `feTile` + `feMorphology` = a 6px grid, applied inside the SVG so the pixels re-form every frame), the castle
   growing through its six levels (`castle_loading` strip, stepped), drifting fog, rising sparks, an emerald block sweeping
@@ -88,27 +132,36 @@ Reference images in this folder: `icons.png` (icon set), `characters.png` (heroe
 - **XP / level**: one purple glass orb. `xp` (40px, bright core) is the XP icon wherever XP appears; `level_orb` (24px, dark
   socket so the number reads) with a 6-frame rim sweep + glint strip (`LevelOrb`, number centred, outlined) is the level
   badge. No stars, no gems. The shine sweep must never cross the socket.
-- **Converted tiles**: no badge - the building sprite itself glows in a per-building colour (`BUILDING_GLOW`, CSS drop-shadow
-  + blurred halo, slow pulse).
-- **Castle range** (`CastleRange.tsx`): the tiles within `CASTLE_RANGE.radius` of the castle get a violet wash (`range_tint`),
-  marching dashes, `range_corner` brackets and a label; owned tiles in range show rising gold twinkles (`spark_sheet`).
+- **Converted tiles**: no badge - a faint work-glow in a per-building colour (`BUILDING_GLOW`, a soft halo on the foundation and a 2px outline glow, slow fade).
+- **Castle range** (`CastleRange.tsx`): the tiles within `castleRangeRadius(level)` of the castle (3x3, growing to 9x9 from castle
+  level 8) get a violet wash (`range_tint`), marching dashes, `range_corner` brackets and a label; owned tiles in range show
+  rising gold twinkles (`spark_sheet`). The fortress walls always stay on the inner 3x3.
+- **Chest on a lake** (`.tile-chest-ripple`, CSS only): no chest sprite on water, but three golden rings spreading from a twinkling
+  gold diamond with a warm glow. **Castle compass** (`CastleCompass.tsx`): a round dark badge with a gold arrow and the distance, gold
+  frame and soft pulse, plus a `px-btn-gold` "Back to castle" button. **Minimap dots**: red (`#ff4d4d`) for monsters, yellow
+  (`#ffd23a`) with a pulsing halo for chests, dark 1px outline, bigger when several merge.
 - **Farm** (`FarmScene.tsx`): an isometric pen ray-cast like the animals (`farm_back` everything, `farm_front` the near fences,
   cut from the same render so animals walk between them). Ground to screen: `sx = OX + (x-y)*0.7071*S`, `sy = OY - (x+y)*0.3536*S`
-  (constants in `farmGeometry.ts`). Animals wander, flip by screen direction, get more copies as they level; selected = 1px gold
-  outline + ring; unowned = pale silhouette with price tag. Side panel holds the selected animal's numbers and button.
+  (constants in `farmGeometry.ts`). The scene fills the whole window (`PixelModal flush`): the pen is drawn at the biggest whole-pixel zoom that fits (`penZoom`, 1-4x),
+  the meadow props and grass fill the rest. Animals wander, flip by screen direction, one sprite per animal owned up to 6; hovering one (or clicking to pin it) freezes its kind and hangs
+  a **buy card** (owned/limit, yield, Buy / x10 / Max) above it; unowned = pale silhouette with price tag. A stats readout sits top-left, the upgrade shelf along the bottom (collapsible).
 - **Level-up** (`LevelUpNotification.tsx`): white flash, pixelated god-rays (SVG block filter, 6px grid), orb pop, stepped
   shockwave rings, crimson banner (`banner_left/mid/right`, 3x) with dropping letters, spark burst, points earned.
-- **Header**: cracked-stone bar, bronze/iron edge with rivets, 48px slot frames (active glows gold), ornamental divider,
-  slim bronze XP bar, twinkling coin.
+- **Header**: one slim row (about 56px with the bronze edge) in the manner of old city-builder bars: player card (40px portrait frame `slot_frame_s`, the purple level orb pinned to its
+  corner like a badge, name, 80px bronze XP bar), then every currency as a bare **pill** (24px icon = the 40px sprite at 0.6 + the amount, nothing else) inside bronze-edged groups
+  (gold | wood stone coal | food meat | eggs milk hide | gems), then three 40px slot buttons (Menu = maroon journal with a gold sigil and purple orb, Legacy, Settings; active glows gold).
+  All detail lives in the hover tooltip: icon, exact amount, what it is, what it is *used for*, where it *comes from*, per second / minute / hour, base rate, modifier and what the merchant pays
+  (texts in `HEADER_DISPLAYED_RESOURCES_INFO` / `GEMS_INFO`). Groups wrap onto a second row when narrow; the real height is published as `--header-h`. Never clip-path a group (it would clip the tooltips). Twinkling coin.
 - **Backgrounds**: cracked dark stone tile (`bg/crack.png`) for header/modals. Fog drift distance must equal one tile period.
 
 ## UI kit (windows, dialogs, tooltips)
-- **Font**: Pixelify Sans (`@fontsource-variable/pixelify-sans`, CSS var `--font-pixel`); Tailwind text scale is nudged up
-  one notch in `globals.css` (`@theme`). Never use sub-12px text.
+- **Font**: Mozilla Headline (`@fontsource-variable/mozilla-headline`, CSS var `--font-pixel`); Tailwind text scale is nudged up
+  one notch in `globals.css` (`@theme`). `NotifyDot` (orange pulsing dot) is the universal "needs attention" marker (header buttons and the Menu tabs). Never use sub-12px text.
 - **Modal shell** (`PixelModal.tsx`): bronze 9-slice frame over the cracked-stone tile, ornamented title bar, red pixel
   close button hanging off the corner, Esc/backdrop dismiss, backdrop under the header (z-45). Sizes: `sm` 440
   (confirmations), `md` 760 (pickers), `lg` 1080 x full height (Character, Statistics, Merchant, Farm).
-  **Do not hand-roll modals.**
+  **Do not hand-roll modals.** A window with several areas uses `PixelTabs` (`.px-tabbar`: bevelled stone tabs on a bronze baseline, the active one raised and joined to the panel,
+  20px icon + label, arrow keys, label hidden under 760px) through the `tabs` slot: the Menu window holds Character, Stats, Merchant and Farm, only the active tab mounted.
 - **Panels/cards** `.px-panel` / `.px-card`; headings `.px-h`; buttons `.px-btn` (+ `-gold/-red/-blue/-gray/-sm`) with
   stepped corners and a 2px bevel; `.px-tab`, `.px-range`, `.px-input`. Palette: parchment `#d8c8a0`, muted `#a89878`,
   gold `#f0d27a`.
@@ -117,6 +170,14 @@ Reference images in this folder: `icons.png` (icon set), `characters.png` (heroe
 - **Motion**: transform/opacity only, integer pixel steps for sprite animation, honour `prefers-reduced-motion`.
 - **Tile tap feedback**: cursor popup (a line per resource, lucky header), pulse on the *inner* tile element (the outer
   one carries the grid translate), darkening cooldown overlay.
+- **Terrain logic**: `src/utils/terrain.ts` (tested in `tests/terrain.test.ts` against `tests/fixtures/terrain-parity.json`, written by the
+  Python build) is a line-for-line port of `scripts/pixel/terrain_logic.py` (ground rank, dual-cell layers, tile depth, prop and dock
+  placement; integer maths only), so art previews and the game agree exactly. Layer rank, low to high: mist < coast < plains <
+  swamp < tundra < grounds < forest < hills < lake < yard < castle - the higher ground draws its own rim over the lower one.
+  `src/lib/terrainRenderer.ts` composes it on a canvas (texture pattern anchored at the world origin, cut by the shape's body
+  mask, then the rim, then sprites bottom-edge first); `TerrainLayer.tsx` redraws only when `terrainKey(tiles)` changes.
+- **Coast biome** (`coast` speckled sand with palms, driftwood, shells, pebbles and the odd lighthouse): the dry side of a lake. Water is
+  also likelier next to water (`BIOME_SPAWN`), so lakes grow into bays with beaches.
 - Remaining emoji: only the Merchant tab icons.
 
 ## Pipeline (`scripts/pixel`)
@@ -127,12 +188,20 @@ shadows, contours, rim light, coloured outlines), so every asset shares one ligh
 |---|---|
 | `render3d.py` | Engine. `common.py`, `fx.py` (glints), `fog.py` (tileable noise + cracked stone). |
 | `materials.py` | Every material: 5-tone ramp + outline + shading hints. One palette for the whole game. |
-| `sprites_resources.py` `sprites_props.py` `sprites_characters.py` `sprites_equipment.py` `sprites_animals.py` `sprites_map.py` `sprites_castle.py` `sprites_buildings.py` `sprites_farm.py` | Sprites as lists of primitives (boxes, ellipsoids, cylinders, cones). `sprites_props` also draws the purple orb in 2D; `sprites_farm` renders the pen in two layers. |
-| `ground_art.py` | Seamless biome ground textures, the unexplored cloud tile and the fog tiles (flat-banded cloud generator). |
+| `sprites_resources.py` `sprites_sheet.py` `extract_sheet.py` `sprites_props.py` `sprites_characters.py` `sprites_equipment.py` `sprites_animals.py` `sprites_map.py` `sprites_castle.py` `sprites_buildings.py` `sprites_farm.py` | Sprites as lists of primitives (boxes, ellipsoids, cylinders, cones). `sprites_props` also draws the purple orb in 2D; `sprites_farm` renders the pen in two layers. |
+| `ground_art.py` | The fog-of-war cloud tiles (flat-banded cloud generator). |
+| `terrain_field.py` | Dual-grid shape fields (smooth corner blend + coordinate warp that is zero on cell borders; square footprint for yard / castle) and the shared 32-bit hash. |
+| `terrain_art.py` | Palettes, 192px textures, depth tiers and rims (cliff, foam + bank, fringe, kerb) per style; the "?" marker. |
+| `terrain_props.py` | Trees, rocks, peaks, plants, ponds, piers, boats, sea details and the per-ground prop tables. |
+| `terrain_pads.py` | The foundation pads under buildings (12 decals), packed into the props atlas. |
+| `terrain_logic.py` | Pure placement logic (layers, depth, props, docks, building foundations and pads) - mirrored by `src/utils/terrain.ts`. |
+| `terrain_build.py` | Writes `public/pixel/terrain/` (textures, shape atlases, props atlas), `src/config/terrainAtlas.json` and the parity fixture. |
+| `terrain_preview.py` | Mock maps composed with the same logic (`previews/`, and `reference/map-terrain.png` with `--refs`). |
+| `art_preview.py` | `python art_preview.py gold chest_map building_farm --k 6` renders the named sprites at Nx into `previews/` without touching `public/`. |
 | `ui_art.py` | 2D UI art: frames, header chrome, flask parts, stone XP bar, hero scene, torch, castle-range parts, gold sparkle strip, level-up ribbon. |
-| `build.py` | Builds everything into `public/pixel/{icons,ui,bg}` (wipes them first). `--refs` also refreshes this folder. |
+| `build.py` | Builds everything into `public/pixel/{icons,ui,bg,terrain}` (rewrites in place, then removes stale files). `python build.py terrain` rebuilds just the map terrain. `--refs` also refreshes this folder. |
 
-Commands: `python scripts/pixel/build.py` (all), `python scripts/pixel/build.py hero_mage gold` (just those),
+Commands: `python scripts/pixel/art_preview.py <names>` (quick look), `python scripts/pixel/build.py` (all), `python scripts/pixel/build.py hero_mage gold` (just those),
 `python scripts/pixel/build.py --refs` (also refresh references). Review sheets land in `scripts/pixel/previews/` (git-ignored).
 
 **Adding a sprite**: add materials to `materials.py`, a function returning a 40x40 `Scene.render()` in the right
@@ -140,6 +209,19 @@ Commands: `python scripts/pixel/build.py` (all), `python scripts/pixel/build.py 
 build. After approval run `build.py --refs` and update this guide.
 
 ## Don'ts
-No black outlines, no ground shadows on sprites, no smooth gradients or glossy plastic, no noisy dither, no emoji-style
+No black outlines, no ground shadows on sprites (buildings have no baked-in ground either: the foundation is terrain), no per-tile stamped biome icons (map details are hashed, sparse sprites), no smooth gradients or glossy plastic, no noisy dither, no emoji-style
 flat icons, no ad-hoc Tailwind greys for new UI (use the `.px-*` kit), no fractional sprite scales, no leftover
 generators or generated sample folders in the repo.
+
+## Gear tiers (`sprites_gear.py`, `item_<id>` 40x40)
+Four armour families, each with the same 10 slot icons (head, shoulder, chest, hands, legs, feet, neck, cape, ring, charm) plus an off hand, drawn by re-skinning the
+slot icons of `sprites_equipment.py` through material remaps (`_skin`, optional extra primitives for flourishes), plus a few drawn from scratch (the wizard hat, the robe):
+- **Wooden/leather**: `leather`/`pleather`/`bark`/`wood_cut`, green gems. Plain and brown.
+- **Cloth**: `robe` (violet) and `linen` (cream) with gold trim and `arcane` gems; wizard hat, robe with sash.
+- **Steel**: `plate` (cool silver) with `steel` rims, `banner_blue` cloth, `crystal` gems.
+- **Obsidian** (the fanciest): `obsidian` (near-black glass, violet specular) with `obsidian_edge` (violet-cyan light) trims and gems, horns, spikes and a glowing core.
+- **Weapons** are new geometry (swords, daggers, mace, maul, axe, spear, bow, crossbow, staff, wand, tome) rendered on a roomy canvas, then shrunk to fit 40x40 (`_done`);
+  the Rattatui Fang Blade keeps its bone re-skin. **Legendary** weapons burn in `ember` (orange) with `glow` and gold.
+- Glints only on metal and glass (steel, obsidian, gems); none on wood, leather, cloth or fur.
+- Rarity is shown by the item frame glow in the UI (`catalog/rarity.ts`), never baked into the sprite.
+- New materials: `obsidian`, `obsidian_edge`, `ember`, `linen`. The potion pair: `item_potion_hp` (small red flask) and `item_potion_greater` (bigger flask, gold band, star stud).

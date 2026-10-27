@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-/* Pixelify Sans reads small at Tailwind's default sizes, so nudge the text scale up a notch */
+/* Slightly larger text scale than Tailwind's default: the game UI is dense and sits on a dark pixel map */
 @theme {
 	--text-xs: 0.8125rem;
 	--text-sm: 0.9375rem;
@@ -13,7 +13,7 @@
 :root {
 	--background: #ffffff;
 	--foreground: #000000;
-	--font-pixel: 'Pixelify Sans Variable', 'Pixelify Sans', Georgia, serif;
+	--font-pixel: 'Mozilla Headline Variable', 'Mozilla Headline', system-ui, sans-serif;
 	--px-gold: #f0d27a;
 	--px-bronze: #c08a30;
 	--px-ink: #0a0605;
@@ -98,7 +98,7 @@ body {
 	background: #0a0605 url('/pixel/bg/crack.png') repeat;
 	image-rendering: pixelated;
 	font-family: var(--font-pixel);
-	padding-bottom: 10px;
+	padding-bottom: 8px;
 
 	&::after {
 		content: '';
@@ -124,9 +124,9 @@ body {
 	align-items: center;
 	justify-content: center;
 	flex-shrink: 0;
-	width: 48px;
-	height: 48px;
-	background: url('/pixel/ui/slot_frame.png') no-repeat;
+	width: 40px;
+	height: 40px;
+	background: url('/pixel/ui/slot_frame_s.png') no-repeat;
 	image-rendering: pixelated;
 	cursor: pointer;
 	user-select: none;
@@ -137,15 +137,15 @@ body {
 	}
 
 	&[data-active='true'] {
-		background-image: url('/pixel/ui/slot_frame_active.png');
+		background-image: url('/pixel/ui/slot_frame_s_active.png');
 	}
 }
 
 .pixel-profile {
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	padding: 4px 8px;
+	gap: 8px;
+	padding: 2px 6px;
 	border: 2px solid transparent;
 	border-radius: 2px;
 	cursor: pointer;
@@ -167,11 +167,19 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	position: relative;
 	flex-shrink: 0;
-	width: 48px;
-	height: 48px;
-	background: url('/pixel/ui/slot_frame.png') 0 0 / 48px 48px no-repeat;
+	width: 40px;
+	height: 40px;
+	background: url('/pixel/ui/slot_frame_s.png') 0 0 / 40px 40px no-repeat;
 	image-rendering: pixelated;
+}
+
+/* the level orb pinned to the portrait's corner like a badge */
+.pixel-avatar-orb {
+	position: absolute;
+	right: -9px;
+	bottom: -9px;
 }
 
 .character-portrait {
@@ -212,7 +220,7 @@ body {
 
 .pixel-xp {
 	position: relative;
-	width: 72px;
+	width: 80px;
 	height: 10px;
 	background: url('/pixel/ui/header_xp_frame.png') no-repeat;
 	image-rendering: pixelated;
@@ -229,22 +237,78 @@ body {
 	transition: width 0.3s ease-out;
 }
 
-/* gold coins twinkle: 6-frame sprite strip, 40x40 per frame */
-.pixel-gold-shine {
-	width: 40px;
-	height: 40px;
-	flex-shrink: 0;
-	background: url('/pixel/icons/gold_shine.png') 0 0 / 240px 40px no-repeat;
-	image-rendering: pixelated;
-	animation: pixel-shine 1.2s steps(6) infinite;
+/* --- header currencies: a bronze-edged group holds a few pills (icon + amount), everything else is in the tooltip --- */
+.hdr-group {
+	display: flex;
+	align-items: center;
+	padding: 2px;
+	background: rgba(8, 5, 3, 0.78);
+	border: 2px solid #4a3014;
+	box-shadow: inset 0 1px 0 rgba(217, 168, 80, 0.35), 0 1px 0 rgba(0, 0, 0, 0.6);
+	border-radius: 3px; /* no clip-path here: it would clip the tooltips */
 }
 
-@keyframes pixel-shine {
-	from {
-		background-position-x: 0;
+.hdr-pill {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	height: 26px;
+	padding: 0 8px 0 4px;
+	cursor: default;
+	user-select: none;
+
+	& + & {
+		border-left: 1px solid #2b1d0e;
+		box-shadow: inset 1px 0 0 rgba(217, 168, 80, 0.12);
 	}
+
+	&:hover {
+		background: rgba(90, 56, 20, 0.45);
+	}
+}
+
+.hdr-tip {
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	z-index: 60;
+	margin-top: 10px;
+	opacity: 0;
+	pointer-events: none;
+	transform: translateX(-50%);
+	transition: opacity 0.12s;
+}
+
+.hdr-pill:hover .hdr-tip {
+	opacity: 1;
+}
+
+/* Stepped sprite-sheet player: twinkling resources (gold, gems, crystals) and the map chest. Frame size, count, loop
+   length and the sheet come from CSS variables set by PixelSheet. */
+.px-shine {
+	display: inline-block;
+	width: var(--px-w);
+	height: var(--px-h);
+	background: var(--px-sheet) 0 0 / calc(var(--px-w) * var(--px-frames)) var(--px-h) no-repeat;
+	image-rendering: pixelated;
+	animation: px-shine-play var(--px-ms, 1200ms) steps(var(--px-frames)) infinite;
+}
+
+@keyframes px-shine-play {
 	to {
-		background-position-x: -240px;
+		background-position-x: calc(var(--px-w) * var(--px-frames) * -1);
+	}
+}
+
+/* the rebirth gem hovers a pixel or two while it twinkles */
+.px-float {
+	animation: px-float 2.4s steps(2) infinite alternate;
+}
+
+@keyframes px-float {
+	to {
+		transform: translateY(-2px);
 	}
 }
 
@@ -330,23 +394,49 @@ body {
 
 @keyframes fog-breathe {
 	from {
-		opacity: 0.3;
+		opacity: 0.25;
 	}
 	to {
-		opacity: 0.8;
+		opacity: 0.6;
 	}
 }
 
 @media (prefers-reduced-motion: reduce) {
 	.fog-a,
 	.fog-b,
-	.pixel-gold-shine {
+	.px-shine,
+	.px-float {
 		animation: none;
 	}
+
+	.px-ripple,
+	.px-shimmer {
+		display: none;
+	}
+}
+
+/* A soft glitter over every open-water lake tile (WaterLayer): drifting light dashes, under the ripples, at half strength */
+.px-shimmer {
+	position: absolute;
+	z-index: 0;
+	pointer-events: none;
+	opacity: 0.55;
+}
+
+/* Water ripples on lakes and swamp pools (WaterLayer): the generic stepped sheet, placed on the map by the layer */
+.px-ripple {
+	position: absolute;
+	z-index: 1;
+	pointer-events: none;
 }
 
 .castle-tile {
 	z-index: 10;
+}
+
+/* the range wash (z-12) must never cover the castle's own tooltip */
+.castle-tile:hover {
+	z-index: 30;
 }
 
 /* ======================================================================================
@@ -362,7 +452,7 @@ body {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding: 124px 16px 16px;
+	padding: calc(var(--header-h, 76px) + 28px) 16px 16px;
 	background: rgba(4, 3, 6, 0.7);
 	animation: px-fade 0.15s ease-out;
 }
@@ -434,6 +524,12 @@ body {
 	min-height: 0;
 	overflow-y: auto;
 	padding-right: 8px;
+}
+
+.px-modal-body-flush {
+	position: relative;
+	padding-right: 0;
+	overflow: hidden;
 }
 
 .px-close {
@@ -612,6 +708,77 @@ body {
 	}
 }
 
+/* --- tab strip at the top of a window: stone tabs on a bronze baseline, the active one raised and joined to the panel --- */
+.px-tabbar {
+	display: flex;
+	align-items: flex-end;
+	gap: 6px;
+	flex-shrink: 0;
+	margin: -4px 0 14px;
+	padding: 0 6px;
+	border-bottom: 3px solid #8a5f26;
+	box-shadow: 0 2px 0 #2a1a0a;
+}
+
+.px-tabbar-item {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: -3px;
+	padding: 6px 18px 6px 12px;
+	font-family: var(--font-pixel);
+	font-size: 0.9375rem;
+	font-weight: 700;
+	letter-spacing: 0.5px;
+	text-transform: uppercase;
+	color: #b9a77f;
+	background: linear-gradient(#34241a, #1c130c);
+	border: 2px solid #0a0605;
+	border-bottom: 3px solid #8a5f26;
+	box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.1), inset -2px 0 0 rgba(0, 0, 0, 0.35);
+	text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
+	cursor: pointer;
+	clip-path: polygon(0 5px, 3px 5px, 3px 3px, 5px 3px, 5px 0, calc(100% - 5px) 0, calc(100% - 5px) 3px, calc(100% - 3px) 3px, calc(100% - 3px) 5px, 100% 5px, 100% 100%, 0 100%);
+	transition: filter 0.1s;
+
+	&:hover {
+		color: #fff;
+		filter: brightness(1.2);
+	}
+
+	&:focus-visible {
+		outline: 2px solid var(--px-gold);
+		outline-offset: -4px;
+	}
+
+	&[data-active='true'] {
+		z-index: 1;
+		padding-top: 9px;
+		color: #fff1c0;
+		background: linear-gradient(#8a5a1c, #5a3910);
+		border-color: #0a0605;
+		border-bottom-color: #14100c;
+		box-shadow: inset 2px 2px 0 #c9954a, inset -2px 0 0 #3a2410;
+		filter: none;
+	}
+
+	.notify-dot {
+		top: 2px;
+		right: 4px;
+	}
+}
+
+@media (max-width: 760px) {
+	.px-tabbar-label {
+		display: none;
+	}
+
+	.px-tabbar-item {
+		padding-right: 12px;
+	}
+}
+
 /* --- range slider --- */
 .px-range {
 	appearance: none;
@@ -684,6 +851,9 @@ body {
 	color: var(--px-parch);
 	font-family: var(--font-pixel);
 	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+	/* long enough for a sentence, then the text wraps onto the next line instead of running past the frame */
+	max-width: 340px;
+	overflow-wrap: break-word;
 }
 
 .px-tip-title {
@@ -1097,9 +1267,19 @@ body {
 	}
 }
 
-/* --- Map tiles: seamless pixel ground per biome (24px art at 2x = one 48px tile) --- */
+/* --- Map terrain: ONE canvas behind the tiles (TerrainLayer, dual-grid); tiles are transparent hit areas --- */
+.terrain-canvas {
+	position: absolute;
+	left: 0;
+	top: 0;
+	z-index: 0;
+	pointer-events: none;
+	image-rendering: pixelated;
+}
+
+/* ground swatches for dialogs and the farm stage: the 192px terrain texture at native size */
 .tile-ground {
-	background-size: 48px 48px;
+	background-size: 192px 192px;
 	background-repeat: repeat;
 	image-rendering: pixelated;
 }
@@ -1126,7 +1306,10 @@ body {
 
 .tile-ground-lake {
 	background-image: url('/pixel/bg/ground_lake.png');
-	animation: lake-flow 9s steps(24) infinite; /* waves drift one texture period -> seamless */
+}
+
+.tile-ground-coast {
+	background-image: url('/pixel/bg/ground_coast.png');
 }
 
 .tile-ground-grounds {
@@ -1141,21 +1324,20 @@ body {
 	background-image: url('/pixel/bg/ground_yard.png');
 }
 
-.tile-ground-empty {
-	background-image: url('/pixel/bg/ground_empty.png');
-}
-
-@keyframes lake-flow {
-	to {
-		background-position-x: 48px;
-	}
-}
-
+/* owned tiles light up on hover with an overlay (a filter would wash out the tile's own sprites) */
 .tile-owned {
-	box-shadow: inset 1px 1px 0 rgba(255, 255, 255, 0.12), inset -1px -1px 0 rgba(0, 0, 0, 0.4);
+	&::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background: rgba(255, 255, 255, 0.1);
+		opacity: 0;
+		transition: opacity 0.15s;
+	}
 
-	&:hover {
-		filter: brightness(1.12);
+	&:hover::after {
+		opacity: 1;
 	}
 }
 
@@ -1182,99 +1364,181 @@ body {
 	box-shadow: inset 0 1px 0 #a8783a, 0 0 0 1px #080504;
 }
 
-/* --- Unexplored land: clear pixel clouds that drift, and part faster on hover --- */
+/* --- Unexplored, buyable land: the dark sea is drawn by TerrainLayer; the tile adds a hover glow and a quiet '?' --- */
 .tile-unknown {
-	background: #0a0f26 url('/pixel/bg/mystery.png') 0 0 / 48px 48px;
-	image-rendering: pixelated;
-	overflow: hidden;
-	animation: mystery-drift 18s steps(48) infinite;
-
-	&::before {
+	/* hover glow is an overlay, not a filter, so the cost tooltip is not washed out */
+	&::after {
 		content: '';
 		position: absolute;
 		inset: 0;
 		pointer-events: none;
-		background: url('/pixel/bg/mystery.png') 0 0 / 72px 72px;
-		opacity: 0.4;
-		mix-blend-mode: screen;
-		animation: mystery-drift-b 28s steps(72) infinite reverse;
+		background: rgba(150, 190, 255, 0.2);
+		opacity: 0;
+		transition: opacity 0.15s;
 	}
 
-	&:hover {
-		filter: brightness(1.45) saturate(1.2);
-		animation-duration: 5s;
-
-		&::before {
-			opacity: 0.7;
-			animation-duration: 9s;
-		}
-	}
-}
-
-@keyframes mystery-drift {
-	to {
-		background-position: 48px 48px;
-	}
-}
-
-@keyframes mystery-drift-b {
-	to {
-		background-position: 72px 72px;
+	&:hover::after {
+		opacity: 1;
 	}
 }
 
 .unknown-mark {
 	image-rendering: pixelated;
-	filter: drop-shadow(0 0 4px rgba(150, 190, 255, 0.6));
-	animation: mark-float 2.6s steps(4) infinite alternate;
-	transition: filter 0.2s;
+	opacity: 0.8;
+	transition: opacity 0.2s, filter 0.2s;
 
 	.tile-unknown:hover & {
-		filter: drop-shadow(0 0 8px #bcd8ff) brightness(1.3);
-		animation-duration: 1.1s;
+		opacity: 1;
+		filter: drop-shadow(0 0 5px rgba(160, 200, 255, 0.7));
 	}
 }
 
-@keyframes mark-float {
-	to {
-		transform: translateY(-3px);
-	}
-}
-
-/* --- Bonus cash bag --- */
-.tile-bag {
+/* --- Treasure chest on the map: a banded chest on its own grass patch, a soft glow and one twinkle --- */
+.tile-chest-wrap {
 	position: absolute;
-	right: 1px;
-	bottom: 1px;
+	left: 0;
+	bottom: 2px;
 	z-index: 10;
-	image-rendering: pixelated;
-	filter: drop-shadow(0 0 4px rgba(255, 200, 60, 0.85));
-	animation: bag-bob 1.2s steps(2) infinite alternate;
+	width: 48px;
+	height: 40px;
+	pointer-events: none;
 }
 
-@keyframes bag-bob {
+.tile-chest-wrap::before {
+	content: '';
+	position: absolute;
+	inset: 2px -2px -2px;
+	border-radius: 50%;
+	background: radial-gradient(closest-side, rgba(255, 224, 110, 0.55), rgba(255, 176, 40, 0.18) 60%, transparent);
+	animation: chest-halo 2.4s ease-in-out infinite alternate;
+}
+
+.tile-chest {
+	position: relative;
+	display: block;
+	width: 48px;
+	height: 40px;
+	image-rendering: pixelated;
+	filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.45));
+	animation: chest-bob 2s steps(2) infinite alternate;
+}
+
+@keyframes chest-bob {
 	to {
-		transform: translateY(-2px);
+		transform: translateY(-1px);
+	}
+}
+
+@keyframes chest-halo {
+	from {
+		opacity: 0.4;
+	}
+	to {
+		opacity: 0.9;
+	}
+}
+
+/* A chest on a lake: no chest sprite on the water, but golden rings spreading from a glinting spot (clickable like a chest) */
+.tile-chest-ripple {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	z-index: 10;
+	width: 60px;
+	height: 36px;
+	margin: -18px 0 0 -30px;
+	pointer-events: none;
+	filter: drop-shadow(0 0 6px rgba(255, 214, 90, 0.95));
+}
+
+.tile-chest-ripple::before {
+	content: '';
+	position: absolute;
+	inset: 8px 14px;
+	border-radius: 50%;
+	background: radial-gradient(closest-side, rgba(255, 244, 170, 0.95), rgba(255, 190, 60, 0.45) 60%, transparent);
+	animation: chest-halo 1.6s ease-in-out infinite alternate;
+}
+
+/* the glint at the centre: a small gold diamond that twinkles */
+.tile-chest-ripple::after {
+	content: '';
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 9px;
+	height: 9px;
+	margin: -5px 0 0 -5px;
+	background: #fff4b0;
+	border: 1px solid #ffb830;
+	box-shadow: 0 0 8px 3px rgba(255, 204, 70, 0.9);
+	transform: rotate(45deg);
+	animation: chest-glint 1.2s steps(4) infinite alternate;
+}
+
+@keyframes chest-glint {
+	from {
+		opacity: 0.55;
+		transform: rotate(45deg) scale(0.8);
+	}
+	to {
+		opacity: 1;
+		transform: rotate(45deg) scale(1.15);
+	}
+}
+
+.tile-chest-ripple i {
+	position: absolute;
+	inset: 0;
+	border: 3px solid rgba(255, 230, 120, 1);
+	border-radius: 50%;
+	box-shadow: 0 0 6px 1px rgba(255, 200, 70, 0.8), inset 0 0 5px rgba(255, 220, 110, 0.6);
+	opacity: 0;
+	transform: scale(0.2);
+	animation: chest-ring 2.4s ease-out infinite;
+}
+
+.tile-chest-ripple i:nth-child(2) {
+	animation-delay: 0.8s;
+}
+
+.tile-chest-ripple i:nth-child(3) {
+	animation-delay: 1.6s;
+}
+
+@keyframes chest-ring {
+	0% {
+		opacity: 0.95;
+		transform: scale(0.2);
+	}
+	100% {
+		opacity: 0;
+		transform: scale(1);
 	}
 }
 
 @media (prefers-reduced-motion: reduce) {
 	.level-orb,
-	.tile-ground-lake,
-	.tile-unknown,
-	.tile-unknown::before,
-	.unknown-mark,
-	.tile-bag {
+	.tile-chest,
+	.tile-chest-wrap::before,
+	.tile-chest-ripple::before,
+	.tile-chest-ripple::after {
 		animation: none;
+	}
+
+	.tile-chest-ripple i {
+		animation: none;
+		opacity: 0.7;
+		transform: scale(0.7);
 	}
 }
 
-/* --- Castle: grows with each upgrade; the max level overflows its tile with glow + animation --- */
+/* --- Castle: top-down, fills its tile; grows towers with each upgrade, the max level glows + animates --- */
 .castle-sprite {
 	position: absolute;
 	left: 50%;
 	top: 50%;
-	transform: translate(-50%, -56%);
+	transform: translate(-50%, -50%);
 	z-index: 5;
 	image-rendering: pixelated;
 	pointer-events: none; /* overflow must not block clicks on the neighbouring tiles */
@@ -1289,25 +1553,43 @@ body {
 	}
 }
 
+/* the fortress keep: 64px frames in a 4-frame sheet (banners wave, the crystal pulses); spills 8px over the neighbours */
+.castle-keep {
+	width: 64px;
+	height: 64px;
+	translate: 0 -6px;
+	background: url('/pixel/icons/castle_keep_anim.png') 0 0 / 256px 64px no-repeat;
+	animation: castle-keep-anim 1.2s steps(4) infinite;
+}
+
+@keyframes castle-keep-anim {
+	to {
+		background-position-x: -256px;
+	}
+}
+
 .castle-max {
-	width: 72px;
-	height: 72px;
-	background: url('/pixel/icons/castle_6_anim.png') 0 0 / 288px 72px no-repeat;
+	--tier: 0;
+	--grow: calc(1 + var(--tier) * 0.06); /* 1.00 at the first glowing level, 1.24 at level 10 */
+	width: 48px;
+	height: 48px;
+	scale: var(--grow);
+	background: url('/pixel/icons/castle_6_anim.png') 0 0 / 192px 48px no-repeat;
 	animation: castle-anim 0.9s steps(4) infinite, castle-glow 2.6s ease-in-out infinite alternate;
 }
 
 @keyframes castle-anim {
 	to {
-		background-position-x: -288px;
+		background-position-x: -192px;
 	}
 }
 
 @keyframes castle-glow {
 	from {
-		filter: drop-shadow(0 0 3px rgba(255, 200, 80, 0.4)) drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35));
+		filter: drop-shadow(0 0 calc(3px + var(--tier) * 1px) rgba(255, 200, 80, 0.4)) drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35));
 	}
 	to {
-		filter: drop-shadow(0 0 12px rgba(255, 224, 120, 0.95)) drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35));
+		filter: drop-shadow(0 0 calc(12px + var(--tier) * 3px) rgba(255, 224, 120, 0.95)) drop-shadow(0 3px 0 rgba(0, 0, 0, 0.35));
 	}
 }
 
@@ -1357,10 +1639,79 @@ body {
 	z-index: 6;
 }
 
+/* the keep reaches to the top of its tile: the level plaque moves to the bottom corner */
+.tile-fortress .tile-badge {
+	top: auto;
+	bottom: 2px;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.castle-max,
+	.castle-keep,
 	.castle-max-tile,
 	.castle-spark {
 		animation: none;
+	}
+}
+
+/* --- Notify dot: universal, understated "needs attention" marker, pinned to the top-right of a positioned parent --- */
+.notify-dot {
+	position: absolute;
+	top: -2px;
+	right: -2px;
+	z-index: 8;
+	width: 8px;
+	height: 8px;
+	border-radius: 50%;
+	pointer-events: none;
+	background: radial-gradient(circle at 35% 30%, #ffe2b0 0 1px, #ff9a2e 2px, #c9600e 100%);
+	box-shadow: 0 0 0 1.5px #1c0e04, 0 0 4px rgba(255, 150, 50, 0.5);
+	animation: notify-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes notify-pulse {
+	50% {
+		transform: scale(0.82);
+		opacity: 0.8;
+	}
+}
+
+/* sits inside the corner of a header slot frame */
+.pixel-slot .notify-dot {
+	top: 4px;
+	right: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.notify-dot {
+		animation: none;
+	}
+}
+
+/* Map zoom scales the whole tile layer; tooltips counter-scale so text stays one readable size */
+.map-tip {
+	scale: calc(1 / var(--map-zoom, 1));
+	transform-origin: top center;
+}
+
+.map-tip-up {
+	transform-origin: bottom center;
+}
+
+/* Tooltips are drawn here (above the ambient critters, below the header and dialogs); they never take the mouse */
+.map-tip-layer {
+	position: absolute;
+	inset: 0;
+	z-index: 30;
+	pointer-events: none;
+}
+
+.map-tip-in {
+	animation: map-tip-in 150ms ease-out both;
+}
+
+@keyframes map-tip-in {
+	from {
+		opacity: 0;
 	}
 }
