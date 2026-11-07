@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@fontsource-variable/mozilla-headline": "^5.3.0",
+    "@fontsource/titan-one": "^5.3.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.118.0",
     "@tailwindcss/postcss": "^4.0.11",

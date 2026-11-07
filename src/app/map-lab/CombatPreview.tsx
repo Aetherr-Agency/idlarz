@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { BIOMES } from '@/config/gameConfig';
 import { MONSTER_CATALOG } from '@/catalog/monsters';
+import { hitNumberText } from '@/lib/combatFx';
 import CombatPanel, { type FloatNumber } from '@/components/game/overlays/CombatPanel';
 import { MONSTERS } from '@/config/combatConfig';
 import { monsterStats } from '@/lib/monsters';
@@ -35,7 +36,9 @@ const CombatPreview: React.FC = () => {
 		const timer = setInterval(() => {
 			setTick((t) => t + 1);
 			const nid = Date.now();
-			setNumbers((prev) => [...prev.slice(-4), { id: nid, text: `-${Math.round(40 + Math.random() * 60)}`, kind: 'dmg', x: 20 + Math.random() * 60 }]);
+			const roll = Math.random();
+			const crit = roll > 0.9 ? 'super' : roll > 0.65 ? 'crit' : 'none'; // the lab shows all three looks of a hit
+			setNumbers((prev) => [...prev.slice(-4), { id: nid, text: hitNumberText(Math.round(40 + Math.random() * 60) * (crit === 'none' ? 1 : crit === 'crit' ? 2 : 5), crit), kind: crit === 'none' ? 'dmg' : crit, x: 20 + Math.random() * 60 }]);
 			setTimeout(() => setNumbers((prev) => prev.filter((n) => n.id !== nid)), 900);
 		}, 1600);
 		return () => clearInterval(timer);
