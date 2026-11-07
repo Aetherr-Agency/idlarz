@@ -18,8 +18,17 @@ const NE = 2;
 const SW = 4;
 const SE = 8;
 
-/** Low to high: the higher ground draws its rim over the lower one. */
-export const RANK = ['mist', 'coast', 'plains', 'swamp', 'tundra', 'forest', 'hills', 'lake', 'yard', 'castle'] as const;
+/**
+ * Low to high: the higher ground draws its rim over the lower one. The five rebirth biomes (docs/12) sit between the shipped
+ * grounds, so every ground has a fixed hash id (`HASH_ID`, append only): a shipped ground's cell variants never move.
+ */
+export const RANK = [
+	'mist', 'coast', 'plains', 'fields', 'orchard', 'swamp', 'battlefield', 'tundra', 'blight', 'forest', 'jungle', 'hills', 'lake', 'yard', 'castle',
+] as const;
+export const HASH_ID: Record<string, number> = {
+	mist: 0, coast: 1, plains: 2, swamp: 3, tundra: 4, forest: 5, hills: 6, lake: 7, yard: 8, castle: 9,
+	fields: 10, orchard: 11, battlefield: 12, blight: 13, jungle: 14,
+};
 export type Ground = (typeof RANK)[number];
 export type GroundGrid = (Ground | null)[][];
 /** The ground at a tile (null = nothing there): the map reads it through this, a test grid through the array form. */
@@ -27,8 +36,8 @@ export type GroundFn = (x: number, y: number) => Ground | null;
 /** What the terrain maths reads. An array is clamped to its edges (the oldest tests rely on that); a function is exact. */
 export type GroundSrc = GroundGrid | GroundFn;
 
-export const MAX_DEPTH: Record<string, number> = { forest: 1, hills: 2, swamp: 1, tundra: 1, lake: 2 };
-const LAND: string[] = ['plains', 'forest', 'hills', 'swamp', 'tundra', 'coast'];
+export const MAX_DEPTH: Record<string, number> = { forest: 1, hills: 2, swamp: 1, tundra: 1, lake: 2, jungle: 1, blight: 1 };
+const LAND: string[] = ['plains', 'forest', 'hills', 'swamp', 'tundra', 'coast', 'jungle', 'fields', 'orchard', 'blight', 'battlefield'];
 const SIDES: [number, number, string][] = [
 	[0, -1, 'n'],
 	[1, 0, 'e'],
@@ -178,7 +187,7 @@ export function cellLayers(g: GroundSrc, cx: number, cy: number): Layer[] {
 	const layers = present.map((gr) => ({
 		gr,
 		mask: info.reduce((s, i) => (i.ground && rankOf(i.ground) >= rankOf(gr) ? s + i.bit : s), 0),
-		variant: hash32(cx, cy, rankOf(gr)) % 2,
+		variant: hash32(cx, cy, HASH_ID[gr]) % 2,
 	}));
 	let lastFull = -1;
 	layers.forEach((l, i) => {

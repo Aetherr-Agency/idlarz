@@ -44,6 +44,12 @@ export const BIOME_CODES: Readonly<Record<string, string>> = {
 	tundra: 't',
 	lake: 'l',
 	coast: 'c',
+	// the rebirth biomes (docs/12 section 6); dev-only for now (config/biomeStage.ts), the letters are frozen from here on
+	jungle: 'j',
+	fields: 'd',
+	orchard: 'o',
+	blight: 'b',
+	battlefield: 'w',
 };
 const CODE_BIOMES = new Map(Object.entries(BIOME_CODES).map(([biome, code]) => [code, biome]));
 

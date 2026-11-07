@@ -13,6 +13,12 @@ forest: '#317433',
 	tundra: '#e3edf7',
 	lake: '#35a6d8',
 	coast: '#dcc791',
+	// dev-only biomes (config/biomeStage.ts): the average look of each ground
+	jungle: '#195f52',
+	fields: '#d8b84e',
+	orchard: '#88c850',
+	blight: '#523070',
+	battlefield: '#725f4a',
 };
 
 /** The unexplored ring next to explored land, and the cobbled yard of a fortress castle (terrain grounds that are no biome). */
@@ -31,6 +37,11 @@ forest: '#2dff9a',
 	tundra: '#6fd8ff',
 	lake: '#ff7ae0',
 	coast: '#ff5a3c',
+	jungle: '#00ffd0',
+	fields: '#3a6cff',
+	orchard: '#ff70c0',
+	blight: '#c050ff',
+	battlefield: '#ff3030',
 };
 
 const FALLBACK_HIGHLIGHT = '#ffffff';

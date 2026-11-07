@@ -27,6 +27,7 @@ import parity from './fixtures/terrain-parity.json';
 const NAMES: Record<string, { biome: BiomeType; building?: string; level?: number }> = {
 	T: { biome: 'tundra' }, H: { biome: 'hills' }, P: { biome: 'plains' }, S: { biome: 'swamp' }, F: { biome: 'forest' },
 	B: { biome: 'coast' }, L: { biome: 'lake' }, C: { biome: 'castle' }, W: { biome: 'castle', level: 7 },
+	J: { biome: 'jungle' }, D: { biome: 'fields' }, O: { biome: 'orchard' }, X: { biome: 'blight' }, V: { biome: 'battlefield' },
 	// a lowercase letter is a building on that biome's tile
 	t: { biome: 'tundra', building: 'farm' }, s: { biome: 'swamp', building: 'farm' }, f: { biome: 'forest', building: 'farm' },
 	p: { biome: 'plains', building: 'farm' }, b: { biome: 'coast', building: 'farm' }, l: { biome: 'lake', building: 'farm' },

@@ -10,6 +10,7 @@ import json
 import os
 from PIL import Image
 import terrain_art as art
+import terrain_dev  # noqa: F401  registers the rebirth biomes (jungle, fields, orchard, blight, battlefield) before STYLES is read
 import terrain_logic as logic
 import terrain_pads as pads
 import terrain_props as props
@@ -163,9 +164,18 @@ def parity_layout():
         '.LLLLLLLLLLLLLLLLLLLLLL......',
         '..LLLLLLLLLLLLLLLLLLLL.......',
         '.............................',
+        '.JJJJJJJ.DDDDDDD.OOOOOOO.....',
+        '.JJJJJJJ.DDDDDDD.OOOOOOO.....',
+        '.JJJJJJJ.DDDDDDD.OOOOOOO.....',
+        '.JJJJJJJPPPPPPPPPOOOOOOO.....',
+        '.JJJJJJJ.XXXXXXX.VVVVVVV.....',
+        '.JJJJJJJ.XXXXXXX.VVVVVVV.....',
+        '.FFFFFFF.XXXXXXX.VVVVVVV.....',
+        '.............................',
     ]
     names = {'T': 'tundra', 'H': 'hills', 'P': 'plains', 'S': 'swamp', 'F': 'forest', 'W': 'yard', 'B': 'coast', 'L': 'lake', 'C': 'castle',
-             't': 'tundra', 's': 'swamp', 'f': 'forest', 'p': 'plains', 'b': 'coast'}
+             't': 'tundra', 's': 'swamp', 'f': 'forest', 'p': 'plains', 'b': 'coast',
+             'J': 'jungle', 'D': 'fields', 'O': 'orchard', 'X': 'blight', 'V': 'battlefield'}
     return rows, names
 
 

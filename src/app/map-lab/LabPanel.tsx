@@ -8,6 +8,7 @@ import { WIP_MONSTERS } from './CombatPreview';
 import { castleLevelOf } from '@/lib/castleWard';
 import { useSettingsStore } from '@/stores/settingsStore';
 import { useUiStore } from '@/stores/uiStore';
+import { isLiveBiome } from '@/config/biomeStage';
 import { PAINT_BIOMES, useLabStore, type LabPreset, type LabTool } from '@/stores/labStore';
 import { getTile } from '@/utils/world';
 
@@ -29,6 +30,8 @@ const PRESETS: { id: LabPreset; label: string }[] = [
 	{ id: 'rolled400', label: 'Rolled 400' },
 	{ id: 'showcase', label: 'Every biome' },
 	{ id: 'landmarks', label: 'Landmarks (6x6)' },
+	{ id: 'devBlocks', label: 'Dev biomes (blocks)' },
+	{ id: 'devMap', label: 'Dev biomes (big map)' },
 ];
 
 const WIP_BIOMES = [...new Set(WIP_MONSTERS.map((m) => m.biomes[0] as string))];
@@ -104,6 +107,7 @@ const LabPanel: React.FC = () => {
 								<button key={b} className={`${btn} flex items-center gap-1 ${lab.biome === b ? active : ''}`} onClick={() => lab.setBiome(b)}>
 									<i className='inline-block h-3 w-3 shrink-0 rounded-sm border border-black/50' style={{ background: biomeColor(b) }} />
 									<span className='truncate'>{BIOMES[b]?.label ?? b}</span>
+									{!isLiveBiome(b) && <span className='ml-auto shrink-0 text-[9px] text-amber-300/80'>dev</span>}
 								</button>
 							))}
 						</div>

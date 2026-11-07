@@ -25,4 +25,4 @@
 
 ## Provenance of anything cut from here
 
-(none yet; add one line per cut: file, region, output name, where it was used)
+Cut by `scripts/pixel/cut_biome_refs.py` (components of each sheet, integer block-mode shrink, Blight shadow removed) into `scripts/pixel/assets/biomes/`, used by `terrain_dev.py` (Battlefield props: tombstones, skull piles, ribs, bones, pale trees, hands, crypts). The Blight sheet's cuts (`eyes_*`, `vrock_*`, `brock_*`, `vbones_*`, `tendril`, `circle`, `ruin`, `arch`, `dark_tree_*`) are kept but unused since the Blight redesign (violet spore wasteland, drawn in `terrain_dev_sprites.py`).
