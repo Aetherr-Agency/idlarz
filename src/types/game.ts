@@ -405,6 +405,8 @@ export interface GameState {
 	setAutoUse: (on: boolean) => void;
 	/** The server kept less XP than the game held (it could not be earned): take it, the level follows and attribute points the new level has not earned go back to be spent again */
 	applyServerXp: (xp: number) => void;
+	/** The server kept fewer Embers or rebirths than the save held (a rebirth could not have paid them): the game takes its numbers */
+	applyServerPrestige: (prestige: PrestigeState) => void;
 	applyFightReply: (reply: FightReply) => void;
 	clearCombatNotice: () => void;
 	dismissMonster: (id: number) => boolean; // takes a monster off the map, no loot; the server ends the fight against it

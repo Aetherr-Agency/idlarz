@@ -133,9 +133,9 @@ Each row is a second save sent through the real `acceptSave` against an honest f
 
 | Cheat | Verdict | Flags / reason | Rate factor |
 | --- | --- | --- | --- |
-| 1,000,000 Embers and rebirth 1, at castle 1 with 12 tiles | SILENT | none | x399.1 |
-| a brand new account whose first save holds 1,000,000 Embers | SILENT | none | x399.1 |
-| rebirth count 0 -> 40 in one save, 900,000 Embers | SILENT | none | x374.7 |
+| 1,000,000 Embers and rebirth 1, at castle 1 with 12 tiles | CLAMPED | ember_jump | x1 |
+| a brand new account whose first save holds 1,000,000 Embers | CLAMPED | ember_jump | x1 |
+| rebirth count 0 -> 40 in one save, 900,000 Embers | CLAMPED | ember_jump | x1 |
 | Thrift level 10 without spending the Embers | REJECTED | The save contains impossible data (embers do not add up). | - |
 | +100 attribute points | REJECTED | The save contains impossible data (too many stat points). | - |
 | click ladder maxed | REJECTED | The save contains impossible data (click level). | - |
@@ -164,7 +164,7 @@ Each row is a second save sent through the real `acceptSave` against an honest f
 | Farm animals / upgrades | client | level bounds only |
 | Merchant upgrades | client | level bounds only (**SILENT**) |
 | Ember shop | client | conservation: unspent + spent = earned (**REJECTED** if not) |
-| Rebirth Ember gain | client | identities and a 1,000,000 ceiling only (**SILENT**) |
+| Rebirth Ember gain | client | bounded by the castle and territory of the previous save, one rebirth per save (**CLAMPED**, flag `ember_jump`, IDL-166) |
 | Click gold | client (rate-limited in the browser) | none: no click endpoint |
 | Sell resources | client | `gold_jump` / net worth |
 | Sell / buy gear | server (`/api/inventory`) | server inventory |

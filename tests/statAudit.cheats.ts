@@ -132,7 +132,7 @@ export const runCheats = async (): Promise<CheatRow[]> => {
 			continue;
 		}
 		const flags = [...result.flags];
-		const verdict: Verdict = result.xp !== undefined ? 'clamped' : flags.length ? 'flagged' : 'silent';
+		const verdict: Verdict = result.xp !== undefined || result.prestige !== undefined ? 'clamped' : flags.length ? 'flagged' : 'silent';
 		out.push({ id: cheat.id, claim: cheat.claim, verdict, flags, rateFactor: rows.get('u')!.summary.rates.gold / reference });
 	}
 	return out;

@@ -58,13 +58,13 @@ test('the gold check has a deliberate blind spot: 10,000 gold floor + 900 s of i
 	assert.ok(perDay > 2_000_000, `up to ${perDay.toLocaleString()} gold a day without a flag at the 5-minute heartbeat`);
 });
 
-test('EXPLOIT 1: the Ember balance is never checked against what a rebirth could have paid. No flag, no clamp, any amount up to 1,000,000', () => {
+test('EXPLOIT 1 (closed, IDL-166): Embers and rebirths are bounded by what the previous save could have paid. Clamped and flagged `ember_jump`', () => {
 	for (const id of ['embers-later-save', 'embers-first-save', 'rebirths-jump']) {
 		const row = get(id);
-		assert.equal(row.verdict, 'silent', `${id} is accepted without a single flag`);
-		assert.deepEqual(row.flags, []);
-		// ... and the server then pays out on it: its stored income rate includes the Ember multiplier
-		assert.ok(row.rateFactor > 100, `${id}: the server's gold rate is ${row.rateFactor.toFixed(0)}x an honest player's`);
+		assert.equal(row.verdict, 'clamped', `${id} is clamped`);
+		assert.ok(row.flags.includes('ember_jump'), `${id} raises ember_jump, raised ${row.flags}`);
+		// ... so the server no longer pays out on it: its stored income rate has no inflated Ember multiplier
+		assert.ok(row.rateFactor < 2, `${id}: the server's gold rate is ${row.rateFactor.toFixed(1)}x an honest player's`);
 	}
 	// the ceiling that sanitizeSave does enforce (1,000,000 Embers) is worth this much extra income on every resource but XP
 	near(oracle.ember(1_000_000), 1 + 0.1 * 1_000_000 ** 0.6, 'multiplier at the Ember ceiling');
