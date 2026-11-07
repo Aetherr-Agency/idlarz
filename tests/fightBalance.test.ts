@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { COMBAT, MONSTERS } from '../src/config/combatConfig';
-import { ITEM_CATALOG, STARTER_EQUIPMENT } from '../src/config/itemCatalog';
+import { ITEM_CATALOG } from '../src/catalog';
+import { STARTER_EQUIPMENT } from '../src/config/itemCatalog';
 import { plainItem } from '../src/lib/itemInstance';
 import { atItemLevel, fullSet, simulateMany, spentCharacter } from '../src/lib/fightSim';
 import type { Equipment } from '../src/types/game';

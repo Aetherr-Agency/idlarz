@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, openFight, store } from './helpers';
 import { COMBAT } from '../src/config/combatConfig';
-import { ITEM_CATALOG } from '../src/config/itemCatalog';
+import { ITEM_CATALOG } from '../src/catalog';
 import { emptyBag, gearOf, organizeBag, slotQty, stackOf } from '../src/lib/inventory';
 import { plainItem } from '../src/lib/itemInstance';
 import type { BagSlot, ItemInstance } from '../src/types/game';

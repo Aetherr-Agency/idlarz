@@ -1,12 +1,10 @@
-// The item catalog lives in src/catalog (items, sets, rarities, stats, resources, loot config). This file keeps the
-// long-standing import path working and derives the few views the rest of the game and the tests use.
+// The item catalog lives in src/catalog (items, sets, rarities, stats, resources, loot config). This file only derives the
+// few views of it the rest of the game and the tests use.
 import { SETS, STARTER_EQUIPMENT_IDS } from '@/catalog';
 import { LOOT_DATA } from '@/lib/loot/data';
 import { eligibleCandidates } from '@/lib/loot/pools';
 import { plainItem } from '@/lib/itemInstance';
 import type { Equipment, EquipmentSlot } from '@/types/game';
-
-export * from '@/catalog';
 
 /** Beta-tester set (alias of the registry entry). */
 export const RATTATUI_SET = SETS.rattatui;

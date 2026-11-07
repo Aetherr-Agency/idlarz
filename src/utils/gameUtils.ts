@@ -767,7 +767,7 @@ export const castleUpgradeDuration = (fromLevel: number, prestige?: PrestigeStat
 
 export const EMPTY_PRESTIGE: PrestigeState = { rebirths: 0, legacyPoints: 0, legacyEarned: 0, upgrades: {} };
 
-export const emberLevel = (prestige: PrestigeState | undefined, id: EmberUpgradeId): number =>
+const emberLevel = (prestige: PrestigeState | undefined, id: EmberUpgradeId): number =>
 	prestige?.upgrades?.[id] ?? 0;
 
 /** Effect of a shop upgrade as a fraction (or, for Provisions, as a number of starting bundles). */

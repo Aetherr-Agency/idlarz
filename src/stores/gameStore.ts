@@ -88,7 +88,8 @@ import { useUiStore } from '@/stores/uiStore';
 import { useRewardPendingStore } from '@/stores/rewardPendingStore';
 import { isAutoSold } from '@/lib/loot';
 import { advanceMonsters, monsterAt, monsterDef } from '@/lib/monsters';
-import { ITEM_CATALOG, RARITIES, STARTER_EQUIPMENT } from '@/config/itemCatalog';
+import { ITEM_CATALOG, RARITIES } from '@/catalog';
+import { STARTER_EQUIPMENT } from '@/config/itemCatalog';
 import { markSaveReady, PERSIST_NAME, PERSIST_VERSION, saveStorage } from '@/lib/saveStorage';
 import { pickPersisted, type PersistedGame } from '@/lib/sanitizeSave';
 import type {

@@ -18,7 +18,8 @@ import {
 	stackOf,
 	unequip,
 } from '../src/lib/inventory';
-import { ITEM_CATALOG, RATTATUI_SET, STARTER_EQUIPMENT, emptyStats, setCounts, sumStats } from '../src/config/itemCatalog';
+import { ITEM_CATALOG, emptyStats, setCounts, sumStats } from '../src/catalog';
+import { RATTATUI_SET, STARTER_EQUIPMENT } from '../src/config/itemCatalog';
 import { plainItem as p, resolveItem } from '../src/lib/itemInstance';
 import type { BagSlot, Equipment, ItemInstance } from '../src/types/game';
 

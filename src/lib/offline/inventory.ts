@@ -32,10 +32,10 @@ type Core = Record<string, unknown>;
 const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 
 /** The bag size a save entitles its owner to (the base plus the Pack Rat bonus the save holds). */
-export const bagSizeFor = (merchantUpgrades: unknown): number => limitOf('bagSize', { merchantUpgrades: isRecord(merchantUpgrades) ? (merchantUpgrades as MerchantUpgrades) : undefined });
+const bagSizeFor = (merchantUpgrades: unknown): number => limitOf('bagSize', { merchantUpgrades: isRecord(merchantUpgrades) ? (merchantUpgrades as MerchantUpgrades) : undefined });
 
 /** A bag brought to `size` slots: it only ever grows (Pack Rat), never loses an item. */
-export const padBag = (bag: BagSlot[], size: number): BagSlot[] => (bag.length >= size ? bag : [...bag, ...Array.from({ length: size - bag.length }, () => null)]);
+const padBag = (bag: BagSlot[], size: number): BagSlot[] => (bag.length >= size ? bag : [...bag, ...Array.from({ length: size - bag.length }, () => null)]);
 
 /** The inventory a save holds: what a ledger starts from the first time, and again for a New Game. */
 export const inventoryFromCore = (core: Core): Inventory => {

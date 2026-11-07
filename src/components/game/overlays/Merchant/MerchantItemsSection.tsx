@@ -2,7 +2,7 @@ import React from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useGameStore } from '@/stores/gameStore';
 import { useUiStore } from '@/stores/uiStore';
-import { ITEM_CATALOG, RARITIES, RARITY_ORDER } from '@/config/itemCatalog';
+import { ITEM_CATALOG, RARITIES, RARITY_ORDER } from '@/catalog';
 import { gearOf, slotQty } from '@/lib/inventory';
 import { resolveItem, sellValueOf } from '@/lib/itemInstance';
 import { isAutoSold } from '@/lib/loot/autoSell';

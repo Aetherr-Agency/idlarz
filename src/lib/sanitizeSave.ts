@@ -25,7 +25,8 @@ import {
 	type MerchantUpgradeId,
 } from '@/config/gameConfig';
 import { COMBAT } from '@/config/combatConfig';
-import { EQUIPMENT_LAYOUT, ITEM_CATALOG, LOOT_PROFILES, RARITIES, STARTER_EQUIPMENT } from '@/config/itemCatalog';
+import { EQUIPMENT_LAYOUT, ITEM_CATALOG, LOOT_PROFILES, RARITIES } from '@/catalog';
+import { STARTER_EQUIPMENT } from '@/config/itemCatalog';
 import { instanceProblem } from '@/lib/itemInstance';
 import { maxHp, maxMana } from '@/lib/combat';
 import { starterBag } from '@/lib/inventory';

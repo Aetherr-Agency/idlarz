@@ -1,14 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { COMBAT } from '../src/config/combatConfig';
-import {
-	EQUIPMENT_LAYOUT,
-	ITEM_CATALOG,
-	RATTATUI_SET,
-	SETS,
-	STARTER_BAG_ITEMS,
-	STARTER_EQUIPMENT,
-} from '../src/config/itemCatalog';
+import { EQUIPMENT_LAYOUT, ITEM_CATALOG, SETS, STARTER_BAG_ITEMS } from '../src/catalog';
+import { RATTATUI_SET, STARTER_EQUIPMENT } from '../src/config/itemCatalog';
 import { ITEM_STAT_KEYS, MAX_ITEM_LEVEL, familyPieces, STAT_BASE_BY_TIER, WEAPON_ATTACK_SPEED, baseStat, levelScale, weaponDps } from '../src/catalog';
 import type { EquipmentSlot } from '../src/types/game';
 

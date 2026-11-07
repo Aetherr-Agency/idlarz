@@ -66,7 +66,7 @@ const landmarksWorld = (): World => {
 	return setTiles(base, changes);
 };
 
-export const presetWorld = (preset: LabPreset, seed: number): World => {
+const presetWorld = (preset: LabPreset, seed: number): World => {
 	switch (preset) {
 		case 'rolled60':
 			return growWorld(60, seed);

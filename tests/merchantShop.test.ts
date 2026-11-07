@@ -14,7 +14,8 @@ import {
 	REBIRTH,
 	type MerchantUpgradeId,
 } from '../src/config/gameConfig';
-import { BASIC_GEAR, ITEM_CATALOG, RARITY_ORDER, RATTATUI_SET } from '../src/config/itemCatalog';
+import { ITEM_CATALOG, RARITY_ORDER } from '../src/catalog';
+import { BASIC_GEAR, RATTATUI_SET } from '../src/config/itemCatalog';
 import { emptyBag, gearOf, slotItemId, stackOf } from '../src/lib/inventory';
 import { plainItem, sellValueOf } from '../src/lib/itemInstance';
 import type { ItemInstance } from '../src/types/game';

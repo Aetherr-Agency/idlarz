@@ -55,7 +55,7 @@ import {
 	cumulativeXp,
 	xpToNextLevel,
 } from '../src/utils/gameUtils';
-import { ITEM_CATALOG } from '../src/config/itemCatalog';
+import { ITEM_CATALOG } from '../src/catalog';
 import { formatTime } from '../src/utils/formatters';
 import { mulberry32 } from '../src/lib/rng';
 import type { Resources } from '../src/types/game';

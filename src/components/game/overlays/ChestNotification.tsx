@@ -1,6 +1,6 @@
 import React from 'react';
 import { formatCompact, formatNumber } from '@/utils/formatters';
-import { ITEM_CATALOG } from '@/config/itemCatalog';
+import { ITEM_CATALOG } from '@/catalog';
 import type { ChestLoot } from '@/lib/chests';
 import GemIcon from '../GemIcon';
 import { resolveItem } from '@/lib/itemInstance';

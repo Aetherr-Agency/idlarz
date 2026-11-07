@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, growTo, rawSnapshot, store } from './helpers';
 import { CASTLE_X, CASTLE_Y, MERCHANT_GOODS, MERCHANT_UPGRADES, REBIRTH } from '../src/config/gameConfig';
-import { ITEM_CATALOG, RARITIES } from '../src/config/itemCatalog';
+import { ITEM_CATALOG, RARITIES } from '../src/catalog';
 import { averageItemLevel, emptyBag, gearOf } from '../src/lib/inventory';
 import { plainItem, sellValueOf } from '../src/lib/itemInstance';
 import { afterAbsence, generateMerchantStock, refreshCost, secondsToRotation, shelfLevels, shopPriceOf, stockDue } from '../src/lib/merchant';

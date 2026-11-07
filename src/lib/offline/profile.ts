@@ -4,7 +4,7 @@ import { attacksPerSecond, critOdds, damagePerHit, dodgeChance, lifeLeechPercent
 import { healAmount } from '@/lib/skills';
 import { critDamagePercent } from '@/lib/statBonuses';
 import type { PlayerProfile } from '@/lib/offline/fightTypes';
-import type { BagSlot, CharacterStats, Equipment } from '@/types/game';
+import type { CharacterStats, Equipment } from '@/types/game';
 import { calculateCombatStats, calculateLevel, merchantCombat } from '@/utils/gameUtils';
 
 // What the server knows about the player's fighting strength: worked out from the last accepted save with the same functions the game's
@@ -70,14 +70,6 @@ export const playerProfile = (core: Core): PlayerProfile => {
 		mpRegen: manaRegenPerSec(stats, equipment),
 		heal: healAmount(stats, equipment),
 	};
-};
-
-/** How much of a potion the last saved bag holds. */
-export const bagCount = (core: Core, id: string): number => {
-	const bag = Array.isArray(core.bag) ? (core.bag as BagSlot[]) : [];
-	let total = 0;
-	for (const slot of bag) if (slot && 'id' in slot && slot.id === id && Number.isFinite(slot.qty)) total += slot.qty;
-	return total;
 };
 
 /** The HP and mana the save says the player has: where a new combat record starts. */

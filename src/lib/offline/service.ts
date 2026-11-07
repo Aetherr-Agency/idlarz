@@ -83,7 +83,7 @@ export const ANCHOR_REFRESH_MS = 120_000;
  * Whether `next` differs from the stored ledger only in what the clock moves: the anchor and the spawn timers (`advanceBank` is additive
  * in time, so recomputing them from the older values gives the same result) and the idle combat clock, and the anchor has not fallen more than `ANCHOR_REFRESH_MS` behind.
  */
-export const onlyTimeMoved = (stored: Ledger, next: Ledger): boolean => {
+const onlyTimeMoved = (stored: Ledger, next: Ledger): boolean => {
 	if (next.anchorAt - stored.anchorAt >= ANCHOR_REFRESH_MS) return false;
 	// the combat clock is time as well while no fight is open (HP and mana that are still moving make the two differ anyway)
 	const frozen = (l: Ledger) =>

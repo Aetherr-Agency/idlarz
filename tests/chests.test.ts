@@ -4,7 +4,7 @@ import { CHEST, CASTLE_X, CASTLE_Y } from '../src/config/gameConfig';
 import { pickChestSpot, rewardWeights, rollChestLoot } from '../src/lib/chests';
 import { emptyBag, addGear, addToBag } from '../src/lib/inventory';
 import { instanceProblem, plainItem } from '../src/lib/itemInstance';
-import { ITEM_CATALOG } from '../src/config/itemCatalog';
+import { ITEM_CATALOG } from '../src/catalog';
 import type { BagSlot, BiomeType, Resources, Tile } from '../src/types/game';
 import { worldFromRows, tileAt } from '../src/utils/world';
 

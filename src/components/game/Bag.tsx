@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGameStore } from '@/stores/gameStore';
-import { ITEM_CATALOG } from '@/config/itemCatalog';
+import { ITEM_CATALOG } from '@/catalog';
 import { gearOf, slotQty } from '@/lib/inventory';
 import { resolveItem, sellValueOf } from '@/lib/itemInstance';
 import { clearDrag, getDrag, setDrag } from '@/lib/inventoryDrag';
