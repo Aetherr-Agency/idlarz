@@ -1,0 +1,49 @@
+// The castle: its position, base output, area, and the timed upgrade.
+// Split out of gameConfig.ts (IDL-15); the values are unchanged.
+import { amounts } from '@/catalog/resourceKeys';
+
+// Map. The map itself is unbounded (utils/world.ts): there is no grid size. The castle stays at its logical position, so
+// old saves and the procedural art (which hashes absolute coordinates) are unchanged.
+export const CASTLE_X = 25;
+export const CASTLE_Y = 25;
+
+// The castle's own per-second output (single source of truth: BIOMES.castle reads from it).
+export const CASTLE_BASE_RATES = amounts({ gold: 0.1, wood: 0.05, stone: 0.1, food: 0.05, xp: 0.5 });
+
+// Castle range: tiles within this many steps of the castle (3x3 at radius 1) will get the castle's range bonus. `radius` is
+// also the ward and the fortress walls. From `growFromLevel` the violet area (not the ward) grows by `growPerLevel` tiles on
+// every side per level: 3x3 up to level 7, then 5x5, 7x7 and 9x9 at level 10.
+export const CASTLE_RANGE = { radius: 1, growFromLevel: 8, growPerLevel: 1 };
+
+// Production bonus inside the castle range: below `fromLevel` (no walls yet) every tile of the 3x3 range, and the building on
+// it, produces `earlyBonus` extra (+50%, x1.5). From `fromLevel` it produces `perRadiusTile` times its output extra for every
+// tile the range reaches out: +100% at radius 1 (level 7) up to +400% at radius 4 (level 10).
+export const CASTLE_AREA_BONUS = { fromLevel: 7, perRadiusTile: 1, earlyBonus: 0.5 };
+
+// From this castle level the 3x3 range becomes a walled fortress (walls on its edges, a tower on each corner): no monsters
+// and no chests spawn inside it and monsters already there are driven out.
+export const CASTLE_FORTRESS = { fromLevel: 7 };
+
+// Exponential castle upgrade system
+export const CASTLE_UPGRADE = {
+	maxLevel: 10,
+	baseResourceMultiplier: 0.2, // +20% to every resource at level 1
+	doublingUntil: 6, // the bonus doubles with every level up to this level ...
+	lateLevelStep: 3.2, // ... then grows linearly by this much per level (level 10 = +1920%)
+	glowFromLevel: 6, // from this level the castle is drawn animated and glowing, stronger with every level
+	xpBonus: 0.5, // Additional flat XP/s for every castle level above 1
+	// Real upgrade time in seconds, indexed by the level being left (1 -> 2 is index 0). Counted by the tick loop.
+	// Halved in the 2026-11 balancing pass (was 1 h, 4 h, 12 h, 24 h, 48 h, 3 d, 4 d, 5 d, 7 d): 30 min, 2 h, 6 h, 12 h, 24 h, 1.5 d, 2 d, 2.5 d, 3.5 d
+	durationsSec: [1800, 7200, 21600, 43200, 86400, 129600, 172800, 216000, 302400],
+	upgradeCosts: [
+		{ gold: 70000, wood: 10000, stone: 10000 },
+		{ gold: 200000, wood: 30000, stone: 30000, coal: 20000 },
+		{ gold: 1000000, wood: 100000, stone: 100000, coal: 50000, food: 200000, meat: 40000 },
+		{ gold: 4000000, wood: 400000, stone: 400000, coal: 200000, food: 2000000, meat: 100000 },
+		{ gold: 8000000, wood: 2000000, stone: 2000000, coal: 1000000, food: 4000000, meat: 500000 },
+		{ gold: 30000000, wood: 3000000, stone: 3000000, coal: 1600000, food: 16000000, meat: 800000 },
+		{ gold: 48000000, wood: 4800000, stone: 4800000, coal: 2600000, food: 25600000, meat: 1280000 },
+		{ gold: 76800000, wood: 7600000, stone: 7600000, coal: 4000000, food: 41000000, meat: 2000000 },
+		{ gold: 122800000, wood: 12200000, stone: 12200000, coal: 6600000, food: 65600000, meat: 3200000 },
+	],
+};
