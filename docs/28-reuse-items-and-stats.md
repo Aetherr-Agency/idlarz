@@ -150,7 +150,7 @@ The three planned special sets get a palette from what exists:
 
 - **Sunhoney** (gold, sun, silk): `sunsilk_boots`, `royal_silk_trousers`, `sun_locket`, `gold_signet`, `sunburst_mace`, `royal_lion_crest`, `gilded_longsword`, `sunforged_cincture`, `crownguard_belt`.
 - **Ashen Warlord** (red, fire, black iron): `drake_scale_boots`, `ember_medallion`, `ruby_signet`, `crimson_crown_ring`, `magma_flail`, `cinderfang_sword`, `thornspike_shield`, `warden_plate_belt`.
-- **Blightbound** (green, thorn, toxic): `mossweave_boots`, `verdant_greaves`, `leaf_amulet`, `thornvine_ring`, `emerald_amulet`, `verdant_kite_shield`, `hunter_trophy_belt`.
+- **Blightbound** (green, thorn, toxic): `mossweave_boots`, `verdant_greaves`, `leaf_amulet`, `thornvine_ring`, `emerald_amulet`, `verdant_kite_shield`, `hunter_trophy_belt`. **Update 2026-11-07 (IDL-23): Blightbound is violet-black with a toxic-green glow, so these green pieces are palette-swap candidates, not set pieces as they are.**
 - **Frost line** (ice, fur, silver; not planned yet): `frostglass_boots`, `fur_lined_boots`, `fur_trimmed_leggings`, `moon_pendant`, `frostbrand`, `frostcrystal_mace`, `frostcrystal_aegis`, `runebound_girdle`.
 - Plain families (no bonus): the rest, graded by tier.
 
