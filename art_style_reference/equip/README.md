@@ -15,24 +15,20 @@
 | `KkhQpi.jpg` | 48 **spears and glaives, elemental variants** | `spear` (upper tiers) |
 | `M46QPM.jpg` | 48 **daggers, short swords, curved blades, sickles** | `dagger`, `sword` (short) |
 | `OROeUa.jpg` | 48 **bows and crossbows, plain** | `bow`, `crossbow` |
-| `PiXmLF.jpg` (grey-lilac background) | **gloves and capes**, 40 pieces, in plain colourways | `hands`, `cape` |
-| `QhDaVs.jpg` (grey-lilac background) | **armour set examples**: 40 pieces (helmet, chest, legs, boots, gloves, cape) in 4 colourways plus a labelled **SET EXAMPLE** row showing how one set stays coherent | `head`, `chest`, `legs`, `feet`, `hands`, `cape`, sets |
 | `URR7md.jpg` | 48 **swords** (straight, curved, elemental) | mainHand `sword` |
 | `U_z2Ny.jpg` | 48 **maces, hammers, mauls and clubs** | mainHand `mace`, `maul` |
-| `YAg5bN.jpg` (grey-lilac background) | **rings, earrings, necklaces, bracelets** plus a **SET EXAMPLE** (4 matching pieces) | `ring`, `neck`, `charm`, jewelry sets |
 | `awKBb7.jpg` | 48 **axes** (plain) | mainHand `axe` |
 | `hVi5Ez.jpg` | 48 pairs of **boots** | `feet` |
 | `jSaFQ6.jpg` | 48 **axes, elemental variants** | `axe` (upper tiers) |
 | `nrfbhC.jpg` | 48 **belts** | no belt slot today: see section 6 |
 | `qTXBcZ.jpg` | 48 **helmets and hoods** | `head` |
-| `xJe322g.jpg` (grey-lilac background) | **rings, earrings, necklaces, bracelets**, second colourway, plus a **SET EXAMPLE** | jewelry sets |
 | `xJe32g.jpg` | 48 **exotic weapons**: kunai, shuriken, whips, claws, sickles, chains, fans, fists, hooks | new weapon types (section 6) |
 
-**Gaps (not in the sheets, draw new in our kit): shields and off-hand items (no shield sheet at all), tomes, quivers, shoulders/pauldrons, charms proper, a wood-and-hide starter family.**
+**Gaps (not in the sheets, draw new in our kit): shields and off-hand items (no shield sheet at all), tomes, quivers, shoulders/pauldrons, charms proper, gloves and capes, full armour set examples, a wood-and-hide starter family.**
 
 ## 2. What we want
 
-- **Replace all current equipment graphics** (the `item_*` icons, the gear sprites in `scripts/pixel/sprites_gear.py`, `sprites_equipment.py` and the slot icons) with new ones that are either **recreated in our pipeline from these references** or, where the licence is cleared and the quality is good, **cut directly as PNG** (root README rule 1 and 5). Direct cuts must match our look: no baked glow or cell background (the game adds the rarity glow), 40 px canvas, coloured outline.
+- **Replace all current equipment graphics** (the `item_*` icons, the gear sprites in `scripts/pixel/sprites_gear.py`, `sprites_equipment.py` and the slot icons) with new ones that are either **recreated in our pipeline from these references** or **cut directly as PNG** (licensed, see the [Licence](../README.md#licence); root README rules 1 and 5). Direct cuts must match our look: no baked glow or cell background (the game adds the rarity glow), 40 px canvas, coloured outline.
 - A **big catalog**: 12 items per slot and 3 special sets, graded by strength (below). They go into the **drop tables and crafting later** (docs [10](../../docs/10-loot-system.md), [17](../../docs/17-crafting.md)); for now the plan is only art and a grading.
 - **Content is data**: items are entries in `src/catalog/items/*.ts` and recipes are keyed by tag and tier, never by id ([docs/17](../../docs/17-crafting.md) note), so adding items must not need code changes.
 
@@ -97,11 +93,11 @@ Existing items that already fit the ladder and may keep their ids: `item_emberbr
 
 | Set | Theme and biome tie | Palette | Weapon and off hand | Bonus direction (numbers are tuned later, shape as `SetDef`) | Base the art on |
 |---|---|---|---|---|---|
-| **S1 Sunhoney Raiment** (index 22) | economy: pays the kingdom (income, XP, offline cap, chest speed); tied to Fields, Blossom Orchard, Honey | cream, amber, honey gold, white cloth | Honeycomb Scepter (mace), Golden Ledger (tome) | like the Obsidian set but richer: income, XP, offline hours, kill rewards, gold find | `PiXmLF.jpg` (cloth gloves and capes), `QhDaVs.jpg` light set row, jewelry set example in `YAg5bN.jpg` |
-| **S2 Ashen Warlord** (index 28) | combat plate: damage, HP, armor, crits; tied to the Battlefield and War Medals | charcoal plate, crimson trim, tarnished gold medals | Greataxe, Ashen Tower Shield | percent damage and HP, armor, crit, slow regeneration | `QhDaVs.jpg` red and black plate columns, `qTXBcZ.jpg` horned and visored helmets, `9Z3Vbg.jpg` plate legs |
-| **S3 Blightbound** (index 32, strongest) | caster and leech: damage percent, life leech, Luck, a small chance-based effect; tied to the Blight, Ichor, Corrupted Core | violet-black cloth and chitin, toxic green glow | Blight Staff (or Venomfang dagger), Blight Orb | strongest raw power but fragile (low armor): damage, leech, Luck, mastery gain | dark hoods in `qTXBcZ.jpg`, `DX2FFX.jpg` void and nature staves, necrotic ring set in `xJe322g.jpg` |
+| **S1 Sunhoney Raiment** (index 22) | economy: pays the kingdom (income, XP, offline cap, chest speed); tied to Fields, Blossom Orchard, Honey | cream, amber, honey gold, white cloth | Honeycomb Scepter (mace), Golden Ledger (tome) | like the Obsidian set but richer: income, XP, offline hours, kill rewards, gold find | `EAim3s.jpg` jewelry, `qTXBcZ.jpg` hoods, `hVi5Ez.jpg` light boots (gloves and capes: draw new) |
+| **S2 Ashen Warlord** (index 28) | combat plate: damage, HP, armor, crits; tied to the Battlefield and War Medals | charcoal plate, crimson trim, tarnished gold medals | Greataxe, Ashen Tower Shield | percent damage and HP, armor, crit, slow regeneration | `qTXBcZ.jpg` horned and visored helmets, `9Z3Vbg.jpg` plate legs |
+| **S3 Blightbound** (index 32, strongest) | caster and leech: damage percent, life leech, Luck, a small chance-based effect; tied to the Blight, Ichor, Corrupted Core | violet-black cloth and chitin, toxic green glow | Blight Staff (or Venomfang dagger), Blight Orb | strongest raw power but fragile (low armor): damage, leech, Luck, mastery gain | dark hoods in `qTXBcZ.jpg`, `DX2FFX.jpg` void and nature staves, rings and amulets in `EAim3s.jpg` |
 
-The "SET EXAMPLE" rows in `QhDaVs.jpg`, `YAg5bN.jpg` and `xJe322g.jpg` are the model for coherence: **one silhouette language and one palette across all 13 pieces**, so a set reads as a set at a glance.
+The rule for every set is **one silhouette language and one palette across all 13 pieces**, so a set reads as a set at a glance. (The sheets with labelled "SET EXAMPLE" rows are no longer in the folder; the first step of a set is the palette and silhouette sheet in section 7, point 5.)
 
 ## 6. New weapon types and a belt slot (design decisions, not art)
 
@@ -112,10 +108,10 @@ The "SET EXAMPLE" rows in `QhDaVs.jpg`, `YAg5bN.jpg` and `xJe322g.jpg` are the m
 1. **Do not delete old equipment graphics yet.** Items reference icons by id (`config/pixelIcons.ts`, `public/pixel/icons/item_*.png`, `equip_*` slot icons, `scripts/pixel/sprites_gear.py`, `sprites_equipment.py`, `scripts/pixel/reference/gear.png`). The 78 `item_*` icons plus the gear scripts are what the owner wants gone, **but only after the replacements are wired** (root README rule 6).
 2. **The safe moment**: after the one-time progress reset ([RELEASE-PLAN](../../docs/RELEASE-PLAN.md) P2) every bag and set of worn gear is empty, so no save holds an old item and the old files can be removed. The retired Rattatui pieces are the only exception while saves can still carry them (until P2 ships, keep their icons or map them to a new icon).
 3. **Work order** (one PR each): (E1) build the 12-per-slot catalog as data with new icon ids, art as placeholders or cuts, **not yet in any drop table**; (E2) put the 9 normal grades into the loot profiles and the craft tiers, tuned with `loot-sim` and `fight-sim`; (E3) add the three special sets through boss, relic and enchanted-craft sources; (E4) delete the old `item_*` files and gear scripts; update `docs/generated/item-catalog.md` via `npm run catalog-report`.
-4. **Making an icon**: pick a reference cell by silhouette (a sword for a sword, not just colour); decide recreate or cut (root README rules 1 to 3). The sheets are **JPG**, so a direct cut carries compression noise: if a cut is wanted, ask the owner for the original PNG pack first; otherwise recreate. Output 40 px, transparent, coloured outline, no glow, one palette per grade (look cues in the ladder).
-5. **Sets first as a palette sheet**: before drawing 13 pieces of a set, produce one palette and one silhouette rule from the "SET EXAMPLE" rows and get it approved.
+4. **Making an icon**: pick a reference cell by silhouette (a sword for a sword, not just colour); decide recreate or cut (root README rules 1 to 3). The sheets are **JPG**, so a direct cut carries compression noise: quantizing to the shared palette (root README rule 5) removes most of it; if a cut still looks dirty, recreate it or ask the owner for the original PNG pack. Output 40 px, transparent, coloured outline, no glow, one palette per grade (look cues in the ladder).
+5. **Sets first as a palette sheet**: before drawing 13 pieces of a set, produce one palette and one silhouette rule and get it approved.
 6. Names above are working titles; keep ids stable once shipped, because saves store only the id.
 
 ## Provenance of anything cut from here
 
-(none yet; add one line per cut: file, cell, output name, who confirmed the licence)
+(none yet; add one line per cut: file, cell, output name, where it was used)
