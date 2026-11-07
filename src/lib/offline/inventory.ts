@@ -6,6 +6,7 @@ import {
 	gearOf,
 	moveSlot,
 	organizeBag,
+	rebirthKit,
 	removeFromBag,
 	slotQty,
 	stackOf,
@@ -49,6 +50,13 @@ export const inventoryFromCore = (core: Core): Inventory => {
 		autoSellUpTo: typeof core.autoSellUpTo === 'string' ? core.autoSellUpTo : null,
 	};
 };
+
+/** The inventory a rebirth leaves: the starter kit (see `rebirthKit`); only the auto-sell filter, a setting, carries over. A newer `ver`, so the browser takes it. */
+export const rebirthInventory = (before: Inventory, merchantUpgrades: unknown): Inventory => ({
+	ver: before.ver + 1,
+	...rebirthKit(isRecord(merchantUpgrades) ? (merchantUpgrades as Record<string, number>) : undefined),
+	autoSellUpTo: before.autoSellUpTo,
+});
 
 /** The inventory with a bag as big as the save's Pack Rat level entitles it to (a bigger bag shows as a new version). */
 export const fitInventory = (inv: Inventory, core: Core): Inventory => {

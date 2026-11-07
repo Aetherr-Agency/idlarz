@@ -436,7 +436,7 @@ test('Intelligence and magic gear raise the mana pool and its refill; changing g
 	assert.equal(api().playerMp, 120, 'the pool shrinks, the mana follows it down');
 });
 
-test('a rebirth refills mana to the pool of the gear that survives', () => {
+test('a rebirth refills mana to the pool of the starter kit it leaves', () => {
 	freshGame();
 	growTo(REBIRTH.minTiles);
 	store.setState((s) => ({ tiles: patchTile(s.tiles, CASTLE_X, CASTLE_Y, { level: REBIRTH.minCastleLevel }), bag: [{ item: plainItem('apprentice_tome') }, ...emptyBag().slice(1)] }));
@@ -444,7 +444,7 @@ test('a rebirth refills mana to the pool of the gear that survives', () => {
 	store.setState({ playerMp: 1 });
 	assert.equal(api().rebirth(), true);
 	assert.equal(api().playerMp, maxMana(api().characterStats, api().equipment));
-	assert.equal(api().playerMp, 48);
+	assert.equal(api().equipment.offHand?.base, 'wooden_shield', 'the tome did not survive: the starter shield is back');
 	assert.ok(max() > 0 && COMBAT.regenPerSec > 0);
 });
 

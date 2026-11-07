@@ -73,7 +73,7 @@ import type { LimitContext } from '@/lib/limits';
 import { afterRefresh, freeRefreshesLeft, generateMerchantStock, refreshCooldown, refreshCost, rotationRng, shopPriceOf, stockDue } from '@/lib/merchant';
 import { emitSaveEvent, withSaveEvents } from '@/lib/saveEvents';
 import { gearEconomy, gearIncomePct, xpGainPct } from '@/lib/gearEconomy';
-import { addDrop, aggregateStats, averageItemLevel, equipFromBag, gearOf, moveSlot, organizeBag, removeFromBag, slotQty, stackOf, starterBag, unequip } from '@/lib/inventory';
+import { addDrop, aggregateStats, averageItemLevel, equipFromBag, gearOf, moveSlot, organizeBag, removeFromBag, rebirthKit, slotQty, stackOf, starterBag, unequip } from '@/lib/inventory';
 import { plainItem, sellValueOf } from '@/lib/itemInstance';
 import { castleLevelOf } from '@/lib/castleWard';
 import { applyOfflineGrant } from '@/lib/offline/apply';
@@ -533,12 +533,13 @@ const createGameSlice = (
 			const fresh = createInitialData(prestige);
 			// settle the level first: XP bought a moment ago may not have been counted by a tick yet (its points are credited here)
 			const settled = calculateLevel(state.resources.xp);
-			const characterStats = {
-				...state.characterStats,
-				availablePoints: state.characterStats.availablePoints + Math.max(0, totalStatPoints(settled.level) - totalStatPoints(state.level.level)),
-			};
-			// the bag survives, so does the room Pack Rat made for it; the other merchant bonuses start again
+			// the other merchant bonuses start again; Pack Rat stays, so the starter bag is as big as the player bought it
 			const merchantUpgrades: Record<string, number> = state.merchantUpgrades.packrat ? { packrat: state.merchantUpgrades.packrat } : {};
+			// respec: every attribute goes back to its start and all the points the level has earned are free to spend again
+			const characterStats = { ...fresh.characterStats, availablePoints: totalStatPoints(settled.level) };
+			Object.assign(characterStats, calculateCombatStats(characterStats));
+			// gear is wiped: the starter kit on, the starter bag, no pity (the server does the same to its inventory when the rebirth reaches it)
+			const kit = rebirthKit(merchantUpgrades);
 			set({
 				...fresh,
 				// the character is progression too: lifetime XP, the level it gives and the attributes (with the points still to spend) carry
@@ -547,18 +548,17 @@ const createGameSlice = (
 				level: settled,
 				previousLevel: settled.level,
 				characterStats,
-				resourceRates: calculateResourceRates(fresh.tiles, characterStats, fresh.farmLevels, prestige, fresh.farmUpgrades, merchantUpgrades, gearIncomePct(state.equipment)),
-				// gear is character progression: it survives a rebirth (HP is refilled)
-				equipment: state.equipment,
-				bag: state.bag,
+				resourceRates: calculateResourceRates(fresh.tiles, characterStats, fresh.farmLevels, prestige, fresh.farmUpgrades, merchantUpgrades, gearIncomePct(kit.equipment)),
+				equipment: kit.equipment,
+				bag: kit.bag,
+				lootPity: kit.lootPity,
 				gems: state.gems, // the premium currency survives a rebirth
-				lootPity: state.lootPity,
-				autoSellUpTo: state.autoSellUpTo,
+				autoSellUpTo: state.autoSellUpTo, // a setting, not gear
 				merchantUpgrades,
 				merchantRefreshes: state.merchantRefreshes, // the refresh price and the free window are not reset by a rebirth
 				merchantRefresh: state.merchantRefresh,
-				playerHp: maxHp(characterStats, state.equipment),
-				playerMp: maxMana(characterStats, state.equipment),
+				playerHp: maxHp(characterStats, kit.equipment),
+				playerMp: maxMana(characterStats, kit.equipment),
 				playerName: state.playerName,
 				playerClass: state.playerClass,
 				playSeconds: state.playSeconds,

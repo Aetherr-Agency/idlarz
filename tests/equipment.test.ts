@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, growTo, openFight, store } from './helpers';
-import { CASTLE_X, CASTLE_Y, REBIRTH } from '../src/config/gameConfig';
+import { CASTLE_X, CASTLE_Y, INITIAL_CHARACTER_STATS, REBIRTH } from '../src/config/gameConfig';
+import { totalStatPoints } from '../src/utils/gameUtils';
 import { ITEM_CATALOG, STARTER_EQUIPMENT } from '../src/config/itemCatalog';
-import { emptyBag, gearOf } from '../src/lib/inventory';
+import { emptyBag, gearOf, rebirthKit } from '../src/lib/inventory';
 import { plainItem } from '../src/lib/itemInstance';
 import { maxHp } from '../src/lib/combat';
 import type { BagSlot } from '../src/types/game';
@@ -82,7 +83,7 @@ test('equip actions are refused during a fight', () => {
 	assert.equal(gearOf(api().bag[0])?.base, 'rattatui_fang_blade');
 });
 
-test('rebirth keeps equipment and bag and refills HP', () => {
+test('rebirth wipes the gear and the bag (starter kit again) and refills HP', () => {
 	freshGame();
 	growTo(REBIRTH.minTiles);
 	store.setState((s) => {
@@ -90,12 +91,26 @@ test('rebirth keeps equipment and bag and refills HP', () => {
 		return { tiles, bag: bagWith('rattatui_tunic', 'rattatui_cap'), playerHp: 10 };
 	});
 	api().equipItem(1);
-	const gear = { ...api().equipment };
-	const bag = api().bag.map((s) => (s ? { ...s } : null));
 	assert.equal(api().rebirth(), true);
-	assert.deepEqual(api().equipment, gear);
-	assert.deepEqual(api().bag, bag);
+	assert.deepEqual(api().equipment, STARTER_EQUIPMENT);
+	assert.deepEqual(api().bag, rebirthKit({}).bag);
+	assert.equal(api().lootPity && Object.keys(api().lootPity).length, 0);
 	assert.equal(api().playerHp, max());
 	assert.deepEqual(api().monsters, []);
 	assert.equal(api().combat.fight, null);
+});
+
+test('a rebirth gives every attribute point back to spend (respec) and keeps the level', () => {
+	freshGame();
+	growTo(REBIRTH.minTiles);
+	store.setState((s) => ({ tiles: patchTile(s.tiles, CASTLE_X, CASTLE_Y, { level: REBIRTH.minCastleLevel }), resources: { ...s.resources, xp: 5e6 } }));
+	api().tick(1000);
+	const level = api().level.level;
+	assert.ok(level > 5);
+	assert.equal(api().addStatPoint('strength'), true);
+	assert.equal(api().rebirth(), true);
+	const stats = api().characterStats;
+	assert.equal(stats.strength, INITIAL_CHARACTER_STATS.strength, 'spent points are back');
+	assert.equal(stats.availablePoints, totalStatPoints(level), 'all the points of the level are free again');
+	assert.equal(api().level.level, level);
 });

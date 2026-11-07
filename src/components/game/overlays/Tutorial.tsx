@@ -287,8 +287,8 @@ const Tutorial: React.FC = () => {
 				<h3 className='px-h'>Rebirth &amp; Embers</h3>
 				<p className='text-[#d8c8a0]'>
 					When your castle reaches level {REBIRTH.minCastleLevel} and you own at least {REBIRTH.minTiles} tiles (+{REBIRTH.tilesPerRebirth} for every rebirth done) you can
-					Rebirth from the Rebirth window: the map, resources, castle, farm and level start again, and you keep your name,
-					hero and Embers. Every Ember is worth +{pct(REBIRTH.incomePerPoint)} income for ever and can be spent in
+					Rebirth from the Rebirth window: the map, resources, castle, farm, gear and bag start again (you keep the starter kit), and you keep your name,
+					hero, level, gems and Embers. Your attribute points are handed back to spend again. Every Ember is worth +{pct(REBIRTH.incomePerPoint)} income for ever and can be spent in
 					the shop ({Object.values(EMBER_UPGRADES).map((u) => u.label).join(', ')}). A higher castle level and more tiles
 					at the moment of rebirth give more Embers, so pushing on to level {CASTLE_UPGRADE.maxLevel} first pays.
 				</p>
@@ -379,7 +379,7 @@ const Tutorial: React.FC = () => {
 					Each level needs more XP than the one before: level {LEVELING.anchors[0][0]} takes about {formatCompact(LEVELING.anchors[0][1])} XP in all, level {LEVELING.anchors[1][0]} {formatCompact(LEVELING.anchors[1][1])}, the soft cap (level {LEVELING.softCapLevel}) {formatCompact(LEVELING.anchors[2][1])} and the maximum (level {LEVELING.maxLevel}) {formatCompact(LEVELING.anchors[4][1])}
 				</p>
 				<p className='text-[#a89878] mt-1'>
-					XP comes from time (more with the castle and some buildings) and from every tile you buy. Your level, XP and attributes are kept when you rebirth: the soft cap (level {LEVELING.softCapLevel}) takes about three rebirths, the maximum many more.
+					XP comes from time (more with the castle and some buildings) and from every tile you buy. Your level and XP are kept when you rebirth (the attribute points are given back to spend again): the soft cap (level {LEVELING.softCapLevel}) takes about three rebirths, the maximum many more.
 				</p>
 			</section>
 
