@@ -1,11 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { api, freshGame, growTo, store } from './helpers';
 import { INITIAL_CHARACTER_STATS, LEVELING, MAX_LEVEL, XP_CAP } from '../src/config/gameConfig';
 import { calculateLevel, cumulativeXp, totalStatPoints, xpToNextLevel } from '../src/utils/gameUtils';
-import { decodeSave, encodeSave, sealWire } from '../src/lib/saveFormat';
-import { maxHp, maxMana } from '../src/lib/combat';
+import { decodeSave, encodeSave } from '../src/lib/saveFormat';
 import { pickPersisted } from '../src/lib/sanitizeSave';
 
 // The character level curve (LEVELING in the config): slow, written down as anchors measured with the sim bot, and carried over rebirths.
@@ -79,50 +77,9 @@ test('a level-up in play credits exactly the points of the levels gained', () =>
 	assert.equal(api().characterStats.availablePoints, totalStatPoints(40));
 });
 
-// ---------------------------------------------------------------------------------------------------- the migration (schema 5 -> 6)
+// saves
 
-test('a schema 5 save keeps its XP, gets the level of the new curve and its attribute points refunded', () => {
-	const text = readFileSync(new URL('./fixtures/saves/v5-levels.sav', import.meta.url), 'utf8').trim();
-	const result = decodeSave(text);
-	assert.equal(result.ok, true, result.ok ? '' : result.reason);
-	if (!result.ok) return;
-	assert.equal(result.schema, 5);
-	const { state } = result;
-	assert.equal(state.resources.xp, 362_000, 'the XP is untouched');
-	const level = calculateLevel(362_000).level;
-	assert.equal(state.level.level, level);
-	assert.ok(level < 20, `the old curve called this level 20, the new one ${level}`);
-	for (const key of ['strength', 'dexterity', 'intelligence', 'vitality', 'charisma'] as const) assert.equal(state.characterStats[key], INITIAL_CHARACTER_STATS[key], key);
-	assert.equal(state.characterStats.availablePoints, totalStatPoints(level), 'every point the level has earned is to spend again');
-
-	// what is written next is a schema 6 save that loads as it is
-	const again = decodeSave(encodeSave(state));
-	assert.equal(again.ok, true, again.ok ? '' : again.reason);
-	if (again.ok) {
-		assert.equal(again.schema, 6);
-		assert.deepEqual(again.state.characterStats, state.characterStats);
-		assert.equal(again.state.resources.xp, 362_000);
-	}
-});
-
-test('a schema 5 save with full HP and mana for its spent attributes still loads: the refund takes the max down, the pools start full', () => {
-	// A played character has put its points in Vitality / Intelligence and sits at (or near) the full pools they gave. The refund puts those
-	// attributes back, the maxima drop, and a stored HP above the new maximum made sanitizeSave refuse the whole save as damaged.
-	const text = readFileSync(new URL('./fixtures/saves/v5-levels.sav', import.meta.url), 'utf8').trim();
-	const wire = JSON.parse(Buffer.from(text.split('.')[1], 'base64').toString('utf8'));
-	wire.s.characterStats = { ...wire.s.characterStats, vitality: 60, intelligence: 60, availablePoints: 0 };
-	wire.s.playerHp = 5000;
-	wire.s.playerMp = 3000;
-	const result = decodeSave(sealWire(wire));
-	assert.equal(result.ok, true, result.ok ? '' : result.reason);
-	if (!result.ok) return;
-	const { state } = result;
-	assert.equal(state.characterStats.vitality, INITIAL_CHARACTER_STATS.vitality);
-	assert.equal(state.playerHp, maxHp(state.characterStats, state.equipment), 'HP starts full');
-	assert.equal(state.playerMp, maxMana(state.characterStats, state.equipment), 'mana starts full');
-});
-
-test('a schema 6 save is not touched by the migration: attributes stay as the player spent them', () => {
+test('attributes stay as the player spent them through a save round trip', () => {
 	freshGame();
 	growTo(10);
 	store.setState((s) => ({ resources: { ...s.resources, xp: cumulativeXp(15) + 1 } }));

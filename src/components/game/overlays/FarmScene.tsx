@@ -1,6 +1,7 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ANIMALS, FARM } from '@/config/gameConfig';
 import { ANIMAL_PIXEL_ICONS } from '@/config/pixelIcons';
+import { mulberry32 } from '@/lib/rng';
 import { Animal } from '@/types/game';
 import PixelIcon from '../PixelIcon';
 import {
@@ -12,7 +13,6 @@ import {
 	randomSpot,
 	PERSONAL_SPACE,
 	roomySpot,
-	seeded,
 	walkView,
 	walkable,
 	type Insets,
@@ -133,7 +133,7 @@ const FarmScene: React.FC<FarmSceneProps> = ({ farmLevels, highlightId, celebrat
 		instances.forEach((inst) => {
 			let a = agents.current.get(inst.key);
 			if (!a) {
-				const rnd = seeded(hash(inst.key));
+				const rnd = mulberry32(hash(inst.key));
 				const others: { x: number; y: number }[] = [];
 				agents.current.forEach((o) => others.push({ x: o.x, y: o.y }));
 				const spot = roomySpot(others, 40, rnd, viewRef.current);

@@ -1,6 +1,6 @@
 import { SKILLS, type SkillId } from '@/catalog/skills';
 import { COMBAT } from '@/config/combatConfig';
-import { ITEM_CATALOG } from '@/config/itemCatalog';
+import { ITEM_CATALOG } from '@/catalog';
 import type { StoredSave } from '@/lib/cloudSave/pipeline';
 import { armorReduction, autoBattleUnlocked, mitigate, swing } from '@/lib/combat';
 import { isBoss, levelAtAge, monsterDef, monsterStats } from '@/lib/monsters';

@@ -95,7 +95,7 @@ export const verifyTransition = (prev: Snapshot | null, next: SaveSummary, nowMs
 	if (next.rebirths < before.rebirths || next.legacyEarned < before.legacyEarned) flags.add('prestige_regress');
 	if (!grants && next.gems > before.gems) flags.add('gems_increase'); // without a ledger gems have no source in the game
 
-	if (sameRun && before.derived.known && castleJumped(before, next, elapsedSec)) flags.add('castle_jump');
+	if (sameRun && castleJumped(before, next, elapsedSec)) flags.add('castle_jump');
 
 	if (sameRun) {
 		const played = Math.max(0, playedSec);

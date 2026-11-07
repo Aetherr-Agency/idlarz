@@ -64,31 +64,6 @@ body {
 	animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-@keyframes gold-click {
-	0% {
-		opacity: 0;
-		transform: translateY(0);
-	}
-	20% {
-		opacity: 1;
-		transform: translateY(-5px);
-	}
-	80% {
-		opacity: 1;
-		transform: translateY(-15px);
-	}
-	100% {
-		opacity: 0;
-		transform: translateY(-25px);
-	}
-}
-
-.animate-gold-click {
-	animation: gold-click 0.7s ease-out forwards;
-	text-shadow: 0 0 5px rgba(255, 215, 0, 0.7);
-	font-weight: bold;
-}
-
 /* ---------- Pixel-art header (assets: public/pixel, guide: scripts/pixel/reference/STYLE.md) ---------- */
 .pixelated {
 	image-rendering: pixelated;
@@ -857,19 +832,16 @@ body {
 }
 
 /* pixel scrollbars */
-.px-modal-body::-webkit-scrollbar,
-.px-scroll::-webkit-scrollbar {
+.px-modal-body::-webkit-scrollbar {
 	width: 12px;
 }
 
-.px-modal-body::-webkit-scrollbar-track,
-.px-scroll::-webkit-scrollbar-track {
+.px-modal-body::-webkit-scrollbar-track {
 	background: #0a0605;
 	border: 2px solid #2b1d0e;
 }
 
-.px-modal-body::-webkit-scrollbar-thumb,
-.px-scroll::-webkit-scrollbar-thumb {
+.px-modal-body::-webkit-scrollbar-thumb {
 	background: #8a5f26;
 	border: 2px solid #0a0605;
 	box-shadow: inset 2px 2px 0 #d9a850, inset -2px -2px 0 #4a3014;

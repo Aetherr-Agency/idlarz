@@ -1,18 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { api, freshGame, growTo, setResources, owned, store, tileAt, gridCells, rawSnapshot } from './helpers';
+import { api, freshGame, growTo, setResources, owned, store, tileAt, gridCells, rawSnapshot, landAt, setLandAt } from './helpers';
 import { pickPersisted, sanitizeSave } from '../src/lib/sanitizeSave';
-import { decodeSave, encodeSave, packBody, sealWire } from '../src/lib/saveFormat';
-import { readFileSync } from 'node:fs';
-import { aggregateStats } from '../src/lib/inventory';
-import { resolveItem } from '../src/lib/itemInstance';
-import { RETUNED_STATS } from './retunedItems';
+import { decodeSave, encodeSave } from '../src/lib/saveFormat';
 import { CASTLE_UPGRADE, CASTLE_X, CASTLE_Y, RESOURCE_CAP } from '../src/config/gameConfig';
 import { STARTER_EQUIPMENT } from '../src/config/itemCatalog';
 import { plainItem } from '../src/lib/itemInstance';
 import { emptyBag } from '../src/lib/inventory';
 import { ownedCount, setTile } from '../src/utils/world';
-import { LEGACY_RING } from '../src/utils/biomeRules';
 import { totalStatPoints, xpToNextLevel } from '../src/utils/gameUtils';
 
 /** A plain JSON copy of a (valid) persisted game, as it would come out of a save file. */
@@ -38,26 +33,12 @@ test('a normally played game passes validation unchanged', () => {
 	}
 });
 
-test('a real new game (castle + 4 free tiles) saves and loads; an old castle-only save and a 3x3 start load with their own count', () => {
+test('a real new game (castle + 4 free tiles) saves and loads; a castle-only save loads with its own count', () => {
 	api().resetGame(); // not freshGame(): keep the starting tiles
 	assert.equal(api().freeTiles, 5);
 	const fresh = sanitizeSave(snapshot());
 	assert.equal(fresh.ok, true, fresh.ok ? '' : fresh.reason);
 	if (fresh.ok) assert.equal(fresh.state.freeTiles, 5);
-
-	// a run that began with the old 3x3 start: all eight neighbours owned, nine tiles free
-	api().resetGame();
-	store.setState((st) => {
-		let tiles = st.tiles;
-		for (const [dx, dy] of LEGACY_RING) {
-			if (!tiles || tileAt(tiles, CASTLE_X + dx, CASTLE_Y + dy)?.isOwned) continue;
-			tiles = setTile(tiles, CASTLE_X + dx, CASTLE_Y + dy, { biome: 'plains', isOwned: true });
-		}
-		return { tiles, freeTiles: 9 };
-	});
-	const legacy3x3 = sanitizeSave(snapshot());
-	assert.equal(legacy3x3.ok, true, legacy3x3.ok ? '' : legacy3x3.reason);
-	if (legacy3x3.ok) assert.equal(legacy3x3.state.freeTiles, 9);
 
 	freshGame(); // castle only
 	growTo(6);
@@ -68,10 +49,10 @@ test('a real new game (castle + 4 free tiles) saves and loads; an old castle-onl
 	if (loaded.ok) assert.equal(loaded.state.freeTiles, 1);
 });
 
-test('free tiles cannot be forged: only 1, 5 or 9, and 5 and 9 need their whole start owned', () => {
+test('free tiles cannot be forged: only 1 or 5, and 5 needs its whole start owned', () => {
 	freshGame();
 	growTo(3);
-	rejects((r) => (r.freeTiles = 9), 'free 3x3 claimed without owning it');
+	rejects((r) => (r.freeTiles = 9), 'the removed 3x3 start');
 	rejects((r) => (r.freeTiles = 5), 'free plus claimed without owning it');
 	rejects((r) => (r.freeTiles = 7), 'odd free tile count');
 	rejects((r) => (r.freeTiles = 0), 'zero free tiles');
@@ -90,23 +71,20 @@ test('tampered saves are rejected', () => {
 	rejects((r) => (r.characterStats.strength += 50), 'extra strength points');
 	rejects((r) => (r.characterStats.availablePoints += 50), 'extra available points');
 	rejects((r) => (r.characterStats.charisma = 2.5), 'fractional stat');
-	rejects((r) => (r.tiles[CASTLE_Y][CASTLE_X].level = CASTLE_UPGRADE.maxLevel + 1), 'castle above max level');
-	rejects((r) => (r.tiles[CASTLE_Y][CASTLE_X].level = 0), 'castle level 0');
-	rejects((r) => (r.tiles[0][0] = { biome: 'forest', isOwned: true }), 'territory not connected to the castle');
-	rejects((r) => (r.tiles[0][1] = { biome: 'castle', isOwned: true, level: 1 }), 'second castle');
-	rejects((r) => (r.tiles[0][0] = { biome: 'empty', isOwned: false, building: 'market', level: 2 }), 'building on an unowned tile');
-	rejects((r) => (r.tiles[0][0] = { biome: 'forest', isOwned: false }), 'unowned tile with a biome');
-	rejects((r) => (r.tiles[CASTLE_Y][CASTLE_X + 1] = { biome: 'forest', isOwned: true, building: 'market', level: 2 }), 'building on a forest');
-	rejects((r) => (r.tiles[CASTLE_Y][CASTLE_X + 1].hasChest = 'yes'), 'bad chest flag');
+	rejects((r) => (landAt(r, CASTLE_X, CASTLE_Y).level = CASTLE_UPGRADE.maxLevel + 1), 'castle above max level');
+	rejects((r) => (landAt(r, CASTLE_X, CASTLE_Y).level = 0), 'castle level 0');
+	rejects((r) => setLandAt(r, 0, 0, { biome: 'forest' }), 'territory not connected to the castle');
+	rejects((r) => setLandAt(r, 1, 0, { biome: 'castle', level: 1 }), 'second castle');
+	rejects((r) => setLandAt(r, CASTLE_X + 1, CASTLE_Y, { biome: 'forest', building: 'market', level: 2 }), 'building on a forest');
+	rejects((r) => (landAt(r, CASTLE_X + 1, CASTLE_Y).chest = 'yes'), 'bad chest flag');
 	rejects((r) => (r.farmLevels = { dragon: 3 }), 'unknown animal');
 	rejects((r) => (r.farmLevels = { chicken: -4 }), 'negative animals');
 	rejects((r) => (r.clickLevel = 9), 'click level above the ladder');
 	rejects((r) => (r.castleUpgrade = { toLevel: 6, remainingSec: 1 }), 'castle upgrade to a level that is not next');
 	rejects((r) => (r.castleUpgrade = { toLevel: 2, remainingSec: -5 }), 'negative upgrade timer');
 	rejects((r) => (r.playSeconds = -1), 'negative play time');
-	rejects((r) => (r.tiles = r.tiles.slice(1)), 'grid with a missing row');
 	rejects((r) => (r.resources.xp = 0), 'tiles owned without the XP that paid for them');
-	rejects((r) => (r.tiles = null), 'no grid');
+	rejects((r) => (r.land = null), 'no map');
 	assert.equal(sanitizeSave(null).ok, false);
 	assert.equal(sanitizeSave('hello').ok, false);
 	assert.equal(sanitizeSave([]).ok, false);
@@ -121,7 +99,6 @@ test('derived values cannot be forged: rates, level, combat stats and castle cos
 	raw.characterStats.hp = 1e9;
 	raw.characterStats.tileCostDiscount = 99;
 	raw.level = { level: 99, progress: 0.5 };
-	raw.tiles[CASTLE_Y][CASTLE_X].upgradeCost = { gold: 1 };
 	const result = sanitizeSave(raw);
 	assert.equal(result.ok, true);
 	if (!result.ok) return;
@@ -298,7 +275,7 @@ test('buildings on any land biome save and load; water, nonsense and stray level
 	growTo(12);
 	const spot = gridCells().find(({ t }) => t.isOwned && t.biome !== 'castle')!;
 	const place = (tile: Record<string, unknown>) => (raw: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
-		raw.tiles[spot.y][spot.x] = { isOwned: true, ...tile };
+		setLandAt(raw, spot.x, spot.y, tile);
 	};
 	const load = (tile: Record<string, unknown>) => {
 		const raw = snapshot();
@@ -307,88 +284,11 @@ test('buildings on any land biome save and load; water, nonsense and stray level
 	};
 	assert.equal(load({ biome: 'forest', building: 'tavern' }).ok, true, 'a forest building');
 	assert.equal(load({ biome: 'hills', building: 'quarry' }).ok, true);
-	assert.equal(load({ biome: 'grounds', building: 'tavern' }).ok, false, 'Grounds is no biome any more (schema 3 saves are converted when they are read)');
+	assert.equal(load({ biome: 'grounds', building: 'tavern' }).ok, false, 'Grounds is no biome any more');
 	assert.equal(load({ biome: 'grounds' }).ok, false, 'an old empty lot');
 	assert.equal(load({ biome: 'lake', building: 'tavern' }).ok, false, 'a building on water');
 	assert.equal(load({ biome: 'forest', building: 'nonsense' }).ok, false);
 	assert.equal(load({ biome: 'forest', building: 'tavern', level: 2 }).ok,false, 'a building never has a level');
 	assert.equal(load({ biome: 'forest', level: 2 }).ok, false, 'a level without a building');
-	rejects((raw) => { raw.tiles[CASTLE_Y][CASTLE_X].building = 'tavern'; }, 'a building on the castle');
-});
-
-// ---- schema 2 -> 3: gear ids become item instances -------------------------------------------------------------------
-const legacy = JSON.parse(readFileSync(new URL('./fixtures/legacy-items.json', import.meta.url), 'utf8')) as Record<string, { kind: string; slot: string | null; rarity: string; stats: Record<string, number> }>;
-const legacyGear = Object.entries(legacy).filter(([, item]) => item.kind !== 'consumable');
-
-/** A v2 save: the current game written the way schema 2 did (gear as bare ids). */
-const v2Text = (gear: { equipment?: Record<string, string>; bag?: unknown[] }) => {
-	freshGame();
-	growTo(8);
-	const body = packBody(pickPersisted(api())) as Record<string, unknown>;
-	const { lootPity: _p, autoSellUpTo: _a, ...rest } = body; // schema 2 had neither
-	void _p;
-	void _a;
-	return sealWire({ v: 2, t: 1, s: { ...rest, equipment: gear.equipment ?? {}, bag: gear.bag ?? Array.from({ length: 36 }, () => null) } });
-};
-
-test('a schema 2 save keeps every item: each old gear id converts to an instance with exactly its old stats', () => {
-	const ids = legacyGear.map(([id]) => id);
-	for (let from = 0; from < ids.length; from += 36) {
-		const chunk = ids.slice(from, from + 36);
-		const bag: unknown[] = Array.from({ length: 36 }, (_, i) => (chunk[i] ? { id: chunk[i], qty: 1 } : null));
-		const r = decodeSave(v2Text({ bag }));
-		assert.equal(r.ok, true, r.ok ? '' : r.reason);
-		if (!r.ok) continue;
-		chunk.forEach((id, i) => {
-			const slot = r.state.bag[i];
-			assert.ok(slot && 'item' in slot, id);
-			if (!slot || !('item' in slot)) return;
-			assert.equal(slot.item.base, id);
-			assert.equal(slot.item.rarity, legacy[id].rarity, `${id} keeps its old rarity`);
-			assert.deepEqual(resolveItem(slot.item)!.stats, RETUNED_STATS[id] ?? legacy[id].stats, `${id} keeps its old stats (or its pinned retuned ones)`);
-		});
-	}
-});
-
-test('a schema 2 save keeps worn gear and stacks, and its derived stats do not change', () => {
-	const r = decodeSave(v2Text({ equipment: { mainHand: 'wooden_sword', offHand: 'wooden_shield', head: 'rattatui_cap' }, bag: [{ id: 'potion_minor', qty: 5 }, ...Array.from({ length: 35 }, () => null)] }));
-	assert.equal(r.ok, true, r.ok ? '' : r.reason);
-	if (!r.ok) return;
-	assert.deepEqual(r.state.equipment.mainHand, { base: 'wooden_sword', level: 1, rarity: 'common', quality: 50, affixes: [] });
-	assert.equal(r.state.equipment.head?.rarity, 'epic');
-	assert.deepEqual(r.state.bag[0], { id: 'potion_minor', qty: 5 });
-	assert.deepEqual(aggregateStats(r.state.equipment), { ...aggregateStats({ mainHand: plainItem('wooden_sword'), offHand: plainItem('wooden_shield'), head: plainItem('rattatui_cap') }) });
-	assert.deepEqual(r.state.lootPity, {});
-	assert.equal(r.state.autoSellUpTo, null);
-});
-
-test('a forged schema 2 save is still refused: unknown ids, prototype names, stacked gear, potions as armour', () => {
-	const bad = (gear: { equipment?: Record<string, string>; bag?: unknown[] }) => decodeSave(v2Text(gear)).ok;
-	const row = (entry: unknown) => [entry, ...Array.from({ length: 35 }, () => null)];
-	assert.equal(bad({ equipment: { head: 'mythic_crown' } }), false);
-	assert.equal(bad({ equipment: { head: 'constructor' } }), false);
-	assert.equal(bad({ equipment: { head: 'potion_minor' } }), false);
-	assert.equal(bad({ equipment: { head: 'wooden_sword' } }), false, 'wrong slot');
-	assert.equal(bad({ bag: row({ id: 'steel_helm', qty: 2 }) }), false, 'two helms in one slot');
-	assert.equal(bad({ bag: row({ id: '__proto__', qty: 1 }) }), false);
-	assert.equal(bad({ bag: row({ id: 'toString', qty: 1 }) }), false);
-	assert.equal(bad({ bag: row({ id: 'steel_helm', qty: 1 }) }), true);
-});
-
-test('the frozen schema 3 fixture holds rolled gear, pity and the auto-sell filter, and re-encodes unchanged', () => {
-	const text = readFileSync(new URL('./fixtures/saves/v3.sav', import.meta.url), 'utf8').trim();
-	const r = decodeSave(text);
-	assert.equal(r.ok, true, r.ok ? '' : r.reason);
-	if (!r.ok) return;
-	assert.equal(r.schema, 3);
-	const gear = r.state.bag.flatMap((slot) => (slot && 'item' in slot ? [slot.item] : []));
-	assert.ok(gear.length >= 9);
-	assert.ok(gear.some((item) => item.affixes.length > 0 && item.level > 1), 'rolled items with affixes and a level above 1');
-	assert.ok(gear.every((item) => resolveItem(item)), 'every instance resolves');
-	assert.deepEqual(r.state.lootPity, { 'boss:king_legendary': 3 });
-	assert.equal(r.state.autoSellUpTo, 'common');
-	assert.ok(r.state.equipment.head && r.state.equipment.neck && r.state.equipment.head.affixes.length > 0, 'rolled gear is worn too');
-	const again = decodeSave(encodeSave(r.state));
-	assert.equal(again.ok, true);
-	if (again.ok) assert.deepEqual(again.state.bag, r.state.bag);
+	rejects((raw) => { landAt(raw, CASTLE_X, CASTLE_Y).building = 'tavern'; }, 'a building on the castle');
 });

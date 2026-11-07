@@ -30,29 +30,27 @@ export interface SaveSummary {
 	/** Percent bonus on xp income (`characterStats.xpGainMultiplier` plus the gear's XP Gain). */
 	xpGainPct: number;
 	playSeconds: number;
-	/** What an absence and the server-rolled rewards need, kept in the `derived` column (older rows lack it: see `DEFAULT_DERIVED`). */
+	/** What an absence and the server-rolled rewards need, kept in the `derived` column (`DEFAULT_DERIVED` fills a row without it). */
 	derived: SaveDerived;
 }
 
 export interface SaveDerived {
-	/** True when these numbers were derived from a save (rows written before the offline ledger migration have only the defaults) */
-	known?: boolean;
 	/** The castle upgrade that was running, and the per-second rates once it is done (null with none running) */
 	castleUpgrade: CastleUpgradeState | null;
 	ratesAfterCastle: Resources | null;
 	/** Total Luck (attributes + Lucky Charm + gear) and the gear's Gold Find %: they decide server-rolled rewards */
 	luck: number;
 	goldFind: number;
-	/** The set bonuses' Kill Rewards %: extra gold and XP from a kill (absent in older rows: none) */
-	killRewardPct?: number;
+	/** The set bonuses' Kill Rewards %: extra gold and XP from a kill */
+	killRewardPct: number;
 	/** Chests standing on the map: the ledger is seeded from them the first time it is created (monsters are the ledger's own) */
 	chests: number;
 	/** What the Ember upgrades made of the away-time cap (seconds) and efficiency (0-1) */
 	offlineCapSec: number;
 	offlineEfficiency: number;
-	/** Tiles bought, as the XP formula counts them (castle + purchases): the XP the purchases can explain is worked out from it (absent in older rows) */
-	purchased?: number;
-	/** The most XP the server has seen this character earn (cloudSave/xpModel.ts): kept from save to save, absent in older rows */
+	/** Tiles bought, as the XP formula counts them (castle + purchases): the XP the purchases can explain is worked out from it */
+	purchased: number;
+	/** The most XP the server has seen this character earn (cloudSave/xpModel.ts): kept from save to save, absent before the first save */
 	xpBase?: number;
 }
 
@@ -62,6 +60,7 @@ export const DEFAULT_DERIVED: SaveDerived = {
 	luck: 0,
 	goldFind: 0,
 	killRewardPct: 0,
+	purchased: 1,
 	chests: 0,
 	offlineCapSec: offlineCapSec(),
 	offlineEfficiency: offlineEfficiency(),
@@ -97,7 +96,6 @@ export const summarize = (state: PersistedGame): SaveSummary => {
 		xpGainPct: xpGainPct(state.characterStats, state.equipment),
 		playSeconds: state.playSeconds,
 		derived: {
-			known: true,
 			castleUpgrade: state.castleUpgrade ? { ...state.castleUpgrade } : null,
 			ratesAfterCastle: ratesAfterUpgrade(state),
 			luck: fx.luck,

@@ -1,17 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readdirSync, readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import { api, freshGame, growTo, store, gridCells } from './helpers';
 import { pickPersisted, type PersistedGame } from '../src/lib/sanitizeSave';
-import { MIGRATIONS, SAVE_PREFIX, SAVE_SCHEMA, decodeSave, encodeSave, migrateBody, packBody, sealWire } from '../src/lib/saveFormat';
+import { SAVE_PREFIX, SAVE_SCHEMA, decodeSave, encodeSave, packBody, sealWire } from '../src/lib/saveFormat';
 import { createSaveStorage, type KeyValue } from '../src/lib/saveStorage';
 import { STARTER_EQUIPMENT } from '../src/config/itemCatalog';
 import { plainItem } from '../src/lib/itemInstance';
 import { emptyBag } from '../src/lib/inventory';
 import { ownedCount, patchTile, setTile } from '../src/utils/world';
 
-const FIXTURES = resolve(__dirname, 'fixtures', 'saves');
 
 /** A played game with buildings, a chest, gear and a monster, as a plain persisted slice. */
 const playedGame = (): PersistedGame => {
@@ -94,27 +91,12 @@ test('a save from a newer schema is refused with a clear reason', () => {
 	if (!r.ok) assert.match(r.reason, /newer version/);
 });
 
-test('migrations upgrade old bodies step by step', () => {
+test('a save from an older season is refused with a clear reason, not upgraded', () => {
 	const game = playedGame();
-	const old = packBody(game);
-	const { clickLevel, ...rest } = old; // pretend schema 1 called it `clicks`
-	const v1 = sealWire({ v: 1, t: 1, s: { ...rest, clicks: clickLevel } });
-	const table = { 1: (b: Record<string, unknown>) => { const { clicks, ...others } = b; return { ...others, clickLevel: clicks }; } };
-
-	assert.equal(decodeSave(v1, { schema: 2, migrations: table }).ok, true);
-	assert.equal(decodeSave(v1, { schema: 2, migrations: {} }).ok, false, 'a missing step is an error, not a guess');
-	assert.deepEqual(migrateBody({ a: 1 }, 1, 3, { 1: (b) => ({ ...b, b: 2 }), 2: (b) => ({ ...b, c: 3 }) }), { a: 1, b: 2, c: 3 });
-	assert.deepEqual(Object.keys(MIGRATIONS), ['1', '2', '3', '4', '5'], 'one step per bump of SAVE_SCHEMA: 1 -> 2 turned the land list into runs, 2 -> 3 the gear ids into item instances, 3 -> 4 the Grounds tiles into land, 4 -> 5 the monster tiers into levels, 5 -> 6 the slower level curve (the attribute points are refunded)');
-});
-
-test('every frozen save in tests/fixtures/saves still loads (the compatibility guard)', async () => {
-	const files = readdirSync(FIXTURES).filter((f) => f.endsWith('.sav'));
-	assert.ok(files.some((f) => f.startsWith('v')), 'old schema versions are covered');
-	const { parse } = createSaveStorage({ kv: null });
-	for (const file of files) {
-		const result = await parse(readFileSync(resolve(FIXTURES, file), 'utf8'));
-		assert.equal(result.ok, true, `${file}: ${result.ok ? '' : result.reason}`);
-		if (result.ok) assert.ok(ownedCount(result.state.tiles) > 9, file);
+	for (const v of [1, SAVE_SCHEMA - 1]) {
+		const r = decodeSave(sealWire({ v, t: 1, s: packBody(game) }));
+		assert.equal(r.ok, false, `schema ${v}`);
+		if (!r.ok) assert.match(r.reason, /older season/);
 	}
 });
 

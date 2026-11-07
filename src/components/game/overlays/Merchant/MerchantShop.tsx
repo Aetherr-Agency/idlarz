@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useUiStore } from '@/stores/uiStore';
 import { useGameStore } from '@/stores/gameStore';
-import { ITEM_CATALOG } from '@/config/itemCatalog';
+import { ITEM_CATALOG } from '@/catalog';
 import { averageItemLevel } from '@/lib/inventory';
 import { resolveItem } from '@/lib/itemInstance';
 import { freeRefreshesLeft, refreshCooldown, refreshCost, secondsToRotation, shelfCells, shopPriceOf } from '@/lib/merchant';

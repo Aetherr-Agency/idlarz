@@ -98,11 +98,8 @@ test('the first save of an account is judged with a wide margin, an absurd total
 	assert.deepEqual(verifyTransition(null, absurd, T0).includes('xp_jump'), true);
 });
 
-test('purchased tiles are read from the summary, or from the map for older rows', () => {
+test('purchased tiles are read from the summary', () => {
 	assert.equal(purchasedOf(summaryAt(50, 0, 0)), 50);
-	const old = summaryAt(50, 0, 0);
-	delete old.derived.purchased;
-	assert.equal(purchasedOf(old), old.tilesOwned - 8);
 	assert.ok(XP_MODEL.firstSaveSlack >= 1);
 });
 

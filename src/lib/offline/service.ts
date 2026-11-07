@@ -83,7 +83,7 @@ export const ANCHOR_REFRESH_MS = 120_000;
  * Whether `next` differs from the stored ledger only in what the clock moves: the anchor and the spawn timers (`advanceBank` is additive
  * in time, so recomputing them from the older values gives the same result) and the idle combat clock, and the anchor has not fallen more than `ANCHOR_REFRESH_MS` behind.
  */
-export const onlyTimeMoved = (stored: Ledger, next: Ledger): boolean => {
+const onlyTimeMoved = (stored: Ledger, next: Ledger): boolean => {
 	if (next.anchorAt - stored.anchorAt >= ANCHOR_REFRESH_MS) return false;
 	// the combat clock is time as well while no fight is open (HP and mana that are still moving make the two differ anyway)
 	const frozen = (l: Ledger) =>
@@ -113,8 +113,6 @@ export const withLedger = async <T>(
 		const stored = await deps.saves.load(userId);
 		if (!stored) return { kind: 'no_save' };
 		const existing = await deps.ledgers.load(userId);
-		// a save from before the ledger existed does not say what stands on the map (chests): wait for the next upload instead of seeding from guesses
-		if (!existing && stored.summary.derived.known !== true) return { kind: 'no_save' };
 		const seeded = existing ?? seedLedger(stored, nowMs);
 		// the bag, the gear and the pity are the ledger's (seeded from the save the first time); the engine sees the save with them in place
 		const base: Ledger = { ...seeded, inv: fitInventory(seeded.inv ?? inventoryFromCore(stored.core), stored.core) };

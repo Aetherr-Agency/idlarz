@@ -4,7 +4,8 @@ import { armorOf, armorReduction, attacksPerSecond, critOdds, damagePerHit, dodg
 import { monsterStats } from '../src/lib/monsters';
 import { INITIAL_CHARACTER_STATS } from '../src/config/gameConfig';
 import { COMBAT, MONSTERS } from '../src/config/combatConfig';
-import { ITEM_CATALOG, STARTER_EQUIPMENT } from '../src/config/itemCatalog';
+import { ITEM_CATALOG } from '../src/catalog';
+import { STARTER_EQUIPMENT } from '../src/config/itemCatalog';
 import { calculateCombatStats } from '../src/utils/gameUtils';
 import { fullSet } from '../src/lib/fightSim';
 import { plainItem } from '../src/lib/itemInstance';

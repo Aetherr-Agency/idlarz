@@ -2,7 +2,7 @@
 
 Both steps of this doc are built and their text is gone from here; the code and the tests are the record.
 
-- **Step A, castle timers: built, and changed.** The balancing pass halved **all nine** timers (30 min, 2 h, 6 h, 12 h, 24 h, 1.5 d, 2 d, 2.5 d, 3.5 d, `CASTLE_UPGRADE.durationsSec`, pinned in `tests/castle.test.ts`) instead of the 1/3/9/16/36 h proposed here. A save in the middle of an upgrade is clamped to the new maximum by `repairSave.ts`.
+- **Step A, castle timers: built, and changed.** The balancing pass halved **all nine** timers (30 min, 2 h, 6 h, 12 h, 24 h, 1.5 d, 2 d, 2.5 d, 3.5 d, `CASTLE_UPGRADE.durationsSec`, pinned in `tests/castle.test.ts`) instead of the 1/3/9/16/36 h proposed here.
 - **Step B, one registry for resource keys: built.** A resource is one catalog entry with `stored: true` (`catalog/resources.ts`); `catalog/resourceKeys.ts` derives the key lists; `tests/catalog.test.ts` pins their order. Tier ladder labels t2-t4 exist and the header skips empty tiers.
 
 ## Still open

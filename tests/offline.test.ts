@@ -12,7 +12,7 @@ import { applyOfflineGrant } from '../src/lib/offline/apply';
 import { computeOfflineGrant, zeroGrant, type OfflineInput } from '../src/lib/offline/grant';
 import { offlineCapHours, offlineCapSec, offlineEfficiency, offlineMinGapSec } from '../src/lib/offline/limits';
 import { sealedRng } from '../src/lib/offline/seal';
-import { advanceBank, emptyBank, takeChestAt, takeMonster, upgradeBank, ticketCap, TICKET_CAP, type BankContext, type TicketBank } from '../src/lib/offline/tickets';
+import { advanceBank, emptyBank, takeChestAt, takeMonster, ticketCap, TICKET_CAP, type BankContext, type TicketBank } from '../src/lib/offline/tickets';
 import { calculateCombatStats, calculateResourceRates, totalStatPoints } from '../src/utils/gameUtils';
 import { castleUpgradeDuration } from '../src/utils/gameUtils';
 import type { PrestigeState, Resources } from '../src/types/game';
@@ -219,14 +219,6 @@ test('an absence is credited at its efficiency but the tickets are stamped acros
 	assert.equal(bank.accAt, 6 * 3600);
 	const lastChest = minted.chests[minted.chests.length - 1].at;
 	assert.ok(lastChest > 5 * 3600 && lastChest <= 6 * 3600, `${lastChest}`);
-});
-
-test('a bank stored before chests had numbers and tiles is read as numbered tickets without a tile', () => {
-	const old = { ...emptyBank(0), nextN: 3, chests: [100, 200] as never };
-	const bank = upgradeBank(old as never);
-	assert.deepEqual(bank.chests, [{ n: 3, at: 100 }, { n: 4, at: 200 }]);
-	assert.equal(bank.nextN, 5);
-	assert.deepEqual(upgradeBank(bank), bank, 'a bank in the new shape is left alone');
 });
 
 test('taking tickets removes exactly one and refuses what does not exist', () => {

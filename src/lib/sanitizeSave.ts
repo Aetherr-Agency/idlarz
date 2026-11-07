@@ -1,3 +1,4 @@
+import { isRecord } from '@/lib/isRecord';
 import { OPTIONAL_KEYS } from '@/catalog/resourceKeys';
 import { PLAYER_CLASSES, DEFAULT_PLAYER_CLASS, type PlayerClassId } from '@/config/playerClasses';
 import {
@@ -15,7 +16,6 @@ import {
 	MERCHANT_UPGRADES,
 	CASTLE_X,
 	CASTLE_Y,
-	LEGACY_GRID_SIZE,
 	INITIAL_CHARACTER_STATS,
 	INITIAL_RESOURCES,
 	EMBER_UPGRADES,
@@ -26,7 +26,8 @@ import {
 	type MerchantUpgradeId,
 } from '@/config/gameConfig';
 import { COMBAT } from '@/config/combatConfig';
-import { EQUIPMENT_LAYOUT, ITEM_CATALOG, LOOT_PROFILES, RARITIES, STARTER_EQUIPMENT } from '@/config/itemCatalog';
+import { EQUIPMENT_LAYOUT, ITEM_CATALOG, LOOT_PROFILES, RARITIES } from '@/catalog';
+import { STARTER_EQUIPMENT } from '@/config/itemCatalog';
 import { instanceProblem } from '@/lib/itemInstance';
 import { maxHp, maxMana } from '@/lib/combat';
 import { starterBag } from '@/lib/inventory';
@@ -40,9 +41,8 @@ import {
 	EMPTY_PRESTIGE,
 	emberSpent,
 	STARTER_FREE_TILES,
-	LEGACY_FREE_TILES,
 } from '@/utils/gameUtils';
-import { RING, LEGACY_RING } from '@/utils/biomeRules';
+import { RING } from '@/utils/biomeRules';
 import {
 	EMPTY_WORLD,
 	MAX_OWNED_TILES,
@@ -114,17 +114,14 @@ export type SanitizeResult =
 
 const fail = (reason: string): SanitizeResult => ({ ok: false, reason });
 
-const isObject = (v: unknown): v is Record<string, unknown> =>
-	typeof v === 'object' && v !== null && !Array.isArray(v);
-
 /** A saved piece of gear, rebuilt field by field (nothing else survives), or the reason it is not valid. */
 export const readInstance = (value: unknown): ItemInstance | string => {
-	if (!isObject(value)) return 'not an item';
+	if (!isRecord(value)) return 'not an item';
 	for (const key of Object.keys(value)) if (!INSTANCE_KEYS.has(key)) return 'unknown field';
 	if (typeof value.base !== 'string' || typeof value.rarity !== 'string' || !Array.isArray(value.affixes)) return 'malformed';
 	const affixes: ItemInstance['affixes'] = [];
 	for (const a of value.affixes) {
-		if (!isObject(a)) return 'malformed affix';
+		if (!isRecord(a)) return 'malformed affix';
 		for (const key of Object.keys(a)) if (!AFFIX_KEYS.has(key)) return 'unknown affix field';
 		if (typeof a.id !== 'string' || typeof a.roll !== 'number') return 'malformed affix';
 		affixes.push({ id: a.id, roll: a.roll });
@@ -144,7 +141,6 @@ const int = (v: unknown, min: number, max: number): number | null => {
 export const BASE_STAT_KEYS = ['strength', 'dexterity', 'intelligence', 'vitality', 'charisma'] as const;
 const RESOURCE_KEYS = Object.keys(INITIAL_RESOURCES) as (keyof Resources)[];
 const OPTIONAL_RESOURCES = new Set<keyof Resources>(OPTIONAL_KEYS);
-const TILE_KEYS = new Set(['biome', 'isOwned', 'level', 'upgradeCost', 'building', 'hasChest']);
 export const MAX_ANIMALS = 5000;
 const GEAR_SLOTS = new Set<string>([...EQUIPMENT_LAYOUT.left, ...EQUIPMENT_LAYOUT.right, ...EQUIPMENT_LAYOUT.bottom]);
 const STACK_KEYS = new Set(['id', 'qty']);
@@ -167,38 +163,14 @@ interface RawLand {
 
 /**
  * The owned tiles of a raw save, as `{ x, y, t }` with `t` in the tile shape (`biome`, `isOwned`, `level`, `building`,
- * `hasChest`). Two layouts are read: the 50 x 50 grid of the first saves (`tiles`, also what the legacy vault holds) and the
- * list of owned tiles (`land`) that the save format writes. Returns an error text instead when the layout is wrong.
+ * `hasChest`) from the list of owned tiles (`land`) that the save format writes. Returns an error text instead when the layout is wrong.
  */
 const readLand = (raw: Record<string, unknown>): RawLand[] | string => {
 	const out: RawLand[] = [];
-	if (Array.isArray(raw.tiles)) {
-		const rows = raw.tiles;
-		if (rows.length !== LEGACY_GRID_SIZE) return 'grid height';
-		for (let y = 0; y < LEGACY_GRID_SIZE; y++) {
-			const row = rows[y];
-			if (!Array.isArray(row) || row.length !== LEGACY_GRID_SIZE) return 'grid width';
-			for (let x = 0; x < LEGACY_GRID_SIZE; x++) {
-				const t = row[x];
-				if (!isObject(t)) return 'tile shape';
-				for (const key of Object.keys(t)) if (!TILE_KEYS.has(key)) return 'tile key';
-				if (!hasBiome(t.biome)) return 'tile biome';
-				if (typeof t.isOwned !== 'boolean') return 'tile owned';
-				if (!t.isOwned) {
-					if (t.biome !== 'empty' || t.level !== undefined || t.building !== undefined || t.hasChest) {
-						return 'unowned tile content';
-					}
-					continue;
-				}
-				out.push({ x, y, t });
-			}
-		}
-		return out;
-	}
 	if (!Array.isArray(raw.land)) return 'map';
 	if (raw.land.length > MAX_OWNED_TILES) return 'too many tiles';
 	for (const entry of raw.land) {
-		if (!isObject(entry)) return 'land entry shape';
+		if (!isRecord(entry)) return 'land entry shape';
 		for (const key of Object.keys(entry)) if (!LAND_KEYS.has(key)) return 'land entry key';
 		const { x, y, biome, level, building, chest } = entry;
 		if (typeof x !== 'number' || typeof y !== 'number' || !inRange(x, y)) return 'land entry position';
@@ -219,7 +191,7 @@ const readLand = (raw: Record<string, unknown>): RawLand[] | string => {
  * cost) are recomputed instead of trusted. Returns the cleaned persisted slice.
  */
 export const sanitizeSave = (raw: unknown): SanitizeResult => {
-	if (!isObject(raw)) return fail('not an object');
+	if (!isRecord(raw)) return fail('not an object');
 
 	// ---- map ----------------------------------------------------------------------------------
 	const land = readLand(raw);
@@ -295,13 +267,12 @@ export const sanitizeSave = (raw: unknown): SanitizeResult => {
 	if (reached.size !== owned) return fail('disconnected territory');
 	const tiles = setTiles(EMPTY_WORLD, placed);
 
-	// Tiles that cost nothing: just the castle in a save from before the starting tiles, the castle + its four neighbours
-	// today, or the castle + all eight neighbours for a run that began with the old 3x3 start
-	const freeTiles = raw.freeTiles === undefined ? 1 : int(raw.freeTiles, 1, LEGACY_FREE_TILES);
-	if (freeTiles === null || (freeTiles !== 1 && freeTiles !== STARTER_FREE_TILES && freeTiles !== LEGACY_FREE_TILES)) {
+	// Tiles that cost nothing: just the castle (1), or the castle + its four neighbours (a new game)
+	const freeTiles = raw.freeTiles === undefined ? 1 : int(raw.freeTiles, 1, STARTER_FREE_TILES);
+	if (freeTiles === null || (freeTiles !== 1 && freeTiles !== STARTER_FREE_TILES)) {
 		return fail('free tiles');
 	}
-	const startTiles = freeTiles === LEGACY_FREE_TILES ? LEGACY_RING : freeTiles === STARTER_FREE_TILES ? RING : [];
+	const startTiles = freeTiles === STARTER_FREE_TILES ? RING : [];
 	if (!startTiles.every(([dx, dy]) => at.has(tileKey(CASTLE_X + dx, CASTLE_Y + dy)))) {
 		return fail('starting ring not owned');
 	}
@@ -310,7 +281,7 @@ export const sanitizeSave = (raw: unknown): SanitizeResult => {
 	const castleLevel = castleTile.level ?? 1;
 
 	// ---- resources, XP and level ----------------------------------------------------------------
-	if (!isObject(raw.resources)) return fail('resources');
+	if (!isRecord(raw.resources)) return fail('resources');
 	const resources = { ...INITIAL_RESOURCES };
 	for (const key of RESOURCE_KEYS) {
 		// resources added after launch (farm products) are missing from older saves and start at 0
@@ -324,7 +295,7 @@ export const sanitizeSave = (raw: unknown): SanitizeResult => {
 	const level = calculateLevel(resources.xp);
 
 	// ---- character ---------------------------------------------------------------------------
-	if (!isObject(raw.characterStats)) return fail('character stats');
+	if (!isRecord(raw.characterStats)) return fail('character stats');
 	const base: Record<(typeof BASE_STAT_KEYS)[number], number> = {
 		strength: 0,
 		dexterity: 0,
@@ -356,7 +327,7 @@ export const sanitizeSave = (raw: unknown): SanitizeResult => {
 	// ---- merchant bonuses (optional: an older save has none). Parsed first because Pack Rat sets the bag size ----------
 	const merchantUpgrades: Record<string, number> = {};
 	if (raw.merchantUpgrades !== undefined) {
-		if (!isObject(raw.merchantUpgrades)) return fail('merchant upgrades');
+		if (!isRecord(raw.merchantUpgrades)) return fail('merchant upgrades');
 		for (const [id, lvl] of Object.entries(raw.merchantUpgrades)) {
 			if (!(id in MERCHANT_UPGRADES)) return fail('unknown merchant upgrade');
 			const v = int(lvl, 0, MERCHANT_UPGRADES[id as MerchantUpgradeId].maxLevel);
@@ -374,7 +345,7 @@ export const sanitizeSave = (raw: unknown): SanitizeResult => {
 		bag = [...starterBag(), ...Array.from({ length: bagSize - COMBAT.bagSize }, () => null)];
 	} else {
 		if (raw.equipment === undefined || raw.bag === undefined) return fail('equipment and bag belong together');
-		if (!isObject(raw.equipment)) return fail('equipment');
+		if (!isRecord(raw.equipment)) return fail('equipment');
 		equipment = {};
 		for (const [slot, value] of Object.entries(raw.equipment)) {
 			if (!GEAR_SLOTS.has(slot)) return fail('equipment slot');
@@ -392,7 +363,7 @@ export const sanitizeSave = (raw: unknown): SanitizeResult => {
 				bag.push(null);
 				continue;
 			}
-			if (!isObject(entry)) return fail('bag entry');
+			if (!isRecord(entry)) return fail('bag entry');
 			if ('item' in entry) {
 				for (const key of Object.keys(entry)) if (!GEAR_ENTRY_KEYS.has(key)) return fail('bag entry key');
 				const item = readInstance(entry.item);
@@ -412,7 +383,7 @@ export const sanitizeSave = (raw: unknown): SanitizeResult => {
 	// Loot bookkeeping (optional: a save from before it has no pity and keeps everything)
 	const lootPity: Record<string, number> = {};
 	if (raw.lootPity !== undefined) {
-		if (!isObject(raw.lootPity)) return fail('loot pity');
+		if (!isRecord(raw.lootPity)) return fail('loot pity');
 		const known = new Set(Object.values(LOOT_PROFILES).flatMap((p) => p.bonusTables.filter((t) => t.pity).map((t) => `${p.id}:${t.id}`)));
 		for (const [key, count] of Object.entries(raw.lootPity)) {
 			if (!known.has(key)) return fail('unknown loot table');
@@ -444,7 +415,7 @@ export const sanitizeSave = (raw: unknown): SanitizeResult => {
 	}
 
 	// ---- farm, click power, castle timer, misc -------------------------------------------------------
-	if (!isObject(raw.farmLevels)) return fail('farm');
+	if (!isRecord(raw.farmLevels)) return fail('farm');
 	const farmLevels: Record<string, number> = {};
 	for (const [id, lvl] of Object.entries(raw.farmLevels)) {
 		if (!ANIMALS.some((a) => a.id === id)) return fail('unknown animal');
@@ -456,7 +427,7 @@ export const sanitizeSave = (raw: unknown): SanitizeResult => {
 	// farm upgrades arrived later than the farm: an older save simply has none
 	const farmUpgrades: Record<string, number> = {};
 	if (raw.farmUpgrades !== undefined) {
-		if (!isObject(raw.farmUpgrades)) return fail('farm upgrades');
+		if (!isRecord(raw.farmUpgrades)) return fail('farm upgrades');
 		for (const [id, lvl] of Object.entries(raw.farmUpgrades)) {
 			if (!(id in FARM_UPGRADES)) return fail('unknown farm upgrade');
 			const v = int(lvl, 0, FARM_UPGRADES[id as FarmUpgradeId].maxLevel);
@@ -470,7 +441,7 @@ export const sanitizeSave = (raw: unknown): SanitizeResult => {
 
 	let castleUpgrade: CastleUpgradeState | null = null;
 	if (raw.castleUpgrade !== null && raw.castleUpgrade !== undefined) {
-		if (!isObject(raw.castleUpgrade)) return fail('castle upgrade');
+		if (!isRecord(raw.castleUpgrade)) return fail('castle upgrade');
 		const toLevel = int(raw.castleUpgrade.toLevel, 2, CASTLE_UPGRADE.maxLevel);
 		if (toLevel === null || toLevel !== castleLevel + 1) return fail('castle upgrade level');
 		const remaining = num(raw.castleUpgrade.remainingSec, 0, castleUpgradeDuration(castleLevel));
@@ -481,13 +452,13 @@ export const sanitizeSave = (raw: unknown): SanitizeResult => {
 	// ---- Rebirth / Embers (optional so saves from before it existed stay valid) -----------------------------
 	let prestige: PrestigeState = { ...EMPTY_PRESTIGE, upgrades: {} };
 	if (raw.prestige !== undefined) {
-		if (!isObject(raw.prestige)) return fail('prestige');
+		if (!isRecord(raw.prestige)) return fail('prestige');
 		const rebirths = int(raw.prestige.rebirths, 0, 10000);
 		const legacyPoints = int(raw.prestige.legacyPoints, 0, 1_000_000);
 		const legacyEarned = int(raw.prestige.legacyEarned, 0, 1_000_000);
 		if (rebirths === null || legacyPoints === null || legacyEarned === null) return fail('prestige numbers');
 		const upgrades: PrestigeState['upgrades'] = {};
-		if (!isObject(raw.prestige.upgrades)) return fail('prestige upgrades');
+		if (!isRecord(raw.prestige.upgrades)) return fail('prestige upgrades');
 		for (const [id, lvl] of Object.entries(raw.prestige.upgrades)) {
 			if (!(id in EMBER_UPGRADES)) return fail('unknown ember upgrade');
 			const level = int(lvl, 0, EMBER_UPGRADES[id as EmberUpgradeId].maxLevel);
@@ -512,7 +483,7 @@ export const sanitizeSave = (raw: unknown): SanitizeResult => {
 	let merchantStock: MerchantStock | null = null;
 	if (raw.merchantStock !== undefined && raw.merchantStock !== null) {
 		const rawStock = raw.merchantStock;
-		if (!isObject(rawStock)) return fail('merchant stock');
+		if (!isRecord(rawStock)) return fail('merchant stock');
 		for (const key of Object.keys(rawStock)) if (key !== 'at' && key !== 'offers') return fail('merchant stock key');
 		const at = num(rawStock.at, 0, 1e12);
 		if (at === null || !Array.isArray(rawStock.offers) || rawStock.offers.length > MERCHANT_GOODS.maxOffers) return fail('merchant stock');
@@ -531,7 +502,7 @@ export const sanitizeSave = (raw: unknown): SanitizeResult => {
 	let merchantRefresh: MerchantRefresh = { windowAt: 0, freeUsed: 0, lastAt: 0 };
 	if (raw.merchantRefresh !== undefined) {
 		const r = raw.merchantRefresh;
-		if (!isObject(r)) return fail('merchant refresh');
+		if (!isRecord(r)) return fail('merchant refresh');
 		const windowAt = num(r.windowAt, 0, playSeconds);
 		const freeUsed = int(r.freeUsed, 0, MERCHANT_GOODS.refresh.freePerWindow);
 		const lastAt = num(r.lastAt, 0, playSeconds);

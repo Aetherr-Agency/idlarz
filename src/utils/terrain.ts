@@ -440,7 +440,7 @@ export function landmarkAnchors(g: GroundSrc, built: BuiltFn | undefined, x0: nu
 }
 
 /** The sprite of a landmark: centred on its window, standing on the window's lower third. */
-export function landmarkSprite(a: Landmark, m: TerrainAtlas = ATLAS): Placed {
+function landmarkSprite(a: Landmark, m: TerrainAtlas = ATLAS): Placed {
 	const id = `lm_${a.ground}`;
 	return { id, x: (a.x + LANDMARK_SPAN / 2) * CELL - Math.floor(m.sprites[id][2] / 2), bottom: (a.y + LANDMARK_SPAN - 1) * CELL };
 }
@@ -455,7 +455,7 @@ const coveredTiles = (anchors: Landmark[]): Set<string> => {
 };
 
 /** The landmark whose 6x6 area holds the tile, if any (what keeps buildings off it). */
-export function landmarkAt(world: World, x: number, y: number): Landmark | null {
+function landmarkAt(world: World, x: number, y: number): Landmark | null {
 	const g = worldGround(world);
 	return landmarkAnchors(g, (bx, by) => isBuilt(getTile(world, bx, by)), x - LANDMARK_SPAN + 1, y - LANDMARK_SPAN + 1, x, y)[0] ?? null;
 }

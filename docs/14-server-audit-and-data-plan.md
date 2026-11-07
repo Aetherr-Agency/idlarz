@@ -59,8 +59,8 @@ Not secret either: the catalogs are in the client bundle by design. The secrets 
 
 - The additive rule from [07](07-saves-and-security.md) holds for everything in this plan: new optional fields, new biome letters, new nullable ledger columns, no renames. So no `SAVE_SCHEMA` bump and no data migration.
 - **Frozen fixtures** `tests/fixtures/saves/v1..v5`: add a v6 fixture now (the schema all live saves are on) and keep it.
-- **Dry run against the real rows before each release** (new script `scripts/check-live-saves.ts`, dev machine only, uses the service role key, prints only counts and failure reasons): for every `player_saves` row run `unpackBody` -> `sanitizeSave` -> `repairSave` under the new rules and report anything refused. Today that is 5 rows, so it runs in a second; it stays useful as the player count grows.
-- A rule that moves (a maximum, a curve) goes through `repairSave` (leniency), never through refusal, per the "technical risks" section of the ROADMAP.
+- **Dry run against the real rows before each release** (new script `scripts/check-live-saves.ts`, dev machine only, uses the service role key, prints only counts and failure reasons): for every `player_saves` row run `unpackBody` -> `sanitizeSave` under the new rules and report anything refused. Today that is 5 rows, so it runs in a second; it stays useful as the player count grows.
+- A rule that moves (a maximum, a curve) is checked with the dry run above before release; if it would refuse live saves, reset the players or write the conversion for that change (no repair path is kept).
 
 ## 7. Proposed SQL migrations (all additive; none run now)
 

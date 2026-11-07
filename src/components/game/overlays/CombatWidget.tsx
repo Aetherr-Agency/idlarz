@@ -5,7 +5,7 @@ import { useUiStore } from '@/stores/uiStore';
 import { useRewardPendingStore } from '@/stores/rewardPendingStore';
 import { COMBAT } from '@/config/combatConfig';
 import { SKILL_IDS } from '@/catalog/skills';
-import { ITEM_CATALOG } from '@/config/itemCatalog';
+import { ITEM_CATALOG } from '@/catalog';
 import { autoBattleUnlocked } from '@/lib/combat';
 import { monsterDef, monsterStats } from '@/lib/monsters';
 import { COMBAT_EVENT, type CombatFx } from '@/lib/combatFx';

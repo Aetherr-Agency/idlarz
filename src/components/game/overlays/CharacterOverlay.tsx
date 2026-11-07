@@ -3,7 +3,7 @@ import { useGameStore } from '@/stores/gameStore';
 import { useUiStore } from '@/stores/uiStore';
 import { useWindowStore } from '@/stores/windowStore';
 import { COMBAT } from '@/config/combatConfig';
-import { EQUIPMENT_LAYOUT, EQUIPMENT_SLOT_LABEL } from '@/config/itemCatalog';
+import { EQUIPMENT_LAYOUT, EQUIPMENT_SLOT_LABEL } from '@/catalog';
 import { MERCHANT_GOODS } from '@/config/gameConfig';
 import { SKILLS, SKILL_IDS, skillDescription } from '@/catalog/skills';
 import { armorOf, armorReduction, maxHp } from '@/lib/combat';

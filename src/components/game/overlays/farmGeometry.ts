@@ -130,18 +130,6 @@ export const roomySpot = (others: { x: number; y: number }[], tries: number, rnd
 	return best;
 };
 
-/** Small deterministic generator so a given animal always starts in the same place. */
-export const seeded = (seed: number) => {
-	let a = seed >>> 0;
-	return () => {
-		a = (a + 0x6d2b79f5) >>> 0;
-		let t = a;
-		t = Math.imul(t ^ (t >>> 15), t | 1);
-		t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-		return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-	};
-};
-
 /** Walking speed (world units / second) and sprite anchor (feet) in native sprite pixels */
 export const ANIMAL_MOTION: Record<string, { speed: number }> = {
 	chicken: { speed: 1.3 },

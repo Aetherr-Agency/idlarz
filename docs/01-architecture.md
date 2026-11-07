@@ -57,11 +57,9 @@ src/
 │   ├── authClient / authRoute / authValidation / playerRoute / offlineRoute   the browser and route-handler sides of login and the ledger routes
 │   ├── cloudClient, manualCloudSave, saveEvents, syncPolicy, startPlan, serverSession   when and how the browser pushes saves to the account
 │   ├── rewardsClient, offlineClient, offlineFlow, combatCursor, combatFx   the browser side of /api/spawn, /api/chest, /api/fight, /api/inventory, /api/offline
-│   ├── saveFormat.ts         the save text (IDLZ2.<base64 JSON>.<check>): compact body, `SAVE_SCHEMA` + `MIGRATIONS`, encode/decode
+│   ├── saveFormat.ts         the save text (IDLZ2.<base64 JSON>.<check>): compact body, `SAVE_SCHEMA`, encode/decode
 │   ├── saveStorage.ts, storageScope.ts   localStorage storage: sync flush on close, backup + damaged copy, `.dev` key suffix on localhost, persist(), import/reset
 │   ├── sanitizeSave.ts       validation/normalisation of any loaded or imported save; PERSISTED_KEYS
-│   ├── repairSave.ts         lenient read of the game's own copies: adjusts a value a moved rule refuses, then re-checks
-│   ├── groundsMigration, levelsMigration, monstersMigration, legacyGear   one migration module per old save schema (frozen fixtures in tests/fixtures/saves guard them)
 │   ├── fightSim.ts           a bot that fights with the real engine (scripts/fight-sim.ts, tests/fightBalance.test.ts)
 │   └── castleWard, castleFinder, mapView, minimap, terrainRenderer, tipPlacement, ambientLife, floatText, inventoryDrag, globalMenu, uiPrefs, clipboard
 ├── hooks/
@@ -110,7 +108,7 @@ Not saved: `monsters` and the open fight (`combat`) are the server's picture and
 
 ## Persistence
 
-`persist` + `saveStorage` (see [07](07-saves-and-security.md)): state objects are kept as-is in memory and encoded to one line of text only when written (debounced 2 s, and synchronously on `pagehide`). On start the storage reads `current` (or `backup`, or the old IndexedDB vault once), decodes and validates it with `sanitizeSave`, `merge` rebuilds rates and sets `isHydrated`; `onRehydrateStorage` then enables writing. The initial in-memory world is a fixed placeholder (so the server render and the first client render match); a player without a save gets a random start in `merge`. The schema version lives in `saveFormat.ts` (`SAVE_SCHEMA = 6`, `MIGRATIONS[1..5]`). The browser copy is a cache and the export path; the account holds the verified copy ([09](09-cloud-saves.md)).
+`persist` + `saveStorage` (see [07](07-saves-and-security.md)): state objects are kept as-is in memory and encoded to one line of text only when written (debounced 2 s, and synchronously on `pagehide`). On start the storage reads `current` (or `backup`, or the old IndexedDB vault once), decodes and validates it with `sanitizeSave`, `merge` rebuilds rates and sets `isHydrated`; `onRehydrateStorage` then enables writing. The initial in-memory world is a fixed placeholder (so the server render and the first client render match); a player without a save gets a random start in `merge`. The schema version lives in `saveFormat.ts` (`SAVE_SCHEMA = 7`). The browser copy is a cache and the export path; the account holds the verified copy ([09](09-cloud-saves.md)).
 
 ## Clicks
 

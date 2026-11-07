@@ -76,7 +76,3 @@ export const RESOURCE_ART: readonly ResourceArtEntry[] = [
 	planned('corruptedCore', 'Corrupted Core', 't3', 'blight', true),
 	planned('scrapSteel', 'Scrap Steel', 't3', 'battlefield', true),
 ];
-
-/** Roster entries of one tier; `enabledOnly` keeps just what the game has today. */
-export const resourceArtInTier = (tier: ResourceArtTier, enabledOnly = false): ResourceArtEntry[] =>
-	RESOURCE_ART.filter((r) => r.tier === tier && (!enabledOnly || r.enabled));

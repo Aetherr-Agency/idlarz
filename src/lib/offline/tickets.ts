@@ -190,16 +190,6 @@ export const takeChestAt = (bank: TicketBank, x: number, y: number): { bank: Tic
 	return { bank: { ...bank, chests: bank.chests.filter((chest) => chest.n !== ticket.n) }, ticket };
 };
 
-/**
- * Reads a bank as stored: rows from before chests had numbers and tiles hold the time each chest appeared as a plain number. They
- * become numbered tickets without a tile (the server finds one at the next look at the map).
- */
-export const upgradeBank = (stored: Omit<TicketBank, 'chests'> & { chests?: (ChestTicket | number)[] }): TicketBank => {
-	let nextN = stored.nextN;
-	const chests = (stored.chests ?? []).map((chest): ChestTicket => (typeof chest === 'number' ? { n: nextN++, at: chest } : chest));
-	return { ...stored, chests, nextN };
-};
-
 /** Takes the monster ticket numbered `n` (a kill or a dismissal). Null when there is none. */
 export const takeMonster = (bank: TicketBank, n: number): { bank: TicketBank; ticket: MonsterTicket; kind: 'rat' | 'king' } | null => {
 	if (bank.king?.n === n) return { bank: { ...bank, king: null, kingAcc: 0 }, ticket: bank.king, kind: 'king' };

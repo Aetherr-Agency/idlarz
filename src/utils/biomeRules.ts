@@ -140,11 +140,6 @@ export function rollBiome(tiles: World, x: number, y: number, purchased: number,
 /** The four starting tiles beside the castle: north, east, south, west. */
 export const RING: [number, number][] = [[0, -1], [1, 0], [0, 1], [-1, 0]];
 
-/**
- * The 3x3 start of saves from before the plus-shaped start (clockwise from the north-west corner). Only
- * `sanitizeSave` still reads it, to accept a run that began with eight free neighbours.
- */
-export const LEGACY_RING: [number, number][] = [[-1, -1], [0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0]];
 
 /**
  * The castle's four starting neighbours for a new game: the basic biomes (plains most), always at least `minPlains`
