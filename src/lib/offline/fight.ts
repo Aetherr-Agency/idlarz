@@ -16,7 +16,9 @@ import {
 	type FightEvent,
 	type FightRecord,
 	type PlayerProfile,
+	type QueueResult,
 } from '@/lib/offline/fightTypes';
+import { limitOf } from '@/lib/limits';
 import type { Ledger } from '@/lib/offline/ledger';
 import { isPlaced } from '@/lib/offline/placement';
 import { playerProfile, savedVitals } from '@/lib/offline/profile';
@@ -25,7 +27,8 @@ import type { Inventory } from '@/lib/offline/types';
 import { estimateWin, type PotionStock } from '@/lib/offline/winChance';
 import { payKill } from '@/lib/offline/reward';
 import { sealedRng } from '@/lib/offline/seal';
-import { takeMonster, type MonsterTicket } from '@/lib/offline/tickets';
+import { monsterTypeOf, takeMonster, type MonsterTicket } from '@/lib/offline/tickets';
+import type { MonsterType } from '@/types/game';
 import type { Rng } from '@/lib/rng';
 
 // SERVER ONLY. The fight engine. Combat is a pure function of the player's saved strength, the monster's ticket and a sealed random
@@ -69,15 +72,15 @@ const pickTarget = (
 	combat: CombatState,
 	tSec: number,
 	/** Auto-battle only: whether the player is expected to win against this monster (left out: no check) */
-	winnable?: (type: 'rat' | 'ratKing', level: number) => boolean
-): { ticket: MonsterTicket; type: 'rat' | 'ratKing' } | null => {
+	winnable?: (type: MonsterType, level: number) => boolean
+): { ticket: MonsterTicket; type: MonsterType } | null => {
 	const levelOf = (ticket: MonsterTicket) => levelAtAge(ticket.spawnLevel ?? 1, tSec - ticket.at);
-	const ready = (ticket: MonsterTicket, type: 'rat' | 'ratKing') =>
-		isPlaced(ticket) && tSec >= (combat.retryAt[ticket.n] ?? 0) && (!winnable || winnable(type, levelOf(ticket)));
+	const ready = (ticket: MonsterTicket, kind: 'rat' | 'king') =>
+		isPlaced(ticket) && tSec >= (combat.retryAt[ticket.n] ?? 0) && (!winnable || winnable(monsterTypeOf(ticket, kind), levelOf(ticket)));
 	const rats = ledger.bank.rats.filter((ticket) => ready(ticket, 'rat')).sort((a, b) => (COMBAT.auto.engageOrder === 'weakest' ? levelOf(a) - levelOf(b) : 0) || a.n - b.n);
-	if (rats[0]) return { ticket: rats[0], type: 'rat' };
+	if (rats[0]) return { ticket: rats[0], type: monsterTypeOf(rats[0], 'rat') };
 	const king = ledger.bank.king;
-	if (king && ready(king, 'ratKing')) return { ticket: king, type: 'ratKing' };
+	if (king && ready(king, 'king')) return { ticket: king, type: monsterTypeOf(king, 'king') };
 	return null;
 };
 
@@ -85,7 +88,7 @@ const pickTarget = (
  * Whether auto-battle expects to beat a monster: the estimate (offline/winChance.ts) with the HP it would start with (at least the resume
  * line, so a player who is still resting is not judged on a low HP) and the potions auto-use would drink. A click on a monster skips this.
  */
-const winnableBy = (profile: PlayerProfile, hp: number, potions: PotionStock[]) => (type: 'rat' | 'ratKing', level: number): boolean =>
+const winnableBy = (profile: PlayerProfile, hp: number, potions: PotionStock[]) => (type: MonsterType, level: number): boolean =>
 	estimateWin(profile, Math.max(hp, (profile.maxHp * COMBAT.auto.resumeHpPct) / 100), type, level, potions).chance >= COMBAT.auto.minWinChance;
 
 /** The soonest time a monster that is waiting out its retry cooldown becomes a target again (Infinity: none). */
@@ -101,6 +104,8 @@ const nextRetry = (ledger: Ledger, combat: CombatState, tSec: number): number =>
 export interface CombatTotals {
 	ledger: Ledger;
 	behind: boolean;
+	/** What the last `fight` or `unqueue` command did to the queue (left out when there was none) */
+	queued?: QueueResult;
 }
 
 /**
@@ -113,7 +118,8 @@ export const runCombat = (input: Ledger, env: CombatEnv, ask: { commands?: Comba
 	const base = combatOf(ledger, env);
 	// what the browser has told us it applied (its `since`) is not kept: only cosmetic events are ever dropped unacknowledged
 	const log = ask.ack === undefined ? [...base.log] : base.log.filter((event) => COSMETIC_EVENTS.has(event.kind) || event.no > ask.ack!);
-	const c: CombatState = { ...base, cd: { ...base.cd }, log, fight: base.fight ? { ...base.fight } : null };
+	const c: CombatState = { ...base, cd: { ...base.cd }, log, fight: base.fight ? { ...base.fight } : null, queue: [...(base.queue ?? [])] };
+	let queued: QueueResult | undefined;
 	const profileNow = playerProfile(env.stored.core);
 	// auto-battle is locked until the first rebirth: a save that has it on from before (or a request for it) does not get it
 	const autoAllowed = autoBattleUnlocked(ledger.rebirths);
@@ -188,7 +194,7 @@ export const runCombat = (input: Ledger, env: CombatEnv, ask: { commands?: Comba
 	};
 
 	/** Opens the fight against a monster: the start of both an automatic and a chosen fight. */
-	const start = (t: number, target: { ticket: MonsterTicket; type: 'rat' | 'ratKing' }): boolean => {
+	const start = (t: number, target: { ticket: MonsterTicket; type: MonsterType }): boolean => {
 		const level = levelAtAge(target.ticket.spawnLevel ?? 1, t - target.ticket.at);
 		const stats = monsterStats(target.type, level);
 		const profile: PlayerProfile = profileNow;
@@ -217,9 +223,28 @@ export const runCombat = (input: Ledger, env: CombatEnv, ask: { commands?: Comba
 		return true;
 	};
 
-	/** Auto-battle's pick: only with the switch on and enough HP. */
+	/** A placed monster by ticket number, with what it is (null: gone, or not on the map yet). */
+	const placedTarget = (n: number): { ticket: MonsterTicket; type: MonsterType } | null => {
+		const rat = ledger.bank.rats.find((ticket) => ticket.n === n && isPlaced(ticket));
+		if (rat) return { ticket: rat, type: monsterTypeOf(rat, 'rat') };
+		const king = ledger.bank.king && ledger.bank.king.n === n && isPlaced(ledger.bank.king) ? ledger.bank.king : undefined;
+		return king ? { ticket: king, type: monsterTypeOf(king, 'king') } : null;
+	};
+	const resumeHp = (profileNow.maxHp * COMBAT.auto.resumeHpPct) / 100;
+	/** Drops the queued monsters that are gone (or are the open fight's own) and says whether any is left. */
+	const queueHasTarget = (): boolean => {
+		c.queue = c.queue.filter((n) => placedTarget(n) !== null && n !== c.fight?.n);
+		return c.queue.length > 0;
+	};
+
+	/** The next fight: the queue's head (the player chose it, so no retry time and no win estimate stop it, but the hero must be back on his feet), then auto-battle's pick. */
 	const engage = (t: number): boolean => {
-		if (!c.autoBattle || c.hp < (profileNow.maxHp * COMBAT.auto.resumeHpPct) / 100) return false;
+		if (queueHasTarget()) {
+			if (c.hp < resumeHp) return false;
+			const next = placedTarget(c.queue.shift()!)!;
+			return start(t, next);
+		}
+		if (!c.autoBattle || c.hp < resumeHp) return false;
 		const target = pickTarget(ledger, c, t, winnable());
 		return target ? start(t, target) : false;
 	};
@@ -227,10 +252,22 @@ export const runCombat = (input: Ledger, env: CombatEnv, ask: { commands?: Comba
 	/** The player's pick (a click on a monster): works with auto-battle off, needs no HP threshold and ignores a monster's retry time. */
 	const engageTicket = (t: number, n: number): boolean => {
 		if (c.fight || c.hp <= 0) return false;
-		const rat = ledger.bank.rats.find((ticket) => ticket.n === n && isPlaced(ticket));
-		const king = ledger.bank.king && ledger.bank.king.n === n && isPlaced(ledger.bank.king) ? ledger.bank.king : undefined;
-		if (rat) return start(t, { ticket: rat, type: 'rat' });
-		return king ? start(t, { ticket: king, type: 'ratKing' }) : false;
+		const target = placedTarget(n);
+		if (!target) return false;
+		c.queue = c.queue.filter((queuedN) => queuedN !== n); // a click that fights it now moves it out of the line
+		return start(t, target);
+	};
+
+	/** A click while a fight is open: the monster joins the queue, or leaves it when it was already there. */
+	const queueTicket = (n: number): QueueResult => {
+		if (c.queue.includes(n)) {
+			c.queue = c.queue.filter((queuedN) => queuedN !== n);
+			return 'removed';
+		}
+		if (!placedTarget(n) || c.fight?.n === n) return 'refused';
+		if (c.queue.length >= limitOf('battleQueue')) return 'full';
+		c.queue.push(n);
+		return 'queued';
 	};
 
 	const endFight = (t: number, kind: 'defeated' | 'timeout' | 'retreat') => {
@@ -241,6 +278,7 @@ export const runCombat = (input: Ledger, env: CombatEnv, ask: { commands?: Comba
 			c.retryAt[f.n] = t + (isBoss(f.type) ? COMBAT.auto.bossRetryCooldownSec : COMBAT.auto.retryCooldownSec);
 		}
 		c.fight = null;
+		c.queue = []; // the hero lost, ran out the clock or left: the plan is off (a win keeps the queue)
 	};
 
 	/** One tick of the open fight. Returns when the fight ended. */
@@ -310,13 +348,11 @@ export const runCombat = (input: Ledger, env: CombatEnv, ask: { commands?: Comba
 			if (engage(t)) continue;
 			// nothing to fight yet: rest until something can change (HP back above the resume line, the King's retry time, or now)
 			let until = now;
-			if (c.autoBattle) {
-				if (pickTarget(ledger, c, t, winnable())) {
-					const need = (profileNow.maxHp * COMBAT.auto.resumeHpPct) / 100 - c.hp;
-					if (need > 0 && idleRegen > 0) until = Math.min(until, t + need / idleRegen + EPS);
-				} else {
-					until = Math.min(until, nextRetry(ledger, c, t));
-				}
+			if (queueHasTarget() || (c.autoBattle && pickTarget(ledger, c, t, winnable()))) {
+				const need = resumeHp - c.hp;
+				if (need > 0 && idleRegen > 0) until = Math.min(until, t + need / idleRegen + EPS);
+			} else if (c.autoBattle) {
+				until = Math.min(until, nextRetry(ledger, c, t));
 			}
 			const dt = Math.max(until - t, Math.min(COMBAT.tickSec, now - t));
 			c.hp = Math.min(profileNow.maxHp, c.hp + idleRegen * dt);
@@ -345,7 +381,17 @@ export const runCombat = (input: Ledger, env: CombatEnv, ask: { commands?: Comba
 	for (const command of ask.commands ?? []) {
 		if (command.kind === 'potion') drink(t, command.id);
 		else if (command.kind === 'fight') {
-			if (!behind) engageTicket(t, command.n);
+			if (!behind) {
+				if (c.fight || c.hp <= 0 || c.queue.length > 0) {
+					// a fight is open (or the hero is resting before the queue's next one): the click joins the line
+					if (c.fight || c.queue.length > 0) queued = queueTicket(command.n);
+				} else engageTicket(t, command.n);
+			}
+		} else if (command.kind === 'unqueue') {
+			if (c.queue.includes(command.n)) {
+				c.queue = c.queue.filter((n) => n !== command.n);
+				queued = 'removed';
+			}
 		} else cast(t, command.id);
 	}
 	if (!behind && !c.fight) engage(t);
@@ -354,7 +400,10 @@ export const runCombat = (input: Ledger, env: CombatEnv, ask: { commands?: Comba
 	const standing = new Set([...ledger.bank.rats.map((ticket) => ticket.n), ...(ledger.bank.king ? [ledger.bank.king.n] : [])].map(String));
 	c.retryAt = Object.fromEntries(Object.entries(c.retryAt).filter(([n]) => standing.has(n)));
 
-	return { ledger: { ...ledger, combat: c }, behind };
+	// a queued monster must still be there
+	queueHasTarget();
+
+	return { ledger: { ...ledger, combat: c }, behind, ...(queued ? { queued } : {}) };
 };
 
 /** Takes a monster off the map without a fight (a monster that cannot be beaten, or that is in the way). Ends the fight against it. */
@@ -362,7 +411,7 @@ export const dismissTicket = (ledger: Ledger, env: CombatEnv, n: number): { ledg
 	const taken = takeMonster(ledger.bank, n);
 	if (!taken) return { ledger, ok: false };
 	const base = combatOf(ledger, env);
-	const combat = base.fight?.n === n ? { ...base, fight: null } : base;
+	const combat = { ...base, fight: base.fight?.n === n ? null : base.fight, queue: (base.queue ?? []).filter((queuedN) => queuedN !== n) };
 	return { ledger: { ...ledger, bank: taken.bank, combat }, ok: true };
 };
 
@@ -378,6 +427,7 @@ export const restThrough = (ledger: Ledger, env: CombatEnv, gapSec: number): Led
 		mp: Math.min(p.maxMp, base.mp + p.mpRegen * rest),
 		cd: freshCooldowns(),
 		fight: null,
+		queue: [],
 	};
 	return { ...ledger, combat };
 };
@@ -409,6 +459,14 @@ export const combatView = (ledger: Ledger, env: CombatEnv, since: number, behind
 		maxMp: p.maxMp,
 		cd: c.cd,
 		fight: f ? { n: f.n, type: f.type, level: f.level, lucky: f.lucky, monsterHp: f.monsterHp, monsterMaxHp: f.monsterMaxHp, stunLeft: f.stunLeft, timeLeftSec: f.timeLeftSec, x: f.x, y: f.y } : null,
+		queue: (c.queue ?? []).flatMap((n) => {
+			const rat = ledger.bank.rats.find((ticket) => ticket.n === n && isPlaced(ticket));
+			const king = ledger.bank.king && ledger.bank.king.n === n && isPlaced(ledger.bank.king) ? ledger.bank.king : undefined;
+			const ticket = rat ?? king;
+			if (!ticket) return [];
+			return [{ n, type: monsterTypeOf(ticket, rat ? 'rat' : 'king'), level: levelAtAge(ticket.spawnLevel ?? 1, c.at - ticket.at) }];
+		}),
+		queueMax: limitOf('battleQueue'),
 		autoBattle: c.autoBattle,
 		autoUse: c.autoUse,
 		retrySec: Number.isFinite(nextRetry(ledger, c, c.at)) ? Math.max(0, Math.ceil(nextRetry(ledger, c, c.at) - c.at)) : 0,

@@ -125,6 +125,23 @@ export const advanceMonsters = (monsters: Monster[], dtSec: number, ctx: LimitCo
 		return { ...mon, ageSec, level: levelAtAge(mon.spawnLevel, ageSec, ctx) };
 	});
 
+/** Where a monster is on its way to full size: its top level, whether it is there, the time to the next level and the share of this level's wait that has passed. */
+export interface GrowthInfo {
+	max: number;
+	maxed: boolean;
+	leftSec: number | null;
+	/** 0 just after a level, 1 when the next one comes (always 1 at the top) */
+	fraction: number;
+}
+
+export const growthInfo = (mon: Pick<Monster, 'level' | 'spawnLevel' | 'ageSec'>, ctx: LimitContext = {}): GrowthInfo => {
+	const max = maxLevelOf(mon.spawnLevel, ctx);
+	if (mon.level >= max) return { max, maxed: true, leftSec: null, fraction: 1 };
+	const interval = limitOf('monsterGrowthIntervalSec', ctx);
+	const leftSec = Math.max(0, interval * (mon.level - mon.spawnLevel + 1) - mon.ageSec);
+	return { max, maxed: false, leftSec, fraction: Math.min(1, Math.max(0, 1 - leftSec / interval)) };
+};
+
 /** Seconds until a monster gains its next level; null at the growth limit. */
 export const growthSecondsLeft = (mon: Monster, ctx: LimitContext = {}): number | null => {
 	if (mon.level >= maxLevelOf(mon.spawnLevel, ctx)) return null;

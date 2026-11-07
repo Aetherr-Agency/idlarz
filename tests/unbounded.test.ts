@@ -110,7 +110,7 @@ test('chests and monsters the server lists show on land with negative coordinate
 	setResources({ xp: xp * 1.01 });
 	api().tick(1000); // the levels those tiles paid for hand out their stat points on the next tick
 	// the server lists 5 chests and 3 monsters (placed on land it chose, 2 to 9 tiles from the castle): the map shows them, negative coordinates included
-	const spots = spawnTiles('rat', world, new Set());
+	const spots = spawnTiles('thistleBoar', world, new Set());
 	assert.ok(spots.length >= 3 && spots.some(({ x, y }) => x < 25 || y < 25));
 	api().applyServerTickets({
 		tickets: { chests: world.stats.owned ? ownedRowMajor(world).filter(({ tile }) => tile.biome !== 'castle').slice(0, 5).map(({ x, y }, i) => ({ n: 50 + i, x, y })) : [], rats: spots.slice(0, 3).map(({ x, y }, i) => ({ n: i + 1, at: 0, lucky: false, x, y, spawnLevel: 1 })), king: null },

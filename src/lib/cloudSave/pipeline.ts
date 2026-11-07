@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { STARTING_GEMS } from '@/config/gameConfig';
 import { emptyBank } from '@/lib/offline/tickets';
-import { inventoryFromCore, stampInventory } from '@/lib/offline/inventory';
+import { inventoryFromCore, rebirthInventory, stampInventory } from '@/lib/offline/inventory';
 import { seedLedger, subtractTotals, type Ledger, type LedgerRepo } from '@/lib/offline/ledger';
 import { SAVE_SCHEMA, decodeSave, packBody, sealWire, type SaveBody } from '@/lib/saveFormat';
 import { checkNetWorth } from './netWorth';
@@ -140,7 +140,10 @@ export const acceptSave = async (
 	// held. A New Game (the same run's play time going back) starts them again from the new game's own; a ledger without them yet is seeded
 	// from this save. Everything below (the summary, the checks, the stored copy) is worked out from the stamped state.
 	const newGame = !!(current && state.prestige.rebirths === current.summary.rebirths && state.playSeconds < current.summary.playSeconds - 1);
-	if (ledger?.inv && !newGame) state = stampInventory(state, ledger.inv);
+	// A rebirth wipes the gear and the bag: the server's inventory starts again from the starter kit, whatever the upload carried
+	const rebirthed = !!(current && !newGame && state.prestige.rebirths > current.summary.rebirths);
+	const inventory = ledger?.inv && rebirthed ? rebirthInventory(ledger.inv, state.merchantUpgrades) : ledger?.inv ?? null;
+	if (inventory && !newGame) state = stampInventory(state, inventory);
 	let summary = summarize(state);
 	const grants = ledger ? subtractTotals(ledger.granted, ledger.grantedSeen) : undefined;
 	// XP is the server's to bound: a save that holds more than the tiles bought, the time played and what the server paid can explain is
@@ -211,8 +214,8 @@ export const acceptSave = async (
 			} else if (newRun) {
 				// a rebirth or a new game: the map and its monsters start over, so do the tickets, and rolls start again from ordinal 1 in a new run
 				// (the player's combat starts over too: HP and mana come from the new game, no fight is open)
-				// (gear and bag stay through a rebirth; a New Game takes the new game's own)
-				const inv = newGame || !ledger.inv ? inventoryFromCore(split.core) : ledger.inv;
+				// (a rebirth wipes gear and bag, see `rebirthed`; a New Game takes the new game's own)
+				const inv = newGame || !ledger.inv ? inventoryFromCore(split.core) : (inventory ?? ledger.inv);
 				const next: Ledger = { ...ledger, ver: ledger.ver + 1, runId: ledger.runId + 1, rebirths: summary.rebirths, anchorAt: nowMs, bank: emptyBank(nowMs / 1000), ordChest: 0, ordKill: 0, grantedSeen: ledger.granted, lastKey: null, lastResult: null, combat: null, inv };
 				await ledgers.commit(userId, ledger.ver, next);
 			} else if ((grants && Object.values(grants).some((amount) => amount > 0)) || !ledger.inv) {

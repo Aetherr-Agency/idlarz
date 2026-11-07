@@ -95,5 +95,26 @@ export const shelfCells = (stock: MerchantStock | null, supplyIds: readonly stri
 export const secondsToRotation = (stock: MerchantStock, playSeconds: number, ctx: LimitContext = {}): number =>
 	Math.max(0, limitOf('merchantRotateSec', ctx) - (playSeconds - stock.at));
 
+/**
+ * The merchant's clocks count play time, which does not run while the player is away. After an absence of `elapsedSec` they catch up: a shelf
+ * that would have been reshuffled by then is dropped (a new one is rolled on the next tick), and a free-refresh window that would have ended
+ * gives its free refreshes back. (The 30 s cooldown between refreshes is not touched: an absence is much longer.)
+ */
+export const afterAbsence = (
+	stock: MerchantStock | null,
+	refresh: MerchantRefresh,
+	playSeconds: number,
+	elapsedSec: number,
+	ctx: LimitContext = {}
+): { merchantStock: MerchantStock | null; merchantRefresh: MerchantRefresh } => {
+	const elapsed = Math.max(0, elapsedSec);
+	const dueAfter = stock ? secondsToRotation(stock, playSeconds, ctx) : 0;
+	const windowEnded = playSeconds + elapsed - refresh.windowAt >= MERCHANT_GOODS.refresh.windowSec;
+	return {
+		merchantStock: stock && dueAfter <= elapsed ? null : stock,
+		merchantRefresh: windowEnded ? { ...refresh, windowAt: 0, freeUsed: 0 } : refresh,
+	};
+};
+
 export const stockDue = (stock: MerchantStock | null, playSeconds: number, ctx: LimitContext = {}): boolean =>
 	!stock || secondsToRotation(stock, playSeconds, ctx) <= 0;

@@ -176,7 +176,7 @@ const spot = (n = 0) => {
 	return found[n];
 };
 
-const rat = (over: Record<string, unknown> = {}) => ({ id: 1, type: 'rat', level: 1, spawnLevel: 1, ...spot(), ageSec: 100, ...over });
+const rat = (over: Record<string, unknown> = {}) => ({ id: 1, type: 'thistleBoar', level: 1, spawnLevel: 1, ...spot(), ageSec: 100, ...over });
 
 /** A played game with some gear, one monster and damaged HP; returns its raw snapshot after `mutate`. */
 const combatSave = (mutate: (raw: any) => void) => { // eslint-disable-line @typescript-eslint/no-explicit-any

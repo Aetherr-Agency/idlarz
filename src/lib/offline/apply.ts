@@ -2,6 +2,7 @@ import { CASTLE_UPGRADE, CASTLE_X, CASTLE_Y, RESOURCE_CAP, XP_CAP } from '@/conf
 import { maxHp, maxMana } from '@/lib/combat';
 import { gearIncomePct } from '@/lib/gearEconomy';
 import type { LimitContext } from '@/lib/limits';
+import { afterAbsence } from '@/lib/merchant';
 import { advanceMonsters } from '@/lib/monsters';
 import type { OfflineGrant } from '@/lib/offline/grant';
 import { calculateLevel, calculateResourceRates, totalStatPoints } from '@/utils/gameUtils';
@@ -25,7 +26,9 @@ type Applied = Pick<
 	| 'playerMp'
 >;
 
-export type OfflineStateIn = Applied & Pick<GameState, 'equipment' | 'farmLevels' | 'farmUpgrades' | 'prestige' | 'merchantUpgrades'>;
+export type OfflineStateIn = Applied &
+	Pick<GameState, 'equipment' | 'farmLevels' | 'farmUpgrades' | 'prestige' | 'merchantUpgrades'> &
+	Partial<Pick<GameState, 'merchantStock' | 'merchantRefresh' | 'playSeconds'>>;
 
 /** What the welcome-back window shows besides the income. */
 export interface OfflineSummary {
@@ -84,6 +87,8 @@ export const applyOfflineGrant = (state: OfflineStateIn, grant: OfflineGrant, li
 	const levelsGained = Math.max(0, level - state.level.level);
 	const characterStats = levelsGained > 0 ? { ...state.characterStats, availablePoints: state.characterStats.availablePoints + totalStatPoints(level) - totalStatPoints(state.level.level) } : state.characterStats;
 	const healed = grant.gapSec >= FULL_HEAL_AFTER_SEC;
+	// the merchant's clocks count play time: the absence counts for them too
+	const merchant = state.merchantRefresh && state.playSeconds !== undefined ? afterAbsence(state.merchantStock ?? null, state.merchantRefresh, state.playSeconds, grant.elapsedSec, limits) : null;
 
 	return {
 		patch: {
@@ -96,6 +101,7 @@ export const applyOfflineGrant = (state: OfflineStateIn, grant: OfflineGrant, li
 			// the level-up window is for levels reached while playing: the welcome-back window reports these
 			previousLevel: level,
 			characterStats,
+			...(merchant ?? {}),
 			...(healed ? { playerHp: maxHp(characterStats, state.equipment), playerMp: maxMana(characterStats, state.equipment) } : {}),
 		},
 		summary: { levelsGained, castleReached },

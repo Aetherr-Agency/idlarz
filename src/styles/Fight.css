@@ -372,3 +372,52 @@
 	text-align: center;
 }
 
+
+/* The battle queue: the monsters waiting for their turn, under the bars */
+.fight-queue {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px 6px;
+	margin-top: 6px;
+	padding: 3px 6px;
+	font-size: 0.75rem;
+	color: #f0d27a;
+	background: rgba(0, 0, 0, 0.35);
+	border: 1px solid #5a3c00;
+}
+
+.fight-queue-title {
+	font-weight: 700;
+	color: #ffd860;
+}
+
+.fight-queue-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	padding: 1px 4px;
+	color: #fff6e0;
+	background: #2a1a08;
+	border: 1px solid #7a5a20;
+}
+
+.fight-queue-item[data-boss='true'] {
+	border-color: #ffd860;
+	color: #ffe9a8;
+}
+
+.fight-queue-item i {
+	font-style: normal;
+	color: #a89878;
+}
+
+.fight-queue-x {
+	margin-left: 2px;
+	padding: 0 4px;
+	line-height: 1.1;
+	color: #fff6e0;
+	background: #7a1a14;
+	border: 1px solid #1a0604;
+	cursor: pointer;
+}

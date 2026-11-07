@@ -66,8 +66,8 @@ test('the away limits and a kill read the bonus', () => {
 	assert.equal(offlineCapHours({ gear: { offlineEff: 0, offlineCapHours: 3 } }), offlineCapHours() + 3);
 	assert.ok(Math.abs(offlineEfficiency({ gear: { offlineEff: 15, offlineCapHours: 0 } }) - (offlineEfficiency() + 0.15)) < 1e-9);
 	const ctx = { goldPerSec: 100, xpPerSec: 10, hidePerSec: 5, luck: 0 };
-	const base = killIncome({ type: 'rat', level: 9 }, ctx);
-	const bonus = killIncome({ type: 'rat', level: 9 }, { ...ctx, killRewardPct: 50 });
+	const base = killIncome({ type: 'thistleBoar', level: 9 }, ctx);
+	const bonus = killIncome({ type: 'thistleBoar', level: 9 }, { ...ctx, killRewardPct: 50 });
 	assert.ok(Math.abs(bonus.gold / base.gold - 1.5) < 0.01);
 	assert.ok(Math.abs(bonus.xp / base.xp - 1.5) < 1e-9);
 	assert.equal(bonus.hide, base.hide, 'hide is not a kill reward');

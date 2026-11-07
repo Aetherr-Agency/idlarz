@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { LIMITS } from '@/config/limits';
 import { persist } from 'zustand/middleware';
 import {
 	DEFAULT_PLAYER_CLASS,
@@ -73,7 +74,7 @@ import type { LimitContext } from '@/lib/limits';
 import { afterRefresh, freeRefreshesLeft, generateMerchantStock, refreshCooldown, refreshCost, rotationRng, shopPriceOf, stockDue } from '@/lib/merchant';
 import { emitSaveEvent, withSaveEvents } from '@/lib/saveEvents';
 import { gearEconomy, gearIncomePct, xpGainPct } from '@/lib/gearEconomy';
-import { addDrop, aggregateStats, averageItemLevel, equipFromBag, gearOf, moveSlot, organizeBag, removeFromBag, slotQty, stackOf, starterBag, unequip } from '@/lib/inventory';
+import { addDrop, aggregateStats, averageItemLevel, equipFromBag, gearOf, moveSlot, organizeBag, removeFromBag, rebirthKit, slotQty, stackOf, starterBag, unequip } from '@/lib/inventory';
 import { plainItem, sellValueOf } from '@/lib/itemInstance';
 import { castleLevelOf } from '@/lib/castleWard';
 import { applyOfflineGrant } from '@/lib/offline/apply';
@@ -153,6 +154,8 @@ const initialCombat = (): CombatClientState => ({
 	eventNo: null,
 	notice: null,
 	pending: null,
+	queue: [],
+	queueMax: LIMITS.battleQueue,
 });
 
 /** All game data of a brand-new game (no actions). */
@@ -466,6 +469,8 @@ const createGameSlice = (
 				notice,
 				// a click waits for the server's answer; once a fight is open (or the answer came) it is over
 				pending: view.fight ? null : state.combat.pending,
+				queue: view.queue ?? [],
+				queueMax: view.queueMax ?? state.combat.queueMax,
 			},
 		});
 		writeCursor(view.eventNo);
@@ -533,12 +538,13 @@ const createGameSlice = (
 			const fresh = createInitialData(prestige);
 			// settle the level first: XP bought a moment ago may not have been counted by a tick yet (its points are credited here)
 			const settled = calculateLevel(state.resources.xp);
-			const characterStats = {
-				...state.characterStats,
-				availablePoints: state.characterStats.availablePoints + Math.max(0, totalStatPoints(settled.level) - totalStatPoints(state.level.level)),
-			};
-			// the bag survives, so does the room Pack Rat made for it; the other merchant bonuses start again
+			// the other merchant bonuses start again; Pack Rat stays, so the starter bag is as big as the player bought it
 			const merchantUpgrades: Record<string, number> = state.merchantUpgrades.packrat ? { packrat: state.merchantUpgrades.packrat } : {};
+			// respec: every attribute goes back to its start and all the points the level has earned are free to spend again
+			const characterStats = { ...fresh.characterStats, availablePoints: totalStatPoints(settled.level) };
+			Object.assign(characterStats, calculateCombatStats(characterStats));
+			// gear is wiped: the starter kit on, the starter bag, no pity (the server does the same to its inventory when the rebirth reaches it)
+			const kit = rebirthKit(merchantUpgrades);
 			set({
 				...fresh,
 				// the character is progression too: lifetime XP, the level it gives and the attributes (with the points still to spend) carry
@@ -547,18 +553,18 @@ const createGameSlice = (
 				level: settled,
 				previousLevel: settled.level,
 				characterStats,
-				resourceRates: calculateResourceRates(fresh.tiles, characterStats, fresh.farmLevels, prestige, fresh.farmUpgrades, merchantUpgrades, gearIncomePct(state.equipment)),
-				// gear is character progression: it survives a rebirth (HP is refilled)
-				equipment: state.equipment,
-				bag: state.bag,
+				resourceRates: calculateResourceRates(fresh.tiles, characterStats, fresh.farmLevels, prestige, fresh.farmUpgrades, merchantUpgrades, gearIncomePct(kit.equipment)),
+				equipment: kit.equipment,
+				bag: kit.bag,
+				lootPity: kit.lootPity,
 				gems: state.gems, // the premium currency survives a rebirth
-				lootPity: state.lootPity,
-				autoSellUpTo: state.autoSellUpTo,
+				autoSellUpTo: state.autoSellUpTo, // a setting, not gear
 				merchantUpgrades,
+				merchantStock: state.merchantStock, // the shelf and its rotation clock carry over: a rebirth is no free reshuffle
 				merchantRefreshes: state.merchantRefreshes, // the refresh price and the free window are not reset by a rebirth
 				merchantRefresh: state.merchantRefresh,
-				playerHp: maxHp(characterStats, state.equipment),
-				playerMp: maxMana(characterStats, state.equipment),
+				playerHp: maxHp(characterStats, kit.equipment),
+				playerMp: maxMana(characterStats, kit.equipment),
 				playerName: state.playerName,
 				playerClass: state.playerClass,
 				playSeconds: state.playSeconds,
@@ -785,7 +791,21 @@ const createGameSlice = (
 		startFight: (id: number) => {
 			const state = get();
 			const monster = state.monsters.find((m) => m.id === id);
-			if (!monster?.ticket || state.combat.fight || state.combat.pending || state.combat.maxHp <= 0) return false;
+			if (!monster?.ticket || state.combat.pending || state.combat.maxHp <= 0) return false;
+			// a fight is open (or the hero is resting before the next queued one): the click joins the line, or leaves it when the monster is in it
+			if (state.combat.fight || state.combat.queue.length > 0) {
+				void requestUse(newClaimId(), { kind: 'fight', n: monster.ticket }, sinceNow()).then((reply) => {
+					settleFight(reply);
+					if (reply.status !== 'ok') return;
+					const { queued } = reply.value;
+					const queue = get().combat;
+					if (queued === 'queued') toast(`Added to the queue (${queue.queue.length}/${queue.queueMax}).`);
+					else if (queued === 'removed') toast('Removed from the queue.');
+					else if (queued === 'full') toast(`The queue is full (${queue.queueMax}).`);
+					signalSyncNow();
+				});
+				return true;
+			}
 			// the window opens at once (maximized, loading) instead of after the server's answer; the answer fills it in or closes it
 			useUiStore.getState().setPref('combatMinimized', false);
 			set({ combat: { ...state.combat, pending: { type: monster.type, level: monster.level } } });
@@ -798,6 +818,12 @@ const createGameSlice = (
 				signalSyncNow();
 			});
 			return true;
+		},
+
+		// Takes a monster out of the battle queue (the x in the fight window)
+		unqueueMonster: (n: number) => {
+			set((state) => ({ combat: { ...state.combat, queue: state.combat.queue.filter((q) => q.n !== n) } })); // at once; the answer is the truth
+			void requestUse(newClaimId(), { kind: 'unqueue', n }, sinceNow()).then((reply) => settleFight(reply));
 		},
 
 		// Auto-battle (the server picks the next monster itself, one after the other; off by default, a click always starts a fight) and

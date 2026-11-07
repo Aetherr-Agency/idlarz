@@ -1,7 +1,7 @@
 /**
  * How big a roster monster's picture is drawn on the map, in px (a tile is TILE_SIZE = 48 wide). The supplied art is about 64 px and
  * fills its frame, so a creature looks small or large by what it is, not by the file: tune the odd ones here, client side only.
- * Used by the map lab's work-in-progress monsters; the rats keep their own sheet size.
+ * Used for every monster: on the map, in the fight window and in the map lab.
  */
 export const MONSTER_ART_SIZE = {
 	normal: 48,

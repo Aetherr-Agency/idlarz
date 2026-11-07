@@ -277,11 +277,6 @@ export const EQUIPMENT_PIXEL_ICONS: Record<string, PixelIconName> = {
 	ring2: 'equip_ring',
 };
 
-// Monster type -> its 2-frame idle sheet (frame size; the PNG is twice as wide)
-export const MONSTER_SHEETS: Record<'rat' | 'ratKing', { name: PixelIconName; w: number; h: number }> = {
-	rat: { name: 'monster_rat', w: 40, h: 40 },
-	ratKing: { name: 'monster_ratking', w: 56, h: 56 },
-};
 
 // Farm animal id -> sprite
 export const ANIMAL_PIXEL_ICONS: Record<string, PixelIconName> = {

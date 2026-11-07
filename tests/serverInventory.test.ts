@@ -140,16 +140,18 @@ test('the summary is worked out from the ledger\'s gear: a set claimed in an upl
 	assert.equal(after.derived.killRewardPct ?? 0, 0);
 });
 
-test('a New Game starts the ledger\'s inventory again from the new game; a rebirth keeps it', async () => {
+test('a New Game starts the ledger\'s inventory again from the new game; a rebirth wipes it to the starter kit', async () => {
 	const state = game();
 	const p = await player(state);
 	const worn = { ...p.inv().equipment, head: plainItem('steel_helm') };
 	p.m.ledgers.set(p.id, { ...p.m.ledgers.get(p.id)!, inv: { ...p.inv(), equipment: worn, ver: 5 } });
-	// a rebirth (more rebirths in the save): the gear stays
+	// a rebirth (more rebirths in the save): the gear and the bag are wiped, even though the upload still carried them
 	const reborn: PersistedGame = { ...state, playSeconds: state.playSeconds + 120, prestige: { ...state.prestige, rebirths: state.prestige.rebirths + 1, legacyPoints: state.prestige.legacyPoints + 5, legacyEarned: state.prestige.legacyEarned + 5 } };
 	const rebirth = await save(p.m, p.id, reborn, 1, T0 + 2 * MIN);
 	assert.equal(rebirth.kind, 'ok', JSON.stringify(rebirth));
-	assert.equal(p.inv().equipment.head?.base, 'steel_helm');
+	assert.equal(p.inv().equipment.head, undefined, 'the worn helm is gone');
+	assert.equal(p.inv().equipment.mainHand?.base, 'wooden_sword');
+	assert.ok(p.inv().ver > 5, 'a newer inventory, so the browser takes it');
 	// a New Game (the play time of the same run goes back): the new game's own starter kit
 	api().resetGame();
 	const fresh = structuredClone(pickPersisted(api()));

@@ -4,7 +4,9 @@ import React, { useEffect, useState } from 'react';
 import { BIOMES } from '@/config/gameConfig';
 import { MONSTER_CATALOG } from '@/catalog/monsters';
 import CombatPanel, { type FloatNumber } from '@/components/game/overlays/CombatPanel';
+import { MONSTERS } from '@/config/combatConfig';
 import { monsterStats } from '@/lib/monsters';
+import type { MonsterType } from '@/types/game';
 import { useLabStore } from '@/stores/labStore';
 import type { FightView } from '@/lib/offline/fightTypes';
 
@@ -39,8 +41,9 @@ const CombatPreview: React.FC = () => {
 		return () => clearInterval(timer);
 	}, [swinging]);
 
-	const stats = monsterStats('rat', level);
-	const fight: FightView = { n: 1, type: 'rat', level, lucky: false, monsterHp: stats.maxHp * 0.65, monsterMaxHp: stats.maxHp, stunLeft: 0, timeLeftSec: entry.grade === 'boss' ? 42 : null, x: 0, y: 0 };
+	const type: MonsterType = (entry.id in MONSTERS ? entry.id : 'thistleBoar') as MonsterType;
+	const stats = monsterStats(type, level);
+	const fight: FightView = { n: 1, type, level, lucky: false, monsterHp: stats.maxHp * 0.65, monsterMaxHp: stats.maxHp, stunLeft: 0, timeLeftSec: entry.grade === 'boss' ? 42 : null, x: 0, y: 0 };
 
 	return (
 		<div className='flex flex-col items-end gap-1'>
@@ -61,7 +64,7 @@ const CombatPreview: React.FC = () => {
 				</label>
 			</div>
 			<CombatPanel
-				monster={{ type: 'rat', level, art: entry.id }}
+				monster={{ type, level, art: entry.id }}
 				flip={flip}
 				fight={fight}
 				loading={false}

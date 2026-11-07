@@ -23,6 +23,8 @@ const parseRequest = (body: Record<string, unknown>): { key: string | null; requ
 			const command = body.command as { kind?: unknown; id?: unknown; n?: unknown } | undefined;
 			if (key && command?.kind === 'fight' && Number.isInteger(command.n) && (command.n as number) > 0)
 				return { key, request: { action: 'use', command: { kind: 'fight', n: command.n as number }, since: common } };
+			if (key && command?.kind === 'unqueue' && Number.isInteger(command.n) && (command.n as number) > 0)
+				return { key, request: { action: 'use', command: { kind: 'unqueue', n: command.n as number }, since: common } };
 			if (!key || !command || typeof command.id !== 'string') return null;
 			if (command.kind === 'potion') return { key, request: { action: 'use', command: { kind: 'potion', id: command.id }, since: common } };
 			if (command.kind === 'skill' && isSkillId(command.id)) return { key, request: { action: 'use', command: { kind: 'skill', id: command.id }, since: common } };

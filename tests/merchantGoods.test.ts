@@ -5,7 +5,7 @@ import { CASTLE_X, CASTLE_Y, MERCHANT_GOODS, MERCHANT_UPGRADES, REBIRTH } from '
 import { ITEM_CATALOG, RARITIES } from '../src/config/itemCatalog';
 import { averageItemLevel, emptyBag, gearOf } from '../src/lib/inventory';
 import { plainItem, sellValueOf } from '../src/lib/itemInstance';
-import { generateMerchantStock, refreshCost, secondsToRotation, shelfLevels, shopPriceOf, stockDue } from '../src/lib/merchant';
+import { afterAbsence, generateMerchantStock, refreshCost, secondsToRotation, shelfLevels, shopPriceOf, stockDue } from '../src/lib/merchant';
 import { seeded } from '../src/lib/fightSim';
 import { sanitizeSave } from '../src/lib/sanitizeSave';
 import { sellPayout } from '../src/utils/gameUtils';
@@ -239,16 +239,31 @@ test('a forged shelf is rejected: an unknown item, a legendary-level stat, too m
 	assert.equal(mutate((r) => (r.merchantStock.offers = 'x')), false, 'offers not a list');
 });
 
-test('a rebirth clears the shelf with the castle: the next tick rolls a new one', () => {
-	freshGame({ gold: 1e12 });
+test('time away counts for the merchant: a shelf that would have rotated is dropped, a free-refresh window that ended gives its refreshes back', () => {
+	const shelf = stock(1, 1, 100);
+	const spent = { windowAt: 100, freeUsed: 3, lastAt: 150 };
+	// 10 minutes away: nothing is due yet
+	const short = afterAbsence(shelf, spent, 400, 600);
+	assert.equal(short.merchantStock, shelf);
+	assert.deepEqual(short.merchantRefresh, spent);
+	// away for more than the rotation time left: the shelf goes, a new one is rolled on the next tick
+	const left = secondsToRotation(shelf, 400);
+	assert.equal(afterAbsence(shelf, spent, 400, left).merchantStock, null);
+	assert.equal(afterAbsence(null, spent, 400, 10).merchantStock, null);
+	// away for a whole window (12 h): the free refreshes are back, the cooldown record is left alone
+	const long = afterAbsence(shelf, spent, 400, MERCHANT_GOODS.refresh.windowSec);
+	assert.deepEqual(long.merchantRefresh, { windowAt: 0, freeUsed: 0, lastAt: 150 });
+});
+
+test('a rebirth keeps the shelf of the merchant: it is no free reshuffle', () => {
+	freshGame();
 	growTo(REBIRTH.minTiles);
+	store.setState((s) => ({ tiles: patchTile(s.tiles, CASTLE_X, CASTLE_Y, { level: REBIRTH.minCastleLevel }) }));
 	api().tick(1000);
-	const old = api().merchantStock!;
-	assert.ok(old);
-	store.setState((st) => ({ tiles: patchTile(st.tiles, CASTLE_X, CASTLE_Y, { level: REBIRTH.minCastleLevel }) }));
+	const shelf = api().merchantStock!;
+	assert.ok(shelf);
 	assert.equal(api().rebirth(), true);
-	assert.equal(api().merchantStock, null);
+	assert.equal(api().merchantStock, shelf, 'the same shelf, with its rotation clock');
 	api().tick(1000);
-	assert.notEqual(api().merchantStock, old);
-	assert.equal(api().merchantStock!.offers.length, MERCHANT_GOODS.offers);
+	assert.equal(api().merchantStock, shelf);
 });

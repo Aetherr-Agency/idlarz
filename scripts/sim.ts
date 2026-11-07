@@ -424,7 +424,7 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 	let nextRatAt = 0;
 	let nextKingAt = spawn.bossIntervalSec;
 	let kingRetryAt = 0;
-	let waiting: { type: 'rat' | 'ratKing'; at: number; spawnLevel: number }[] = [];
+	let waiting: { type: 'thistleBoar' | 'bossGreatAuroch'; at: number; spawnLevel: number }[] = [];
 	const resetCombat = () => {
 		nextRatAt = t + spawn.firstSec;
 		nextKingAt = t + spawn.bossIntervalSec;
@@ -437,15 +437,15 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 		if (owned < 5) return;
 		// the spawn timers pause while monsters and chests fill SPAWN_LIMIT.maxFraction of the free tiles
 		const cap = Math.max(cfg.SPAWN_LIMIT.minAllowed, Math.floor(cfg.SPAWN_LIMIT.maxFraction * owned)) - 1;
-		while (t >= nextRatAt && waiting.filter((m) => m.type === 'rat').length < Math.max(1, cap - 1)) {
-			const { min, max } = monsters.spawnLevelRange('rat', castleLevelNow());
-			waiting.push({ type: 'rat', at: nextRatAt, spawnLevel: Math.round((min + max) / 2) });
+		while (t >= nextRatAt && waiting.filter((m) => m.type === 'thistleBoar').length < Math.max(1, cap - 1)) {
+			const { min, max } = monsters.spawnLevelRange('thistleBoar', castleLevelNow());
+			waiting.push({ type: 'thistleBoar', at: nextRatAt, spawnLevel: Math.round((min + max) / 2) });
 			nextRatAt += spawn.intervalSec;
 		}
 		if (t >= nextRatAt) nextRatAt = t + spawn.intervalSec;
-		if (t >= nextKingAt && !waiting.some((m) => m.type === 'ratKing')) {
-			const { min, max } = monsters.spawnLevelRange('ratKing', castleLevelNow());
-			waiting.push({ type: 'ratKing', at: t, spawnLevel: Math.round((min + max) / 2) });
+		if (t >= nextKingAt && !waiting.some((m) => m.type === 'bossGreatAuroch')) {
+			const { min, max } = monsters.spawnLevelRange('bossGreatAuroch', castleLevelNow());
+			waiting.push({ type: 'bossGreatAuroch', at: t, spawnLevel: Math.round((min + max) / 2) });
 		}
 	};
 	/** Fights what is waiting with the gear the schedule says the player has; pays the kill like lib/loot/kill.ts does. */
@@ -468,7 +468,7 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 		for (const m of waiting) {
 			const level = monsters.levelAtAge(m.spawnLevel, t - m.at);
 			let won = false;
-			if (m.type === 'rat') won = level <= gear.maxRat;
+			if (m.type === 'thistleBoar') won = level <= gear.maxRat;
 			else if (t >= kingRetryAt && gear.king > 0) {
 				won = Math.random() < gear.king;
 				if (!won) kingRetryAt = t + combatCfg.COMBAT.auto.bossRetryCooldownSec;
@@ -486,12 +486,12 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 					hide: st.resources.hide + r.hide,
 				},
 			}));
-			if (m.type === 'ratKing') nextKingAt = t + spawn.bossIntervalSec;
+			if (m.type === 'bossGreatAuroch') nextKingAt = t + spawn.bossIntervalSec;
 			milestones[`kills${m.type}`] = (milestones[`kills${m.type}`] ?? 0) + 1;
 		}
 		waiting = left;
 	};
-	const killReward = (type: 'rat' | 'ratKing', level: number, rates: { gold: number; xp: number; hide: number }) =>
+	const killReward = (type: 'thistleBoar' | 'bossGreatAuroch', level: number, rates: { gold: number; xp: number; hide: number }) =>
 		kill.killIncome({ type, level }, { goldPerSec: rates.gold, xpPerSec: rates.xp, hidePerSec: rates.hide, luck: 0, killRewardPct: gearEco.gearEconomy(api().equipment).killRewardPct });
 	if (profile.combat) resetCombat();
 
@@ -507,6 +507,9 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 
 	let lastDecision = -1e9;
 	let lastTraceDay = -1;
+	// Diagnostic: hours between "the previous castle timer finished" and "the next upgrade started" (= waiting for resources), first run only
+	let castleBusy = false;
+	let castleIdleSince = 0;
 	while (t < MAX_DAYS * 86400) {
 		if (process.env.SIM_TRACE && Math.floor(t / 86400) !== lastTraceDay && Math.floor(t / 86400) % Number(process.env.SIM_TRACE) === 0) {
 			lastTraceDay = Math.floor(t / 86400);
@@ -532,6 +535,12 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 		}
 		api().tick(step * 1000);
 		t += step;
+		const upgrade = api().castleUpgrade;
+		if (!!upgrade !== castleBusy) {
+			castleBusy = !!upgrade;
+			if (upgrade && run === 1) milestones[`waitHcastle${upgrade.toLevel - 1}`] = Math.round(((t - castleIdleSince) / 3600) * 10) / 10;
+			if (!upgrade) castleIdleSince = t;
+		}
 		if (profile.combat) {
 			spawnMonsters();
 			if (active) fightWaiting();
@@ -566,6 +575,7 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 					milestones[`xpAtRebirth${run}`] = xpBefore;
 					run++;
 					runStart = t;
+					castleIdleSince = t;
 					frontierDirty = true;
 					buildingCursor = 0;
 					if (profile.combat) resetCombat();
@@ -649,13 +659,13 @@ function renderMarkdown(
 	const extraKeys = Array.from(
 		new Set(
 			names.flatMap((n) =>
-				Object.keys(results[n]).filter((k) => !ORDER.includes(k) && /^(embers[0-9]+|kills.*|rebirth|rebirthDay[0-9]+|lvlAtRebirth[0-9]+|xpAtRebirth[0-9]+|(lvl|xp)@[0-9.]+h|r[0-9]+[.](castle6|tiles100|finished))$/.test(k))
+				Object.keys(results[n]).filter((k) => !ORDER.includes(k) && /^(embers[0-9]+|kills.*|rebirth|rebirthDay[0-9]+|waitHcastle[0-9]+|lvlAtRebirth[0-9]+|xpAtRebirth[0-9]+|(lvl|xp)@[0-9.]+h|r[0-9]+[.](castle6|tiles100|finished))$/.test(k))
 			)
 		)
 	).sort((x, y) => x.localeCompare(y, undefined, { numeric: true }));
 	[...ORDER, ...extraKeys].forEach((key) => {
 		if (!names.some((n) => results[n][key] != null) && !ORDER.includes(key)) return;
-		const isCount = /^(embers|lvl|kills)/.test(key);
+		const isCount = /^(embers|lvl|kills|waitH)/.test(key); // waitHcastleN = hours the castle idled waiting for resources before upgrade N -> N+1
 		const isXp = /^xp/.test(key);
 		const cell = (n: string) => {
 			if (isCount) return String(results[n][key] ?? '—');
@@ -667,6 +677,22 @@ function renderMarkdown(
 		lines.push(`| ${key} | ${names.map(cell).join(' | ')} |`);
 	});
 	lines.push('');
+	// How much faster each further run reaches "finished" than the first one (target band 60-70 %, docs/06; used to tune the Ember curve)
+	const ratioRows = names.flatMap((n) => {
+		const first = results[n].finished;
+		if (first == null) return [];
+		const cells: string[] = [];
+		for (let run = 2; results[n][`r${run}.finished`] != null; run++) cells.push(`run ${run}: ${Math.round((Number(results[n][`r${run}.finished`]) / first) * 100)} %`);
+		return cells.length ? [`| ${n} | ${cells.join(', ')} |`] : [];
+	});
+	if (ratioRows.length) {
+		lines.push('Time to "finished" in each further run as a share of the first run:');
+		lines.push('');
+		lines.push('| profile | share of run 1 |');
+		lines.push('| --- | --- |');
+		lines.push(...ratioRows);
+		lines.push('');
+	}
 	const waitNames = names.filter((n) => tileWaits[n]);
 	if (waitNames.length) {
 		lines.push('');
