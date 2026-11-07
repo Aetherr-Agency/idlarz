@@ -31,8 +31,8 @@ export const UNCLAIMED_SEC = 900;
 export const publicTickets = (bank: TicketBank, opened?: number): PublicTickets => ({
 	chests: bank.chests.filter(isChestPlaced).map(({ n, x, y }) => ({ n, x: x!, y: y! })),
 	...(opened === undefined ? {} : { opened }),
-	rats: bank.rats.filter(isPlaced).map(({ n, at, lucky, x, y, spawnLevel }) => ({ n, at, lucky, x: x!, y: y!, spawnLevel: spawnLevel! })),
-	king: bank.king && isPlaced(bank.king) ? { n: bank.king.n, at: bank.king.at, x: bank.king.x!, y: bank.king.y!, spawnLevel: bank.king.spawnLevel! } : null,
+	rats: bank.rats.filter(isPlaced).map(({ n, at, lucky, x, y, spawnLevel, type }) => ({ n, at, lucky, x: x!, y: y!, spawnLevel: spawnLevel!, ...(type ? { type } : {}) })),
+	king: bank.king && isPlaced(bank.king) ? { n: bank.king.n, at: bank.king.at, x: bank.king.x!, y: bank.king.y!, spawnLevel: bank.king.spawnLevel!, ...(bank.king.type ? { type: bank.king.type } : {}) } : null,
 });
 
 /** Reads the player's map at most once per request, and only when it is asked for. */
@@ -69,6 +69,28 @@ export type ClaimOutcome = { kind: 'no_save' } | { kind: 'ok'; result: ClaimResu
 
 const CAS_TRIES = 4;
 
+/** What a ledger step returns: the new ledger and the answer. `skipWrite` marks a poll that may leave the stored row alone (see `onlyTimeMoved`). */
+export interface StepOutcome<T> {
+	ledger: Ledger;
+	result: T;
+	skipWrite?: boolean;
+}
+
+/** A skipped write lets the stored anchor fall behind by at most this much; after that the poll writes again (far below `UNCLAIMED_SEC`). */
+export const ANCHOR_REFRESH_MS = 120_000;
+
+/**
+ * Whether `next` differs from the stored ledger only in what the clock moves: the anchor and the spawn timers (`advanceBank` is additive
+ * in time, so recomputing them from the older values gives the same result) and the idle combat clock, and the anchor has not fallen more than `ANCHOR_REFRESH_MS` behind.
+ */
+export const onlyTimeMoved = (stored: Ledger, next: Ledger): boolean => {
+	if (next.anchorAt - stored.anchorAt >= ANCHOR_REFRESH_MS) return false;
+	// the combat clock is time as well while no fight is open (HP and mana that are still moving make the two differ anyway)
+	const frozen = (l: Ledger) =>
+		JSON.stringify({ ...l, ver: 0, anchorAt: 0, bank: { ...l.bank, accAt: 0, chestAcc: 0, ratAcc: 0, kingAcc: 0 }, combat: l.combat && !l.combat.fight ? { ...l.combat, at: 0 } : l.combat });
+	return frozen(stored) === frozen(next);
+};
+
 export const bankContext = (stored: StoredSave): BankContext => ({
 	luck: stored.summary.derived.luck,
 	tilesOwned: stored.summary.tilesOwned,
@@ -85,7 +107,7 @@ export const withLedger = async <T>(
 	deps: ServiceDeps,
 	userId: string,
 	nowMs: number,
-	step: (ledger: Ledger, stored: StoredSave) => { ledger: Ledger; result: T } | Promise<{ ledger: Ledger; result: T }>
+	step: (ledger: Ledger, stored: StoredSave) => StepOutcome<T> | Promise<StepOutcome<T>>
 ): Promise<{ kind: 'no_save' } | { kind: 'ok'; result: T; ledger: Ledger }> => {
 	for (let attempt = 0; attempt < CAS_TRIES; attempt++) {
 		const stored = await deps.saves.load(userId);
@@ -97,6 +119,8 @@ export const withLedger = async <T>(
 		// the bag, the gear and the pity are the ledger's (seeded from the save the first time); the engine sees the save with them in place
 		const base: Ledger = { ...seeded, inv: fitInventory(seeded.inv ?? inventoryFromCore(stored.core), stored.core) };
 		const out = await step(base, { ...stored, core: coreWithInventory(stored.core, base.inv) as StoredSave['core'] });
+		// a read-only poll that found nothing new does not write: the spawn timers and the anchor are recomputed from the clock next time
+		if (out.skipWrite && existing && onlyTimeMoved(existing, out.ledger)) return { kind: 'ok', result: out.result, ledger: { ...out.ledger, ver: existing.ver } };
 		const next: Ledger = { ...out.ledger, ver: (existing?.ver ?? 0) + 1 };
 		if (await deps.ledgers.commit(userId, existing?.ver ?? 0, next)) return { kind: 'ok', result: out.result, ledger: next };
 	}

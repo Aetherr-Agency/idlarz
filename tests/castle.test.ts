@@ -42,6 +42,12 @@ test('every level has a cost row and a build time', () => {
 	}
 });
 
+test('build times are pinned (balancing pass: the old timers halved); changing one must update this on purpose', () => {
+	const hours = [0.5, 2, 6, 12, 24, 36, 48, 60, 84];
+	assert.deepEqual(CASTLE_UPGRADE.durationsSec, hours.map((h) => h * 3600));
+	assert.equal(CASTLE_UPGRADE.durationsSec.slice(0, 5).reduce((a, b) => a + b, 0) / 3600, 44.5);
+});
+
 test('the castle can be taken all the way to the last level, the rates follow, and the save stays valid', () => {
 	freshGame();
 	for (let target = 2; target <= CASTLE_UPGRADE.maxLevel; target++) {

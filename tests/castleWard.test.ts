@@ -76,15 +76,15 @@ test('pickSpawnTile never picks a building, a lake or a chest tile, however ofte
 			else if (kind === 1) w =setTile(w, x, y, { biome: 'swamp', isOwned: true, building: 'farm' });
 			else if (kind === 2) w = setTile(w, x, y, { biome: 'plains', isOwned: true, hasChest: true });
 			else {
-				w = setTile(w, x, y, { biome: 'forest', isOwned: true });
-				if (Math.max(Math.abs(dx), Math.abs(dy)) >= 2) plain.push(`${x},${y}`); // a rat never stands beside the castle
+				w = setTile(w, x, y, { biome: 'plains', isOwned: true });
+				if (Math.max(Math.abs(dx), Math.abs(dy)) >= 2) plain.push(`${x},${y}`); // a monster never stands beside the castle
 			}
 		}
 	}
 	assert.ok(plain.length > 5);
 	const seen = new Set<string>();
 	for (let i = 0; i < 400; i++) {
-		const pick = pickSpawnTile('rat', w, new Set(), Math.random)!;
+		const pick = pickSpawnTile('thistleBoar', w, new Set(), Math.random)!;
 		assert.ok(plain.includes(`${pick.x},${pick.y}`), `${pick.x},${pick.y} is not a plain tile`);
 		seen.add(`${pick.x},${pick.y}`);
 	}
@@ -93,7 +93,7 @@ test('pickSpawnTile never picks a building, a lake or a chest tile, however ofte
 	let only = setTile(EMPTY_WORLD, CASTLE_X, CASTLE_Y, { biome: 'castle', isOwned: true, level: 1 });
 	only = setTile(only, CASTLE_X + 1, CASTLE_Y, { biome: 'lake', isOwned: true });
 	only = setTile(only, CASTLE_X - 1, CASTLE_Y, { biome: 'plains', isOwned: true, building: 'farm', level: 1 });
-	assert.equal(pickSpawnTile('rat', only, new Set(), Math.random), null);
+	assert.equal(pickSpawnTile('thistleBoar', only, new Set(), Math.random), null);
 });
 
 test('castleLevelOf reads the castle tile', () => {
@@ -106,12 +106,12 @@ test('castleLevelOf reads the castle tile', () => {
 test('a monster never stands in the ward (the 3x3 around the castle from level 7) - nor beside the castle before it: rats start 2 tiles out', () => {
 	freshGame();
 	ownRing();
-	assert.equal(pickSpawnTile('rat', api().tiles, new Set(), Math.random), null, 'the ring is all there is, and it is adjacent');
+	assert.equal(pickSpawnTile('thistleBoar', api().tiles, new Set(), Math.random), null, 'the ring is all there is, and it is adjacent');
 	setCastle(L7);
-	assert.equal(pickSpawnTile('rat', api().tiles, new Set(), Math.random), null);
+	assert.equal(pickSpawnTile('thistleBoar', api().tiles, new Set(), Math.random), null);
 	growTo(14);
 	for (let i = 0; i < 60; i++) {
-		const pick = pickSpawnTile('rat', api().tiles, new Set(), Math.random)!;
+		const pick = pickSpawnTile('thistleBoar', api().tiles, new Set(), Math.random)!;
 		assert.ok(pick);
 		assert.ok(!isInWard(pick.x, pick.y, L7), `${pick.x},${pick.y} is inside the ward`);
 		assert.ok(Math.max(Math.abs(pick.x - CASTLE_X), Math.abs(pick.y - CASTLE_Y)) >= 2);

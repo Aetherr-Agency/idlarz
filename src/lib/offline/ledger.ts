@@ -1,3 +1,4 @@
+import { zeroResources } from '@/catalog/resourceKeys';
 import { STARTING_GEMS } from '@/config/gameConfig';
 import type { CombatState } from '@/lib/offline/fightTypes';
 import { inventoryFromCore } from '@/lib/offline/inventory';
@@ -12,7 +13,7 @@ import type { Resources } from '@/types/game';
 /** Everything the server ever granted (income while away, chest and kill rewards): the save checks allow gains up to this much more. */
 export type GrantTotals = Resources & { gems: number };
 
-export const zeroTotals = (): GrantTotals => ({ gold: 0, wood: 0, stone: 0, coal: 0, food: 0, meat: 0, eggs: 0, milk: 0, hide: 0, xp: 0, gems: 0 });
+export const zeroTotals = (): GrantTotals => ({ ...zeroResources(), gems: 0 });
 
 export const addTotals = (a: GrantTotals, b: Partial<GrantTotals>): GrantTotals => {
 	const out = { ...a };
@@ -105,7 +106,7 @@ export const seedLedger = (source: LedgerSeedSource, nowMs: number): Ledger => {
 	let n = 1;
 	for (const monster of sorted) {
 		const ticket = { n: n++, at: savedSec - Math.max(0, num(monster.ageSec)), lucky: false };
-		if (monster.type === 'ratKing') king = king ?? ticket;
+		if (monster.type === 'ratKing' || (monster.type && monster.type.startsWith('boss'))) king = king ?? ticket;
 		else rats.push(ticket);
 	}
 	// the chests standing on the saved map become numbered tickets; the server finds them a tile at the first look at the map

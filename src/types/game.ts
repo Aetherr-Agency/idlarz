@@ -1,4 +1,6 @@
 import { BIOMES } from '@/config/gameConfig';
+import type { MONSTERS } from '@/config/combatConfig';
+import type { StoredAmounts } from '@/catalog/resourceKeys';
 import type { PlayerClassId } from '@/config/playerClasses';
 import type { FarmUpgradeId, EmberUpgradeId, MerchantUpgradeId } from '@/config/gameConfig';
 import type { PixelIconName } from '@/config/pixelIcons';
@@ -8,18 +10,8 @@ import type { World } from '@/utils/world';
 
 export type BiomeType = keyof typeof BIOMES;
 
-export interface Resources {
-	gold: number;
-	wood: number;
-	stone: number;
-	coal: number;
-	food: number;
-	meat: number;
-	eggs: number; // farm products: produced by animals, sold to the merchant, spent on farm upgrades
-	milk: number;
-	hide: number;
-	xp: number;
-}
+/** One amount per stored resource; the keys come from the catalog (`stored: true` in catalog/resources.ts, see catalog/resourceKeys.ts) */
+export type Resources = StoredAmounts;
 
 export interface CharacterStats {
 	strength: number;
@@ -169,7 +161,8 @@ export type BagSlot = { item: ItemInstance } | { id: string; qty: number } | nul
 /** One thing a kill, chest or shop hands over: a piece of gear, or some of a consumable */
 export type Drop = { kind: 'gear'; item: ItemInstance } | { kind: 'consumable'; id: string; qty: number };
 
-export type MonsterType = 'rat' | 'ratKing';
+/** The ids of `MONSTERS` (config/combatConfig.ts): a new monster is a new entry there, nothing else lists them */
+export type MonsterType = keyof typeof MONSTERS;
 
 export interface Monster {
 	id: number;

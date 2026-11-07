@@ -1,3 +1,4 @@
+import { FARM_KEYS, zeroResources } from '@/catalog/resourceKeys';
 import {
 	BIOMES,
 	CASTLE_UPGRADE,
@@ -460,9 +461,6 @@ export interface ResourceBreakdownEntry {
 export type ResourceBreakdown = Record<keyof Resources, ResourceBreakdownEntry>;
 
 const RESOURCE_KEYS = Object.keys(BASE_GENERATION_RATES) as (keyof Resources)[];
-const FARM_KEYS = ['meat', 'eggs', 'milk', 'hide'] as const;
-
-const zeroResources = (): Resources => ({ gold: 0, wood: 0, stone: 0, coal: 0, food: 0, meat: 0, eggs: 0, milk: 0, hide: 0, xp: 0 });
 
 /** What one tile produces per second (before the global modifiers), split into the part that is its own and the bonuses on it. */
 export interface TileOutput {
@@ -791,8 +789,10 @@ export const emberSpent = (upgrades: PrestigeState['upgrades']): number => {
 	return spent;
 };
 
-export const emberIncomeMultiplier = (prestige: PrestigeState | undefined): number =>
-	1 + REBIRTH.incomePerPoint * (prestige?.legacyEarned ?? 0);
+/** The income bonus (0.5 = +50 %) that `earned` Embers ever earned give: linear when `incomeExponent` is 1, flatter when it is below 1. */
+export const emberIncomeBonus = (earned: number): number => REBIRTH.incomePerPoint * Math.pow(Math.max(0, earned), REBIRTH.incomeExponent);
+
+export const emberIncomeMultiplier = (prestige: PrestigeState | undefined): number => 1 + emberIncomeBonus(prestige?.legacyEarned ?? 0);
 
 /** Percent off tile cost: Charisma plus Thrift, capped. */
 export const effectiveTileDiscount = (

@@ -6,7 +6,8 @@ import { applyStroke, chestTool, eraseTool, extendRing, extendTool, paintTool, u
 import { castleDistance, monsterAt, pickSpawnTile, rollSpawnLevel } from '@/lib/monsters';
 import { castleLevelOf, isInWard } from '@/lib/castleWard';
 import { MONSTER_CATALOG } from '@/catalog/monsters';
-import type { Monster } from '@/types/game';
+import { MONSTERS } from '@/config/combatConfig';
+import type { Monster, MonsterType } from '@/types/game';
 import { calculateCombatStats, createInitialWorld, EMPTY_PRESTIGE, STARTER_FREE_TILES, startingResources } from '@/utils/gameUtils';
 import { growWorld } from '@/utils/growWorld';
 import { createWorld, getTile, ownedEntries, patchTile, setTiles, type World } from '@/utils/world';
@@ -16,7 +17,7 @@ import { createWorld, getTile, ownedEntries, patchTile, setTiles, type World } f
  * read from the game store (MapGameState), so they run on it unchanged.
  */
 
-export type LabTool = 'pan' | 'paint' | 'extend' | 'erase' | 'chest' | 'unchest' | 'rat' | 'ratKing' | 'dismiss';
+export type LabTool = 'pan' | 'paint' | 'extend' | 'erase' | 'chest' | 'unchest' | 'monster' | 'boss' | 'dismiss';
 
 /** The tools that draw while the button is held (the others act on a click). */
 export const STROKE_TOOLS: readonly LabTool[] = ['paint', 'extend', 'erase', 'chest', 'unchest'];
@@ -212,13 +213,14 @@ export const useLabStore = create<LabState>((set, get) => {
 				set({ monsters: monsters.filter((m) => !(m.x === x && m.y === y)) });
 				return;
 			}
-			if (tool !== 'rat' && tool !== 'ratKing') return;
+			if (tool !== 'monster' && tool !== 'boss') return;
+			const type: MonsterType = tool === 'boss' ? 'bossGreatAuroch' : 'thistleBoar';
 			const without = monsters.filter((m) => !(m.x === x && m.y === y));
-			if (monsterAt(monsters, x, y) && monsterAt(monsters, x, y)!.type === tool) {
+			if (monsterAt(monsters, x, y) && monsterAt(monsters, x, y)!.type === type) {
 				set({ monsters: without }); // clicking the same kind again takes it away
 				return;
 			}
-			const monster: Monster = { id: nextId, type: tool, level: monsterLevel, spawnLevel: monsterLevel, x, y, ageSec: 0, lucky: lucky || undefined };
+			const monster: Monster = { id: nextId, type, level: monsterLevel, spawnLevel: monsterLevel, x, y, ageSec: 0, lucky: lucky || undefined };
 			set({ monsters: [...without, monster], nextId: nextId + 1 });
 		},
 
@@ -281,7 +283,7 @@ export const useLabStore = create<LabState>((set, get) => {
 			);
 			for (let i = 0; i < count && eligible.length; i++) {
 				const { x, y } = eligible.splice(Math.floor(random() * eligible.length), 1)[0];
-				monsters = [...monsters, { id: nextId, type: 'rat', level: monsterLevel, spawnLevel: monsterLevel, x, y, ageSec: 0, art: id }];
+				monsters = [...monsters, { id: nextId, type: (id in MONSTERS ? id : 'thistleBoar') as MonsterType, level: monsterLevel, spawnLevel: monsterLevel, x, y, ageSec: 0, art: id }];
 				nextId += 1;
 			}
 			set({ monsters, nextId });

@@ -4,7 +4,7 @@ import { levelAtAge } from '@/lib/monsters';
 import { addTotals, type Ledger } from '@/lib/offline/ledger';
 import { ownedBases, receiveInto, sellContextOf } from '@/lib/offline/inventory';
 import { sealedRng } from '@/lib/offline/seal';
-import { takeMonster, type MonsterTicket } from '@/lib/offline/tickets';
+import { monsterTypeOf, takeMonster, type MonsterTicket } from '@/lib/offline/tickets';
 import type { Drop } from '@/types/game';
 
 // SERVER ONLY. What a kill pays: rolled from a secret against the monster's ticket, at the level its age has earned.
@@ -31,7 +31,7 @@ export const payKill = (secret: string, userId: string, ledger: Ledger, stored: 
 	const taken = takeMonster(ledger.bank, n);
 	if (!taken) return null;
 	const ticket: MonsterTicket = taken.ticket;
-	const type = taken.kind === 'king' ? 'ratKing' : 'rat';
+	const type = monsterTypeOf(ticket, taken.kind);
 	const level = levelAtAge(ticket.spawnLevel ?? 1, nowSec - ticket.at);
 	const ordKill = ledger.ordKill + 1;
 	const rng = sealedRng(secret, userId, ledger.runId, 'kill', ordKill);

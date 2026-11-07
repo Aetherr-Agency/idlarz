@@ -6,15 +6,11 @@
 
 | File | Contents | Use |
 |---|---|---|
-| `yoaPlM.png` (2752x1986) | **Yokai Hunters sheet, "free for commercial use" printed on it**: 234 objects, hunters, many yokai (kitsune, oni, spiders, ghosts, tengu-like), trees, camp items, small items (food, feathers, eggs, mushrooms) | the only sheet with a stated commercial licence; theme is Japanese folklore, so it fits a few monsters and many **small items** (see `resources/`); confirm the pack page before shipping a cut |
-| `GxKS61.jpg` (1600x1600, "SAMPLE" watermark) | about 50 fantasy monsters in a clean mid-size pixel style (elementals, golems, dragons, hydras, ogres, a crowned slime king, krakens, bats) | **reference only, never ship**; good for *bigger monsters* and boss silhouettes |
+| `yoaPlM.png` (2752x1986) | **Yokai Hunters sheet**: 234 objects, hunters, many yokai (kitsune, oni, spiders, ghosts, tengu-like), trees, camp items, small items (food, feathers, eggs, mushrooms) | theme is Japanese folklore, so it fits a few monsters and many **small items** (see `resources/`); licensed, can be cut directly |
 | `Pj5W12.jpg` | 48 **imps, demons, slimes, spiders, eyes and beasts** in framed tiles, saturated colours, dark outlines | style and variety reference for Blight/Battlefield families |
 | `moqxOO.jpg` | 48 **mushroom, plant, slime, insect and gnome monsters** in framed tiles | style and variety for Jungle, Fields, Orchard, swamp families |
 | `AAi1qG.png` (1000x924) | **goblins, orcs, skeletons, wolves, wisps and reapers**, side-view, small | Battlefield and Blight families, undead, boss ideas (tall scythe reapers) |
-| `sYj129.png` (960x540) | a dungeon scene with about 20 small monsters (snail, slimes, eye, plant, bug, ghost, snake) | scale reference: small monsters next to a stone tile |
-| `v15wxm.png`, `zHVM0_.png`, `_G4XXB.png` (960x400 each) | **Pixel Monsters** banners: **rat** (vol. 7, blue, white and brown), **wolf** (vol. 12, three colourways) and **bat** (vol. 9, three colourways) | the **same animals we already have** (rat, wolf) and a bat: colour variants of one body is the cheapest way to build a family |
-| `Screenshot 2026-10-29 040837.png` (574x941, watermarked) | 8-direction walk frames of a lantern witch, a stone golem and a relic warden | **reference only, never ship**; use for how a walk and facing set is laid out |
-| `9_if99.gif` (24 frames, watermarked) | a relic warden: idle, walk, relic cast, death | **reference only**; use for the animation set we want (idle, attack, hurt, death) |
+| `_G4XXB.png` (960x400) | **Pixel Monsters vol. 9** banner: a **bat** in three colourways | colour variants of one body is the cheapest way to build a family |
 
 ## 2. What we want
 
@@ -27,13 +23,13 @@
 
 | Biome | 3-4 monsters | Boss | Start from |
 |---|---|---|---|
-| Plains | rat (existing), field mouse swarm, wild boar, crow | Rat King (existing, demoted to a basic monster, RELEASE-PLAN P3.6) | `v15wxm.png` rat variants, `moqxOO.jpg` bottom rows (boar, rodents, goose) |
-| Forest | wolf, giant spider, forest sprite, bear | Alpha Wolf | `zHVM0_.png` wolf, `Pj5W12.jpg` spiders |
-| Hills | rock lizard, goblin raider, stone golem, hill troll | Hill Giant | `AAi1qG.png` goblins/orcs, `GxKS61.jpg` golems |
+| Plains | rat (existing), field mouse swarm, wild boar, crow | Rat King (existing, demoted to a basic monster, RELEASE-PLAN P3.6) | our own rat sprite, `moqxOO.jpg` bottom rows (boar, rodents, goose) |
+| Forest | wolf, giant spider, forest sprite, bear | Alpha Wolf | `Pj5W12.jpg` spiders; the wolf is drawn new from the rat body kit |
+| Hills | rock lizard, goblin raider, stone golem, hill troll | Hill Giant | `AAi1qG.png` goblins/orcs; the golem is drawn new |
 | Swamp | bog thing (slime), giant toad, leech swarm, will-o-wisp | Bog Hydra | `moqxOO.jpg` slimes, toad row |
 | Tundra | frost hare, white wolf, ice wisp, snow yeti | Frost Wyrm | `AAi1qG.png` white wolf, wisps |
-| Lake | giant crab, water snake, drowned ghost, pike | Lake Serpent | `sYj129.png` snake, ghost |
-| Coast | sand crab, gull flock, sea snail, pirate skeleton | Kraken spawn | `sYj129.png`, `GxKS61.jpg` tentacle monsters |
+| Lake | giant crab, water snake, drowned ghost, pike | Lake Serpent | draw new (closest cells in `Pj5W12.jpg` and `moqxOO.jpg`) |
+| Coast | sand crab, gull flock, sea snail, pirate skeleton | Kraken spawn | draw new |
 | Jungle (rebirth 1) | jaguar, giant spider, viper, poison toad | Jungle Mantis King | `Pj5W12.jpg`, `moqxOO.jpg` mantis and plants |
 | Fields (2) | crow flock, scarecrow, field boar, pumpkin sprite | Harvest Horror | `moqxOO.jpg` pumpkins and gnome, `yoaPlM.png` scarecrow |
 | Blossom Orchard (3) | hornet swarm, bear, thorn dryad, mushroom hag | Queen Hornet | `moqxOO.jpg` mushrooms and wasp |
@@ -45,8 +41,8 @@ Existing home-land families in the plan ([docs/12](../../docs/12-rebirth-biomes.
 ## 4. What agents should do with it later
 
 1. **P3 (monster engine)**: ship the stats with the **generic placeholder** sprite (`monster_generic`, tinted per family by a CSS variable). Do not wait for art.
-2. **Art pass per family**: pick the base cells from the table, then **recreate** the monster in `scripts/pixel/sprites_monsters.py` style (3/4 view, head to the lower left, the shared fur or skin ramps, 1 px coloured outline, 40x40, one signature feature each). Include the idle frames and the new hurt, attack and death frames; store each as a sheet like `monster_rat`. Cuts are allowed only from a cleared licence (the Yokai sheet is the only stated one) and must be redrawn if they carry another density.
-3. **Colour variants are a family tool**: the rat, wolf and bat banners show one body in three colourways. Use that for a family's lower and higher level variants (a lucky variant keeps the golden tint decided by the server).
+2. **Art pass per family**: pick the base cells from the table, then **recreate** the monster in `scripts/pixel/sprites_monsters.py` style (3/4 view, head to the lower left, the shared fur or skin ramps, 1 px coloured outline, 40x40, one signature feature each). Include the idle frames and the new hurt, attack and death frames; store each as a sheet like `monster_rat`. Direct cuts are allowed (everything here is licensed, see the [Licence](../README.md#licence)); redraw only when the pixel density or style does not match.
+3. **Colour variants are a family tool**: the bat banner (`_G4XXB.png`) shows one body in three colourways. Use that for a family's lower and higher level variants (a lucky variant keeps the golden tint decided by the server).
 4. Rework the **current rat** once: contrast pass and the extra animation frames, keeping the same body so it does not look like a different monster. Update the fight modal (`MonsterArt` 3-5x) and the map tile.
 5. Keep bosses at 56 px (or 96 px if prepared for the 2x2 idea) and give each its own silhouette; **do not add 2x2 placement** without an owner decision.
 6. Update `docs/generated/item-catalog.md`-style generated docs only through the existing scripts; do not hand-edit generated files.

@@ -9,21 +9,36 @@ import '@/styles/Monsters.css';
 
 /**
  * A monster standing on its tile: idle bob, a level badge, and for bosses a skull in the badge and a golden glow.
- * `art` (map lab only) names a roster monster whose single-frame picture is drawn instead of the type's sheet.
+ * `art` (map lab only) names another roster monster whose picture is drawn instead of the type's own.
  */
-const MonsterSprite: React.FC<{ type: MonsterType; level: number; lucky?: boolean; art?: string }> = ({ type, level, lucky = false, art }) => {
-	const wip = art ? MONSTER_CATALOG.find((m) => m.id === art) : undefined;
+const MonsterSprite: React.FC<{
+	type: MonsterType;
+	level: number;
+	lucky?: boolean;
+	art?: string;
+	/** At its top level: the badge turns blue and glows */
+	maxed?: boolean;
+	/** Still growing: the time to the next level and how much of the wait has passed (draws the bar under the monster) */
+	growth?: { leftSec: number; fraction: number };
+	/** The length of one wait, for the bar */
+	intervalSec?: number;
+}> = ({ type, level, lucky = false, art, maxed = false, growth, intervalSec = 1800 }) => {
+	const wip = MONSTER_CATALOG.find((m) => m.id === (art ?? type));
 	const size = wip ? monsterArtSize(wip.id, wip.grade) : undefined;
 	const boss = wip ? wip.grade === 'boss' : MONSTERS[type].grade === 'boss';
 	return (
-		<span className='tile-monster' data-king={wip ? wip.grade === 'boss' : type === 'ratKing'} data-boss={boss} data-lucky={lucky} title={lucky ? 'A lucky monster: bigger rewards' : undefined} style={wip ? { width: size, height: size } : undefined}>
+		<span className='tile-monster' data-king={boss} data-boss={boss} data-lucky={lucky} title={lucky ? 'A lucky monster: bigger rewards' : undefined} style={wip ? { width: size, height: size } : undefined}>
 			{wip ? (
 				// eslint-disable-next-line @next/next/no-img-element
 				<img src={monsterArtUrl(wip)} alt={wip.label} className='tile-monster-img tile-monster-still' draggable={false} />
 			) : (
 				<MonsterArt type={type} label={MONSTERS[type].label} className='tile-monster-img' />
 			)}
-			<span className='tile-monster-tier' data-boss={boss}>
+			{growth && (
+				// the bar restarts with every level (key) and fills over the time that is left
+				<span key={level} className='tile-monster-grow' aria-hidden style={{ '--grow-left': `${growth.leftSec}s`, '--grow-from': growth.fraction, '--grow-total': `${intervalSec}s` } as React.CSSProperties} />
+			)}
+			<span className='tile-monster-tier' data-boss={boss} data-maxed={maxed} title={maxed ? 'Fully grown' : undefined}>
 				{boss ? '☠ ' : ''}
 				{lucky ? '★ ' : ''}
 				{formatCompact(level)}

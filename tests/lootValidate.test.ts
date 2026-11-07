@@ -14,7 +14,7 @@ test('the shipped loot configuration is valid', () => {
 
 test('a source must reference an existing profile, a profile existing pools and rarities', () => {
 	let d = copy();
-	d.sources.rat.lootProfileId = 'ghost';
+	d.sources.monster.lootProfileId = 'ghost';
 	assert.ok(has(d, /unknown loot profile ghost/));
 	d = copy();
 	d.profiles.boss.generalPoolId = 'ghost';

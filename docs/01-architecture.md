@@ -74,7 +74,7 @@ src/
         │                     ResourceDisplay, HeaderMenu), ItemSlot / ItemTooltip / Bag, MonsterSprite / MonsterArt, CastleRange / CastleFortress, WaterLayer, AmbientLife
         │                     (decorative critters), GameDebug (dev panel)
         └── overlays/         MenuOverlay (tabs: Equipment, Character, Merchant, Farm; opened from the avatar), CharacterOverlay, StatisticsOverlay, CombatWidget (the fight window),
-                              RewardPendingChest + ChestNotification, OfflineDialog (welcome back), Farm* (scene, HUD, animal and upgrade docks), Merchant/* (Resources, Goods, Upgrades;
+                              ChestNotification, OfflineDialog (welcome back), Farm* (scene, HUD, animal and upgrade docks), Merchant/* (Resources, Goods, Upgrades;
                               Quests and Gambling are placeholder tabs), RebirthDialog, SettingsDialog, SaveMenuDialog, Tutorial + TutorialDialog, TabLockOverlay, LevelUpNotification, LoadingScreen
 supabase/                     schema.sql (a fresh project) + migrations/ (autosave_history_by_time, offline_ledger, combat_ledger: run in that order on an older project)
 scripts/

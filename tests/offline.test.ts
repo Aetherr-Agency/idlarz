@@ -302,7 +302,7 @@ test('applying a grant counts the castle upgrade down and finishes it, with the 
 
 test('monsters grow by the whole absence, not by the efficiency', () => {
 	freshGame();
-	const monster = { id: 1, type: 'rat' as const, level: 2, spawnLevel: 2, x: CASTLE_X + 1, y: CASTLE_Y, ageSec: 0 };
+	const monster = { id: 1, type: 'thistleBoar' as const, level: 2, spawnLevel: 2, x: CASTLE_X + 1, y: CASTLE_Y, ageSec: 0 };
 	const state = { ...api(), monsters: [monster] };
 	const { patch } = applyOfflineGrant(state, computeOfflineGrant(input({ gapSec: 3 * 3600 + 10 }))!);
 	assert.equal(patch.monsters![0].ageSec, 3 * 3600 + 10);

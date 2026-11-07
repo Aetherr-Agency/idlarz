@@ -1,4 +1,4 @@
-# 24 · Idle-game research: formulas, big numbers, offline progress
+# 25 · Idle-game research: formulas, big numbers, offline progress
 
 *Research note, written 2026-11-07. Nothing here is built and no number in it is a decision.* It compares what the incremental-game literature teaches with what the game does today ([03](03-formulas-and-scaling.md), [06](06-pacing-targets.md), [11](11-server-authority.md)) and with the plans in [ROADMAP](ROADMAP.md), and ends with a ranked list of improvements. The code wins wherever this note and the code disagree.
 

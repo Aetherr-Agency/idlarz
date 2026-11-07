@@ -4,7 +4,7 @@ import { COMBAT } from '@/config/combatConfig';
 import { SKILLS, SKILL_IDS, skillDescription } from '@/catalog/skills';
 import { MONSTER_CATALOG, monsterArtUrl } from '@/catalog/monsters';
 import { monsterArtSize } from '@/config/monsterArtSize';
-import { monsterDef, monsterStats } from '@/lib/monsters';
+import { isBoss, monsterDef, monsterStats } from '@/lib/monsters';
 import type { Cooldowns, FightView } from '@/lib/offline/fightTypes';
 import type { BagSlot, CombatNotice, MonsterType } from '@/types/game';
 import MonsterArt from '../MonsterArt';
@@ -131,11 +131,11 @@ const FightResult: React.FC<{ notice: CombatNotice }> = ({ notice }) => {
 	);
 };
 
-/** On the fight stage a roster picture is drawn this many times its map size, so it fits the compact window (the rats' sheets are drawn at scale 4 / 3) */
+/** On the fight stage a roster picture is drawn this many times its map size, so it fits the compact window  */
 const STAGE_ART_FACTOR = 2.6;
 
 export interface CombatPanelProps {
-	/** The monster the window is about; `art` (a roster id, map lab / future monsters) draws its still picture instead of the rat sheet */
+	/** The monster the window is about; `art` (a roster id, the map lab) draws another roster monster's picture instead of its own */
 	monster: { type: MonsterType; level: number; art?: string };
 	/** Draw the monster mirrored, so it faces left toward the hero */
 	flip?: boolean;
@@ -177,7 +177,7 @@ export interface CombatPanelProps {
 const CombatPanel: React.FC<CombatPanelProps> = (p) => {
 	const { monster, flip, fight, over, player, cd } = p;
 	const def = monsterDef(monster.type);
-	const wip = monster.art ? MONSTER_CATALOG.find((m) => m.id === monster.art) : undefined;
+	const wip = MONSTER_CATALOG.find((m) => m.id === (monster.art ?? monster.type));
 	const label = wip?.label ?? def.label;
 	const boss = wip ? wip.grade === 'boss' : def.grade === 'boss';
 	const traits = monsterStats(monster.type, monster.level);
@@ -240,7 +240,7 @@ const CombatPanel: React.FC<CombatPanelProps> = (p) => {
 		</>
 	);
 
-	// the monster's picture on the stage: the rat sheets at their usual scale, a roster picture sized from the map size
+	// the monster's picture on the stage, sized from its map size
 	const art = wip ? (
 		// eslint-disable-next-line @next/next/no-img-element
 		<img
@@ -250,7 +250,7 @@ const CombatPanel: React.FC<CombatPanelProps> = (p) => {
 			style={{ width: monsterArtSize(wip.id, wip.grade) * STAGE_ART_FACTOR, height: monsterArtSize(wip.id, wip.grade) * STAGE_ART_FACTOR, objectFit: 'contain', imageRendering: 'pixelated' }}
 		/>
 	) : (
-		<MonsterArt type={monster.type} scale={monster.type === 'ratKing' ? 3 : 4} />
+		<MonsterArt type={monster.type} scale={isBoss(monster.type) ? 1.5 : 2} />
 	);
 
 	return (

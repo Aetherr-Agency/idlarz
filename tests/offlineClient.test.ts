@@ -49,7 +49,7 @@ test('the King ticket becomes the King', () => {
 	freshGame();
 	growTo(30);
 	const out = reconcileTickets(state(), tickets({ king: { n: 5, at: NOW - 10, x: CASTLE_X + 3, y: CASTLE_Y, spawnLevel: 15 } }), NOW);
-	assert.equal(out.monsters[0].type, 'ratKing');
+	assert.equal(out.monsters[0].type, 'bossGreatAuroch');
 	assert.equal(out.monsters[0].ticket, 5);
 	assert.equal(out.monsters[0].level, 15);
 });
@@ -58,8 +58,8 @@ test('a monster the server does not list is removed, one it lists stays; nothing
 	freshGame();
 	growTo(30);
 	const standing: Monster[] = [
-		{ id: 4, type: 'rat', level: 1, spawnLevel: 1, x: CASTLE_X + 2, y: CASTLE_Y, ageSec: 0, ticket: 4 },
-		{ id: 5, type: 'rat', level: 1, spawnLevel: 1, x: CASTLE_X - 2, y: CASTLE_Y, ageSec: 0, ticket: 5 },
+		{ id: 4, type: 'thistleBoar', level: 1, spawnLevel: 1, x: CASTLE_X + 2, y: CASTLE_Y, ageSec: 0, ticket: 4 },
+		{ id: 5, type: 'thistleBoar', level: 1, spawnLevel: 1, x: CASTLE_X - 2, y: CASTLE_Y, ageSec: 0, ticket: 5 },
 	];
 	const out = reconcileTickets({ ...state(), monsters: standing }, tickets({ rats: [placed(4, NOW, { x: CASTLE_X + 2 })] }), NOW);
 	assert.deepEqual(out.monsters.map((m) => m.id), [4]);

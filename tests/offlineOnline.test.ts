@@ -168,7 +168,7 @@ test('the server puts every monster on land: 2 to 9 tiles from the castle, never
 	const stored = (await m.saves.load('u1'))!;
 	for (const rat of sync.tickets.rats) {
 		const distance = castleDistance(rat);
-		assert.ok(distance >= MONSTERS.rat.spawn.minCastleDistance && distance <= MONSTERS.rat.spawn.maxCastleDistance, `distance ${distance}`);
+		assert.ok(distance >= MONSTERS.thistleBoar.spawn.minCastleDistance && distance <= MONSTERS.thistleBoar.spawn.maxCastleDistance, `distance ${distance}`);
 		assert.ok(rat.spawnLevel >= 1);
 	}
 	assert.equal(new Set(sync.tickets.rats.map((r) => `${r.x},${r.y}`)).size, sync.tickets.rats.length, 'one monster per tile');
@@ -177,7 +177,10 @@ test('the server puts every monster on land: 2 to 9 tiles from the castle, never
 
 test('with auto-battle on the server fights the monsters one at a time and pays each kill once', async () => {
 	const { m, now } = await playing(25, 'u1', true);
-	// the server walks the fights forward each time it is asked: the starter kit beats the low-level rats of a young castle
+	// the server walks the fights forward each time it is asked: the starter kit beats the low-level plains monsters of a young castle
+	// (the land of this test has forest and swamp too, whose monsters start higher and are meant to be out of reach of the starter kit)
+	const row = m.ledgers.get('u1')!;
+	row.bank.rats = row.bank.rats.map((ticket) => ({ ...ticket, type: 'thistleBoar' as const, spawnLevel: Math.min(ticket.spawnLevel ?? 1, 3) }));
 	let won = 0;
 	let t = now;
 	let since: number | undefined = 0;
@@ -189,7 +192,7 @@ test('with auto-battle on the server fights the monsters one at a time and pays 
 		assert.ok(out.combat.fight === null || out.combat.fight.monsterHp > 0);
 	}
 	const ledger = m.ledgers.get('u1')!;
-	assert.ok(won >= 1, 'at least one rat fell');
+	assert.ok(won >= 1, 'at least one monster fell');
 	assert.equal(ledger.ordKill, won, 'each win rolled one sealed reward');
 	assert.ok(ledger.granted.gold > 0 && ledger.granted.xp > 0);
 });
@@ -268,4 +271,30 @@ test('a fight poll keeps the record of the last keyed request too', async () => 
 	const first = ok(await redeemChest(m.deps, 'u1', 'chest-key-r11b', spot, now));
 	ok(await fightStep(m.deps, 'u1', null, { action: 'sync' }, now + 1000));
 	assert.deepEqual(ok(await redeemChest(m.deps, 'u1', 'chest-key-r11b', spot, now + 2000)), first);
+});
+
+test('a poll that found nothing new does not write the ledger, and the next real change still sees the time that passed', async () => {
+	const { m, now } = await playing(25);
+	ok(await syncTickets(m.deps, 'u1', now)); // settles whatever was due
+	const stored = () => m.ledgers.get('u1')!;
+	const ver = stored().ver;
+	const anchor = stored().anchorAt;
+	ok(await syncTickets(m.deps, 'u1', now + 5_000));
+	ok(await syncTickets(m.deps, 'u1', now + 10_000));
+	assert.equal(stored().ver, ver, 'quiet polls leave the row alone');
+	assert.equal(stored().anchorAt, anchor);
+	// once the stored anchor is two minutes behind, the poll writes again
+	ok(await syncTickets(m.deps, 'u1', now + 130_000));
+	assert.ok(stored().ver > ver, 'the anchor is refreshed after ANCHOR_REFRESH_MS');
+});
+
+test('skipped writes do not lose spawn time: polling often or rarely gives the same tickets', async () => {
+	const often = await playing(1);
+	const rarely = await playing(1);
+	for (let s = 5; s <= 600; s += 5) ok(await syncTickets(often.m.deps, 'u1', often.now + s * 1000));
+	const a = ok(await syncTickets(often.m.deps, 'u1', often.now + 600_000));
+	const b = ok(await syncTickets(rarely.m.deps, 'u1', rarely.now + 600_000));
+	// which tile a ticket gets depends on when the server first looked at the land (as before), but what appeared and when must not
+	const when = (t: typeof a.tickets) => ({ chests: t.chests.map((c) => c.n), rats: t.rats.map((r) => [r.n, r.at]), king: t.king?.n ?? null });
+	assert.deepEqual(when(a.tickets), when(b.tickets));
 });

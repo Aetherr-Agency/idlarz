@@ -207,11 +207,11 @@ const Tutorial: React.FC = () => {
 			<section>
 				<h3 className='px-h'>Monsters &amp; Fighting</h3>
 				<p className='text-[#d8c8a0] mb-2'>
-					A <b>rat</b> appears on land you own (not water, and never right next to the castle: {MONSTERS.rat.spawn.minCastleDistance} to {MONSTERS.rat.spawn.maxCastleDistance} tiles from it) after{' '}
+					A <b>monster</b> appears on land you own (not water, and never right next to the castle: {MONSTERS.thistleBoar.spawn.minCastleDistance} to {MONSTERS.thistleBoar.spawn.maxCastleDistance} tiles from it) after{' '}
 					{formatTime(COMBAT.spawn.firstSec)}, then another every {formatTime(COMBAT.spawn.intervalSec)} (monsters
-					and chests together never fill more than {pct(SPAWN_LIMIT.maxFraction)} of your free land). Monsters have a <b>level</b>: a new rat appears at level {MONSTERS.rat.spawnWindow.base} to {MONSTERS.rat.spawnWindow.cap} (the higher, the further your castle has
-					grown) and gains a level every {formatTime(LIMITS.monsterGrowthIntervalSec)} on the map, up to {LIMITS.monsterGrowthLevels} levels above the one it appeared at: more HP, harder hits, some armor
-					and better rewards. Every {formatTime(COMBAT.spawn.bossIntervalSec)} a <b>boss</b> appears, one at a time: the <b>Rat King</b> (level {MONSTERS.ratKing.spawnWindow.base}-{MONSTERS.ratKing.spawnWindow.cap} at the start, with a skull on
+					and chests together never fill more than {pct(SPAWN_LIMIT.maxFraction)} of your free land). Monsters have a <b>level</b>: a new plains monster appears at level {MONSTERS.thistleBoar.spawnWindow.base} to {MONSTERS.thistleBoar.spawnWindow.cap} (the higher, the further your castle has
+					grown; every biome has its own, stronger monsters) and gains a level every {formatTime(LIMITS.monsterGrowthIntervalSec)} on the map, up to {LIMITS.monsterGrowthLevels} levels above the one it appeared at: more HP, harder hits, some armor
+					and better rewards. Every {formatTime(COMBAT.spawn.bossIntervalSec)} a <b>boss</b> appears, one at a time: the boss of a biome (the Great Auroch on the plains: level {MONSTERS.bossGreatAuroch.spawnWindow.base}-{MONSTERS.bossGreatAuroch.spawnWindow.cap} at the start, with a skull on
 					his badge). Bosses can crit, can resist Stun and carry drops nobody else has.
 					<b>Click a monster</b> to fight it: your weapon and the monster then each swing at their own attack speed on their own (nobody clicks to hit). With{' '}
 					<b>Auto-battle</b> on (right-click menu or the fight panel; locked until your first rebirth, off at the start) the server also sends you against the next monster, one at a time, so you do not have to look for them.
@@ -242,9 +242,9 @@ const Tutorial: React.FC = () => {
 						{SKILLS.stun.stunSec} seconds. They do no damage: they buy time for your clicks.
 					</li>
 					<li>
-						Winning pays gold and XP worth some seconds of your income, a share of the hide your farm makes, plus a chance of gear and potions. Rats drop wood, cloth and, from
-						older rats, steel and obsidian gear. The <b>Rat King</b> (boss, armor, {MONSTERS.ratKing.critChance}% crits, resists Stun {MONSTERS.ratKing.stunResist}%, a {MONSTERS.ratKing.timeLimitSec}s time limit) is hard: he needs real
-						gear and quick clicking. He always drops a piece of the epic Rattatui set (the only place to get it), sometimes a second one or a legendary weapon, and potions.
+						Winning pays gold and XP worth some seconds of your income, a share of the hide your farm makes, plus a chance of gear and potions. Monsters drop wood, cloth and, from
+						older ones, steel and obsidian gear. A <b>boss</b> (like the Great Auroch: armor, {MONSTERS.bossGreatAuroch.critChance}% crits, resists Stun {MONSTERS.bossGreatAuroch.stunResist}%, a {MONSTERS.bossGreatAuroch.timeLimitSec}s time limit) is hard: it needs real
+						gear and quick clicking. It always drops a piece of the epic Rattatui set (the only place to get it), sometimes a second one or a legendary weapon, and potions.
 					</li>
 				</ul>
 			</section>
@@ -271,15 +271,15 @@ const Tutorial: React.FC = () => {
 						{Object.values(SETS).map((set) => `${set.label} (${Object.keys(set.bonuses).join(' / ')} pieces)`).join(', ')}.
 					</li>
 					<li>
-						Wood and leather (common) and Apprentice cloth (common, more HP, regen and luck) drop from rats and chests; Knight&apos;s steel
-						(uncommon) comes from older rats and chests, and the merchant&apos;s shelf may carry some; Obsidian (rare) needs tier-5 rats or a good
-						chest; the Rattatui set (epic) is the Rat King&apos;s; legendary weapons are very rare finds.
+						Wood and leather (common) and Apprentice cloth (common, more HP, regen and luck) drop from monsters and chests; Knight&apos;s steel
+						(uncommon) comes from older monsters and chests, and the merchant&apos;s shelf may carry some; Obsidian (rare) needs tier-5 rats or a good
+						chest; the Rattatui set (epic) is dropped by bosses; legendary weapons are very rare finds.
 					</li>
 					<li>
 						Weapons come in many types - swords, maces, mauls, axes, daggers, spears, bows, crossbows, staves and wands. Maces and mauls hit
 						hardest, bows and daggers crit more, staves and wands trade damage for regen and luck.
 					</li>
-					<li>Chests, rats and the Rat King drop items; the merchant buys spare gear for gold.</li>
+					<li>Chests, monsters and bosses drop items; the merchant buys spare gear for gold.</li>
 				</ul>
 			</section>
 
@@ -287,8 +287,8 @@ const Tutorial: React.FC = () => {
 				<h3 className='px-h'>Rebirth &amp; Embers</h3>
 				<p className='text-[#d8c8a0]'>
 					When your castle reaches level {REBIRTH.minCastleLevel} and you own at least {REBIRTH.minTiles} tiles (+{REBIRTH.tilesPerRebirth} for every rebirth done) you can
-					Rebirth from the Rebirth window: the map, resources, castle, farm and level start again, and you keep your name,
-					hero and Embers. Every Ember is worth +{pct(REBIRTH.incomePerPoint)} income for ever and can be spent in
+					Rebirth from the Rebirth window: the map, resources, castle, farm, gear and bag start again (you keep the starter kit), and you keep your name,
+					hero, level, gems and Embers. Your attribute points are handed back to spend again. Every Ember you earn adds to your income for ever (the more you have, the less each new one adds) and can be spent in
 					the shop ({Object.values(EMBER_UPGRADES).map((u) => u.label).join(', ')}). A higher castle level and more tiles
 					at the moment of rebirth give more Embers, so pushing on to level {CASTLE_UPGRADE.maxLevel} first pays.
 				</p>
@@ -327,7 +327,7 @@ const Tutorial: React.FC = () => {
 					{MERCHANT_BUY_MULTIPLIER}x the selling price, so trading back and forth never gains anything. <b>Goods</b> shows a shelf of
 					six pieces of gear, mixed with the potions that are always in stock, that is reshuffled every {MERCHANT_GOODS.rotateSec / 60} minutes of play (or at once with Refresh: {MERCHANT_GOODS.refresh.freePerWindow} free every {MERCHANT_GOODS.refresh.windowSec / 3600} hours of play, after that for gold, doubling each time);
 					hover a Buy button for the price. Below it is your bag to sell spare gear from. <b>Upgrades</b> has click power and the permanent bonuses (Haggler, Bulk Discount,
-					Lucky Charm, Pack Rat). The shelf never holds legendary gear and Rattatui gear is not for sale: the Rat King drops it.
+					Lucky Charm, Pack Rat). The shelf never holds legendary gear and Rattatui gear is not for sale: bosses drop it.
 				</p>
 				<div className='grid grid-cols-2 md:grid-cols-5 gap-2'>
 					{Object.entries(MERCHANT_RESOURCE_PRICES).map(([r, price]) => (
@@ -379,7 +379,7 @@ const Tutorial: React.FC = () => {
 					Each level needs more XP than the one before: level {LEVELING.anchors[0][0]} takes about {formatCompact(LEVELING.anchors[0][1])} XP in all, level {LEVELING.anchors[1][0]} {formatCompact(LEVELING.anchors[1][1])}, the soft cap (level {LEVELING.softCapLevel}) {formatCompact(LEVELING.anchors[2][1])} and the maximum (level {LEVELING.maxLevel}) {formatCompact(LEVELING.anchors[4][1])}
 				</p>
 				<p className='text-[#a89878] mt-1'>
-					XP comes from time (more with the castle and some buildings) and from every tile you buy. Your level, XP and attributes are kept when you rebirth: the soft cap (level {LEVELING.softCapLevel}) takes about three rebirths, the maximum many more.
+					XP comes from time (more with the castle and some buildings) and from every tile you buy. Your level and XP are kept when you rebirth (the attribute points are given back to spend again): the soft cap (level {LEVELING.softCapLevel}) takes about three rebirths, the maximum many more.
 				</p>
 			</section>
 
@@ -392,7 +392,7 @@ const Tutorial: React.FC = () => {
 					<li>Surplus resources can be sold, and missing ones bought, at the merchant.</li>
 					<li>Plains boost meat; a farm is the main way to turn food into gold.</li>
 					<li>Right-click tiles to build: early buildings are cheap, so put the first few where neighbours already boost the tile.</li>
-					<li>Wear a full set for its bonus, and keep a few potions for the Rat King.</li>
+					<li>Wear a full set for its bonus, and keep a few potions for the bosses.</li>
 				</ul>
 			</section>
 		</div>

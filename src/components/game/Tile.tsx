@@ -1,7 +1,7 @@
 import React, { memo, useState } from 'react';
 import { formatCompact } from '@/utils/formatters';
 import { createPortal } from 'react-dom';
-import { TileProps } from '@/types/game';
+import { TileProps, type MonsterType } from '@/types/game';
 import {
 	CASTLE_X,
 	CASTLE_Y,
@@ -26,7 +26,8 @@ import CastleTimerBadge from './CastleTimerBadge';
 import { BUILDING_PIXEL_ICONS, BUILDING_GLOW } from '@/config/pixelIcons';
 import { TileStatus } from './TileStatus';
 import MonsterSprite from './MonsterSprite';
-import { growthSecondsLeft, isBoss, monsterAt, monsterStats } from '@/lib/monsters';
+import { growthInfo, growthSecondsLeft, isBoss, maxLevelOf, monsterAt, monsterStats } from '@/lib/monsters';
+import { limitOf } from '@/lib/limits';
 import { MONSTERS } from '@/config/combatConfig';
 import { MONSTER_CATALOG } from '@/catalog/monsters';
 import CastleUpgradeDialog from './CastleUpgradeDialog';
@@ -35,8 +36,27 @@ import { useUiStore, type ContextMenuItem } from '@/stores/uiStore';
 import { openMenuAt } from '@/lib/globalMenu';
 import '@/styles/ContextMenu.css';
 
+/** The monster on the map with its growth shown: a blue badge at full size, otherwise a thin bar that fills towards the next level (a CSS animation, so no timer runs). */
+const MapMonster: React.FC<{ id: number; type: MonsterType; level: number; max: number; lucky: boolean; art?: string }> = ({ id, type, level, max, lucky, art }) => {
+	const state = useMapSource().game.getState();
+	const monster = art ? undefined : state.monsters.find((m) => m.id === id);
+	const ctx = { merchantUpgrades: state.merchantUpgrades, prestige: state.prestige };
+	const growth = monster ? growthInfo(monster, ctx) : null;
+	return (
+		<MonsterSprite
+			type={type}
+			level={level}
+			lucky={lucky}
+			art={art}
+			maxed={level >= max}
+			growth={growth && !growth.maxed && growth.leftSec !== null ? { leftSec: growth.leftSec, fraction: growth.fraction } : undefined}
+			intervalSec={limitOf('monsterGrowthIntervalSec', ctx)}
+		/>
+	);
+};
+
 /** Hover card of a monster: level, HP, time to its next level, boss traits and the call to fight. Reads the age at render time. */
-const MonsterTip: React.FC<{ id: number; type: 'rat' | 'ratKing'; level: number; art?: string }> = ({ id, type, level, art }) => {
+const MonsterTip: React.FC<{ id: number; type: MonsterType; level: number; art?: string }> = ({ id, type, level, art }) => {
 	const state = useMapSource().game.getState();
 	const wip = art ? MONSTER_CATALOG.find((m) => m.id === art) : undefined;
 	if (wip) {
@@ -60,12 +80,15 @@ const MonsterTip: React.FC<{ id: number; type: 'rat' | 'ratKing'; level: number;
 				{MONSTERS[type].label} - Lv {formatCompact(level)} - {formatCompact(stats.maxHp)} HP
 			</div>
 			{isBoss(type) && <div className='text-[#ff8a6a] font-bold'>BOSS</div>}
-			{nextLevel !== null && (
-				<div className='px-tip-muted'>Grows stronger in {Math.max(1, Math.ceil(nextLevel / 60))} min</div>
+			{monster && (
+				<div className='px-tip-muted'>
+					Level {formatCompact(level)} of {formatCompact(maxLevelOf(monster.spawnLevel, { merchantUpgrades: state.merchantUpgrades, prestige: state.prestige }))}
+					{nextLevel !== null ? `, grows in ${Math.max(1, Math.ceil(nextLevel / 60))} min` : ' - fully grown'}
+				</div>
 			)}
 			{isBoss(type) && (
 				<div className='px-tip-muted'>
-					Crits {stats.critChance}%, resists Stun {stats.stunResist}%. Beat it within {MONSTERS.ratKing.timeLimitSec} seconds for a Rattatui piece
+					Crits {stats.critChance}%, resists Stun {stats.stunResist}%. Beat it within {MONSTERS[type].timeLimitSec} seconds for a Rattatui piece
 				</div>
 			)}
 			<div className='text-[#f0d27a]'>Click to fight</div>
@@ -90,9 +113,9 @@ const Tile: React.FC<TileProps> = ({
 	// string selector: the tile re-renders when its monster appears, changes level or leaves, not on every tick
 	const monsterKey = game((state) => {
 		const m = monsterAt(state.monsters, x, y);
-		return m ? `${m.id}:${m.type}:${m.level}:${m.lucky ? 1 : 0}:${m.art ?? ''}` : '';
+		return m ? `${m.id}:${m.type}:${m.level}:${m.lucky ? 1 : 0}:${maxLevelOf(m.spawnLevel, { merchantUpgrades: state.merchantUpgrades, prestige: state.prestige })}:${m.art ?? ''}` : '';
 	});
-	const [monsterId, monsterType, monsterLevel, monsterLucky, monsterArt] = monsterKey ? monsterKey.split(':') : [];
+	const [monsterId, monsterType, monsterLevel, monsterLucky, monsterMax, monsterArt] = monsterKey ? monsterKey.split(':') : [];
 	const [isShaking, setIsShaking] = useState(false);
 	const [showCastleDialog, setShowCastleDialog] = useState(false);
 	const [showChestTooltip, setShowChestTooltip] = useState(false);
@@ -185,8 +208,8 @@ const Tile: React.FC<TileProps> = ({
 		if (monsterKey) {
 			const id = Number(monsterId);
 			own.push(
-				{ id: 'fight', label: `Fight ${MONSTERS[monsterType as 'rat' | 'ratKing'].label}`, onSelect: () => void startFight(id) },
-				{ id: 'dismiss', label: `Dismiss ${MONSTERS[monsterType as 'rat' | 'ratKing'].label}...`, danger: true, onSelect: () => ui.askDismissMonster(id) }
+				{ id: 'fight', label: `Fight ${MONSTERS[monsterType as MonsterType].label}`, onSelect: () => void startFight(id) },
+				{ id: 'dismiss', label: `Dismiss ${MONSTERS[monsterType as MonsterType].label}...`, danger: true, onSelect: () => ui.askDismissMonster(id) }
 			);
 		} else if (hasChest) {
 			own.push({ id: 'chest', label: 'Open chest', onSelect: () => void collectChest(x, y) });
@@ -288,7 +311,7 @@ const Tile: React.FC<TileProps> = ({
 					)}
 
 					{isOwned && monsterKey && (
-						<MonsterSprite type={monsterType as 'rat' | 'ratKing'} level={Number(monsterLevel)} lucky={monsterLucky === '1'} art={monsterArt || undefined} />
+						<MapMonster id={Number(monsterId)} type={monsterType as MonsterType} level={Number(monsterLevel)} max={Number(monsterMax)} lucky={monsterLucky === '1'} art={monsterArt || undefined} />
 					)}
 
 					{/* Bonus treasure chest on the tile */}
@@ -329,7 +352,7 @@ const Tile: React.FC<TileProps> = ({
 				createPortal(
 					<div className='absolute' style={{ left: x * TILE_SIZE, top: y * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE }}>
 						{isOwned && monsterKey && (
-							<MonsterTip id={Number(monsterId)} type={monsterType as 'rat' | 'ratKing'} level={Number(monsterLevel)} art={monsterArt || undefined} />
+							<MonsterTip id={Number(monsterId)} type={monsterType as MonsterType} level={Number(monsterLevel)} art={monsterArt || undefined} />
 						)}
 						{isOwned && hasChest && showChestTooltip && (
 							<div className='map-tip map-tip-up map-tip-in absolute bottom-full mb-1 left-1/2 -translate-x-1/2 w-max px-tooltip text-xs text-[#f0d27a]'>

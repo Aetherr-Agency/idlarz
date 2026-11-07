@@ -39,6 +39,8 @@ interface PublicMonster {
 	x: number;
 	y: number;
 	spawnLevel: number;
+	/** Which monster it is (left out by older servers: a rat or the Rat King) */
+	type?: import('@/types/game').MonsterType;
 }
 
 export interface PublicChest {

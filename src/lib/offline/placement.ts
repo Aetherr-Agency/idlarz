@@ -1,7 +1,8 @@
 import { castleLevelOf, isInWard } from '@/lib/castleWard';
 import { chestSpots, pickChestSpot } from '@/lib/chests';
+import { MONSTERS } from '@/config/combatConfig';
 import { canSpawnOn, castleDistance, rollSpawnLevel, spawnTiles } from '@/lib/monsters';
-import type { ChestTicket, MonsterTicket, TicketBank } from '@/lib/offline/tickets';
+import { monsterTypeOf, type ChestTicket, type MonsterTicket, type TicketBank } from '@/lib/offline/tickets';
 import type { Rng } from '@/lib/rng';
 import { unpackBody, type SaveBody } from '@/lib/saveFormat';
 import type { MonsterType, Tile } from '@/types/game';
@@ -29,7 +30,8 @@ export const worldFromPart = (part: { land: unknown; extra: unknown }): World | 
 	return createWorld(placed);
 };
 
-const typeOf = (kind: 'rat' | 'king'): MonsterType => (kind === 'king' ? 'ratKing' : 'rat');
+/** The monsters a ticket of this kind can turn into: every `MONSTERS` entry of the matching grade (normal monsters for a rat ticket, bosses for the King's). */
+const typesOf = (kind: 'rat' | 'king'): MonsterType[] => (Object.keys(MONSTERS) as MonsterType[]).filter((type) => (MONSTERS[type].grade === 'boss') === (kind === 'king'));
 
 /** A ticket that is on the map (it has a tile and the level it appeared at). */
 export const isPlaced = (ticket: MonsterTicket): boolean => ticket.x !== undefined && ticket.y !== undefined && ticket.spawnLevel !== undefined;
@@ -55,9 +57,11 @@ export const needsLook = (bank: TicketBank, key: string): boolean => {
 export const placeTickets = (bank: TicketBank, world: World, key: string, rebirths: number, rollFor: (kind: string, n: number) => Rng): TicketBank => {
 	const castleLevel = castleLevelOf(world);
 	const noneTaken = new Set<string>();
+	// how many tiles some monster of the kind may stand on (a tile several monsters could use counts once)
+	const siteCount = (kind: 'rat' | 'king') => new Set(typesOf(kind).flatMap((type) => spawnTiles(type, world, noneTaken, rebirths).map((spot) => `${spot.x},${spot.y}`))).size;
 	const sites = {
-		rat: spawnTiles('rat', world, noneTaken, rebirths).length,
-		king: spawnTiles('ratKing', world, noneTaken, rebirths).length,
+		rat: siteCount('rat'),
+		king: siteCount('king'),
 		chest: chestSpots(world, noneTaken, castleLevel).length,
 	};
 
@@ -67,7 +71,7 @@ export const placeTickets = (bank: TicketBank, world: World, key: string, rebirt
 		if (!isPlaced(ticket)) return ticket;
 		const spot = `${ticket.x},${ticket.y}`;
 		const tile = getTile(world, ticket.x!, ticket.y!);
-		if (tile && !taken.has(spot) && canSpawnOn(typeOf(kind), ticket.x!, ticket.y!, tile, castleLevel, rebirths)) {
+		if (tile && !taken.has(spot) && canSpawnOn(monsterTypeOf(ticket, kind), ticket.x!, ticket.y!, tile, castleLevel, rebirths)) {
 			taken.add(spot);
 			return ticket;
 		}
@@ -86,12 +90,15 @@ export const placeTickets = (bank: TicketBank, world: World, key: string, rebirt
 	};
 	const place = (ticket: MonsterTicket, kind: 'rat' | 'king'): MonsterTicket => {
 		if (isPlaced(ticket)) return ticket;
-		const type = typeOf(kind);
-		const free = spawnTiles(type, world, taken, rebirths);
-		if (free.length === 0) return ticket;
+		// the monster comes with the tile: among the types that still have a free tile (the seal picks when there is a choice)
+		const open = typesOf(kind)
+			.map((type) => ({ type, free: spawnTiles(type, world, taken, rebirths) }))
+			.filter((entry) => entry.free.length > 0);
+		if (open.length === 0) return ticket;
+		const { type, free } = open.length === 1 ? open[0] : open[Math.floor(rollFor('spawntype', ticket.n)() * open.length) % open.length];
 		const spot = free[Math.floor(rollFor('spawnpos', ticket.n)() * free.length) % free.length];
 		taken.add(`${spot.x},${spot.y}`);
-		return { ...ticket, x: spot.x, y: spot.y, spawnLevel: rollSpawnLevel(type, castleLevel, ticket.n, castleDistance(spot)) };
+		return { ...ticket, type, x: spot.x, y: spot.y, spawnLevel: rollSpawnLevel(type, castleLevel, ticket.n, castleDistance(spot)) };
 	};
 
 	const settledRats = bank.rats.map((ticket) => settle(ticket, 'rat'));
