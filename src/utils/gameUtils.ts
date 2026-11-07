@@ -69,16 +69,11 @@ export const countOwnedTiles = (tiles: World): number => ownedCount(tiles);
 /** Number of owned tiles of one biome (O(1)). */
 export const countOwnedBiomeTypes = (tiles: World, biomeType: BiomeType): number => biomeCount(tiles, biomeType);
 
-/**
- * Gets the description for a character stat
- * @param stat The character stat key
- * @returns Description of what the stat does
- */
 const titleCase = (s: string) => s[0].toUpperCase() + s.slice(1);
 
-/** "+2.5% Stone & Coal production per point / +0.2% XP production per point / +0.2% XP gained per point" */
 const R = STAT_RULES;
 
+/** "+2.5% Stone & Coal production per point / +0.2% XP production per point / +0.2% XP gained per point" */
 const resourceEffect = (stat: keyof typeof CHARACTER_STAT_CONFIG.resourceTargets): string => {
 	const cfg = CHARACTER_STAT_CONFIG;
 	const parts = [
@@ -91,6 +86,11 @@ const resourceEffect = (stat: keyof typeof CHARACTER_STAT_CONFIG.resourceTargets
 	return parts.join(' / ');
 };
 
+/**
+ * Gets the description for a character stat
+ * @param stat The character stat key
+ * @returns Description of what the stat does
+ */
 export const getStatDescription = (
 	stat: keyof Omit<CharacterStats, 'availablePoints'>
 ): string => {
@@ -334,7 +334,7 @@ export const calculateAnimalCost = (animal: Animal, level: number): number => {
 	return Math.floor(animal.baseCost * Math.pow(animal.costScaling, level));
 };
 
-export type FarmUpgrades = Partial<Record<string, number>>;
+type FarmUpgrades = Partial<Record<string, number>>;
 
 export const farmUpgradeLevel = (upgrades: FarmUpgrades | undefined, id: FarmUpgradeId): number =>
 	Math.max(0, Math.min(FARM_UPGRADES[id].maxLevel, Math.floor(upgrades?.[id] ?? 0)));
@@ -354,7 +354,7 @@ export const farmUpgradeCost = (id: FarmUpgradeId, level: number): Partial<Resou
 };
 
 /** Everything the farm yields per second before the global modifiers: meat plus the products. */
-export type FarmOutput = Record<'meat' | 'eggs' | 'milk' | 'hide', number>;
+type FarmOutput = Record<'meat' | 'eggs' | 'milk' | 'hide', number>;
 
 const emptyOutput = (): FarmOutput => ({ meat: 0, eggs: 0, milk: 0, hide: 0 });
 
@@ -475,12 +475,12 @@ export interface ResourceBreakdownEntry {
 	total: number;
 }
 
-export type ResourceBreakdown = Record<keyof Resources, ResourceBreakdownEntry>;
+type ResourceBreakdown = Record<keyof Resources, ResourceBreakdownEntry>;
 
 const RESOURCE_KEYS = Object.keys(BASE_GENERATION_RATES) as (keyof Resources)[];
 
 /** What one tile produces per second (before the global modifiers), split into the part that is its own and the bonuses on it. */
-export interface TileOutput {
+interface TileOutput {
 	/** The biome's and the building's own output (with the yield scale) */
 	base: Partial<Resources>;
 	/** Extra from adjacent tiles of the same biome */
@@ -888,7 +888,7 @@ export const startingResources = (prestige: PrestigeState | undefined): Resource
 export const emberGain = (castleLevel: number, tiles: number, merchant?: MerchantUpgrades, rebirths = 0): number =>
 	Math.floor(REBIRTH.gain(castleLevel, tiles, rebirths) * (1 + merchantEffect(merchant, 'tithe')));
 
-export interface RebirthRequirement {
+interface RebirthRequirement {
 	id: 'castle' | 'tiles' | 'idle';
 	label: string;
 	/** What the player has now / needs (for 'idle': 1 when no castle upgrade is running, 0 while one is) */
@@ -897,7 +897,7 @@ export interface RebirthRequirement {
 	met: boolean;
 }
 
-export interface RebirthStatus {
+interface RebirthStatus {
 	castleLevel: number;
 	/** Purchased tiles + 1: the free starting ring does not count (economyTiles) */
 	ownedTiles: number;

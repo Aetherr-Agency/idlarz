@@ -1,4 +1,4 @@
-import { BIOMES } from '@/config/gameConfig';
+import type { BIOMES } from '@/config/gameConfig';
 import type { MONSTERS } from '@/config/combatConfig';
 import type { StoredAmounts } from '@/catalog/resourceKeys';
 import type { PlayerClassId } from '@/config/playerClasses';
@@ -7,6 +7,10 @@ import type { PixelIconName } from '@/config/pixelIcons';
 import type { ItemStats } from '@/catalog/stats';
 import type { SkillId } from '@/catalog/skills';
 import type { World } from '@/utils/world';
+import type { ChestLoot } from '@/lib/chests';
+import type { OfflineReport } from '@/lib/offline/apply';
+import type { Cooldowns, FightView } from '@/lib/offline/fightTypes';
+import type { ClaimResult, FightReply, SyncResult } from '@/lib/offline/types';
 
 export type BiomeType = keyof typeof BIOMES;
 
@@ -131,7 +135,7 @@ export interface ItemDef {
 }
 
 /** One rolled affix on an item: which affix and how well it rolled (0-100 inside its value range). Values are derived. */
-export interface AffixRoll {
+interface AffixRoll {
 	id: string;
 	roll: number;
 }
@@ -182,7 +186,7 @@ export interface Monster {
 	art?: string;
 }
 
-export interface KillSummary {
+interface KillSummary {
 	gold: number;
 	xp: number;
 	/** Pelts the kill paid (a share of the farm's hide income); absent in a notice from before hide came from kills */
@@ -283,7 +287,7 @@ export interface Animal {
 	product: { resource: FarmProduct; perSec: number }; // a farm product trickling out of every animal
 }
 
-export type FarmProduct = 'eggs' | 'milk' | 'hide';
+type FarmProduct = 'eggs' | 'milk' | 'hide';
 
 // One physical click, as seen by the click limiter. `eventId` is shared by every handler of the same DOM event.
 export interface ClickInput {
@@ -311,11 +315,6 @@ export interface PrestigeState {
 	legacyEarned: number; // ever earned; drives the income bonus. earned = unspent + cost of all shop levels
 	upgrades: Partial<Record<EmberUpgradeId, number>>;
 }
-
-import type { ChestLoot } from '@/lib/chests';
-import type { OfflineReport } from '@/lib/offline/apply';
-import type { Cooldowns, FightView } from '@/lib/offline/fightTypes';
-import type { ClaimResult, FightReply, SyncResult } from '@/lib/offline/types';
 
 export interface GameState {
 	previousLevel: number;

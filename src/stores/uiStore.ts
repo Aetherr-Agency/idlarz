@@ -37,11 +37,11 @@ const noticeTimers = new Map<number, ReturnType<typeof setTimeout>>();
 let flashTimer: ReturnType<typeof setTimeout> | null = null;
 
 export type CharacterTab = 'combat' | 'income' | 'rebirths';
-export const CHARACTER_TABS: readonly CharacterTab[] = ['combat', 'income', 'rebirths'];
+const CHARACTER_TABS: readonly CharacterTab[] = ['combat', 'income', 'rebirths'];
 
 /** How much one Sell / Buy click moves in the Merchant window: a preset number of units, or all of it */
-export type MerchantAmount = number | 'max';
-export const MERCHANT_PRESETS: readonly MerchantAmount[] = [1_000, 1_000_000, 1_000_000_000, 'max'];
+type MerchantAmount = number | 'max';
+const MERCHANT_PRESETS: readonly MerchantAmount[] = [1_000, 1_000_000, 1_000_000_000, 'max'];
 export const MERCHANT_CUSTOM_MAX = 12;
 const MERCHANT_TABS: readonly MerchantTab[] = ['resources', 'goods', 'upgrades', 'quests', 'gambling'];
 
@@ -56,18 +56,18 @@ const readMerchantPreset = (): MerchantAmount => {
 };
 
 /** How long a short message stays up (ms) */
-export const TOAST_MS = 2200;
+const TOAST_MS = 2200;
 /** How long a chest reward notice stays up (ms); the fade in ContextMenu.css (.chest-toast) runs the same time */
-export const CHEST_NOTICE_MS = 3000;
+const CHEST_NOTICE_MS = 3000;
 /** Most notices of one kind on screen at once; opening more drops the oldest */
-export const MAX_NOTICES = 5;
+const MAX_NOTICES = 5;
 
-export type ChestNoticeLoot = ChestLoot & { gems?: number };
-export interface ChestNotice {
+type ChestNoticeLoot = ChestLoot & { gems?: number };
+interface ChestNotice {
 	id: number;
 	loot: ChestNoticeLoot;
 }
-export interface ToastMessage {
+interface ToastMessage {
 	id: number;
 	text: string;
 	/** The same message repeated in a row (a rapid sale) is one line with a counter */
@@ -147,10 +147,10 @@ interface UiState {
 	farmAnimalsOpen: boolean;
 	farmHudOpen: boolean;
 	farmUpgradesOpen: boolean;
-	/** The Merchant window remembers its tab and the amount you set (also across visits): the typed value is not lost when you switch windows */
 	/** The Character window's lower tab: its combat figures, the income, or the rebirth history */
 	characterTab: CharacterTab;
 	setCharacterTab: (tab: CharacterTab) => void;
+	/** The Merchant window remembers its tab and the amount you set (also across visits): the typed value is not lost when you switch windows */
 	merchantTab: MerchantTab;
 	setMerchantTab: (tab: MerchantTab) => void;
 	merchantPreset: MerchantAmount;

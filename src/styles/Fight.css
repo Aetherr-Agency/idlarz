@@ -50,10 +50,6 @@
 	letter-spacing: 1px;
 }
 
-.fight-boss-skull {
-	font-size: 1.2rem;
-}
-
 .fight-boss-traits {
 	font-size: 0.7rem;
 	color: #f0d8b0;
@@ -138,34 +134,6 @@
 	text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000;
 }
 
-/* --- stage --- */
-.fight-stage {
-	position: relative;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	min-height: 260px;
-	background: radial-gradient(closest-side, rgba(90, 40, 30, 0.45), transparent);
-}
-
-.fight-monster {
-	position: relative;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 240px;
-	height: 240px;
-	background: none;
-	border: 0;
-	cursor: crosshair;
-	user-select: none;
-}
-
-.fight-monster:disabled {
-	cursor: default;
-	opacity: 0.55;
-}
-
 .fight-sprite {
 	display: block;
 	image-rendering: pixelated;
@@ -179,26 +147,6 @@
 @keyframes fight-hit {
 	0% { transform: scale(0.9) rotate(-3deg); filter: brightness(2.2) saturate(0.3); }
 	100% { transform: scale(1) rotate(0); filter: none; }
-}
-
-.fight-burst {
-	position: absolute;
-	left: 50%;
-	top: 45%;
-	pointer-events: none;
-}
-
-.fight-burst i {
-	position: absolute;
-	background: #b01810;
-	box-shadow: inset -1px -1px 0 #6a0a06;
-	animation: fight-blood 0.6s cubic-bezier(0.2, 0.7, 0.4, 1) forwards;
-}
-
-@keyframes fight-blood {
-	0% { transform: translate(0, 0); opacity: 1; }
-	70% { opacity: 1; }
-	100% { transform: translate(var(--dx), calc(var(--dy) + 90px)); opacity: 0; }
 }
 
 .fight-number {
@@ -223,14 +171,6 @@
 @keyframes fight-float {
 	0% { transform: translateY(0); opacity: 1; }
 	100% { transform: translateY(-48px); opacity: 0; }
-}
-
-/* --- actions --- */
-.fight-actions {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
 }
 
 .fight-potions {
@@ -330,9 +270,6 @@
 	.fight-number {
 		animation: none;
 	}
-	.fight-burst {
-		display: none;
-	}
 	.fight-sprite[data-hit='true'] {
 		filter: brightness(1.8);
 	}
@@ -352,11 +289,6 @@
 	justify-content: center;
 	gap: 6px 14px;
 	font-size: 0.85rem;
-}
-
-.victory-status {
-	color: #a89878;
-	font-size: 0.75rem;
 }
 
 .victory-loot {

@@ -42,8 +42,6 @@ luck: 0,
 // old saves and the procedural art (which hashes absolute coordinates) are unchanged.
 export const CASTLE_X = 25;
 export const CASTLE_Y = 25;
-/** The first saves stored the map as this square (castle in the middle); only the old save layout and test adapters still use it. */
-export const LEGACY_GRID_SIZE = 50;
 
 export const TILE_SIZE = 48; // Balanced for visibility
 
@@ -657,7 +655,7 @@ export type BuildingType =
 	| 'stonecraft'
 	| 'barracks';
 
-export interface Building {
+interface Building {
 	name: BuildingType;
 	label: string;
 	resourceGeneration: Partial<Resources>;

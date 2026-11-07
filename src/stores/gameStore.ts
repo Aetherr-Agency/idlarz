@@ -112,13 +112,13 @@ import type {
 import { MAX_OWNED_TILES, getTile, hasOwnedNeighbour, inRange, isOwnedAt, ownedCount, setTile, type World } from '@/utils/world';
 
 
-/** What can raise a limit (see config/limits.ts): the merchant bonuses and the rebirth state. */
 /** The income rates for the state with this gear on (a set bonus can add income). */
 const ratesWithGear = (
 	state: Pick<GameState, 'tiles' | 'characterStats' | 'farmLevels' | 'prestige' | 'farmUpgrades' | 'merchantUpgrades'>,
 	equipment: Equipment
 ) => calculateResourceRates(state.tiles, state.characterStats, state.farmLevels, state.prestige, state.farmUpgrades, state.merchantUpgrades, gearIncomePct(equipment));
 
+/** What can raise a limit (see config/limits.ts): the merchant bonuses and the rebirth state. */
 const limitCtx = (state: Pick<GameState, 'merchantUpgrades' | 'prestige'>): LimitContext => ({ merchantUpgrades: state.merchantUpgrades, prestige: state.prestige });
 
 // Shared by the gold click and the tile tap: one token per physical click
