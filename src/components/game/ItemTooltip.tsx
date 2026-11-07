@@ -130,7 +130,7 @@ const ItemTooltipBody: React.FC<BodyProps> = ({ item, itemId, comparison, wornLa
 						{withDiff && swing && <Diff delta={swing.speed.delta} text={signed(swing.speed.delta, 2)} />}
 					</div>
 					<div>
-						<b>{formatCompact(weaponDps({ stats, attackSpeed: def.attackSpeed }), 2)}</b> Damage per Second
+						<b>{formatCompact(weaponDps({ stats, attackSpeed: def.attackSpeed }), 2)}</b> Weapon damage per second
 						{withDiff && swing && <Diff delta={swing.dps.delta} text={signed(swing.dps.delta, 2)} />}
 					</div>
 				</div>
