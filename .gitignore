@@ -50,3 +50,6 @@ next-env.d.ts
 # generated review sheets and python caches
 scripts/pixel/previews/
 __pycache__/
+
+# player-data dumps written by scripts/reset-players.ts
+/backups/

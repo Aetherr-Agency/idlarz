@@ -1,0 +1,42 @@
+# 23 · Season restart: `npm run reset-players`
+
+An operator tool ([scripts/reset-players.ts](../scripts/reset-players.ts)) that gives every player a fresh game while keeping who they are. It talks to Supabase with the service role, so it is run by hand from a trusted machine, never from the app.
+
+## Usage
+
+```bash
+npm run reset-players                       # dry run (default): lists players, changes nothing
+npm run reset-players -- --yes              # really reset everyone
+npm run reset-players -- --yes --user <uuid> [--user <uuid> ...]   # only these players
+npm run reset-players -- --yes --purge-history   # also delete save_history (rollback copies)
+npm run reset-players -- --yes --no-backup       # skip the JSON backup (not recommended)
+```
+
+Needs `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, read from the environment or `.env.local`. They decide which project is wiped: check them first. Try one account with `--user` before running it for everyone.
+
+## What is kept and what is reset
+
+| Data | Result |
+|---|---|
+| Auth account, `profiles` (`character_name`, `player_class`) | **kept** |
+| `player_ledger.gems` | **kept** (a player with a save but no ledger row keeps the save's gems) |
+| `player_saves` | **deleted**: level, XP, gold, castle, tiles, buildings, rebirths, legacy points, everything in `core` |
+| `player_worlds`, `player_stats` | deleted by cascade; the leaderboard row returns after the player's first new save |
+| `player_ledger` (all but `gems`) | **reset** to new-game values: spawn timers and tickets, granted totals, combat, inventory (bag and gear), rebirths. `run_id` and `ver` are bumped, so sealed rolls never repeat across the restart |
+| `save_history` | kept by default (rollback copies); deleted with `--purge-history` |
+
+Before a real reset the tool writes `backups/reset-<timestamp>.json` with `player_saves`, `player_worlds`, `player_stats` and `player_ledger` (the folder is gitignored; it holds player data). `save_history` is not part of the dump because it stays in the database unless purged.
+
+## Running it
+
+1. Run the dry run and check the player list and the project URL.
+2. Do it while few people are online. A player with the game open must reload: their old save no longer matches the server and is rejected, then they start a new game.
+3. Run with `--yes`.
+
+## Known caveat: local copies in browsers
+
+The server side is fully reset, but a browser may still hold its own local save (see "Start flow" in [09](09-cloud-saves.md)). The tool cannot touch browsers. Gems stay the server's ([11](11-server-authority.md)), but other progress in an old local save could be offered back to the player at login. If the restart must be strict, tell players to choose New Game / clear the site's saved data, or ship a client change that discards local saves from before the restart.
+
+## Undoing it
+
+Restore from the JSON backup, or from `save_history` when it was kept (the latest copy per player is at most about 30 minutes older than their last save). There is no automated restore tool yet.
