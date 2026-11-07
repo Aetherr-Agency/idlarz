@@ -33,10 +33,10 @@ Goal: every item we will ship exists as **data with an icon**, behind a switch, 
 
 | # | Step | Size | Notes |
 |---|---|---|---|
-| B1 | **An icon registry that is one line per icon.** Today `pixelIcons.ts` and `scripts/pixel/sprites_*.py` are edited by hand per item. Make an `assets/items.json` (id -> file, slot, grade) read by both the build script and `pixelIcons.ts`. | S-M | Same idea as the resource-key registry. |
+| B1 | **An icon registry that is one line per icon.** Today `pixelIcons.ts` and `scripts/pixel/sprites_*.py` are edited by hand per item. Make an `assets/items.json` (id -> file, slot, grade) read by both the build script and `pixelIcons.ts`. | S-M | Same idea as the resource-key registry. **Partly built (2026-11-07):** `src/config/itemArt.ts` maps 115 art ids to `public/pixel/items/<slot>/` (64x64, registered natively through `pixelIcons.ts`); it is a TypeScript map, not `assets/items.json`, and the legacy 40 px `item_*` icons still use the old path. |
 | B2 | **Cut and register the prepared sheets** by the procedure in the art README (`extract_sheet.py`, nearest-neighbour, our 40 px, no baked glow): potions first (hp, mana, buffs, antidotes), then weapons by type (sword, dagger, axe, mace, spear, bow, crossbow, staff, wand), then armour by slot (head, shoulder, chest, hands, legs, feet), then neck/ring/charm/cape. Gaps to draw in our kit: shields and off-hands, tomes, quivers, shoulders, gloves, capes. | L | One PR per family; the PR description names the sheet and region (art README rule 8). |
-| B3 | **Item definitions for the 12-grade ladder** (G1-G9 plus three special sets S1-S3) as entries in `catalog/items/*.ts` with `enabled: false` (new flag) and the grade as a tag, so they exist and are validated by `tests/catalog.test.ts` but nothing drops them yet. | M | The names are working titles in the equip README section 4. |
-| B4 | **Consumables beyond HP potions**: mana, stamina/regen, buff potions, antidotes with their effects as data (`consumable: { healHp | healMp | buff }`), shown in the bag and hotkeys. Needs a buff model on the server (a timed modifier in `CombatState`); a design for consumables, buffs and drop chests exists on another branch (`agntc/mystifying-turing-7454b2`, not merged yet) and should be taken from there. | M-L | Server-side effect first, art second. |
+| B3 | **Item definitions for the 12-grade ladder** (G1-G9 plus three special sets S1-S3) as entries in `catalog/items/*.ts` with `enabled: false` (new flag) and the grade as a tag, so they exist and are validated by `tests/catalog.test.ts` but nothing drops them yet. | M | The names are working titles in the equip README section 4. **Partly built (2026-11-07):** the `enabled` flag exists and `src/catalog/items/reuse.ts` holds 91 disabled items (feet, legs, neck, ring, off-hand, sword, mace/maul, legendary), never sold and never dropped (tests). Still open: grade mapping G1-G9 and S1-S3, the belt slot, dagger/axe/spear/bow/crossbow/staff/wand, and chest/head/shoulder/hands/cape/charm art. |
+| B4 | **Consumables beyond HP potions**: mana, stamina/regen, buff potions, antidotes with their effects as data (`consumable: { healHp | healMp | buff }`), shown in the bag and hotkeys. Needs a buff model on the server (a timed modifier in `CombatState`); a design for consumables, buffs and drop chests exists on another branch (`agntc/mystifying-turing-7454b2`, not merged yet) and should be taken from there. | M-L | Server-side effect first, art second. Decided in IDL-22 and IDL-160 (timed combat buffs, 4 utility potions); the 12 potion icons sit in `public/pixel/items/consumable/`, no definitions yet. |
 | B5 | **Old art retirement.** Delete the superseded `item_*` icons and the procedural gear sprites in the same PR that switches each catalog entry (art README rule 6). | S | |
 
 ## Phase C · Loot pools, variety and uniques (L)
@@ -52,7 +52,7 @@ Goal: every item we will ship exists as **data with an icon**, behind a switch, 
 
 ## Phase D · Monsters for the rest of the world (M, per biome)
 
-Hills, coast and lake have art or are missing it (hills has none). Enable a biome's roster the way the plains one was: stats in `BIOME_TIER`, entries in `MONSTERS`, the ladder table, the loot pool of C1. The water biomes need **shoreline spawns** (a land tile next to water) first. Then the reward caps of [20](20-monster-families-and-rewards.md), generic spawn weights per monster, and the glossary of [22](22-glossary-and-mastery.md).
+Hills, coast and lake have art or are missing it (hills has none). Enable a biome's roster the way the plains one was: stats in `BIOME_TIER`, entries in `MONSTERS`, the ladder table, the loot pool of C1. **Decided 2026-11-07 (IDL-58, build task IDL-201): monsters may spawn on lake and coast tiles themselves, so no shoreline rule is needed (IDL-57 superseded); ladder: coast easy (levels 2-12), hills between forest and swamp (6-16), lake between swamp and tundra (10-19).** Then the reward caps of [20](20-monster-families-and-rewards.md), generic spawn weights per monster, and the glossary of [22](22-glossary-and-mastery.md).
 
 ## Phase E · The rebirth world (as in the ROADMAP release order)
 
@@ -70,7 +70,7 @@ The rats had a **golden ("lucky") variant** and we keep that for every monster: 
 
 ## Small things to do on the way
 
-- Show the **estimated win chance** of each queued monster in the Next strip ([24](24-battle-queue.md)); decide whether a defeat should also switch Auto-battle off.
+- Show the **estimated win chance** of each queued monster in the Next strip ([24](24-battle-queue.md)); decide whether a defeat should also switch Auto-battle off. **Decided 2026-11-07 (IDL-59): coloured Safe/Risky/Unlikely bucket with the percent on hover; three defeats in a row pause Auto-battle.**
 - Per-band danger offsets (`dangerBonus` is 0 or 1, ROADMAP R7).
 - Docs 02, 06 and 19: the castle timer tables still show the old numbers.
 - Look at the growth badge, the queue markers and the Next strip in a real browser session once (nobody has yet), and write a Playwright smoke test for them.

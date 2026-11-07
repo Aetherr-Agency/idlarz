@@ -99,6 +99,18 @@ Existing items that already fit the ladder and may keep their ids: `item_emberbr
 
 The rule for every set is **one silhouette language and one palette across all 13 pieces**, so a set reads as a set at a glance. (The sheets with labelled "SET EXAMPLE" rows are no longer in the folder; the first step of a set is the palette and silhouette sheet in section 7, point 5.)
 
+### 5.1 Approved palettes and silhouette rules (decided 2026-11-07, IDL-23)
+
+Sheet: `sets/special-sets-palette-draft.png` (ramps are light to dark, the last tone is the 1 px coloured outline). Pieces are drawn at the native 64 px cell, checked at 40 and 20 px on a map-green background; glow is a 1-2 px accent, never a baked halo.
+
+| Set | Ramps (hex, light to dark) | Silhouette language |
+|---|---|---|
+| **S1 Sunhoney** | cream cloth `#FFF7E0 #F4E3B8 #E3CF95 #BFA56A #7A6238`; honey gold `#FFE68A #E8C468 #C98F2E #8F5E1C #5A3A12`; amber accent `#FFB347 #E8862A #B3571A #7A3510 #4A2008` | soft and round: wide hems, rounded edges, hexagon (honeycomb) and sun-disc motifs, no spikes |
+| **S2 Ashen Warlord** | charcoal plate `#7A7A82 #5A5A62 #3F3F46 #2B2B31 #121216`; crimson trim `#F06A58 #D03C34 #A02424 #701620 #3E0C14`; tarnished gold `#D8BC6A #B89A4A #8A7030 #5E4A20 #34280E` | angular and heavy: broad horizontal shoulders, horns and visors, rivets, banner cloth; gold only on medals |
+| **S3 Blightbound** | violet-black `#7A58A0 #583A80 #3A2358 #22123A #0E0716`; toxic glow `#D8FF7A #9AE03C #5CB42A #2E7A22 #143E12`; chitin bone `#8C80A4 #645878 #40344E #221A2C` | asymmetric and tapering: ragged hems, hanging tendrils, thorn and claw tips; green appears only as 1-2 px glow |
+
+**Getting set pieces:** the reuse art that matches stays; the rest is **palette-swapped** (shape kept, colours remapped to the ramps above by a script: no dither, hard alpha, coloured outline, then a hand check), and only what a swap cannot fix is recreated. Known swaps: Sunhoney's purple `sunsilk_boots`, maroon `royal_silk_trousers` and blue `royal_lion_crest`; every Blightbound candidate of docs/28 (they are forest green and bark brown). Ashen Warlord matches already (`magma_flail`, `cinderfang_sword`, `ember_medallion`, `ruby_signet`, `warden_plate_belt`, `drake_scale_boots`; `thornspike_shield` and `crimson_crown_ring` need a check).
+
 ## 6. New weapon types and a belt slot (design decisions, not art)
 
 `xJe32g.jpg` shows weapons our `WeaponType` does not have (whip, claws/fist, sickle/scythe, throwing blades, chains, hooks). `nrfbhC.jpg` shows 48 belts, but there is **no belt slot**. Adding either changes combat, loot or the Character window, so it needs a design decision first ([docs/10](../../docs/10-loot-system.md), `WEAPON_ATTACK_SPEED` in `catalog/weapons.ts`, `EquipmentSlot` in `types/game.ts`). **Agents: do not add a type or slot on their own.** Use these sheets only as inspiration for existing types (a whip may become a `dagger`-speed one-hander in art terms only) until the owner decides.

@@ -12,7 +12,7 @@ Source of the biome list: `docs/12-rebirth-biomes.md` (the 7 current biomes and 
 - Bosses are meant to be about 1.5-2x bigger than the regular monsters, with one extra feature (crown, banner, glow). The prompts say so; keep it if the tool lets you set a size.
 - Names are working names. Rename freely.
 
-> Lake and coast are water biomes, so today's monster rules (`LAND_BIOMES` in `config/combatConfig.ts`) do not spawn on them. Their prompts are ready for when shorelines get monsters; skip them if you do not need them yet.
+> Lake and coast monsters may spawn on the lake and coast tiles themselves (decided 2026-11-07, IDL-58); the allowlist in `config/combatConfig.ts` (`LAND_BIOMES`) is widened when their stats are added.
 
 ---
 
