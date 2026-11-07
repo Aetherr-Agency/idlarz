@@ -156,21 +156,33 @@ The three planned special sets get a palette from what exists:
 
 ## 6. Legendary perk drafts (IDL-42, IDL-149)
 
-Perks are not wired and are not in the stats. Perk families are those of IDL-149 (income, XP, kill reward, offline, click, damage, building time, chest speed), one per item, magnitudes tiered and capped per family. Placeholder pairing:
+Perks are not wired and are not in the stats. **Roster decided 2026-11-07 (owner, IDL-144/146/149):** one headline family per item (no two legendaries share a family), fixed numbers per tier (a perk does not scale with item level), 11 items, two special-effect handlers at launch. The Rattatui set is deleted (see below), so the 35 % damage anchor is gone; S2 (38) and S3 (40) at 14 pieces sit below the 45 % damage cap; the damage legendary is a main-hand weapon, so wearing it costs the 14th piece and the total stays 38 (S2: 28 at 12 pieces + 10) or 40 (S3: 30 + 10). The cap only binds together with other damage sources.
 
-| Item | Perk draft |
-| --- | --- |
-| `runeforged_titanhammer` | −25 % building time |
-| `dawnbringer_trident` | +25 % income |
-| `cindercrescent_glaive` | +10 % damage |
-| `frostbloom_fan` | +15 % XP |
-| `voidrune_blade` | +15 % away income |
-| `reapers_crescent` | +20 % kill rewards |
-| `nightfall_edge` | +25 % click gold |
-| `tidecaller_axe` | −25 % chest opening time |
-| `stormtrident` | +10 % damage (second damage perk: check the family cap) |
-| `amethyst_spire` | +15 % XP (second XP perk: check the family cap) |
-| `cinderflight_bow` | +20 % kill rewards (second: check the cap) |
+| Item | Headline perk | Tier | Source |
+| --- | --- | --- | --- |
+| `dawnbringer_trident` | +25 % income | top | boss / T4 relic |
+| `runeforged_titanhammer` | −25 % building time (shares the −60 % combined cap with Embers and Idols) | top | boss / T4 relic |
+| `reapers_crescent` | +25 % kill reward (cap 60 %) | top | boss / T4 relic |
+| `frostbloom_fan` | +15 % XP | mid | chest / rare monster |
+| `voidrune_blade` | +15 points offline efficiency | mid | chest / rare monster |
+| `nightfall_edge` | +15 % click gold | mid | chest / rare monster |
+| `tidecaller_axe` | −15 % chest interval (floor 8 min) | mid | chest / rare monster |
+| `stormtrident` | +15 % max HP | mid | chest / rare monster |
+| `cinderflight_bow` | +15 Gold Find | mid | chest / rare monster |
+| `cindercrescent_glaive` | +10 % damage and **Burn** | combat | chest / rare monster |
+| `amethyst_spire` | **Potion refund** 15 % | handler | chest / rare monster |
+
+Handlers (launch set of two, deterministic from the sealed fight stream):
+- **Burn**: a critical hit sets the monster alight for 3 s; it takes 30 % of that hit per second. A re-crit refreshes, never stacks.
+- **Potion refund**: a drunk potion is not consumed with 15 % chance (rolled from the same sealed stream; never refunds a buff potion that has a cooldown).
+
+Sources and pity (IDL-146), as **two pools** so a roll can never hand out the wrong tier: `legendary_top` (the three top-tier items) is used only by the boss bonus table (pity as `king_legendary`: 5 % + 1 % per miss, max +10 %) and by the relic exchange; the first legendary is guaranteed from the first boss kill after level 15. `legendary_mid` (the eight mid, combat and handler items plus the three classic stat-only legendaries) is used by the chest replace roll (`chest_legendary`, 1.9 %) and by a new `fixed`-mode **monster bonus table** (`monster_legendary`, 0.2 % per kill, item-level gate 15, `placement: 'extra'`). The monster rarity weight of `normal_monster` draws from `general_equipment`, which excludes named items, so it can only produce legendary-rarity bases, never these items; the bonus table is what makes them droppable. Everything wipes at rebirth except the one Vault item (IDL-148). Unique: a second copy of the same id never drops while one is in the bag, gear or Vault.
+
+The eight non-top legendaries can also be crafted late (crafting level 95, 50 War Medals + G9 materials, docs/17 section 7); the three top-tier ones never.
+
+Classic legendaries (`emberbrand`, `starfall_bow`, `titan_maul`) stay as stat-only legendaries without perks.
+
+**Rattatui set removed (2026-11-07, owner):** it was for beta testers while rats existed. Drops stop with IDL-55 (out of every pool and boss source); the definitions are deleted at the epoch reset (IDL-76) because every bag is wiped there, so no `retired` compatibility flag is needed beyond that.
 
 ## 7. New item stats (decided 2026-11-07)
 
@@ -187,6 +199,13 @@ None of these exists yet; adding one means `STAT_DEFS`, `STAT_BASE_BY_TIER`, a c
 | Heal on Kill % | rings, charm | kill step (`payKill`) in the server fight engine | sustains auto-battle |
 | Boss Timer +s | head, shoulder | boss clock in `fight.ts` (180 s) | needs a cap |
 | Potion Cooldown %, Bag Slots | belt | already decided in IDL-138 | floor 4 s; small capped bag slots |
+
+**Accessory themes and affix rules (decided 2026-11-07, IDL-164, IDL-45, IDL-176):**
+- **Themes:** rings (2 slots) = precision: crit chance, super crit, max mana on cloth, plus Crit Damage and Heal on Kill; neck = survival and gold: max HP, regen, Gold Find, plus Crit Damage and Tile Discount; cape = armor, dodge, plus Tile Discount; charm = Luck and XP quality, plus Heal on Kill. The main stat scales with item level like a weapon's (today `steel_ring` gives only `maxHp: 4`). Economy bonuses stay legendary perks.
+- **Economy stats are fixed base stats on their own slots, never random affixes:** Build Speed on hands and chest (gear max 15 %, inside the −60 % shared cap), Tile Discount on cape and neck (gear max 10 %, total stays under the 45 % cap with Charisma and Bulk), Farm Yield on hands (gear max 25 %), Boss Timer on head and shoulder (gear max +30 s).
+- **Random affixes among the new stats:** Crit Damage (ring, neck), Armor Penetration (weapons), Thorns (shields), Heal on Kill (ring, charm).
+- **Affix tiers:** no new mechanic. Magnitude already grows with item level (`affixMagnitude`); the tooltip shows a tier label derived from item level (I 1-19, II 20-39, III 40-59, IV 60-79, V 80+).
+- **Rarity windows, pity and auto-sell defaults (IDL-47)** are sim-driven; drop the Rattatui rows from its tables.
 
 Not taken (stay out of the plan for now): Potion Power %, Sell Price %, and Chest Speed % as a rolled stat (chest speed stays a legendary perk family only).
 

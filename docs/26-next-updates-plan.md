@@ -1,5 +1,7 @@
 # 26 · Next updates: a draft plan in logical order
 
+> **Status note (2026-11-07):** the steps below are tracked as Linear issues (R0 for phase A, R1 and R2 for B and C, R3 for D). A step is done when its issue is Done, not when it is listed here. Decisions made after this plan was written (docs 06, 10, 13, 15, 17, 18, 20, 21, 28 and the "Where each decision lives" table in the [ROADMAP](ROADMAP.md)) win over any older line below.
+
 Written after the balancing pass (castle timers, rebirth wipe and respec, the Ember curve, the merchant clock, the 16-monster roster, the growth badge and the battle queue are built; see git history, nothing of it is repeated here). This is a **proposal**: the order is meant to make the core readable and cheap to change first, then fill the game with content, then go back to the rebirth world ([ROADMAP](ROADMAP.md), [RELEASE-PLAN](RELEASE-PLAN.md)). Sizes: S ≈ half a day, M ≈ 1-2 days, L ≈ a week.
 
 ## Why this order

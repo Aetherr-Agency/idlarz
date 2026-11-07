@@ -4,6 +4,8 @@ Status: **decisions D1-D11 accepted (2026-10-29); ready to start P0.1.** Written
 
 Legend: **S** half a day, **M** 1-2 days, **L** about a week. 🎨 = needs art. 🧱 = ships with a placeholder asset first. ❓ = needs your answer. Every step is its own pull request to `m-heyda/idlarz` and must leave `tsc`, `lint`, `npm test` and `npm run sim` green.
 
+> **Status note (2026-11-07):** the work is now tracked in Linear (team IDL; projects R0-R12 map to the phases below). Decisions made after this file was written are in docs 06, 10, 13, 15, 17, 18, 20, 21 and 28 (index: "Where each decision lives" in the [ROADMAP](ROADMAP.md)) and win over older lines here, for example: the Rattatui set is removed rather than retired (IDL-55), spawn bands and danger offsets are decided (IDL-53), and the launch has 12 achievements (IDL-73).
+
 ## 0. Reading guide
 
 | Section | What it holds |

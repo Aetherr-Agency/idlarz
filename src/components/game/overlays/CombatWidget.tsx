@@ -8,7 +8,7 @@ import { SKILL_IDS } from '@/catalog/skills';
 import { ITEM_CATALOG } from '@/catalog';
 import { autoBattleUnlocked } from '@/lib/combat';
 import { monsterDef, monsterStats } from '@/lib/monsters';
-import { COMBAT_EVENT, type CombatFx } from '@/lib/combatFx';
+import { COMBAT_EVENT, hitNumberText, type CombatFx } from '@/lib/combatFx';
 import audioManager from '@/utils/audioManager';
 import MonsterArt from '../MonsterArt';
 import NotifyDot from '../NotifyDot';
@@ -71,7 +71,7 @@ const CombatWidget: React.FC = () => {
 			const fx = (e as CustomEvent<CombatFx>).detail;
 			if (fx.kind === 'hit') {
 				setHitTick((t) => t + 1);
-				pushNumber(fx.crit === 'none' ? `-${formatCompact(fx.damage)}` : `-${formatCompact(fx.damage)}!`, fx.crit === 'none' ? 'dmg' : fx.crit);
+				pushNumber(hitNumberText(fx.damage, fx.crit), fx.crit === 'none' ? 'dmg' : fx.crit);
 			} else if (fx.kind === 'hurt') {
 				setShake(true);
 				clearTimeout(shakeTimer.current);

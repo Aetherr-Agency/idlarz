@@ -2,7 +2,7 @@
 
 The one place to look when planning the next step. It lists only what is **still open**; finished work is in git history. Legend: 🚧 unfinished feature · 🔧 small fix · ⚠️ needs a decision. Sizes: S ≈ half a day, M ≈ 1-2 days, L ≈ a week.
 
-**The plan for what comes next, in order, is [26-next-updates-plan.md](26-next-updates-plan.md)** (core cleanup, item assets, loot pools and variety, the rest of the monsters, then the rebirth world below). The big plan behind it is to move more of the economy to the server (see "Server authority") and to optimise afterwards.
+**Tasks live in Linear (team IDL, projects R0-R12 and the Economy track); each decided item carries a "Decided 2026-11-07" block.** This file is the narrative index and the specs are the numbered docs. Where an old doc line disagrees with a Linear decision block, the decision block and the doc section it names win. **The plan for what comes next, in order, is [26-next-updates-plan.md](26-next-updates-plan.md)** (core cleanup, item assets, loot pools and variety, the rest of the monsters, then the rebirth world below). The big plan behind it is to move more of the economy to the server (see "Server authority") and to optimise afterwards.
 
 ## Where things stand
 
@@ -11,6 +11,23 @@ The one place to look when planning the next step. It lists only what is **still
 - **A click starts a fight; the server runs it.** Clicking more monsters during a fight lines them up in the **battle queue** ([24](24-battle-queue.md)). With *Auto-battle* on (locked until the first rebirth) the server also sends the player against the next monster. Potions and skills have hotkeys (1-5) and an *Auto-use* switch with a fixed preset (`COMBAT.auto`).
 - **The roster is four biomes of monsters** (plains, forest, swamp, tundra: three monsters and a boss each, tundra the hardest); golden ("lucky") monsters still appear with a chance that grows with Luck; `npm run monster-ladder` shows which gear beats what ([generated/monster-ladder.md](generated/monster-ladder.md)). A rebirth wipes the gear and the bag and hands every attribute point back.
 - **Still the browser's:** the economy (income, tile and building purchases, the map), the stat allocation, the merchant, the farm, rebirth. The server checks them only by plausibility ([07](07-saves-and-security.md), [09](09-cloud-saves.md)).
+
+## Where each decision lives (2026-11-07 planning pass, nothing below is built yet)
+
+| Topic | Spec | Linear |
+| --- | --- | --- |
+| Magnitude targets (gold/s, income multiplier, Embers, stocks) | [06](06-pacing-targets.md) | IDL-128 |
+| Perk families, caps and the legendary roster (11, two pools, Vault, relics) | [10](10-loot-system.md), [28](28-reuse-items-and-stats.md) section 6, [20](20-monster-families-and-rewards.md) | IDL-143..149, 111 |
+| Monster chests (no keys, 2 % per kill) | [10](10-loot-system.md) | IDL-163 |
+| Spawn tables per distance band, boss rules, rosters for hills, coast and lake | [20](20-monster-families-and-rewards.md), [12](12-rebirth-biomes.md) | IDL-53, 55, 201 |
+| Five rebirth biomes (names, rosters, tile output rule) | [12](12-rebirth-biomes.md) | IDL-105, 199 |
+| Set bonuses, palettes, accessory themes, new stats, affix tier labels | [28](28-reuse-items-and-stats.md), [art README](../art_style_reference/equip/README.md) | IDL-39, 23, 164, 176, 45 |
+| Launch achievements, tutorial steps and bundles | [21](21-classes-avatars-achievements-offline-report.md) | IDL-73, 74, 194 |
+| Crafting unlocks, salvage, War Medal legendary craft | [17](17-crafting.md) | IDL-152, 151, 120 |
+| Ember price book, cosmetics, Monument, autobuyers | [18](18-biome-buildings-and-material-tiers.md) section 6 | IDL-97, 184, 185, 195 |
+| Tile price tail, map size, milestones, roads | [18](18-biome-buildings-and-material-tiers.md), balance table below | IDL-79, 181, 131, 198, 98 |
+| Rankings (four boards, daily snapshot), preview map, +20 attribute points | [15](15-leaderboard-and-world-preview.md), [13](13-rebirth-reset-and-paragon.md) | IDL-113, 115, 100 |
+| Paragon | [13](13-rebirth-reset-and-paragon.md) section 5 | IDL-104, 186, 187 |
 
 ## The next update: the rebirth world (design drafts, nothing built)
 
@@ -43,10 +60,10 @@ Release order (confirmed 2026-10-29; the castle timers, the resource registry an
 **Later features agreed in principle (drafts, see [21](21-classes-avatars-achievements-offline-report.md))**
 
 - **Guided tutorial instead of the wall-of-text Guide**: steps stored as catalog data, unlocked with the features and when the player discovers them, shown as small coach tips plus a Guide journal of unlocked entries (locked ones as "???"); it is also the initial tutorial replayed after the class-release reset ([21](21-classes-avatars-achievements-offline-report.md) section 7). Each later feature adds its own steps.
-- **Tutorial rework: a tutorial that grows with the game (⚠️ to design, M-L).** The current `Tutorial.tsx` is a static text overlay and the Guide is a wall of text. Replace both with one progressive tutorial: (1) steps are catalog data, each tied to a feature and shown only once the player unlocks or meets it (tiles, castle, farm, merchant, first fight, loot, auto-battle, first rebirth, each new biome), with small coach tips and a Guide journal of what is already unlocked; (2) it covers the whole loop, not just the first minutes, and every later feature (crafting, Idols, skills tree, queue) ships with its own steps; (3) progress is stored per account (additive save field, server-side later with the achievements counters), so a replay after the class-release reset starts clean. **New: a rebirth result window.** After the player confirms a rebirth, show a summary screen before the new run starts: Embers gained and the income bonus they give, what was kept (character level, attributes, Embers, shop) and what was reset or wiped (map, gear and bag once the wipe ships, respec points handed back), the **new biome and monster unlocks** of the rebirth that was just done ([12](12-rebirth-biomes.md)), newly available features (for example Auto-battle after the first rebirth) and a "what to do first in this run" tip. The window reads from the same status function as the rebirth button (`rebirthStatus`) plus a before/after snapshot, and the first of each unlock also triggers its tutorial step. Related: [21](21-classes-avatars-achievements-offline-report.md) section 7, the offline report rework below.
+- **Tutorial rework (decided 2026-11-07, build IDL-74):** one progressive tutorial replaces `Tutorial.tsx` and the wall-of-text Guide: catalog steps tied to features, coach tips and a Guide journal, progress per account, an initial path of 8 steps with two starter bundles ([21](21-classes-avatars-achievements-offline-report.md) section 7). The **rebirth result window** (Embers gained, kept and reset, new unlocks, a first-steps tip) is IDL-103. Each later feature ships its own steps.
 - **One-time progress reset when classes ship**: every player keeps account and **reserved name** (unique names enforced), picks class and avatar and replays the initial tutorial; old state is archived to `save_history` (pinned); an epoch column and `needsReset` gate make it repeatable ([21](21-classes-avatars-achievements-offline-report.md) section 6).
 - **Class bonuses**: classes stop being cosmetic and give small passives (one economy, one combat); avatars are separate (8 to choose, more unlocked by achievements).
-- **Server-based achievements**: about 12 at launch (tutorial and first-time milestones, plus the early tester), then **grind ladders** (lifetime gold 1M / 1B / 1T / 1Q ..., one ladder per resource, tiles placed, monsters killed in total and per type) fed by lifetime counters in a new ledger record; and a **Glossary** generated from the catalogs. **Monsters start unknown (the real sprite in black, no HP or level), unlock on the first fight, reveal a layer every 100 kills, and give permanent mastery bonuses (500 kills: +XP/loot; resources: 1 million unlocks the entry, 1 trillion gives +25 % income of that resource)** ([22](22-glossary-and-mastery.md)). The tutorial ships first, the glossary later ([21](21-classes-avatars-achievements-offline-report.md) sections 3-4).
+- **Server-based achievements**: 12 at launch (decided, 600 gems and 4 avatars: [21](21-classes-avatars-achievements-offline-report.md) section 3), then **grind ladders** (lifetime gold 1M / 1B / 1T / 1Q ..., one ladder per resource, tiles placed, monsters killed in total and per type) fed by lifetime counters in a new ledger record; and a **Glossary** generated from the catalogs. **Monsters start unknown (the real sprite in black, no HP or level), unlock on the first fight, reveal a layer every 100 kills, and give permanent mastery bonuses (500 kills: +XP/loot; resources: 1 million unlocks the entry, 1 trillion gives +25 % income of that resource)** ([22](22-glossary-and-mastery.md)). The tutorial ships first, the glossary later ([21](21-classes-avatars-achievements-offline-report.md) sections 3-4).
 - **Offline report rework**: a bar of away time against the cap, a clear "capped, N h earned nothing" state with a Night Watch / Steward hint, also on the landing's Continue card.
 - **Landing**: name **IDLE REALM** (a big IDLE patch in hills tiles), Continue card for signed-in players, password reset on and email confirmation off for now ([16](16-landing-and-play-route.md)).
   - **Paint the landing scene in the Map lab.** When the landing page is built, compose its background in `/map-lab` ([01 Map lab](01-architecture.md)): paint the big **IDLE** lettering with the hills biome and surround it with the other biomes (tundra, forest, swamp ...) so the page looks like a real corner of the realm. Export the lab file (JSON) as the source and keep it in the repo, so the strip can be re-baked when the name or the art changes (see the re-bake note in [16](16-landing-and-play-route.md)). The lab already has biome painting, brush size, undo and export; if the lettering needs a straight-line or stamp tool, it is one more function in `lib/mapEdit.ts`. Size S, part of the landing work (release step with [16](16-landing-and-play-route.md)).
@@ -57,20 +74,21 @@ Cross-cutting rules for all of it: additive save fields only (no `SAVE_SCHEMA` b
 
 Triaged in [RELEASE-PLAN.md](RELEASE-PLAN.md) section 2 (2026-10-29); no open item remains in this table.
 
-- **R7** (`dangerBonus` is 0 or 1 because monsters stand at most 9 tiles out, `lib/monsters.ts`) is still true in the code. It is absorbed by per-band danger offsets in the monster work ([12](12-rebirth-biomes.md) section 5, [26](26-next-updates-plan.md) phase D).
-- **R8** (King balance) is resolved: the rats and the Rat King are gone. The Rattatui set still drops from every boss until its own boss source exists ([26](26-next-updates-plan.md) C2).
+- **R7** (`dangerBonus` is 0 or 1 because monsters stand at most 9 tiles out) is decided: per-band danger offsets and spawn tables replace it ([20](20-monster-families-and-rewards.md) section 8, IDL-53); delete this line when IDL-53 ships.
+- **R8** is resolved: the rats and the Rat King are gone, and the Rattatui set is being removed (drops stop with IDL-55, the definitions go at the epoch reset).
 - **R9** (local dev needs Supabase and `LOOT_SECRET`) is accepted as is; the README says what is needed.
-- **B6** (chests and clicks are small) moved into BL3 below. **B7** (sim bots are simple) is now an acceptance line of each release step that changes player choices (class picker, `BUILD_ORDER`, respec, craft-sim).
+- **B6** (chests and clicks are small) is decided (BL1 + BL3 below, IDL-80/197). **B7** (sim bots are simple) is an acceptance line of each release step that changes player choices (class picker, `BUILD_ORDER`, respec, craft-sim; IDL-78).
+- **Open bugs and urgent items are in Linear:** IDL-166 (Urgent: bound the Ember balance by what the last save could have earned), IDL-167 (a flagged save still pays), IDL-168 (merchant upgrades are never paid on the server), IDL-169 (building cost ignores Charisma and Bulk Discount), IDL-170, IDL-172.
 
 ## Server authority (the migration backlog, ranked)
 
 What still runs in the browser and is only checked by plausibility. Tile buying was assessed and **stays client-side with autosave**: it is the most frequent action (an API call per click would be the real server load), its gold lives in the client-authored save the server already checks, and the one server consumer of the map (monster placement) tolerates the autosave lag. It becomes worth an API when `verify.ts` stops being shadow mode and starts rejecting.
 
-0. **New from the rebirth-world plan ([14](14-server-audit-and-data-plan.md))**: the attribute sum check (`reconcileCharacter` + `20 x rebirths`), a **server-run `/api/rebirth`** (the inventory wipe now rides on the save that carries the rebirth, so a modified client can still sell old gear in the seconds before it lands), biome legality flags in `verify.ts`, `player_ledger.craft`.
-1. **Enforce `verify.ts`** (today it only flags): reject a save that gained more than the server granted.
-2. **Economy actions** by the server where they pay out: castle upgrade (start, cost and finish time in the ledger; today the server only checks the timer on its own clock, `castle_jump`), rebirth/Embers, farm purchases, building costs. Batch them (one call per few seconds) rather than one per click.
-3. **XP award** of tile purchases and the attribute allocation (the server already models and clamps XP, `cloudSave/xpModel.ts`, and derives the fight level from the saved XP).
-4. **Merchant and sell** (gold for gear, resource sell/buy, upgrades): server-priced. The inventory already is the server's, so only the prices and the shelf (`merchantStock`, rolled in the browser) are left; a purchase today is checked for being a valid item, not for what it costs. Every merchant action is a store action over `buyOffer`, `buyItem`, `sellResources`, `buyResource` and `buyMerchantUpgrade`, so moving them behind routes changes no UI.
+0. **New from the rebirth-world plan ([14](14-server-audit-and-data-plan.md); IDL-101, 102, 166)**: the attribute sum check (`reconcileCharacter` + `20 x rebirths`), a **server-run `/api/rebirth`** (the inventory wipe now rides on the save that carries the rebirth, so a modified client can still sell old gear in the seconds before it lands), biome legality flags in `verify.ts`, `player_ledger.craft`.
+1. **Enforce `verify.ts`** (today it only flags): reject a save that gained more than the server granted (IDL-112, IDL-167).
+2. **Economy actions** by the server where they pay out: castle upgrade (start, cost and finish time in the ledger; today the server only checks the timer on its own clock, `castle_jump`), rebirth/Embers, farm purchases, building costs. Batch them (one call per few seconds) rather than one per click (IDL-134).
+3. **XP award** (IDL-135) of tile purchases and the attribute allocation (the server already models and clamps XP, `cloudSave/xpModel.ts`, and derives the fight level from the saved XP).
+4. **Merchant and sell** (gold for gear, resource sell/buy, upgrades): server-priced. The inventory already is the server's, so only the prices and the shelf (`merchantStock`, rolled in the browser) are left; a purchase today is checked for being a valid item, not for what it costs. Every merchant action is a store action over `buyOffer`, `buyItem`, `sellResources`, `buyResource` and `buyMerchantUpgrade`, so moving them behind routes changes no UI (IDL-121).
 5. **Spawn caps from the real map**: monsters and chests count free tiles from the map; the overall share (`SPAWN_LIMIT`, `ticketCap`) still use an estimate from the owned-tile count.
 
 Notes from reading the code (not measured against the live project):
@@ -90,17 +108,17 @@ Notes from reading the code (not measured against the live project):
 | Item | Size | Acceptance |
 |---|---|---|
 | CI: a GitHub Action running `tsc`, `lint`, `test`, `build`, plus `sim -- --maxdays=30 hardcore` as a pacing guard (✅ `.github/workflows/ci.yml`; the sim job is informational until the timers and the Ember curve settle, then make it fail the PR) | S | PR fails when the first-finish time of a profile moves by more than ±15 % |
-| Playwright smoke test: new game, click, buy tile, open Settings and Rebirth, reload keeps state (no UI tests exist) | M | runs in CI; uses `window.__game` only in dev builds |
-| Framework upgrades one at a time: Next 16, TypeScript 7, ESLint 10, `@types/node` 26 (held back on purpose; Next 16 fixes two PostCSS advisories bundled in 15; check `typescript-eslint` / `eslint-config-next` peer ranges) | M | build, tests and sim output unchanged |
+| Playwright smoke test (IDL-124): new game, click, buy tile, open Settings and Rebirth, reload keeps state (no UI tests exist) | M | runs in CI; uses `window.__game` only in dev builds |
+| Framework upgrades (IDL-125) one at a time: Next 16, TypeScript 7, ESLint 10, `@types/node` 26 (held back on purpose; Next 16 fixes two PostCSS advisories bundled in 15; check `typescript-eslint` / `eslint-config-next` peer ranges) | M | build, tests and sim output unchanged |
 
 **Content**
 
-1. 🚧 **Item upgrading** (M): a gold/resource sink tied to the merchant; salvage and reroll are in [10](10-loot-system.md). The merchant's Upgrades tab holds click power and merchant bonuses, not gear enhancement.
-2. 🚧 **Building rework** (M-L, see the next section): demolish, levels, specialisation.
+1. **Item upgrading** is replaced by crafting: the enchanted craft (reroll or add one affix, behind Ichor, IDL-120) and the War Medal legendary craft ([17](17-crafting.md)); rebirth salvage is IDL-151.
+2. 🚧 **Building rework** (L): Producer, Extractor and Idol per biome with timed levels ([18](18-biome-buildings-and-material-tiers.md); Linear project R7); demolish and swap with a refund are part of it.
 3. 🚧 **Quests** (L): the merchant's *Quests* tab is a placeholder. Early guidance, item rewards, tracking in the store. Brainstorm: IDL-203 (self-completing kill/gather quests plus rotating dailies).
 4. 🚧 **Gambling** (M): the *Gambling* tab is a placeholder. Uses `luck`; every payout must be computed on the server side, limited by cooldown. Gold only, never gems (IDL-205).
-5. 🚧 **Mobile layout** (L): the pixel UI is desktop-first; touch pan exists, the rest is untested. Responsive modals, bigger tap targets, test on a real phone.
-6. **Monsters and combat depth**: monsters for hills, coast and lake, a bestiary with kill counts and monster-specific loot ([26](26-next-updates-plan.md) phases C and D); more skills (the two ability slots hold Heal and Stun; classes are cosmetic, so class skills are open); monster abilities (bleed, enrage), a daily bounty monster; elite monsters and premium chests ([10](10-loot-system.md)).
+5. 🚧 **Mobile layout** (L, IDL-123): the pixel UI is desktop-first; touch pan exists, the rest is untested. Responsive modals, bigger tap targets, test on a real phone.
+6. **Monsters and combat depth**: rosters for hills, coast and lake (decided, IDL-201); the glossary and bestiary with kill counts ([22](22-glossary-and-mastery.md)); more skills and a skill tree (IDL-202); monster abilities, a daily bounty monster and elites (IDL-204); monster chests are decided (IDL-163).
 7. **Ambient life** (cheap, optional): weather (rain tint), day/night tint by real clock, castle flag animation. Each switchable in Settings and covered by `prefers-reduced-motion`.
 8. **Zoom 0.5** step for an overview (the minimap covers it today; the wheel zoom is four fixed steps).
 
@@ -119,17 +137,14 @@ Loose ideas, not scheduled and not sized; each needs a design pass before it ent
 
 **Economy upgrades** (the Ember shop and the merchant ladders are flat percentages today; BL5, BL6, BL9, BL10)
 - *Market saturation*: the price of a resource drops with the volume sold and recovers over ~30 min, so burst selling is not the best move.
-- *Building levels and specialisation*: the building rework below, with the set-like bonus for clusters of one kind.
 - *New Ember shop item shapes* (a longer chest timer cap, a free animal slot, a start with a tier-2 resource). Embers stay permanent: no reroll or respec. (A second Ember currency, storage caps and caravans were closed on 2026-11-07, IDL-137: the endless Ember sink, cosmetic Ember shop and Paragon cover the late sink.)
 - *More economy sets*: the Obsidian set pays income, XP and away time; a later tier could pay different things (chest rewards, merchant prices, farm output).
 - *Autobuyers* (decided 2026-11-07, IDL-133; permanent Ember shop unlocks, online only, no per-click server calls). First version: a **tile buyer** (placement: most owned neighbours first, then nearest the castle; about 40 Embers), a **castle auto-upgrade** (starts the next upgrade when affordable and none runs; about 100 Embers) and a **surplus auto-sell** for resources above a set threshold (about 40 Embers). Bulk buy ("buy next N" with a cost preview, summing the price stage by stage) is free for everyone. Offline autobuying waits for the server-owned economy (IDL-134).
 - *Building auto-upgrade and auto-build* (draft, **not scheduled**): when buildings get levels and specialisation (the building rework of [18](18-biome-buildings-and-material-tiers.md), Linear project R7) an autobuyer can build the best producer for a tile's biome and raise building levels by a cheapest-first rule. It needs the building level costs and caps first, and the same Ember-unlock shape as above (priced when the levels exist). Kept here so the building design leaves room for it: costs must be computable as a pure function of (building, level) and a purchase must be one batched request on the server.
 
 **Combat upgrades** (the two ability slots hold Heal and Stun; one weapon per rarity tier)
-- *Item upgrading / enchanting*: a gold-and-material sink tied to the merchant, with salvage ([10](10-loot-system.md)); the natural place for the tier-2 materials.
 - *Gem sockets* in gear, and gems as the thing the premium currency buys.
 - *Skills rework: a skill tree with levels and player choice (draft only, nothing decided).* Today there are two ability slots holding Heal and Stun with fixed behaviour (`catalog/skills.ts`, `lib/skills.ts`), and classes are cosmetic. Idea: skills get **levels** (spent skill points, earned with character level and rebirths) and a **tree** per class or per school (for example healing, control, damage), where the player **chooses** which branch to deepen and which skills fill the slots, so builds differ. Draft questions: where points come from (character level, a separate pool that survives rebirth, respec cost); how many slots and when they unlock; whether a level changes numbers only (heal amount, stun length, cooldown, mana cost) or also adds modifiers (heal over time, stun chance on crit); how the choice interacts with *Auto-use* (`COMBAT.auto` uses a fixed preset today, it would follow the chosen loadout); that fights run on the server, so skill effects must be computed there and the chosen tree stored in the ledger or a validated save field; class bonuses of [21](21-classes-avatars-achievements-offline-report.md) as the entry point. A new tutorial step for each unlock.
-- *Monster families per biome*, a bestiary with kill counts, monster abilities (bleed, enrage), elites and a daily bounty monster.
 - *Set depth*: more sets per gear tier, set bonuses that scale with the item level (today they are fixed amounts), loadout swapping between an economy set and a combat set.
 
 **Server authority follow-ups**: the ledger-owned inventory above, server-run castle upgrades (start, cost, finish time), a server-priced merchant, enforcing `verify.ts`, and a server-owned `/api/rebirth`.
@@ -147,14 +162,7 @@ State today: `BUILDINGS` (16 buildings, each a `resourceGeneration` rate) and `B
 - **Hide is the template for a second-tier material**: three sources (the farm, kills via `COMBAT.rewards.hideShare`, later buildings). A material needed in a large amount must have more than one scalable source.
 - XP is slow on purpose (tile XP 45 per base unit, the anchored level curve).
 
-**Order of work (proposal)**
-
-1. **Demolish and swap with a partial refund** (small; removes "wrong building forever").
-2. **Building levels** bought with resources, output growing per level, level caps following the castle level so a rebirth restarts the climb.
-3. **Specialisation bonuses** (+x % per k same-kind buildings in a cluster, reusing `utils/cluster.ts`; BL8). Keep the biome adjacency bonus.
-4. **Production buildings for second-tier materials** (a Smithy for iron, a Harbour for fish, an Arcane Tower for mana), each unlocked by a rebirth count or castle level.
-5. **Rebirth-gated content and an XP modifier** (an Ember upgrade or per-rebirth multiplier on tile XP; today the Embers' +5 % income applies to passive and kill XP but not to tile XP, the biggest source).
-6. **Server-owned building costs**, together with the ledger-owned inventory.
+**Order of work:** see [18](18-biome-buildings-and-material-tiers.md) section 10 and the Linear project R7 (the old six-step list was replaced by it).
 
 Things the rework must keep: monsters not standing on buildings; `netWorth.ts` plausibility must price the new levels; the sim bot's `BUILD_ORDER` has to learn the new choices; **acceptance:** with `human-rebirth6` / `-rebirth8`, run 2 reaches the same point in at most about 65-70 % of run 1, and the first rebirth stays available around day 7.
 
@@ -180,6 +188,8 @@ Measure with `npm run sim -- --seeds=3`, never from numbers copied into prose: [
 | BL4 | **Meat/food is the strongest engine** (decided 2026-11-07, IDL-81) | farm is about 60 % of sellable income; `costScaling` +0.10 moves it only to 55 % (food piles up, the pen cap limits the count) | no cost change, no upkeep; the Harvest Scarecrow Idol adds inside the existing farm bracket, hard cap +25 % |
 | BL16 (incl. BL7) | **Late tile price and map scale** (decided 2026-11-07, IDL-79; the config change is still to build) | price tail `tailFrom` 300, exponent 4.5 in the code today | exponent 4.5 -> 3.5, rebirth needs 400 + 50 per rebirth, target about 600 tiles at rebirth 0 and 800-1000 by rebirth 5, keep doubles (no big-number library), keep the +12 distance offset until the biome work |
 
+The magnitude targets these rows are checked against are in [06](06-pacing-targets.md) (IDL-128).
+
 Removed on 2026-10-29 because the release plan answers them ([RELEASE-PLAN.md](RELEASE-PLAN.md) section 2.2): BL2 (respec and +20 points, [13](13-rebirth-reset-and-paragon.md)), BL5 and BL14 (building levels, roads, crafting and the T2/T3 ladder are the sinks; reserved icons become placeholder T3 icons), BL8 (Producer +2 % per owned tile, [18](18-biome-buildings-and-material-tiers.md)), BL9 and BL10 (Idol Mastery, Master Craftsmen, Extra Builder), BL12 (the capped reward model of [20](20-monster-families-and-rewards.md)), BL13 (the ten old buildings are replaced), BL11 (covered by the identical-roll test of step P5.1), BL15 (re-measured once in P0.4), BL6 (kept under *Draft ideas*).
 
 ## Technical risks
@@ -192,6 +202,6 @@ Removed on 2026-10-29 because the release plan answers them ([RELEASE-PLAN.md](R
 
 ## Combat and items: known limits
 
-- Four biomes of monsters (hills, coast and lake have none yet). There is one weapon per rarity tier and no item upgrading yet.
-- Every boss drops Rattatui pieces for now ([26](26-next-updates-plan.md) C2 gives bosses their own sources). When gear or monsters change, rerun `npm run fight-sim -- --md` and `npm run monster-ladder -- --md` (`tests/fightBalance.test.ts` pins the tuning).
+- Four biomes of monsters (hills, coast and lake have none yet: rosters decided, IDL-201). There is one weapon per rarity tier; item upgrading is replaced by crafting (R11).
+- Every boss still drops Rattatui pieces until IDL-55 removes the set; bosses then own their drops (IDL-44, docs/20). When gear or monsters change, rerun `npm run fight-sim -- --md` and `npm run monster-ladder -- --md` (`tests/fightBalance.test.ts` pins the tuning).
 - Crits and weapon speed, Heal and Stun, selling, affixes, item levels, bag expansion (Pack Rat), auto-battle and the battle queue are built; offline-safe combat is the server's.

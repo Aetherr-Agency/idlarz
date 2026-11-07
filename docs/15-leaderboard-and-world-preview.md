@@ -35,7 +35,8 @@ Goal: a read-only look at another player's world: biomes and castle only, in a c
 **Decided (2026-10-29):**
 - **Avatar is separate from the class** (`player_stats.avatar_id`, from `profiles.avatar_id`; [21](21-classes-avatars-achievements-offline-report.md)); the leaderboard shows avatar, name, level/paragon, rebirths, gold/h.
 - **Trusted players are listed by default, with an opt-out `listed` switch** in Settings. A player who is not listed has no ranking row and **cannot be previewed**; the preview route checks `listed` and `trusted`.
+- **Launch boards and snapshot (decided 2026-11-07, owner; IDL-113):** four boards at launch: level (then Paragon, then lifetime XP), income (gold/h), rebirths (then Embers earned) and tiles. The **lazy daily snapshot ships with the first migration**: `player_stats_daily (user_id, day, level, xp, rebirths, gold_per_min)` written inside the same save RPC, 30-day retention, no cron. Own row pinned; `listed` opt-out default on. The preview (IDL-115) returns `land` only and needs the avatar from `player_stats.avatar_id`.
 
 **Still open:**
 1. ~~Re-trust testers?~~ **Moot (decided by the plan):** the class-release reset ([21](21-classes-avatars-achievements-offline-report.md) section 6) deletes every save, so every game is fresh and `freshStart` is true for all; rankings start empty with everyone eligible.
-2. Add the lazy daily snapshot with the first migration (recommended: one row per player and day written inside the same save RPC, 30-day retention), or later?
+2. ~~Lazy daily snapshot~~ decided below (2026-11-07).
