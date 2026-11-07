@@ -171,6 +171,13 @@ export const supabaseSaveRepo = (db: SupabaseClient): SaveRepo => {
 			await trim(userId, true, keep);
 		},
 
+		async remove(userId) {
+			const saveDelete = await db.from('player_saves').delete().eq('user_id', userId);
+			if (saveDelete.error) throw new Error(saveDelete.error.message);
+			const historyDelete = await db.from('rebirth_history').delete().eq('user_id', userId);
+			if (historyDelete.error) throw new Error(historyDelete.error.message);
+		},
+
 		async recordRebirth(userId, record) {
 			// the run's length is this rebirth's play time minus the previous rebirth's
 			const { data: last } = await db.from('rebirth_history').select('play_seconds').eq('user_id', userId).lt('rebirth_no', record.rebirthNo).order('rebirth_no', { ascending: false }).limit(1).maybeSingle();

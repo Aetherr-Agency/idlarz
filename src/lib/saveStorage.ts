@@ -24,6 +24,8 @@ export const PERSIST_NAME = scoped('idlarz-save');
 const KEY_CURRENT = scoped('idlarz.save');
 const KEY_BACKUP = scoped('idlarz.save.backup');
 const KEY_DAMAGED = scoped('idlarz.save.damaged');
+/** Everything else the browser keeps about the game being played (not settings or window layout): the cloud link and unconfirmed uploads, the manual-save clock, a pending claim, the fight cursor. A new game starts without any of it. */
+const GAME_TRACE_KEYS = ['idlarz.cloud', 'idlarz.cloud.attempts', 'idlarz.cloud.manual', 'idlarz.offline.pending', 'idlarz.combat.cursor'].map(scoped);
 const KEY_PREVIOUS_GAME = scoped('idlarz.save.previous-game'); // the game a New Game replaced; reset never removes it
 const BARELY_PLAYED_SEC = 300;
 const FLUSH_DELAY_MS = 2000;
@@ -239,6 +241,7 @@ export const createSaveStorage = (options: Options) => {
 		drop(KEY_CURRENT);
 		drop(KEY_BACKUP);
 		drop(KEY_DAMAGED);
+		GAME_TRACE_KEYS.forEach(drop);
 	};
 
 	/** Read-only look at what is stored (start hub): never writes, never starts a game. */

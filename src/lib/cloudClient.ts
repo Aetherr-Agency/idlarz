@@ -3,18 +3,30 @@ import { shouldKeepalive } from '@/lib/syncPolicy';
 import { scoped } from '@/lib/storageScope';
 
 /** The browser side of /api/save. Saves stay local first; the cloud copy follows. */
-export type FetchCloud = { status: 'empty' } | { status: 'ok'; cloud: CloudInfo } | { status: 'unavailable' };
+/** `lastReset` is when the last season reset happened (epoch ms): a browser save older than it belongs to a game that was reset */
+export type FetchCloud = { status: 'empty'; lastReset?: number | null } | { status: 'ok'; cloud: CloudInfo; lastReset?: number | null } | { status: 'unavailable' };
 
 export const fetchCloud = async (): Promise<FetchCloud> => {
 	try {
 		const response = await fetch('/api/save', { credentials: 'same-origin', cache: 'no-store' });
 		if (!response.ok) return { status: 'unavailable' };
-		const body = (await response.json()) as { empty?: boolean } & Partial<CloudInfo>;
-		if (body.empty) return { status: 'empty' };
+		const body = (await response.json()) as { empty?: boolean; lastReset?: number | null } & Partial<CloudInfo>;
+		const lastReset = typeof body.lastReset === 'number' ? body.lastReset : null;
+		if (body.empty) return { status: 'empty', lastReset };
 		if (typeof body.rev !== 'number' || typeof body.text !== 'string' || !body.summary) return { status: 'unavailable' };
-		return { status: 'ok', cloud: { rev: body.rev, serverSavedAt: body.serverSavedAt ?? 0, text: body.text, summary: body.summary } };
+		return { status: 'ok', cloud: { rev: body.rev, serverSavedAt: body.serverSavedAt ?? 0, text: body.text, summary: body.summary }, lastReset };
 	} catch {
 		return { status: 'unavailable' };
+	}
+};
+
+/** New Game: replaces the account's cloud game (its old save is kept in the history). True when the server did it. */
+export const newGameCloud = async (): Promise<boolean> => {
+	try {
+		const response = await fetch('/api/save', { method: 'DELETE', credentials: 'same-origin' });
+		return response.ok;
+	} catch {
+		return false;
 	}
 };
 

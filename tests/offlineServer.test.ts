@@ -9,7 +9,11 @@ import { acceptSave, type SaveRepo, type StatsRow, type StoredSave, type WorldPa
 import { summarize } from '../src/lib/cloudSave/summary';
 import type { Ledger, LedgerRepo } from '../src/lib/offline/ledger';
 import { seedLedger } from '../src/lib/offline/ledger';
-import { claimOffline, type ClaimResult, type ServiceDeps } from '../src/lib/offline/service';
+import { ensureSeasonReset } from '../src/lib/offline/season';
+import { fitInventory, inventoryFromCore, rebirthInventory, stampInventory } from '../src/lib/offline/inventory';
+import { limitOf } from '../src/lib/limits';
+import { starterBag } from '../src/lib/inventory';
+import { claimOffline, startNewGame, type ClaimResult, type ServiceDeps } from '../src/lib/offline/service';
 
 const memory = () => {
 	const rows = new Map<string, StoredSave>();
@@ -32,6 +36,11 @@ const memory = () => {
 		},
 		archive: async () => undefined,
 		pin: async () => undefined,
+		remove: async (id) => {
+			rows.delete(id);
+			worlds.delete(id);
+			stats.delete(id);
+		},
 	};
 	const ledgerRepo: LedgerRepo = {
 		load: async (id) => {
@@ -265,4 +274,76 @@ test('a ledger that cannot be read never blocks a save', async () => {
 	const out = await acceptSave(m.saves, 'u1', 'Zoë', encodeSave(game()), 0, T0, false, broken);
 	assert.equal(out.kind, 'ok');
 	assert.equal(out.kind === 'ok' ? out.gems : -1, undefined);
+});
+
+// ---------------------------------------------------------------------------------------------------- a New Game
+
+test('a New Game on the server leaves nothing to claim, keeps the gems, and the first save of the new game re-anchors the timers', async () => {
+	const m = memory();
+	await save(m, 'u1', game(), 0, T0);
+	m.ledgers.set('u1', { ...m.ledgers.get('u1')!, gems: 1234 });
+	const oldRun = m.ledgers.get('u1')!.runId;
+
+	await startNewGame(m.deps, 'u1', T0 + 3 * HOUR);
+	assert.equal(m.rows.has('u1'), false, 'the old save is gone');
+	const ledger = m.ledgers.get('u1')!;
+	assert.equal(ledger.gems, 1234);
+	assert.equal(ledger.runId, oldRun + 1);
+	assert.equal(ledger.inv, null);
+	assert.equal(ledger.combat, null);
+	assert.equal(ledger.anchorAt, T0 + 3 * HOUR);
+	assert.equal(Object.values(ledger.granted).every((v) => v === 0), true);
+	assert.equal((await claimOffline(m.deps, 'u1', 'claim-0001', T0 + 3 * HOUR + 5000)).kind, 'no_save', 'no absence is paid for a game that no longer exists');
+
+	// the player comes back much later: the hours since the reset are neither played time nor an absence
+	api().resetGame();
+	const fresh = structuredClone(pickPersisted(api()));
+	const back = T0 + 20 * HOUR;
+	const outcome = await save(m, 'u1', fresh, 0, back);
+	assert.equal(outcome.kind, 'ok');
+	assert.equal(m.ledgers.get('u1')!.anchorAt, back);
+	assert.equal(m.ledgers.get('u1')!.bank.accAt, back / 1000);
+	const paid = await claim(m, 'u1', 'claim-0002', back + 20_000);
+	assert.equal(paid.grant, null, 'nothing to pay a few seconds after the first save');
+	assert.equal(calculateLevel(m.rows.get('u1')!.summary.xp).level, 1);
+});
+
+// ---------------------------------------------------------------------------------------------------- the server's Pack Rat level, the season marker
+
+test('the server keeps the Pack Rat level with the bag: a lower level in an upload cannot shrink it, a rebirth keeps it', async () => {
+	const withRat = game({ merchantUpgrades: { packrat: 2 } } as never);
+	const inv = inventoryFromCore(withRat as unknown as Record<string, unknown>);
+	assert.equal(inv.packrat, 2);
+	assert.equal(inv.bag.length, limitOf('bagSize', { merchantUpgrades: { packrat: 2 } }));
+
+	// an upload that says level 0 (a stale or fresh browser) is stamped back to the server's level, with the server's bag
+	const stale = { ...withRat, merchantUpgrades: {}, bag: starterBag() };
+	const stamped = stampInventory(stale, inv);
+	assert.equal((stamped.merchantUpgrades as Record<string, number>).packrat, 2);
+	assert.equal(stamped.bag.length, inv.bag.length);
+
+	// a higher level in a save raises the server's, never the other way round
+	assert.equal(fitInventory(inv, { merchantUpgrades: { packrat: 3 } }).packrat, 3);
+	assert.equal(fitInventory(inv, { merchantUpgrades: {} }).packrat, 2);
+	assert.equal(rebirthInventory(inv, {}).packrat, 2);
+	assert.equal(rebirthInventory(inv, {}).bag.length, inv.bag.length);
+});
+
+test('a player whose game has not been through the last season reset is reset once, at login; a game made after it is left alone', async () => {
+	const m = memory();
+	await save(m, 'old', game(), 0, T0);
+	await save(m, 'newer', game(), 0, T0);
+	m.ledgers.set('old', { ...m.ledgers.get('old')!, resetAt: null, gems: 777 });
+	m.ledgers.set('newer', { ...m.ledgers.get('newer')!, resetAt: T0 + 2 * HOUR });
+	const marker = T0 + HOUR;
+
+	assert.deepEqual(await ensureSeasonReset(m.deps, null, 'old', T0 + 3 * HOUR), { lastReset: null, reset: false }, 'no reset ever happened');
+	assert.equal((await ensureSeasonReset(m.deps, marker, 'newer', T0 + 3 * HOUR)).reset, false, 'created after the marker');
+	assert.equal(m.rows.has('newer'), true);
+
+	assert.equal((await ensureSeasonReset(m.deps, marker, 'old', T0 + 3 * HOUR)).reset, true);
+	assert.equal(m.rows.has('old'), false, 'the old game is gone');
+	assert.equal(m.ledgers.get('old')!.gems, 777, 'gems stay');
+	assert.equal(m.ledgers.get('old')!.resetAt, T0 + 3 * HOUR);
+	assert.equal((await ensureSeasonReset(m.deps, marker, 'old', T0 + 4 * HOUR)).reset, false, 'only once');
 });

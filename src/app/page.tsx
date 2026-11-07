@@ -7,9 +7,9 @@ import StartDialog from '@/components/auth/StartDialog';
 import SaveHub, { type HubChoice } from '@/components/auth/SaveHub';
 import AuthUnavailable from '@/components/auth/AuthUnavailable';
 import { fetchMe, logout, readEntered, writeEntered, type Profile, type UnavailableReason } from '@/lib/authClient';
-import { fetchCloud, readLink, writeLink } from '@/lib/cloudClient';
+import { fetchCloud, readLink, writeAttempts, writeLink } from '@/lib/cloudClient';
 import { planStart, type CloudInfo } from '@/lib/startPlan';
-import { archiveForNewGame, installSave, peekSave, type SavePeek } from '@/lib/saveStorage';
+import { archiveForNewGame, installSave, peekSave, resetSave, type SavePeek } from '@/lib/saveStorage';
 
 // The game (and its save hydration) is only loaded once the gate lets the player in: the game is played with an account only.
 const GameApp = dynamic(() => import('./GameApp'), { ssr: false, loading: () => <LoadingView /> });
@@ -45,6 +45,14 @@ export default function Home() {
 			const local = peekSave();
 			const fetched = await fetchCloud();
 			const cloud = fetched.status === 'ok' ? fetched.cloud : fetched.status === 'empty' ? null : 'unavailable';
+			// a game saved in this browser before the last season reset is the old season's: it is put aside and a new game starts (a reset is final)
+			const lastReset = fetched.status === 'unavailable' ? null : (fetched.lastReset ?? null);
+			if (lastReset !== null && local.kind === 'ok' && local.savedAt !== null && local.savedAt < lastReset && archiveForNewGame()) {
+				await resetSave();
+				writeLink(null);
+				window.location.reload(); // resetSave froze this page's save writer: a reload starts the new game writing normally
+				return;
+			}
 			const plan = planStart(local, cloud, readLink(), player.userId);
 			if (plan.kind === 'enter') {
 				// no save anywhere: a new game that starts the account's cloud save (nothing to sync while the cloud is unreachable)
@@ -111,8 +119,9 @@ export default function Home() {
 					cloud={phase.cloud}
 					onEnter={(choice) => choose(phase, choice)}
 					onNewGame={() => {
-						// New Game replaces the account's game too: its next upload continues from the revision that was there
-						writeLink({ userId: phase.player.userId, rev: phase.cloud?.rev ?? 0 });
+						// New Game replaced the account's game on the server (SaveHub): the account has no save now, the first upload creates one
+						writeLink({ userId: phase.player.userId, rev: 0 });
+						writeAttempts([]);
 						// resetSave froze this page's save writer: a reload brings the game back up writing normally
 						writeEntered('account');
 						window.location.reload();

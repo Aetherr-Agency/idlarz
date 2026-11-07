@@ -71,6 +71,8 @@ export interface SaveRepo {
 	pin(userId: string, save: StoredSave, keep: number): Promise<void>;
 	/** Keeps the record of a rebirth (the Rebirths tab); recording the same rebirth twice changes nothing. Optional: a store without history just has none. */
 	recordRebirth?(userId: string, record: RebirthRecord): Promise<void>;
+	/** Deletes the player's save (the map and the leaderboard row go with it) and the record of their rebirths: a New Game. */
+	remove?(userId: string): Promise<void>;
 }
 
 export type SaveOutcome =
@@ -221,6 +223,10 @@ export const acceptSave = async (
 		try {
 			if (!ledger) {
 				await ledgers.commit(userId, 0, { ...seedLedger(save, nowMs), ver: 1 });
+			} else if (!current) {
+				// the first save of an account whose game was reset (a New Game, or a season reset): the timers start now, not at the reset,
+				// so the time since the reset is neither "played" spawn time nor an absence; the bag and gear come from this save
+				await ledgers.commit(userId, ledger.ver, { ...ledger, ver: ledger.ver + 1, anchorAt: nowMs, bank: emptyBank(nowMs / 1000), ordChest: 0, ordKill: 0, grantedSeen: ledger.granted, lastKey: null, lastResult: null, combat: null, inv: inventoryFromCore(split.core) });
 			} else if (newRun) {
 				// a rebirth or a new game: the map and its monsters start over, so do the tickets, and rolls start again from ordinal 1 in a new run
 				// (the player's combat starts over too: HP and mana come from the new game, no fight is open)

@@ -9,6 +9,7 @@ interface Row {
 	run_id: number;
 	rebirths: number;
 	anchor_at: string;
+	reset_at: string | null;
 	bank: TicketBank;
 	ord_chest: number;
 	ord_kill: number;
@@ -21,13 +22,14 @@ interface Row {
 	inv: Inventory | null;
 }
 
-const COLUMNS = 'ver, run_id, rebirths, anchor_at, bank, ord_chest, ord_kill, granted, granted_seen, gems, last_key, last_result, combat, inv';
+const COLUMNS = 'ver, run_id, rebirths, anchor_at, reset_at, bank, ord_chest, ord_kill, granted, granted_seen, gems, last_key, last_result, combat, inv';
 
 const toRow = (ledger: Ledger) => ({
 	ver: ledger.ver,
 	run_id: ledger.runId,
 	rebirths: ledger.rebirths,
 	anchor_at: new Date(ledger.anchorAt).toISOString(),
+	reset_at: ledger.resetAt === null ? null : new Date(ledger.resetAt).toISOString(),
 	bank: ledger.bank,
 	ord_chest: ledger.ordChest,
 	ord_kill: ledger.ordKill,
@@ -46,6 +48,7 @@ const fromRow = (row: Row): Ledger => ({
 	runId: row.run_id,
 	rebirths: row.rebirths,
 	anchorAt: Date.parse(row.anchor_at),
+	resetAt: row.reset_at ? Date.parse(row.reset_at) : null,
 	bank: { ...emptyBank(0), ...row.bank } as TicketBank,
 	ordChest: row.ord_chest,
 	ordKill: row.ord_kill,

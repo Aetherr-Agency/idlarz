@@ -4,21 +4,29 @@
  *   npm run reset-players                      DRY RUN: lists what would happen, changes nothing
  *   npm run reset-players -- --yes             really do it (a JSON backup is written first)
  *   npm run reset-players -- --yes --user <uuid> [--user <uuid> ...]   only these players
- *   npm run reset-players -- --yes --purge-history   also delete save_history (the rollback copies); default keeps them
+ *   npm run reset-players -- --yes --hard      also delete save_history (the rollback copies) and every leftover row; nothing but names, classes and gems stays
+ *   npm run reset-players -- --yes --purge-history   only delete save_history; default keeps it
  *   npm run reset-players -- --yes --no-backup       skip the JSON backup (not recommended)
  *
  * Needs SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (read from the environment or from .env.local).
  *
  * KEPT:  auth account, profiles (character_name, player_class), player_ledger.gems.
  * RESET: player_saves (and, by cascade, player_worlds + player_stats = the leaderboard row, back after the first new save),
- *        player_ledger except gems (spawn timers, tickets, granted totals, combat, inventory/bag/gear, rebirths; run_id is bumped
- *        so sealed rolls never repeat), rebirth_history (the season's rebirth log; backed up first), save_history only with --purge-history.
+ *        player_ledger except gems (away-time anchor and spawn timers/tickets at the moment of the reset, granted totals, combat, inventory/bag/gear,
+ *        rebirths, the claim key; run_id is bumped so sealed rolls never repeat), rebirth_history (the season's rebirth log; backed up first),
+ *        save_history only with --purge-history / --hard.
+ * A full run (no --user) also writes the app_settings 'last_reset' marker and every ledger's reset_at; a player whose reset_at is older than the marker
+ * (or missing) is reset at their next login, and a browser save older than it is put aside (needs migration supabase/migrations/season_reset.sql).
+ * The first save of the new game re-anchors the timers again (cloudSave/pipeline.ts), so the time between the reset and the player's return is never paid.
  * A player with the game open must reload: their old save no longer matches and is rejected, then they start a new game.
+ * A browser that still holds the old game in its local storage keeps showing it in the start hub: that player must choose "New game" there
+ * (the server cannot clear a browser).
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
-import { newLedger } from '../src/lib/offline/ledger';
+import { newLedger, resetLedger } from '../src/lib/offline/ledger';
+import { writeLastReset } from '../src/lib/offline/season';
 
 const args = process.argv.slice(2);
 const flag = (name: string) => args.includes(name);
@@ -27,7 +35,8 @@ args.forEach((a, i) => {
 	if (a === '--user' && args[i + 1]) users.push(args[i + 1]);
 });
 const execute = flag('--yes');
-const purgeHistory = flag('--purge-history');
+const hard = flag('--hard');
+const purgeHistory = flag('--purge-history') || hard;
 const backup = !flag('--no-backup');
 
 for (const file of ['.env.local', '.env']) {
@@ -67,21 +76,29 @@ const fetchAll = async <T>(table: string, columns: string): Promise<T[]> => {
 	return out;
 };
 
+interface LedgerInfo {
+	user_id: string;
+	gems: number;
+	run_id: number;
+	ver: number;
+	anchor_at: string;
+}
+
 const main = async () => {
 	const saves = await fetchAll<{ user_id: string; gems: number; level: number; rebirths: number }>('player_saves', 'user_id, gems, level, rebirths');
-	const ledgers = await fetchAll<{ user_id: string; gems: number; run_id: number; ver: number }>('player_ledger', 'user_id, gems, run_id, ver');
+	const ledgers = await fetchAll<LedgerInfo>('player_ledger', 'user_id, gems, run_id, ver, anchor_at');
 	const profiles = await fetchAll<{ id: string; character_name: string }>('profiles', 'id, character_name');
 
 	const names = new Map(profiles.map((p) => [p.id, p.character_name]));
 	const ledgerOf = new Map(ledgers.map((l) => [l.user_id, l]));
 	const ids = [...new Set([...saves.map((s) => s.user_id), ...ledgers.map((l) => l.user_id)])];
 
-	console.log(`${execute ? 'RESET' : 'DRY RUN'} against ${url}`);
+	console.log(`${execute ? 'RESET' : 'DRY RUN'}${hard ? ' (hard)' : ''} against ${url}`);
 	console.log(`${ids.length} player(s) with game data${users.length ? ` (filtered to ${users.length} id(s))` : ''}:\n`);
 	for (const id of ids) {
 		const save = saves.find((s) => s.user_id === id);
 		const gems = ledgerOf.get(id)?.gems ?? save?.gems ?? 0;
-		console.log(`  ${(names.get(id) ?? '?').padEnd(10)} ${id}  level ${save?.level ?? '-'}  rebirths ${save?.rebirths ?? '-'}  gems kept: ${gems}`);
+		console.log(`  ${(names.get(id) ?? '?').padEnd(10)} ${id}  level ${save?.level ?? '-'}  rebirths ${save?.rebirths ?? '-'}  gems kept: ${gems}  ledger anchor ${ledgerOf.get(id)?.anchor_at ?? '-'}`);
 	}
 	if (!execute) {
 		console.log('\nNothing changed. Re-run with --yes to apply.');
@@ -105,13 +122,14 @@ const main = async () => {
 		const old = ledgerOf.get(id);
 		const gems = old?.gems ?? saves.find((s) => s.user_id === id)?.gems ?? 0;
 
-		// 1. the ledger: everything back to a new game's values, except the gems (and a bumped run_id / ver)
-		const fresh = newLedger(now, 0);
+		// 1. the ledger: everything back to a new game's values (timers at now, nothing granted, no bag, no fight), except the gems (and a bumped run_id / ver)
+		const fresh = resetLedger({ ...newLedger(now, 0), ver: old?.ver ?? 0, runId: old?.run_id ?? 0, gems }, now);
 		const row = {
-			ver: (old?.ver ?? 0) + 1,
-			run_id: (old?.run_id ?? 0) + 1,
+			ver: fresh.ver + 1,
+			run_id: fresh.runId,
 			rebirths: 0,
-			anchor_at: new Date(now).toISOString(),
+			anchor_at: new Date(fresh.anchorAt).toISOString(),
+			reset_at: new Date(now).toISOString(),
 			bank: fresh.bank,
 			ord_chest: 0,
 			ord_kill: 0,
@@ -129,9 +147,15 @@ const main = async () => {
 			: await db.from('player_ledger').insert({ user_id: id, ...row });
 		fail(`ledger ${id}`, ledgerWrite.error);
 
-		// 2. the save: deleting it cascades to player_worlds and player_stats; the next login starts a new game
+		// 2. the save: deleting it cascades to player_worlds and player_stats; the next login starts a new game. --hard deletes those rows explicitly as well
 		const saveDelete = await db.from('player_saves').delete().eq('user_id', id);
 		fail(`save ${id}`, saveDelete.error);
+		if (hard) {
+			for (const table of ['player_worlds', 'player_stats']) {
+				const result = await db.from(table).delete().eq('user_id', id);
+				fail(`${table} ${id}`, result.error);
+			}
+		}
 
 		// 3. the rebirth history belongs to the season that ended: the new one counts its rebirths from 1 again (and the history keeps one row per number), so it goes too; the backup above has it
 		const rebirthDelete = await db.from('rebirth_history').delete().eq('user_id', id);
@@ -143,7 +167,23 @@ const main = async () => {
 		}
 		done++;
 	}
-	console.log(`Reset ${done} player(s). Names, classes and gems kept.${purgeHistory ? ' save_history purged.' : ' save_history kept (rollback copies).'}`);
+
+	// the global marker: a player the run did not reach (no ledger yet, or one that appears later with an old game) is reset at their next login
+	if (!users.length) {
+		await writeLastReset(db, now);
+		console.log(`last_reset marker set to ${new Date(now).toISOString()} (players not reset above are reset at their next login).`);
+	}
+
+	// check what is left: no save, a fresh anchor, the gems as they were
+	const leftSaves = await fetchAll<{ user_id: string }>('player_saves', 'user_id');
+	const after = await fetchAll<LedgerInfo>('player_ledger', 'user_id, gems, run_id, ver, anchor_at');
+	const stale = after.filter((l) => ids.includes(l.user_id) && (Date.parse(l.anchor_at) < now - 1000 || l.gems !== (ledgerOf.get(l.user_id)?.gems ?? l.gems)));
+	if (leftSaves.length > 0 || stale.length > 0) {
+		console.error(`CHECK FAILED: ${leftSaves.length} save(s) left, ${stale.length} ledger(s) not fresh.`);
+		process.exit(1);
+	}
+	console.log(`Reset ${done} player(s). Names, classes and gems kept.${purgeHistory ? ' save_history purged.' : ' save_history kept (rollback copies).'} Check passed: no saves left, ledgers anchored at the reset.`);
+	console.log('Reminder: a browser that still holds the old game locally must choose "New game" in the start hub.');
 };
 
 main().catch((e) => {
