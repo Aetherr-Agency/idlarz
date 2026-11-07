@@ -172,20 +172,23 @@ Perks are not wired and are not in the stats. Perk families are those of IDL-149
 | `amethyst_spire` | +15 % XP (second XP perk: check the family cap) |
 | `cinderflight_bow` | +20 % kill rewards (second: check the cap) |
 
-## 7. New stat names to decide
+## 7. New item stats (decided 2026-11-07)
 
-None of these exists; adding one means `STAT_DEFS`, `STAT_BASE_BY_TIER`, a combat/economy consumer, the server profile and the stat-audit pins.
+None of these exists yet; adding one means `STAT_DEFS`, `STAT_BASE_BY_TIER`, a combat/economy consumer, the server profile and the stat-audit pins. Tracked in Linear (IDL-175 decision, IDL-176 build task).
 
-| Stat idea | Where | Notes |
-| --- | --- | --- |
-| Potion Power % | belt, neck | healing from potions; the belt's main stat |
-| Potion Cooldown % | belt | floor 4 s (IDL-138) |
-| Bag Slots | belt | small and capped (IDL-138) |
-| Thorns % | shields | reflect part of the hit; needs a fight-engine change |
-| Crit Damage % | rings, neck | today only attributes give it |
-| Armor Penetration % | weapons | makes the armour curve matter later |
-| Build Speed % | perk only | legendary family, not a rolled stat |
-| Chest Speed % | perk only | legendary family |
+| Stat | Slots | Hook | Notes |
+| --- | --- | --- | --- |
+| Crit Damage % | rings, neck | `critDamagePercent` in the fight engine (attributes only today) | easy |
+| Armor Penetration % | main-hand weapons | monster armor in the damage step | matters once monsters carry real armor |
+| Thorns % | shields | monster-swing step in `fight.ts` | needs balance against fast monsters |
+| Build Speed % | hands, chest | castle upgrade timer | shares the -60 % combined cap with Embers and Idols (IDL-149); legendary perk of the same family |
+| Tile Discount % | cape, neck | `effectiveTileDiscount` | stays under the 45 % cap with Charisma and Bulk |
+| Farm Yield % | hands | `calculateFarmOutput` | client maths today; the server only rebuilds rates |
+| Heal on Kill % | rings, charm | kill step (`payKill`) in the server fight engine | sustains auto-battle |
+| Boss Timer +s | head, shoulder | boss clock in `fight.ts` (180 s) | needs a cap |
+| Potion Cooldown %, Bag Slots | belt | already decided in IDL-138 | floor 4 s; small capped bag slots |
+
+Not taken (stay out of the plan for now): Potion Power %, Sell Price %, and Chest Speed % as a rolled stat (chest speed stays a legendary perk family only).
 
 ## 8. Asset gaps (nothing in `reuse/` covers these)
 
