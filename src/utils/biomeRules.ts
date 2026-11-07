@@ -1,4 +1,5 @@
 import { BIOMES, BIOME_SPAWN, SPECIAL_SINGLE_TYPE_BIOMES, EMPTY_BIOMES } from '@/config/gameConfig';
+import { isLiveBiome } from '@/config/biomeStage';
 import { BIOME_RULES } from '@/config/biomeRules';
 import type { BiomeType, Tile } from '@/types/game';
 import { getTile, type World } from '@/utils/world';
@@ -43,9 +44,9 @@ function isLonely(tiles: World, x: number, y: number): boolean {
 	return biome !== null && !SIDES4.some(([dx, dy]) => getTile(tiles, x + dx, y + dy)?.biome === biome);
 }
 
-/** Every biome a purchase can produce (castle and empty are not). */
+/** Every biome a purchase can produce (castle, empty and the dev-only biomes of config/biomeStage.ts are not). */
 export const SELECTABLE_BIOMES = Object.keys(BIOMES).filter(
-	(name) => !SPECIAL_SINGLE_TYPE_BIOMES.includes(name as BiomeType) && !EMPTY_BIOMES.includes(name as BiomeType),
+	(name) => !SPECIAL_SINGLE_TYPE_BIOMES.includes(name as BiomeType) && !EMPTY_BIOMES.includes(name as BiomeType) && isLiveBiome(name),
 ) as BiomeType[];
 
 /** Verdict for each biome a purchase can produce on tile (x, y) after `purchased` purchases. */

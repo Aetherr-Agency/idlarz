@@ -131,6 +131,58 @@ export const BIOMES: Record<string, BiomeInfo> = {
 		resourceIcons: [RESOURCE_ICONS.gold, RESOURCE_ICONS.food],
 		description: 'Sandy shores provide gold and food, and border the water',
 	},
+	// The five rebirth biomes (docs/12). DEV ONLY: `config/biomeStage.ts` keeps them out of purchases, saves and the guide. The output is a
+	// placeholder (none) until the numbers of docs/12 section 2 and 4 are set with the sim.
+	jungle: {
+		name: 'jungle',
+		label: 'Jungle',
+		baseColor: BIOME_COLORS.jungle,
+		unique: false,
+		upgradeable: false,
+		resourceGeneration: {},
+		resourceIcons: [],
+		description: 'Dev only: a river-cut rainforest (hide and Hardwood later)',
+	},
+	fields: {
+		name: 'fields',
+		label: 'Fields',
+		baseColor: BIOME_COLORS.fields,
+		unique: false,
+		upgradeable: false,
+		resourceGeneration: {},
+		resourceIcons: [],
+		description: 'Dev only: a patchwork of farm plots (eggs and Cloth later)',
+	},
+	orchard: {
+		name: 'orchard',
+		label: 'Blossom Orchard',
+		baseColor: BIOME_COLORS.orchard,
+		unique: false,
+		upgradeable: false,
+		resourceGeneration: {},
+		resourceIcons: [],
+		description: 'Dev only: blossom trees and beehives (milk and Honey later)',
+	},
+	blight: {
+		name: 'blight',
+		label: 'Blight',
+		baseColor: BIOME_COLORS.blight,
+		unique: false,
+		upgradeable: false,
+		resourceGeneration: {},
+		resourceIcons: [],
+		description: 'Dev only: a violet spore wasteland (coal and Ichor later)',
+	},
+	battlefield: {
+		name: 'battlefield',
+		label: 'Battlefield',
+		baseColor: BIOME_COLORS.battlefield,
+		unique: false,
+		upgradeable: false,
+		resourceGeneration: {},
+		resourceIcons: [],
+		description: 'Dev only: churned mud, graves and bones (stone, wood and War Medals later)',
+	},
 } as const;
 
 // Cute life on the map: butterflies, bees, ladybugs and rabbits wander over owned land of a matching biome.

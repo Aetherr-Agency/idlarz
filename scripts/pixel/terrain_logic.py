@@ -8,9 +8,13 @@ from terrain_field import hash32
 
 CELL = 48
 NW, NE, SW, SE = 1, 2, 4, 8
-RANK = ['mist', 'coast', 'plains', 'swamp', 'tundra', 'forest', 'hills', 'lake', 'yard', 'castle']
-MAX_DEPTH = {'forest': 1, 'hills': 2, 'swamp': 1, 'tundra': 1, 'lake': 2}
-LAND = ('plains', 'forest', 'hills', 'swamp', 'tundra', 'coast')
+# Draw order, low to high (the higher ground draws its own rim over the lower one). The five rebirth biomes (docs/12) sit between
+# the shipped grounds, so they have their own fixed hash id: the variant of a cell must not change for the shipped grounds.
+RANK = ['mist', 'coast', 'plains', 'fields', 'orchard', 'swamp', 'battlefield', 'tundra', 'blight', 'forest', 'jungle', 'hills', 'lake', 'yard', 'castle']
+HASH_ID = {'mist': 0, 'coast': 1, 'plains': 2, 'swamp': 3, 'tundra': 4, 'forest': 5, 'hills': 6, 'lake': 7, 'yard': 8, 'castle': 9,
+           'fields': 10, 'orchard': 11, 'battlefield': 12, 'blight': 13, 'jungle': 14}          # frozen: append only
+MAX_DEPTH = {'forest': 1, 'hills': 2, 'swamp': 1, 'tundra': 1, 'lake': 2, 'jungle': 1, 'blight': 1}
+LAND = ('plains', 'forest', 'hills', 'swamp', 'tundra', 'coast', 'jungle', 'fields', 'orchard', 'blight', 'battlefield')
 SIDES = ((0, -1, 'n'), (1, 0, 'e'), (0, 1, 's'), (-1, 0, 'w'))
 DOCK_PCT = 55
 
@@ -54,7 +58,7 @@ def cell_layers(g, cx, cy):
     layers = []
     for gr in present:
         mask = sum(bit for bit, other, _ in info if other and RANK.index(other) >= RANK.index(gr))
-        layers.append((gr, mask, hash32(cx, cy, RANK.index(gr)) % 2))
+        layers.append((gr, mask, hash32(cx, cy, HASH_ID[gr]) % 2))
     full = [i for i, layer in enumerate(layers) if layer[1] == 15]
     out = []
     for i, (gr, mask, var) in enumerate(layers):

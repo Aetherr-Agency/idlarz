@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { isLiveBiome } from '@/config/biomeStage';
 import { BIOMES, CASTLE_UPGRADE, CASTLE_X, CASTLE_Y, INITIAL_CHARACTER_STATS } from '@/config/gameConfig';
 import type { MapGameState } from '@/components/game/mapSource';
 import type { Cell } from '@/lib/dragPaint';
@@ -22,10 +23,14 @@ export type LabTool = 'pan' | 'paint' | 'extend' | 'erase' | 'chest' | 'unchest'
 /** The tools that draw while the button is held (the others act on a click). */
 export const STROKE_TOOLS: readonly LabTool[] = ['paint', 'extend', 'erase', 'chest', 'unchest'];
 
-export type LabPreset = 'start' | 'rolled60' | 'rolled400' | 'showcase' | 'landmarks';
+export type LabPreset = 'start' | 'rolled60' | 'rolled400' | 'showcase' | 'landmarks' | 'devBlocks' | 'devMap';
 
-/** The biomes a tile can be painted with (everything but the empty placeholder and the castle, which is fixed). */
-export const PAINT_BIOMES = Object.keys(BIOMES).filter((b) => b !== 'empty' && b !== 'castle');
+/** The biomes a tile can be painted with (everything but the empty placeholder and the castle, which is fixed): the live ones first, then the dev-only ones (config/biomeStage.ts). */
+export const PAINT_BIOMES = Object.keys(BIOMES)
+	.filter((b) => b !== 'empty' && b !== 'castle')
+	.sort((a, b) => Number(!isLiveBiome(a)) - Number(!isLiveBiome(b)));
+/** The dev-only biomes (config/biomeStage.ts), in the order the lab lists them. */
+export const DEV_PAINT_BIOMES = PAINT_BIOMES.filter((b) => !isLiveBiome(b));
 
 const HISTORY_LIMIT = 60;
 
@@ -66,6 +71,85 @@ const landmarksWorld = (): World => {
 	return setTiles(base, changes);
 };
 
+/** The dev-only biomes as 9x9 blocks in a row, each with a plains and a forest block under it, to judge the grounds, rims and props one by one. */
+const devBlocksWorld = (): World => {
+	const base = createInitialWorld(seededRandom(1));
+	const size = 9;
+	const changes: { x: number; y: number; tile: { biome: string; isOwned: true } }[] = [];
+	DEV_PAINT_BIOMES.forEach((biome, i) => {
+		const x0 = CASTLE_X + 3 + i * (size + 1);
+		for (let dy = 0; dy < size * 2; dy++) {
+			const below = dy >= size;
+			for (let dx = 0; dx < size; dx++) {
+				const b = below ? (i % 2 ? 'forest' : 'plains') : biome;
+				changes.push({ x: x0 + dx, y: CASTLE_Y - 4 + dy, tile: { biome: b, isOwned: true } });
+			}
+		}
+	});
+	return setTiles(base, changes);
+};
+
+/** Seeds of the comparison map: (kind, x, y) in tiles from the castle. Nearest seed (with a little noise) wins; no forbidden pair touches (docs/12 section 9). */
+const DEV_MAP_SEEDS: [string, number, number][] = [
+	['tundra', -30, -17],
+	['hills', -12, -19],
+	['blight', 10, -18],
+	['battlefield', 28, -16],
+	['plains', 2, -5],
+	['plains', -30, -3],
+	['forest', -16, -1],
+	['fields', 14, 1],
+	['orchard', 28, 3],
+	['jungle', -16, 16],
+	['lake', -31, 16],
+	['swamp', 33, 18],
+	['hills', 6, 18],
+	['plains', 18, 19],
+	['forest', -4, 9],
+];
+
+/** One island with every biome, the dev-only ones beside the live ones, to compare the art direction. A beach rings the lake. */
+const devMapWorld = (): World => {
+	const base = createInitialWorld(seededRandom(1));
+	const rx = 37;
+	const ry = 24;
+	const noise = (x: number, y: number, k: number) => (Math.imul((x * 73856093) ^ (y * 19349663) ^ (k * 83492791), 2654435761) >>> 0) / 4294967296;
+	const kind = (x: number, y: number): string | null => {
+		if ((x / rx) ** 2 + (y / ry) ** 2 + (noise(x, y, 9) - 0.5) * 0.08 > 1) return null;
+		let best = '';
+		let bestD = Infinity;
+		for (const [b, sx, sy] of DEV_MAP_SEEDS) {
+			const d = (sx - x) ** 2 + (sy - y) ** 2 + noise(x, y, sx * 31 + sy) * 50;
+			if (d < bestD) {
+				bestD = d;
+				best = b;
+			}
+		}
+		return best;
+	};
+	const kinds = new Map<string, string>();
+	for (let y = -ry; y <= ry; y++)
+		for (let x = -rx; x <= rx; x++) {
+			const k = kind(x, y);
+			if (k) kinds.set(`${x},${y}`, k);
+		}
+	const changes: { x: number; y: number; tile: { biome: string; isOwned: true } }[] = [];
+	for (const [key, k] of kinds) {
+		const [x, y] = key.split(',').map(Number);
+		if (Math.max(Math.abs(x), Math.abs(y)) <= 1) continue; // the castle and its start ring stay
+		let biome = k;
+		if (['plains', 'forest'].includes(k))
+			for (let dy = -2; dy <= 2 && biome === k; dy++)
+				for (let dx = -2; dx <= 2; dx++)
+					if (kinds.get(`${x + dx},${y + dy}`) === 'lake') {
+						biome = 'coast';
+						break;
+					}
+		changes.push({ x: CASTLE_X + x, y: CASTLE_Y + y, tile: { biome, isOwned: true } });
+	}
+	return setTiles(base, changes);
+};
+
 const presetWorld = (preset: LabPreset, seed: number): World => {
 	switch (preset) {
 		case 'rolled60':
@@ -76,6 +160,10 @@ const presetWorld = (preset: LabPreset, seed: number): World => {
 			return showcaseWorld();
 		case 'landmarks':
 			return landmarksWorld();
+		case 'devBlocks':
+			return devBlocksWorld();
+		case 'devMap':
+			return devMapWorld();
 		default:
 			return createInitialWorld(seededRandom(seed));
 	}

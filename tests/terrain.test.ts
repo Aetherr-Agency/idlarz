@@ -34,6 +34,11 @@ const NAMES: Record<string, { biome: BiomeType; building?: string; level?: numbe
 	L: { biome: 'lake' },
 	C: { biome: 'castle' },
 	W: { biome: 'castle', level: 7 },
+	J: { biome: 'jungle' },
+	D: { biome: 'fields' },
+	O: { biome: 'orchard' },
+	X: { biome: 'blight' },
+	V: { biome: 'battlefield' },
 	// a lowercase letter is a building on that biome's tile
 	t: { biome: 'tundra', building: 'farm' },
 	s: { biome: 'swamp', building: 'farm' },
