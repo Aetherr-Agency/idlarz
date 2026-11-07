@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import ResourceDisplay from './ResourceDisplay';
-import { PlayerCard, HeaderButtons } from './HeaderMenu';
+import { PlayerCard, WindowButtons, HeaderButtons } from './HeaderMenu';
 import { useClickIncome } from '@/hooks/useClickIncome';
 
 /**
@@ -28,7 +28,10 @@ const GameHeader: React.FC = () => {
 				{/* three columns, the outer two equal: the resources sit in the true middle of the screen on any width */}
 				<div className='grid grid-cols-[minmax(max-content,1fr)_minmax(0,auto)_minmax(max-content,1fr)] items-center gap-2'>
 					<div className='pixel-divider-right justify-self-start pr-3'>
-						<PlayerCard />
+						<div className='flex items-center gap-3'>
+							<PlayerCard />
+							<WindowButtons />
+						</div>
 					</div>
 					<div className='flex flex-wrap items-center justify-center gap-x-2 gap-y-1 min-w-0'>
 						<ResourceDisplay />

@@ -105,10 +105,10 @@ const StatisticsOverlay: React.FC = () => {
 	};
 
 	return (
-		<div className='flex flex-col gap-5'>
-			{/* The hero on the left; attributes and the overview to the right of him */}
-			<div className='flex flex-wrap items-start gap-6'>
-				<div className='relative shrink-0'>
+		<div className='flex flex-wrap items-start gap-6'>
+			{/* Left column: the hero, with the three views as a vertical menu under him */}
+			<div className='flex flex-col gap-4 shrink-0 mx-auto'>
+				<div className='relative'>
 					<LevelDetails />
 					{/* Absolutely placed on the portrait, so spending points never moves anything */}
 					{points > 0 && (
@@ -120,7 +120,18 @@ const StatisticsOverlay: React.FC = () => {
 					)}
 				</div>
 
-				<div className='flex-1 min-w-[300px] grid grid-cols-2 gap-x-8 gap-y-4 text-sm'>
+				<div className='flex flex-col gap-2' role='tablist' aria-label='Character details'>
+					{CHARACTER_TAB_LABELS.map(({ id, label }) => (
+						<button key={id} role='tab' aria-selected={characterTab === id} className='px-tab' data-active={characterTab === id} onClick={() => setCharacterTab(id)}>
+							{label}
+						</button>
+					))}
+				</div>
+			</div>
+
+			{/* Right column: attributes and overview on top, then the chosen view */}
+			<div className='flex-1 min-w-[320px] flex flex-col gap-5'>
+				<div className='grid grid-cols-2 gap-x-8 gap-y-4 text-sm max-[640px]:grid-cols-1'>
 					<div>
 						<h3 className='px-h'>Attributes</h3>
 						<div className='space-y-1.5'>
@@ -174,16 +185,8 @@ const StatisticsOverlay: React.FC = () => {
 						</div>
 					</div>
 				</div>
-			</div>
 
-			{/* the lower half is three tabs (remembered): combat figures, income, and the rebirth history */}
-			<div className='flex flex-wrap gap-2' role='tablist' aria-label='Character details'>
-				{CHARACTER_TAB_LABELS.map(({ id, label }) => (
-					<button key={id} role='tab' aria-selected={characterTab === id} className='px-tab' data-active={characterTab === id} onClick={() => setCharacterTab(id)}>
-						{label}
-					</button>
-				))}
-			</div>
+			{/* the view is one of three (remembered): combat figures, income, and the rebirth history */}
 
 			{characterTab === 'combat' && (
 			<div className='grid grid-cols-2 gap-x-8 gap-y-4 max-[760px]:grid-cols-1'>
@@ -294,6 +297,7 @@ const StatisticsOverlay: React.FC = () => {
 			)}
 
 			{characterTab === 'rebirths' && <RebirthsPanel />}
+			</div>
 		</div>
 	);
 };

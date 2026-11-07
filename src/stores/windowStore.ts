@@ -22,12 +22,20 @@ export const DEFAULT_WINDOW_POS: Record<WinId, WinPos> = {
 	castle: { x: 240, y: 196 },
 };
 
+export interface WinSize {
+	w: number;
+	h: number;
+}
+
 const POSITIONS_KEY = 'windowPositions';
+const SIZES_KEY = 'windowSizes';
 
 interface WindowState {
 	/** Open windows, back to front */
 	order: WinId[];
 	positions: Record<WinId, WinPos>;
+	/** Sizes the player dragged a window to (a window not in here opens at its default size) */
+	sizes: Partial<Record<WinId, WinSize>>;
 	openWindow: (id: WinId) => void;
 	closeWindow: (id: WinId) => void;
 	toggleWindow: (id: WinId) => void;
@@ -39,6 +47,8 @@ interface WindowState {
 	savePositions: () => void;
 	/** Read after mount (the server render has no localStorage) */
 	loadPositions: () => void;
+	resizeWindow: (id: WinId, w: number, h: number) => void;
+	saveSizes: () => void;
 }
 
 const isOpen = (order: readonly WinId[], id: WinId) => order.includes(id);
@@ -47,6 +57,7 @@ const toFront = (order: readonly WinId[], id: WinId): WinId[] => [...order.filte
 export const useWindowStore = create<WindowState>((set, get) => ({
 	order: [],
 	positions: { ...DEFAULT_WINDOW_POS },
+	sizes: {},
 	openWindow: (id) => set((state) => ({ order: toFront(state.order, id) })),
 	closeWindow: (id) => set((state) => (isOpen(state.order, id) ? { order: state.order.filter((other) => other !== id) } : state)),
 	toggleWindow: (id) => {
@@ -60,7 +71,18 @@ export const useWindowStore = create<WindowState>((set, get) => ({
 		set((state) => (state.order[state.order.length - 1] === id || !isOpen(state.order, id) ? state : { order: toFront(state.order, id) })),
 	moveWindow: (id, x, y) => set((state) => ({ positions: { ...state.positions, [id]: { x, y } } })),
 	savePositions: () => writeJsonPref(POSITIONS_KEY, get().positions),
+	resizeWindow: (id, w, h) => set((state) => ({ sizes: { ...state.sizes, [id]: { w, h } } })),
+	saveSizes: () => writeJsonPref(SIZES_KEY, get().sizes),
 	loadPositions: () => {
+		const savedSizes = readJsonPref(SIZES_KEY);
+		if (savedSizes && typeof savedSizes === 'object') {
+			const sizes: Partial<Record<WinId, WinSize>> = {};
+			for (const id of WIN_IDS) {
+				const size = (savedSizes as Record<string, Partial<WinSize> | undefined>)[id];
+				if (size && Number.isFinite(size.w) && Number.isFinite(size.h)) sizes[id] = { w: size.w as number, h: size.h as number };
+			}
+			set({ sizes });
+		}
 		const saved = readJsonPref(POSITIONS_KEY);
 		if (!saved || typeof saved !== 'object') return;
 		const positions = { ...DEFAULT_WINDOW_POS };

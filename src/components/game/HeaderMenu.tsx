@@ -93,17 +93,16 @@ export const PlayerCard: React.FC = () => {
 
 const WINDOW_BUTTONS: { id: WinId; label: string; icon: PixelIconName }[] = [
 	{ id: 'equipment', label: 'Equipment', icon: 'menu_character' },
-	{ id: 'character', label: 'Character', icon: 'menu_stats' },
 	{ id: 'merchant', label: 'Merchant', icon: 'menu_merchant' },
 	{ id: 'farm', label: 'Farm', icon: 'menu_farm' },
 ];
 
-/** One button per window: each opens (or, when it is the front one, closes) its window; several can be open together. */
-const WindowButtons: React.FC = () => {
+/** One button per window (the character screen is the avatar): each opens (or, when it is the front one, closes) its window; several can be open together. */
+export const WindowButtons: React.FC = () => {
 	const order = useWindowStore((state) => state.order);
 	const toggleWindow = useWindowStore((state) => state.toggleWindow);
 	const attention = useMenuAttention();
-	const dots: Partial<Record<WinId, boolean>> = { character: attention.stats, farm: attention.farm };
+	const dots: Partial<Record<WinId, boolean>> = { farm: attention.farm };
 	return (
 		<div className='flex items-center gap-1'>
 			{WINDOW_BUTTONS.map(({ id, label, icon }) => (
@@ -124,14 +123,14 @@ const WindowButtons: React.FC = () => {
 						}
 					}}>
 					<PixelIcon name={icon} alt='' scale={0.6} />
-					<NotifyDot show={!!dots[id]} label={id === 'character' ? 'Unassigned stat points' : 'An animal or upgrade is affordable'} />
+					<NotifyDot show={!!dots[id]} label='An animal or upgrade is affordable' />
 				</div>
 			))}
 		</div>
 	);
 };
 
-/** The window buttons, the Rebirth button (always there, greyed out until a rebirth is possible) and the Settings menu. */
+/** The Rebirth button (always there, greyed out until a rebirth is possible) and the Settings menu. */
 export const HeaderButtons: React.FC = () => {
 	const settingsOpen = useUiStore((state) => state.settingsOpen);
 	const rebirthOpen = useUiStore((state) => state.rebirthOpen);
@@ -153,7 +152,6 @@ export const HeaderButtons: React.FC = () => {
 
 	return (
 		<div className='flex items-center gap-1.5 shrink-0'>
-			<WindowButtons />
 			{castleTimer && (
 				<div
 					className='hdr-castle-timer'

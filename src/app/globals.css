@@ -714,7 +714,9 @@ body {
 	image-rendering: pixelated;
 	background: linear-gradient(rgba(10, 7, 5, 0.86), rgba(10, 7, 5, 0.86)),
 		url('/pixel/bg/crack.png');
-	background-clip: padding-box;
+	/* under the frame too: its edge pixels are see-through, and the map showed along the top and right */
+	background-clip: border-box;
+	background-origin: padding-box;
 	color: var(--px-parch);
 	box-shadow: 0 14px 44px rgba(0, 0, 0, 0.65);
 	animation: px-pop 0.18s cubic-bezier(0.2, 0.9, 0.3, 1.1);
@@ -757,6 +759,23 @@ body {
 	left: 8px;
 	top: calc(var(--header-h, 76px) + 8px);
 	width: calc(100vw - 16px);
+}
+
+.px-resize {
+	position: absolute;
+	right: -20px;
+	bottom: -20px;
+	z-index: 2;
+	width: 28px;
+	height: 28px;
+	cursor: nwse-resize;
+	touch-action: none;
+	background: linear-gradient(135deg, transparent 50%, #c08a30 50%, #c08a30 58%, transparent 58%, transparent 70%, #c08a30 70%, #c08a30 78%, transparent 78%);
+	opacity: 0.8;
+
+	&:hover {
+		opacity: 1;
+	}
 }
 
 .px-window-handle {
