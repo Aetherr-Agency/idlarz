@@ -88,7 +88,8 @@ test('rarity follows the family: wood and cloth common, steel uncommon, obsidian
 	assert.deepEqual([...rarityOf('knight')], ['uncommon']);
 	assert.deepEqual([...rarityOf('obsidian')], ['rare']);
 	assert.deepEqual([...rarityOf('rattatui')], ['epic']);
-	assert.equal(Object.values(ITEM_CATALOG).filter((d) => d.rarity === 'legendary').length, 3);
+	// Only the enabled items count: the disabled reserve legendaries (catalog/items/reuse.ts) are not part of the game yet.
+	assert.equal(Object.values(ITEM_CATALOG).filter((d) => d.rarity === 'legendary' && d.enabled !== false).length, 3);
 });
 
 test('every weapon type has a steel or obsidian version and every weapon comes with its stats', () => {

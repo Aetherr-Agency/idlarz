@@ -63,6 +63,8 @@ export interface GearOptions {
 	icon?: PixelIconName;
 	art?: boolean;
 	shop?: number;
+	/** false keeps the item out of every loot pool and the shop (see ItemDef.enabled); it stays in the catalog so its id resolves */
+	enabled?: boolean;
 	sellValue?: number;
 	/** Attacks per second of a weapon; by default its weapon type's (see catalog/weapons.ts) */
 	attackSpeed?: number;
