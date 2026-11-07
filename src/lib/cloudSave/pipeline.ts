@@ -11,7 +11,8 @@ import { clampPrestige, settleEmbers } from './emberModel';
 import { rebirthRecordOf, type RebirthRecord } from './rebirthHistory';
 import type { PrestigeState } from '@/types/game';
 import { calculateLevel, reconcileCharacter } from '@/utils/gameUtils';
-import { POISON_FLAGS, VERIFY, verifyTransition, type SaveFlag, type Snapshot } from './verify';
+import { restoreMerchantLevels, sameRunAs, trustedEconomy } from './trustedEconomy';
+import { ENFORCEMENT, POISON_FLAGS, VERIFY, rejectedFlags, verifyTransition, type Enforcement, type SaveFlag, type Snapshot } from './verify';
 
 /** Accepted saves are copied into the history when this long passed since the last copy (not every N revisions: event saves make the revision count race ahead of the clock), and when a flag appears that the previous save did not have. */
 export const HISTORY_EVERY_MS = 30 * 60_000;
@@ -78,8 +79,10 @@ export interface SaveRepo {
 }
 
 export type SaveOutcome =
-	| { kind: 'ok'; rev: number; serverSavedAt: number; flags: SaveFlag[]; /** The authoritative gem balance (the ledger's), when there is one */ gems?: number; /** The XP the server kept, only when the save held more than it could have earned (the browser takes the lower number) */ xp?: number; /** The Embers and rebirths the server kept, only when the save held more than a rebirth could have paid (the browser takes them) */ prestige?: PrestigeState }
+	| { kind: 'ok'; rev: number; serverSavedAt: number; flags: SaveFlag[]; /** The authoritative gem balance (the ledger's), when there is one */ gems?: number; /** The XP the server kept, only when the save held more than it could have earned (the browser takes the lower number) */ xp?: number; /** The Embers and rebirths the server kept, only when the save held more than a rebirth could have paid (the browser takes them) */ prestige?: PrestigeState; /** Set when the server paid this save from the last trusted economy instead of the claimed one (IDL-167); the flags say why */ economy?: 'trusted' }
 	| { kind: 'conflict'; rev: number; serverSavedAt: number }
+	/** Enforcement is on and the save raised a flag that refuses it: nothing was stored (the account keeps its last accepted save) */
+	| { kind: 'rejected'; flags: SaveFlag[] }
 	| { kind: 'invalid'; reason: string }
 	| { kind: 'too_soon'; retryAfterMs: number };
 
@@ -102,7 +105,7 @@ export const storedToText = (stored: StoredSave): string => {
  *   - the text must decode (checksum, schema, `sanitizeSave`), otherwise `invalid`
  *   - a stale `baseRev` is a `conflict`: the player picks a side in the hub, nothing is overwritten silently
  *   - the stored copy is rebuilt from the sanitized state, and rates and headline numbers are computed here
- *   - the spending check and the transition from the previous save are verified in shadow mode (flags, no rejection)
+ *   - the spending check and the transition from the previous save are verified; each flag has a decision in `FLAG_POLICY` (flag, clamp or reject; reject only while `ENFORCEMENT.enabled`, shadow mode otherwise)
  *   - the map is only written when it changed; every ~30 min (by the clock) and when a new flag appears a full copy goes to the history
  */
 export const acceptSave = async (
@@ -116,6 +119,8 @@ export const acceptSave = async (
 	nonProduction = false,
 	/** The server's own record of the player (gems, spawn tickets, what it granted). Without it saves are checked as before; a ledger that cannot be read never blocks a save. */
 	ledgers: LedgerRepo | null = null,
+	/** Which flags refuse a save. Shadow mode (nothing refused) unless `ENFORCEMENT.enabled` is switched on; a parameter so tests can run both. */
+	enforcement: Enforcement = ENFORCEMENT,
 ): Promise<SaveOutcome> => {
 	const decoded = decodeSave(text);
 	if (!decoded.ok) return { kind: 'invalid', reason: decoded.reason };
@@ -173,6 +178,23 @@ export const acceptSave = async (
 	if (emberVerdict.clamped) flags.push('ember_jump');
 	const worth = checkNetWorth(state, summary, ledger?.granted);
 	if (worth.exceeds) flags.push('networth_exceeds');
+
+	// Enforcement (IDL-112): while it is on, a save that raised a `reject` flag is refused whole, before anything is stored, pinned or granted.
+	// Off by default (shadow mode); the decision per flag is `FLAG_POLICY`.
+	const refused = rejectedFlags(flags, enforcement);
+	if (refused.length) return { kind: 'rejected', flags: refused };
+
+	// Trusted economy (IDL-167, IDL-168): a castle level its timer never paid for, or land, buildings and merchant levels worth more than the game
+	// could have paid, are stored as claimed (the flag stays) but never paid: the merchant levels go back to the last trusted save's, and the rates
+	// and the castle the server pays from are that save's too
+	const trusted = flags.includes('castle_jump') || worth.exceeds;
+	if (trusted) {
+		const baseline = sameRunAs(previous?.summary ?? null, summary) ? current : null;
+		if (worth.exceeds && baseline) state = { ...state, merchantUpgrades: restoreMerchantLevels(state.merchantUpgrades, baseline.core.merchantUpgrades as Record<string, number> | undefined) };
+		const restored = summarize(state);
+		restored.derived.xpBase = summary.derived.xpBase;
+		summary = trustedEconomy(baseline?.summary ?? null, restored, worth.ratio);
+	}
 	const newRun = !!(ledger && current && (summary.rebirths > current.summary.rebirths || flags.includes('playtime_regress')));
 
 	// Starting over (New Game) must not push the old game out of the history: pin the save that is about to be replaced
@@ -250,5 +272,5 @@ export const acceptSave = async (
 			// the save is stored; the next one brings the ledger up to date
 		}
 	}
-	return { kind: 'ok', rev: save.rev, serverSavedAt: nowMs, flags, gems: ledgerUsable ? gems : undefined, xp: xpVerdict.clamped ? xpVerdict.xp : undefined, prestige: emberVerdict.clamped ? state.prestige : undefined };
+	return { kind: 'ok', rev: save.rev, serverSavedAt: nowMs, flags, gems: ledgerUsable ? gems : undefined, xp: xpVerdict.clamped ? xpVerdict.xp : undefined, prestige: emberVerdict.clamped ? state.prestige : undefined, economy: trusted ? 'trusted' : undefined };
 };

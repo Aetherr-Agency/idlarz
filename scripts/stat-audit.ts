@@ -126,8 +126,8 @@ const main = async () => {
 		cheats.map((r) => [r.claim, r.verdict.toUpperCase(), r.verdict === 'rejected' ? r.reason ?? '' : r.flags.join(', ') || 'none', r.verdict === 'rejected' ? '-' : `x${n(r.rateFactor, 1)}`])
 	);
 	line('- **REJECTED**: the save is refused (`sanitizeSave`).');
-	line('- **CLAMPED**: accepted, but the server replaces the number with the one it can explain (XP).');
-	line('- **FLAGGED**: accepted and stored as claimed; the flag removes ranking eligibility for good. The economy still follows the stored save.');
+	line('- **CLAMPED**: accepted, but the server replaces the number with the one it can explain (XP, Embers) or pays the save from the last trusted economy (castle level, rates, merchant levels).');
+	line('- **FLAGGED**: accepted and stored as claimed; the flag removes ranking eligibility for good. Shadow mode: `ENFORCEMENT.enabled` would refuse these (gold_jump, playtime_fast, gems_increase) once switched on.');
 	line('- **SILENT**: accepted with no flag at all.');
 	line();
 	line('### Who computes what (from the code, `docs/11-server-authority.md` and `docs/14`)');
@@ -135,15 +135,15 @@ const main = async () => {
 	table(
 		['Action', 'Cost / payout computed by', 'Server check'],
 		[
-			['Buy tile', 'client', 'net-worth floor (shadow flag)'],
-			['Build', 'client', 'net-worth floor (shadow flag)'],
-			['Castle upgrade', 'client pays, timer verified', '`castle_jump` (timer cannot beat the clock); resource cost not checked'],
+			['Buy tile', 'client', 'net-worth floor: flagged `networth_exceeds`, paid from the last trusted rates (**CLAMPED**, IDL-167)'],
+			['Build', 'client', 'net-worth floor: as Buy tile'],
+			['Castle upgrade', 'client pays, timer verified', '`castle_jump` (timer cannot beat the clock), paid from the last trusted castle and rates (**CLAMPED**); resource cost not checked'],
 			['Farm animals / upgrades', 'client', 'level bounds only'],
-			['Merchant upgrades', 'client', 'level bounds only (**SILENT**)'],
+			['Merchant upgrades', 'client', 'levels are part of the net-worth floor (Pack Rat excepted); unpaid levels go back to the last trusted ones (**CLAMPED**, IDL-168)'],
 			['Ember shop', 'client', 'conservation: unspent + spent = earned (**REJECTED** if not)'],
 			['Rebirth Ember gain', 'client', 'bounded by the castle and territory of the previous save, one rebirth per save (**CLAMPED**, flag `ember_jump`, IDL-166)'],
 			['Click gold', 'client (rate-limited in the browser)', 'none: no click endpoint'],
-			['Sell resources', 'client', '`gold_jump` / net worth'],
+			['Sell resources', 'client', '`gold_jump` (stock held + income + grants; refused once enforcement is on, IDL-112) / net worth'],
 			['Sell / buy gear', 'server (`/api/inventory`)', 'server inventory'],
 			['Chest, kill, fight', 'server', 'sealed server rolls'],
 			['Offline claim', 'server (from the stored save\'s rates)', 'server clock, cap, efficiency'],

@@ -140,33 +140,33 @@ Each row is a second save sent through the real `acceptSave` against an honest f
 | +100 attribute points | REJECTED | The save contains impossible data (too many stat points). | - |
 | click ladder maxed | REJECTED | The save contains impossible data (click level). | - |
 | 1e12 XP | CLAMPED | xp_jump | x1 |
-| 1e12 gold | FLAGGED | gold_jump, networth_exceeds | x1 |
-| +15,000 gold in 300 s (inside the 10,000 floor + burst allowance) | SILENT | none | x1 |
+| 1e12 gold | CLAMPED | gold_jump, networth_exceeds | x1 |
+| +1,500 gold in 300 s (inside the 1,000 floor + income allowance) | SILENT | none | x1 |
 | +20,000 gold in 300 s | FLAGGED | gold_jump | x1 |
-| 1e15 wood, stone, coal and food | FLAGGED | networth_exceeds | x1 |
-| castle level 10 with no upgrade running | FLAGGED | castle_jump, networth_exceeds | x49.5 |
+| 1e15 wood, stone, coal and food | CLAMPED | networth_exceeds | x1 |
+| castle level 10 with no upgrade running | CLAMPED | castle_jump, networth_exceeds | x1 |
 | +1,000,000 s played in 60 s | FLAGGED | playtime_fast | x1 |
-| 200 tiles with 100 gold in hand | FLAGGED | networth_exceeds | x11.8 |
-| Foreman 10, Haggler 10, Tithe 10, Bulk 8 with no gold spent | SILENT | none | x1.1 |
+| 200 tiles with 100 gold in hand | CLAMPED | networth_exceeds | x1 |
+| Foreman 10, Haggler 10, Tithe 10, Bulk 8 with no gold spent | CLAMPED | networth_exceeds | x1 |
 
 - **REJECTED**: the save is refused (`sanitizeSave`).
-- **CLAMPED**: accepted, but the server replaces the number with the one it can explain (XP).
-- **FLAGGED**: accepted and stored as claimed; the flag removes ranking eligibility for good. The economy still follows the stored save.
+- **CLAMPED**: accepted, but the server replaces the number with the one it can explain (XP, Embers) or pays the save from the last trusted economy (castle level, rates, merchant levels).
+- **FLAGGED**: accepted and stored as claimed; the flag removes ranking eligibility for good. Shadow mode: `ENFORCEMENT.enabled` would refuse these (gold_jump, playtime_fast, gems_increase) once switched on.
 - **SILENT**: accepted with no flag at all.
 
 ### Who computes what (from the code, `docs/11-server-authority.md` and `docs/14`)
 
 | Action | Cost / payout computed by | Server check |
 | --- | --- | --- |
-| Buy tile | client | net-worth floor (shadow flag) |
-| Build | client | net-worth floor (shadow flag) |
-| Castle upgrade | client pays, timer verified | `castle_jump` (timer cannot beat the clock); resource cost not checked |
+| Buy tile | client | net-worth floor: flagged `networth_exceeds`, paid from the last trusted rates (**CLAMPED**, IDL-167) |
+| Build | client | net-worth floor: as Buy tile |
+| Castle upgrade | client pays, timer verified | `castle_jump` (timer cannot beat the clock), paid from the last trusted castle and rates (**CLAMPED**); resource cost not checked |
 | Farm animals / upgrades | client | level bounds only |
-| Merchant upgrades | client | level bounds only (**SILENT**) |
+| Merchant upgrades | client | levels are part of the net-worth floor (Pack Rat excepted); unpaid levels go back to the last trusted ones (**CLAMPED**, IDL-168) |
 | Ember shop | client | conservation: unspent + spent = earned (**REJECTED** if not) |
 | Rebirth Ember gain | client | bounded by the castle and territory of the previous save, one rebirth per save (**CLAMPED**, flag `ember_jump`, IDL-166) |
 | Click gold | client (rate-limited in the browser) | none: no click endpoint |
-| Sell resources | client | `gold_jump` / net worth |
+| Sell resources | client | `gold_jump` (stock held + income + grants; refused once enforcement is on, IDL-112) / net worth |
 | Sell / buy gear | server (`/api/inventory`) | server inventory |
 | Chest, kill, fight | server | sealed server rolls |
 | Offline claim | server (from the stored save's rates) | server clock, cap, efficiency |

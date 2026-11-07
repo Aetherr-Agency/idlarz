@@ -1,12 +1,12 @@
 // Stat audit, part 3: what the server does with cheating saves.
 //
-// Each case below pins what the server does TODAY. Where today's behaviour is a hole, the test says so ("EXPLOIT n"): when the hole is
+// Each case below pins what the server does TODAY. Where a hole is open, the test says so ("EXPLOIT n"): when the hole is
 // closed, that assertion fails on purpose and is changed to the new verdict ('rejected' or 'clamped').
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { runCheats, type CheatRow } from './statAudit.cheats';
 import { near, oracle } from './statAudit.helpers';
-import { VERIFY } from '../src/lib/cloudSave/verify';
+import { ENFORCEMENT, FLAG_POLICY, VERIFY } from '../src/lib/cloudSave/verify';
 
 let rows: Record<string, CheatRow>;
 test('setup: run every cheating save through acceptSave', async () => {
@@ -31,31 +31,42 @@ test('XP is the server\'s to bound: a save with more XP than the game could have
 	assert.ok(row.flags.includes('xp_jump'));
 });
 
-test('FLAGGED ONLY: these are accepted and stored as claimed; the flag costs the account its ranking, not the income', () => {
-	const expected: Record<string, string> = {
-		'gold-huge': 'gold_jump',
+test('FLAGGED ONLY (shadow mode): the flag costs the account its ranking; enforcement (IDL-112) refuses these only once ENFORCEMENT.enabled is switched on', () => {
+	const expected: Record<string, 'gold_jump' | 'playtime_fast'> = {
 		'gold-over-allowance': 'gold_jump',
-		'resources-huge': 'networth_exceeds',
-		'castle-skip': 'castle_jump',
 		'playtime-fast': 'playtime_fast',
-		'tiles-unpaid': 'networth_exceeds',
 	};
 	for (const [id, flag] of Object.entries(expected)) {
 		assert.equal(get(id).verdict, 'flagged', id);
 		assert.ok(get(id).flags.includes(flag), `${id} should raise ${flag}, raised ${get(id).flags}`);
+		assert.equal(FLAG_POLICY[flag], 'reject', `${flag} refuses the save once enforcement is on`);
+		assert.ok(ENFORCEMENT.reject.has(flag), `${flag} is on the enforcement list`);
 	}
-	// "accepted" has a consequence: the server derives its income rates (offline pay, kill rewards) from the save it stored
-	assert.ok(get('castle-skip').rateFactor > 40, `a skipped castle pays ${get('castle-skip').rateFactor.toFixed(0)}x the income on the server`);
-	assert.ok(get('tiles-unpaid').rateFactor > 5, `unpaid tiles pay ${get('tiles-unpaid').rateFactor.toFixed(1)}x`);
+	assert.equal(ENFORCEMENT.enabled, false, 'shadow mode is the default until the live flags have been reviewed');
 });
 
-test('the gold check has a deliberate blind spot: 10,000 gold floor + 900 s of income + 1.5x the income played, per save', () => {
-	assert.equal(get('gold-inside-allowance').verdict, 'silent', '+15,000 in 300 s is allowed');
+test('CLOSED (IDL-167): a save whose economy cannot be believed is stored flagged, but the server pays it from the last trusted economy (rate factor ~1)', () => {
+	const expected: Record<string, 'castle_jump' | 'networth_exceeds'> = {
+		'castle-skip': 'castle_jump',
+		'tiles-unpaid': 'networth_exceeds',
+		'resources-huge': 'networth_exceeds',
+		'gold-huge': 'networth_exceeds',
+	};
+	for (const [id, flag] of Object.entries(expected)) {
+		assert.equal(get(id).verdict, 'clamped', id);
+		assert.ok(get(id).flags.includes(flag), `${id} should raise ${flag}, raised ${get(id).flags}`);
+		assert.ok(get(id).rateFactor < 1.05, `${id} pays ${get(id).rateFactor.toFixed(2)}x the income on the server`);
+		assert.equal(FLAG_POLICY[flag], 'clamp', `${flag} is a clamp flag`);
+	}
+});
+
+test('the gold check has no flat 10,000 blind spot any more: a 1,000 floor + 2 % of the balance + income, and a burst that follows the time that really passed', () => {
+	assert.equal(get('gold-inside-allowance').verdict, 'silent', '+1,500 in 300 s is allowed');
 	assert.equal(get('gold-over-allowance').verdict, 'flagged', '+20,000 in 300 s is not');
-	// the floor alone lets a client add this much gold at every upload (uploads are at least 10 s apart)
-	assert.equal(VERIFY.goldFloor, 10_000);
-	const perDay = (VERIFY.goldFloor * 86_400) / 300; // one upload every 5 minutes (the heartbeat) stays under the floor each time
-	assert.ok(perDay > 2_000_000, `up to ${perDay.toLocaleString()} gold a day without a flag at the 5-minute heartbeat`);
+	// the flat floor is what a client can add at every upload for nothing; at the 5-minute heartbeat that used to be ~2.9 million gold a day
+	assert.equal(VERIFY.goldFloor, 1_000);
+	const perDay = (VERIFY.goldFloor * 86_400) / 300;
+	assert.ok(perDay < 300_000, `up to ${perDay.toLocaleString()} gold a day from the floor`);
 });
 
 test('EXPLOIT 1 (closed, IDL-166): Embers and rebirths are bounded by what the previous save could have paid. Clamped and flagged `ember_jump`', () => {
@@ -73,9 +84,9 @@ test('EXPLOIT 1 (closed, IDL-166): Embers and rebirths are bounded by what the p
 	assert.equal(oracle.emberGain(6, 400, 0, 0), 18);
 });
 
-test('EXPLOIT 2: merchant upgrades are not paid for on the server. Foreman, Haggler, Tithe and Bulk at the maximum raise no flag', () => {
+test('EXPLOIT 2 (closed, IDL-168): merchant levels are paid for in the net-worth floor. Foreman, Haggler, Tithe and Bulk at the maximum are flagged and clamped', () => {
 	const row = get('merchant-unpaid');
-	assert.equal(row.verdict, 'silent');
-	assert.deepEqual(row.flags, []);
-	assert.ok(row.rateFactor > 1.05, `Foreman 10 alone pays ${(row.rateFactor * 100 - 100).toFixed(0)}% more income`);
+	assert.equal(row.verdict, 'clamped');
+	assert.ok(row.flags.includes('networth_exceeds'), `raised ${row.flags}`);
+	assert.ok(row.rateFactor < 1.05, `Foreman 10 would pay 10% more income, the server pays ${row.rateFactor.toFixed(2)}x`);
 });
