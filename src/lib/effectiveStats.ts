@@ -75,7 +75,7 @@ export const effectiveStats = ({ characterStats, equipment, prestige, merchantUp
 		goldFind: gear.goldFind,
 		spellPower: gear.spellPower,
 		xpGain: xpGainPct(characterStats, equipment),
-		/** % off tiles and buildings: the attributes, the rebirth Thrift and the merchant's Bulk Discount, capped */
+		/** % off TILES (not buildings): Charisma, the rebirth Thrift and the merchant's Bulk Discount, capped. Building cost takes the Ember Thrift only (calculateBuildingCost) */
 		tileDiscount: effectiveTileDiscount(characterStats, prestige, merchantUpgrades),
 		/** % more gold per click from rebirth (Click Mastery) and % faster castle builds (Master Builders) */
 		clickMastery: emberEffect(prestige, 'mastery') * 100,

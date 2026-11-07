@@ -155,7 +155,7 @@ available   : castle ≥ 6 (REBIRTH.minCastleLevel), tiles ≥ 400 + 25 per rebi
 points      = floor(3 × (C − 5) × sqrt(n / 10))                     REBIRTH.gain
 income      × (1 + 0.06 × legacyEarned)                                folded into the modifiers, spending never lowers it
 shop cost   = ceil(base × 1.4^level)        base: thrift 2, builders 3, mastery 2, provisions 2; max level 10
-thrift      : tile and building cost × (1 − 0.02 × level), summed with the Charisma discount, capped at 45 %
+thrift      : tile and building cost × (1 − 0.02 × level); on tiles it is summed with Charisma and Bulk Discount and capped at 45 %, buildings take Thrift only
 builders    : castle build time × (1 − 0.05 × level)
 mastery     : click power × (1 + 0.10 × level)
 provisions  : start each run with level × (1500 gold, 400 wood, 400 stone)

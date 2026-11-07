@@ -367,7 +367,7 @@ export const MERCHANT_UPGRADES = {
 	bulk: {
 		label: 'Bulk Discount',
 		group: 'economy',
-		description: (n: number) => `-${n}% tile and building cost`,
+		description: (n: number) => `-${n}% tile cost`,
 		maxLevel: 8,
 		effectPerLevel: 1, // percentage points, added to Charisma and Thrift (REBIRTH.discountCapPercent still caps the sum)
 		baseCost: 250000,
