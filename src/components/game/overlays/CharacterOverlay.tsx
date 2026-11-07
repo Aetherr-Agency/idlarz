@@ -149,7 +149,7 @@ const CharacterOverlay: React.FC = () => {
 					</div>
 					<div
 						className='inv-readout'
-						title={`HP per second: ${COMBAT.regenPerSec} base, ${formatCompact(gear.regen)} from gear and ${formatCompact(fx.hpRegen - COMBAT.regenPerSec - gear.regen)} from the merchant (it also works in fights); ${formatCompact(gear.luck)} Luck from gear`}
+						title={`HP per second: ${COMBAT.regenPerSec} base, ${formatCompact(gear.regen)} from gear and ${formatCompact(fx.hpRegen - COMBAT.regenPerSec - gear.regen)} from the merchant. The ${COMBAT.regenPerSec}/s base works out of fights only; in a fight you get ${formatCompact(fx.hpRegen - COMBAT.regenPerSec)}/s;${formatCompact(gear.luck)} Luck from gear`}
 					>
 						<span className='inv-readout-label'>Regen</span>
 						<span className='inv-readout-value'>{formatCompact(fx.hpRegen)}/s</span>

@@ -406,12 +406,12 @@ test('display parity: the character window (effectiveStats) and the server profi
 				assert.equal(server.leechPct, ui.lifeLeech, `leech ${tag}`);
 				near(server.critExtra * 2, ui.critMultiplier, `crit multiplier ${tag}`);
 				near(server.mpRegen, ui.manaRegen, `mana regen ${tag}`);
-				// MISMATCH 3: the window shows the out-of-fight regen (1 HP/s base); a fight runs on gear + Wind only
+				// MISMATCH 3 (IDL-170, now labelled): the window shows the out-of-fight regen (1 HP/s base); a fight runs on gear + Wind only. The Regen tooltip says so
 				near(ui.hpRegen - server.hpRegen, 1, `the window's HP regen is exactly the 1/s out-of-fight base above the fight's ${tag}`);
 			}
 });
 
-test('MISMATCH 4: the item tooltip "Damage per Second" is weapon damage x speed only; the character\'s real DPS includes attributes and merchant bonuses', () => {
+test('MISMATCH 4 (IDL-170, now labelled "Weapon damage per second"): the item tooltip figure is weapon damage x speed only; the character\'s real DPS includes attributes and merchant bonuses', () => {
 	const sword = ITEM_CATALOG.wooden_sword;
 	const eq: Equipment = { mainHand: plainItem('wooden_sword') };
 	const plain = character();
