@@ -37,10 +37,20 @@ test('the map is written as runs per row: a 3x2 block is two rows, extras only f
 	freshGame();
 	growTo(7);
 	const packed = packLand(api().tiles);
-	assert.equal(packed.land.reduce((n, r) => n + r[2].length, 0), ownedCount(api().tiles));
+	assert.equal(
+		packed.land.reduce((n, r) => n + r[2].length, 0),
+		ownedCount(api().tiles),
+	);
 	assert.ok(packed.land.length < ownedCount(api().tiles), 'neighbours share a run');
-	assert.ok(packed.land.every((_row, i, all) => i === 0 || all[i - 1][0] < all[i][0] || all[i - 1][1] < all[i][1]), 'rows ordered');
-	assert.deepEqual(packed.extra.map(([x, y, e]) => [x, y, Object.keys(e)]), [[25, 25, ['level']]], 'the castle carries its level');
+	assert.ok(
+		packed.land.every((_row, i, all) => i === 0 || all[i - 1][0] < all[i][0] || all[i - 1][1] < all[i][1]),
+		'rows ordered',
+	);
+	assert.deepEqual(
+		packed.extra.map(([x, y, e]) => [x, y, Object.keys(e)]),
+		[[25, 25, ['level']]],
+		'the castle carries its level',
+	);
 	assert.equal(packLand(api().tiles), packed, 'cached per world');
 });
 
@@ -94,17 +104,69 @@ const tampered = (mutate: (body: Body) => void): boolean => {
 };
 
 test('a hand-edited land list is refused', () => {
-	assert.equal(tampered(() => undefined), true, 'the untouched body loads');
-	assert.equal(tampered((b) => (b.land[0][2] = 'p?')), false, 'unknown biome letter');
-	assert.equal(tampered((b) => (b.land[0][1] = COORD_LIMIT + 5)), false, 'run off the map');
-	assert.equal(tampered((b) => (b.land[0][1] = 0.5)), false, 'fractional position');
-	assert.equal(tampered((b) => b.land.push([b.land[0][0], b.land[0][1], 'p'])), false, 'two runs share a tile');
-	assert.equal(tampered((b) => b.land.push([2, 2, 'p'])), false, 'territory not connected to the castle');
-	assert.equal(tampered((b) => b.land.push([2, 2, 'K'])), false, 'a second castle');
-	assert.equal(tampered((b) => (b.land = b.land.map(([y, x, l]) => [y, x, l.replace('K', 'p')]))), false, 'no castle');
-	assert.equal(tampered((b) => b.extra.push([-5, -5, { level: 2 }])), false, 'extra for a tile that is not there');
-	assert.equal(tampered((b) => b.extra.push([25, 25, { gold: 99 }])), false, 'unknown extra key');
-	assert.equal(tampered((b) => (b.land = 'nonsense' as never)), false, 'land is not a list');
-	assert.equal(tampered((b) => (b.land = [[25, 0, 'p'.repeat(300_000)]])), false, 'more tiles than the map may hold');
-	assert.equal(tampered((b) => (b.extra = 7 as never)), false, 'extra is not a list');
+	assert.equal(
+		tampered(() => undefined),
+		true,
+		'the untouched body loads',
+	);
+	assert.equal(
+		tampered((b) => (b.land[0][2] = 'p?')),
+		false,
+		'unknown biome letter',
+	);
+	assert.equal(
+		tampered((b) => (b.land[0][1] = COORD_LIMIT + 5)),
+		false,
+		'run off the map',
+	);
+	assert.equal(
+		tampered((b) => (b.land[0][1] = 0.5)),
+		false,
+		'fractional position',
+	);
+	assert.equal(
+		tampered((b) => b.land.push([b.land[0][0], b.land[0][1], 'p'])),
+		false,
+		'two runs share a tile',
+	);
+	assert.equal(
+		tampered((b) => b.land.push([2, 2, 'p'])),
+		false,
+		'territory not connected to the castle',
+	);
+	assert.equal(
+		tampered((b) => b.land.push([2, 2, 'K'])),
+		false,
+		'a second castle',
+	);
+	assert.equal(
+		tampered((b) => (b.land = b.land.map(([y, x, l]) => [y, x, l.replace('K', 'p')]))),
+		false,
+		'no castle',
+	);
+	assert.equal(
+		tampered((b) => b.extra.push([-5, -5, { level: 2 }])),
+		false,
+		'extra for a tile that is not there',
+	);
+	assert.equal(
+		tampered((b) => b.extra.push([25, 25, { gold: 99 }])),
+		false,
+		'unknown extra key',
+	);
+	assert.equal(
+		tampered((b) => (b.land = 'nonsense' as never)),
+		false,
+		'land is not a list',
+	);
+	assert.equal(
+		tampered((b) => (b.land = [[25, 0, 'p'.repeat(300_000)]])),
+		false,
+		'more tiles than the map may hold',
+	);
+	assert.equal(
+		tampered((b) => (b.extra = 7 as never)),
+		false,
+		'extra is not a list',
+	);
 });

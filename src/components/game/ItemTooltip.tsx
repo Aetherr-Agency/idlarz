@@ -31,7 +31,7 @@ const Diff: React.FC<{ delta: number; text: string }> = ({ delta, text }) =>
 	delta ? <span className={delta > 0 ? 'px-diff-up' : 'px-diff-down'}> ({text})</span> : null;
 
 /** The one name of an equipment slot, shown the same on the slot frame, in the item's subtitle and in set piece lists */
-const slotName = (slot: string): string => (slot === 'ring' ? 'Ring' : (EQUIPMENT_SLOT_LABEL as Record<string, string>)[slot] ?? slot);
+const slotName = (slot: string): string => (slot === 'ring' ? 'Ring' : ((EQUIPMENT_SLOT_LABEL as Record<string, string>)[slot] ?? slot));
 
 const signed = (delta: number, digits = 0) => `${delta < 0 ? '-' : '+'}${formatCompact(Math.abs(delta), digits)}`;
 

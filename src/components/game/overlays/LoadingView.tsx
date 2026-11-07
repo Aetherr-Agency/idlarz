@@ -38,15 +38,7 @@ const LoadingView: React.FC = () => {
 							<circle cx='200' cy='200' r='176' fill='none' stroke='#f0d27a' strokeWidth='7' strokeDasharray='3 11 40 11' />
 							<circle cx='200' cy='200' r='154' fill='none' stroke='#a070f0' strokeWidth='6' strokeDasharray='70 16 8 16' />
 							{TICKS.map((deg) => (
-								<rect
-									key={deg}
-									x='196'
-									y='6'
-									width='8'
-									height='14'
-									fill='#ffe27a'
-									transform={`rotate(${deg} 200 200)`}
-								/>
+								<rect key={deg} x='196' y='6' width='8' height='14' fill='#ffe27a' transform={`rotate(${deg} 200 200)`} />
 							))}
 						</g>
 						<g className='rune-ring rune-b'>
@@ -67,7 +59,8 @@ const LoadingView: React.FC = () => {
 			</div>
 
 			<h1 className='loading-title'>
-				Building your kingdom<span className='loading-dots' />
+				Building your kingdom
+				<span className='loading-dots' />
 			</h1>
 
 			<div className='loading-bar'>

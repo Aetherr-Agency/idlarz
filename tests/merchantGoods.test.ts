@@ -62,7 +62,11 @@ test('the shelf is held to the gear the player wears: never more than 5 item lev
 
 test('averageItemLevel is the mean of the worn pieces, empty slots left out', () => {
 	assert.equal(averageItemLevel({ mainHand: null, offHand: null } as unknown as Equipment), 0);
-	const worn = { mainHand: { ...plainItem('wooden_sword'), level: 10 }, offHand: { ...plainItem('wooden_shield'), level: 20 }, head: null } as unknown as Equipment;
+	const worn = {
+		mainHand: { ...plainItem('wooden_sword'), level: 10 },
+		offHand: { ...plainItem('wooden_shield'), level: 20 },
+		head: null,
+	} as unknown as Equipment;
 	assert.equal(averageItemLevel(worn), 15);
 });
 
@@ -120,9 +124,17 @@ test('buyOffer: pays the price, puts the piece in the bag and takes it off the s
 	const gold = api().resources.gold;
 	assert.equal(api().buyOffer(2), true);
 	assert.equal(api().resources.gold, gold - price);
-	assert.deepEqual(api().bag.map((s) => gearOf(s)).find((g) => g && g.base === item.base && g.level === item.level && g.quality === item.quality), item);
+	assert.deepEqual(
+		api()
+			.bag.map((s) => gearOf(s))
+			.find((g) => g && g.base === item.base && g.level === item.level && g.quality === item.quality),
+		item,
+	);
 	assert.equal(api().merchantStock!.offers.length, offers.length - 1);
-	assert.deepEqual(api().merchantStock!.offers, offers.filter((_, i) => i !== 2));
+	assert.deepEqual(
+		api().merchantStock!.offers,
+		offers.filter((_, i) => i !== 2),
+	);
 	for (const bad of [-1, 1.5, 99, NaN]) assert.equal(api().buyOffer(bad), false, String(bad));
 });
 
@@ -228,15 +240,51 @@ test('a forged shelf is rejected: an unknown item, a legendary-level stat, too m
 		return sanitizeSave(raw).ok;
 	};
 	assert.equal(sanitizeSave(good).ok, true);
-	assert.equal(mutate((r) => (r.merchantStock.offers[0].base = 'constructor')), false, 'unknown base');
-	assert.equal(mutate((r) => (r.merchantStock.offers[0].level = 9999)), false, 'impossible level');
-	assert.equal(mutate((r) => (r.merchantStock.offers[0].quality = 1e6)), false, 'impossible quality');
-	assert.equal(mutate((r) => (r.merchantStock.offers[0].price = 1)), false, 'a stored price');
-	assert.equal(mutate((r) => (r.merchantStock.offers = Array.from({ length: MERCHANT_GOODS.maxOffers + 1 }, () => r.merchantStock.offers[0]))), false, 'too many offers');
-	assert.equal(mutate((r) => (r.merchantStock.cheat = true)), false, 'extra key');
-	assert.equal(mutate((r) => (r.merchantStock = 'free gear')), false, 'not an object');
-	assert.equal(mutate((r) => (r.merchantStock.at = -5)), false, 'negative time');
-	assert.equal(mutate((r) => (r.merchantStock.offers = 'x')), false, 'offers not a list');
+	assert.equal(
+		mutate((r) => (r.merchantStock.offers[0].base = 'constructor')),
+		false,
+		'unknown base',
+	);
+	assert.equal(
+		mutate((r) => (r.merchantStock.offers[0].level = 9999)),
+		false,
+		'impossible level',
+	);
+	assert.equal(
+		mutate((r) => (r.merchantStock.offers[0].quality = 1e6)),
+		false,
+		'impossible quality',
+	);
+	assert.equal(
+		mutate((r) => (r.merchantStock.offers[0].price = 1)),
+		false,
+		'a stored price',
+	);
+	assert.equal(
+		mutate((r) => (r.merchantStock.offers = Array.from({ length: MERCHANT_GOODS.maxOffers + 1 }, () => r.merchantStock.offers[0]))),
+		false,
+		'too many offers',
+	);
+	assert.equal(
+		mutate((r) => (r.merchantStock.cheat = true)),
+		false,
+		'extra key',
+	);
+	assert.equal(
+		mutate((r) => (r.merchantStock = 'free gear')),
+		false,
+		'not an object',
+	);
+	assert.equal(
+		mutate((r) => (r.merchantStock.at = -5)),
+		false,
+		'negative time',
+	);
+	assert.equal(
+		mutate((r) => (r.merchantStock.offers = 'x')),
+		false,
+		'offers not a list',
+	);
 });
 
 test('time away counts for the merchant: a shelf that would have rotated is dropped, a free-refresh window that ended gives its refreshes back', () => {

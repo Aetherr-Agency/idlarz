@@ -76,7 +76,7 @@ export const gear = (
 	slot: NonNullable<ItemDef['slot']>,
 	rarity: EquipmentRarity,
 	stats: ItemStats,
-	{ tier, art, icon, sellValue, attackSpeed, named = false, pools, ...rest }: GearOptions
+	{ tier, art, icon, sellValue, attackSpeed, named = false, pools, ...rest }: GearOptions,
 ): ItemDef => ({
 	id,
 	name,

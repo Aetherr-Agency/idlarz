@@ -12,7 +12,8 @@ export type CombatFx =
 export const COMBAT_EVENT = 'idlarz:combat';
 
 /** The floating number of a hit the player lands: a crit ends with ! (red), a super crit with !! (purple); the colours are in Fight.css. */
-export const hitNumberText = (damage: number, crit: 'none' | 'crit' | 'super'): string => `-${formatCompact(damage)}${crit === 'super' ? '!!' : crit === 'crit' ? '!' : ''}`;
+export const hitNumberText = (damage: number, crit: 'none' | 'crit' | 'super'): string =>
+	`-${formatCompact(damage)}${crit === 'super' ? '!!' : crit === 'crit' ? '!' : ''}`;
 
 export const emitCombat = (fx: CombatFx): void => {
 	if (typeof window === 'undefined') return;

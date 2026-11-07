@@ -16,6 +16,6 @@ export async function POST(request: Request) {
 			const op = parseOp(body);
 			return typeof body.key === 'string' && KEY.test(body.key) && op ? { key: body.key, op } : null;
 		},
-		(deps, userId, body, nowMs) => inventoryStep(deps, userId, body.key, body.op, nowMs)
+		(deps, userId, body, nowMs) => inventoryStep(deps, userId, body.key, body.op, nowMs),
 	);
 }

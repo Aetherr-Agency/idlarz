@@ -77,8 +77,7 @@ export const monsterStats = (type: MonsterType, level: number): MonsterStats => 
 	};
 };
 
-export const monsterAt = (monsters: Monster[], x: number, y: number): Monster | undefined =>
-	monsters.find((mon) => mon.x === x && mon.y === y);
+export const monsterAt = (monsters: Monster[], x: number, y: number): Monster | undefined => monsters.find((mon) => mon.x === x && mon.y === y);
 
 /**
  * Whether a monster of this type may stand on this tile: the biome is on its allowlist, the tile is within its castle distance
@@ -90,7 +89,7 @@ export const canSpawnOn = (
 	y: number,
 	tile: { biome: string; building?: string; hasChest?: boolean },
 	castleLevel: number,
-	rebirths = 0
+	rebirths = 0,
 ): boolean => {
 	const rule = monsterDef(type).spawn;
 	if (rebirths < (rule.minRebirths ?? 0)) return false;
@@ -110,7 +109,13 @@ export const spawnTiles = (type: MonsterType, tiles: World, taken: ReadonlySet<s
 };
 
 /** A random tile of `spawnTiles`, or null when there is none. */
-export const pickSpawnTile = (type: MonsterType, tiles: World, taken: ReadonlySet<string>, rng: () => number, rebirths = 0): { x: number; y: number } | null => {
+export const pickSpawnTile = (
+	type: MonsterType,
+	tiles: World,
+	taken: ReadonlySet<string>,
+	rng: () => number,
+	rebirths = 0,
+): { x: number; y: number } | null => {
 	const eligible = spawnTiles(type, tiles, taken, rebirths);
 	return eligible.length === 0 ? null : eligible[Math.floor(rng() * eligible.length) % eligible.length];
 };
@@ -148,4 +153,3 @@ export const growthSecondsLeft = (mon: Monster, ctx: LimitContext = {}): number 
 	const interval = limitOf('monsterGrowthIntervalSec', ctx);
 	return interval * (mon.level - mon.spawnLevel + 1) - mon.ageSec;
 };
-

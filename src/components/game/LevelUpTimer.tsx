@@ -47,9 +47,7 @@ export const LevelUpTimer: React.FC<{
 
 	return (
 		<div className='mt-0 text-center text-xs'>
-			<span className='text-green-400 mb-3 block'>
-				{formatRate(resourceRates?.total?.xp || 0)} (XP)
-			</span>
+			<span className='text-green-400 mb-3 block'>{formatRate(resourceRates?.total?.xp || 0)} (XP)</span>
 			<div className='text-gray-400 mb-0.5 block'>Time until level up</div>
 			<div className='text-yellow-400 text-sm font-medium'>{timeRemaining}</div>
 		</div>

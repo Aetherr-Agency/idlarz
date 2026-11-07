@@ -22,14 +22,22 @@ export async function GET() {
 		// a season reset this player has not been through yet happens now, before anything of the old game is handed out
 		let lastReset: number | null = null;
 		try {
-			lastReset = (await ensureSeasonReset({ ledgers: supabaseLedgerRepo(admin), saves: supabaseSaveRepo(admin) }, await readLastReset(admin), player.userId, Date.now())).lastReset;
+			lastReset = (
+				await ensureSeasonReset({ ledgers: supabaseLedgerRepo(admin), saves: supabaseSaveRepo(admin) }, await readLastReset(admin), player.userId, Date.now())
+			).lastReset;
 		} catch {
 			// the marker could not be read: the login goes on, the next one looks again
 		}
 		const stored = await supabaseSaveRepo(admin).load(player.userId, { world: true });
 		if (!stored) return json({ empty: true, lastReset });
 		const { level, tilesOwned, playSeconds, gold } = stored.summary;
-		return json({ rev: stored.rev, serverSavedAt: stored.serverSavedAt, text: storedToText(stored), summary: { level, tilesOwned, playSeconds, gold }, lastReset });
+		return json({
+			rev: stored.rev,
+			serverSavedAt: stored.serverSavedAt,
+			text: storedToText(stored),
+			summary: { level, tilesOwned, playSeconds, gold },
+			lastReset,
+		});
 	} catch {
 		return unavailable();
 	}
@@ -61,7 +69,16 @@ export async function POST(request: Request) {
 
 		// The leaderboard name comes from the player's profile row (the owner-only name set at registration), never from the save
 		const { profile } = await loadProfile(player.supabase, player.userId);
-		const outcome = await acceptSave(supabaseSaveRepo(createSupabaseAdmin()), player.userId, profile?.characterName ?? 'Player', body.text, body.baseRev as number, Date.now(), isNonProduction(), supabaseLedgerRepo(createSupabaseAdmin()));
+		const outcome = await acceptSave(
+			supabaseSaveRepo(createSupabaseAdmin()),
+			player.userId,
+			profile?.characterName ?? 'Player',
+			body.text,
+			body.baseRev as number,
+			Date.now(),
+			isNonProduction(),
+			supabaseLedgerRepo(createSupabaseAdmin()),
+		);
 		switch (outcome.kind) {
 			case 'ok':
 				return json({ rev: outcome.rev, serverSavedAt: outcome.serverSavedAt, gems: outcome.gems, xp: outcome.xp, prestige: outcome.prestige });

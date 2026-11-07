@@ -58,20 +58,17 @@ const Tutorial: React.FC = () => {
 	const castleAtDoublingEnd = castleModifier(CASTLE_UPGRADE.doublingUntil);
 	const castleMax = castleModifier(CASTLE_UPGRADE.maxLevel);
 	const stat = CHARACTER_STAT_CONFIG;
-	const resourceTargets = (s: keyof typeof stat.resourceTargets) =>
-		stat.resourceTargets[s].map((r) => r[0].toUpperCase() + r.slice(1)).join(' & ');
+	const resourceTargets = (s: keyof typeof stat.resourceTargets) => stat.resourceTargets[s].map((r) => r[0].toUpperCase() + r.slice(1)).join(' & ');
 	const firstTileResources = TILE_RESOURCE_COST.map((c) => `${c.resource} from tile ${c.from}`).join(', ');
-	const totalCastleTime = CASTLE_UPGRADE.durationsSec
-		.slice(0, CASTLE_UPGRADE.maxLevel - 1)
-		.reduce((a, b) => a + b, 0);
+	const totalCastleTime = CASTLE_UPGRADE.durationsSec.slice(0, CASTLE_UPGRADE.maxLevel - 1).reduce((a, b) => a + b, 0);
 
 	return (
 		<div className='space-y-5 text-sm'>
 			<section>
 				<h3 className='px-h'>Game Basics</h3>
 				<p className='text-[#d8c8a0]'>
-					Grow your realm: buy tiles next to your territory, upgrade the castle, farm animals, trade with the
-					merchant and spend stat points. The journal button in the top bar opens the Menu: Equipment, Character, Merchant and Farm are its tabs. Everything produces resources every second, even while you are
+					Grow your realm: buy tiles next to your territory, upgrade the castle, farm animals, trade with the merchant and spend stat points. The journal button
+					in the top bar opens the Menu: Equipment, Character, Merchant and Farm are its tabs. Everything produces resources every second, even while you are
 					away from the keyboard (the tab must stay open). Progress is saved automatically in this browser.
 				</p>
 			</section>
@@ -79,41 +76,40 @@ const Tutorial: React.FC = () => {
 			<section>
 				<h3 className='px-h'>Menus &amp; Saving</h3>
 				<p className='text-[#d8c8a0] mb-2'>
-					The browser&apos;s own right-click menu is switched off in the game; the <b>right click</b> opens the game&apos;s menu instead.
-					Right-click a tile, a monster, a chest or a bag item for what you can do with it (the entries are listed in their sections),
-					and the same menu ends with the global entries. The gear button in the top bar opens that menu as a dropdown, with <b>Settings</b> and <b>Guide</b> on top.
+					The browser&apos;s own right-click menu is switched off in the game; the <b>right click</b> opens the game&apos;s menu instead. Right-click a tile, a
+					monster, a chest or a bag item for what you can do with it (the entries are listed in their sections), and the same menu ends with the global entries.
+					The gear button in the top bar opens that menu as a dropdown, with <b>Settings</b> and <b>Guide</b> on top.
 				</p>
 				<ul className='list-disc pl-5 text-[#d8c8a0] text-xs space-y-1'>
-					<li><b>Settings</b> and <b>Guide</b> (gear button only): sound and ambient life, and this page.</li>
 					<li>
-						<b>Save game</b> writes the save right now. The game also saves itself a couple of seconds after every change and when you
-						close or hide the tab.
+						<b>Settings</b> and <b>Guide</b> (gear button only): sound and ambient life, and this page.
 					</li>
 					<li>
-						<b>Export game save</b> copies your whole game as one line of text to the clipboard; <b>Import / backup</b> pastes one back
-						(or saves it as a file).
+						<b>Save game</b> writes the save right now. The game also saves itself a couple of seconds after every change and when you close or hide the tab.
 					</li>
-					<li>Development builds also have <b>Show admin mode</b>, the cheat panel, which can be folded into an icon.</li>
+					<li>
+						<b>Export game save</b> copies your whole game as one line of text to the clipboard; <b>Import / backup</b> pastes one back (or saves it as a file).
+					</li>
+					<li>
+						Development builds also have <b>Show admin mode</b>, the cheat panel, which can be folded into an icon.
+					</li>
 				</ul>
 			</section>
 
 			<section>
 				<h3 className='px-h'>Tiles &amp; Biomes</h3>
 				<p className='text-[#d8c8a0] mb-2'>
-					You start with the castle and the four tiles beside it (north, east, south, west) already yours. Every tile you buy becomes a biome and
-					produces resources per second. Same-biome neighbours boost each other by +{pct(SCALING_CONFIG.adjacencyBonus)} per
-					neighbour (up to four). New land tends to continue the biome next to it, so areas grow into forests, lakes and ridges.
-					The biome is rolled when you buy the tile, and some biomes are blocked by their neighbours (Tundra never touches Swamp
-					or Coast, Hills never touch Coast, Coast needs water) or unlock later (Swamp, Tundra). Right-click any explored tile to
-					build on it (see Buildings).
+					You start with the castle and the four tiles beside it (north, east, south, west) already yours. Every tile you buy becomes a biome and produces
+					resources per second. Same-biome neighbours boost each other by +{pct(SCALING_CONFIG.adjacencyBonus)} per neighbour (up to four). New land tends to
+					continue the biome next to it, so areas grow into forests, lakes and ridges. The biome is rolled when you buy the tile, and some biomes are blocked by
+					their neighbours (Tundra never touches Swamp or Coast, Hills never touch Coast, Coast needs water) or unlock later (Swamp, Tundra). Right-click any
+					explored tile to build on it (see Buildings).
 				</p>
 				<div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
 					{biomes.map((b) => (
 						<div key={b.name} className='px-card'>
 							<h4 className='text-[#f0d27a] font-medium mb-1 flex items-center gap-1'>
-								{BIOME_PIXEL_ICONS[b.name] && (
-									<PixelIcon name={BIOME_PIXEL_ICONS[b.name]!} alt='' scale={0.5} className='inline-block align-middle' />
-								)}
+								{BIOME_PIXEL_ICONS[b.name] && <PixelIcon name={BIOME_PIXEL_ICONS[b.name]!} alt='' scale={0.5} className='inline-block align-middle' />}
 								{b.label}
 							</h4>
 							<p className='text-[#d8c8a0] text-xs flex flex-wrap gap-x-3'>
@@ -124,9 +120,7 @@ const Tutorial: React.FC = () => {
 								))}
 							</p>
 							{b.name === 'plains' && (
-								<p className='text-[#a89878] text-xs mt-1'>
-									Each Plains tile also adds +{pct(stat.plainsMeatModifier)} to meat production.
-								</p>
+								<p className='text-[#a89878] text-xs mt-1'>Each Plains tile also adds +{pct(stat.plainsMeatModifier)} to meat production.</p>
 							)}
 						</div>
 					))}
@@ -136,115 +130,124 @@ const Tutorial: React.FC = () => {
 			<section>
 				<h3 className='px-h'>Buildings</h3>
 				<p className='text-[#d8c8a0] mb-2'>
-					<b>Right-click</b> any explored tile (not the castle, not a lake, and not while a chest or a monster is on it) and choose{' '}
-					<b>Build here</b> to open the build window (<b>Highlight this area</b> in the same menu tints the connected area of that biome around the tile for a moment).
-					Pick one of {Object.keys(BUILDINGS).length} buildings: {Object.values(BUILDINGS).map((b) => b.label).join(', ')}. The tile
-					keeps its biome and its output and the building adds its own on top, with the same neighbour bonus; a patch in the
-					style of the biome (packed earth, trampled snow, a plank landing ...) is laid under it. One building per tile, and it is permanent.
+					<b>Right-click</b> any explored tile (not the castle, not a lake, and not while a chest or a monster is on it) and choose <b>Build here</b> to open
+					the build window (<b>Highlight this area</b> in the same menu tints the connected area of that biome around the tile for a moment). Pick one of{' '}
+					{Object.keys(BUILDINGS).length} buildings:{' '}
+					{Object.values(BUILDINGS)
+						.map((b) => b.label)
+						.join(', ')}
+					. The tile keeps its biome and its output and the building adds its own on top, with the same neighbour bonus; a patch in the style of the biome
+					(packed earth, trampled snow, a plank landing ...) is laid under it. One building per tile, and it is permanent.
 				</p>
 				<p className='text-[#d8c8a0] mb-1'>
-					Every building costs more than the last. The first {BUILDING_COST.starter.length} are cheap (
-					{BUILDING_COST.starter.map((f) => `x${f}`).join(', ')} of the base price of{' '}
-					{sortedCostEntries(buildingBase).map(([r, v]) => `${short(v)} ${r}`).join(', ')}), then the price grows x
-					{BUILDING_COST.growthEarly} per building for {BUILDING_COST.earlyCount} buildings, x{BUILDING_COST.growthMid} for the next{' '}
+					Every building costs more than the last. The first {BUILDING_COST.starter.length} are cheap ({BUILDING_COST.starter.map((f) => `x${f}`).join(', ')} of
+					the base price of{' '}
+					{sortedCostEntries(buildingBase)
+						.map(([r, v]) => `${short(v)} ${r}`)
+						.join(', ')}
+					), then the price grows x{BUILDING_COST.growthEarly} per building for {BUILDING_COST.earlyCount} buildings, x{BUILDING_COST.growthMid} for the next{' '}
 					{BUILDING_COST.midCount} and x{BUILDING_COST.growthLate} after that (the same three-stage shape as tile prices).
 				</p>
 				<p className='text-[#a89878] text-xs px-card font-mono'>
-					gold for building number: {buildingExamples.map((e) => `${e.n + 1}: ${short(e.gold)}`).join(' - ')} (wood and stone
-					scale the same way; Thrift lowers it)
+					gold for building number: {buildingExamples.map((e) => `${e.n + 1}: ${short(e.gold)}`).join(' - ')} (wood and stone scale the same way; Thrift lowers
+					it)
 				</p>
 			</section>
 
 			<section>
 				<h3 className='px-h'>Tile Cost</h3>
 				<p className='text-[#d8c8a0] mb-1'>
-					Each new tile costs more than the last: about x{SCALING_CONFIG.growthEarly} per tile you own up to{' '}
-					{SCALING_CONFIG.earlyTiles} tiles, then x{SCALING_CONFIG.growthLate} per tile up to {SCALING_CONFIG.lateTiles}, and
-					x{SCALING_CONFIG.growthEndgame} up to {TILE_PRICE.tailFrom}. After that the price keeps rising, but slowly, so there is no limit
-					to how far the map can grow.
+					Each new tile costs more than the last: about x{SCALING_CONFIG.growthEarly} per tile you own up to {SCALING_CONFIG.earlyTiles} tiles, then x
+					{SCALING_CONFIG.growthLate} per tile up to {SCALING_CONFIG.lateTiles}, and x{SCALING_CONFIG.growthEndgame} up to {TILE_PRICE.tailFrom}. After that the
+					price keeps rising, but slowly, so there is no limit to how far the map can grow.
 				</p>
 				<p className='text-[#d8c8a0] text-xs px-card font-mono'>
-					gold = {BASE_TILE_COST} x {SCALING_CONFIG.growthEarly}^min(tiles, {SCALING_CONFIG.earlyTiles}) x{' '}
-					{SCALING_CONFIG.growthLate}^(min(tiles, {SCALING_CONFIG.lateTiles}) - {SCALING_CONFIG.earlyTiles}) x{' '}
-					{SCALING_CONFIG.growthEndgame}^max(tiles - {SCALING_CONFIG.lateTiles}, 0)
+					gold = {BASE_TILE_COST} x {SCALING_CONFIG.growthEarly}^min(tiles, {SCALING_CONFIG.earlyTiles}) x {SCALING_CONFIG.growthLate}^(min(tiles,{' '}
+					{SCALING_CONFIG.lateTiles}) - {SCALING_CONFIG.earlyTiles}) x {SCALING_CONFIG.growthEndgame}^max(tiles - {SCALING_CONFIG.lateTiles}, 0)
 				</p>
 				<p className='text-[#a89878] mt-1'>
-					Bigger territories also need materials ({firstTileResources}). Each Charisma point removes{' '}
-					{stat.tileDiscountPercentPerCharisma}% of the cost (max {stat.tileDiscountCapPercent}%).
+					Bigger territories also need materials ({firstTileResources}). Each Charisma point removes {stat.tileDiscountPercentPerCharisma}% of the cost (max{' '}
+					{stat.tileDiscountCapPercent}%).
 				</p>
 			</section>
 
 			<section>
 				<h3 className='px-h'>Clicking</h3>
 				<p className='text-[#d8c8a0]'>
-					Clicking the <b>map</b> pays <Res r='gold'>{pct(CLICK_LADDER[0].power)}</Res> of your gold per second per
-					click, upgradeable in the merchant to {pct(CLICK_LADDER[CLICK_LADDER.length - 1].power)}.
+					Clicking the <b>map</b> pays <Res r='gold'>{pct(CLICK_LADDER[0].power)}</Res> of your gold per second per click, upgradeable in the merchant to{' '}
+					{pct(CLICK_LADDER[CLICK_LADDER.length - 1].power)}.
 				</p>
 				<p className='text-[#a89878] mt-1'>
-					Fast clicking is fine: you can click up to {CLICK_LIMIT.capacity} times in a burst and about{' '}
-					{CLICK_LIMIT.refillPerSec} times per second sustained. Faster than that, clicks made by scripts or
-					auto-clickers, and clicks on menus or buttons do not pay. Fight clicks have no such limit (see Monsters &amp; Fighting).
+					Fast clicking is fine: you can click up to {CLICK_LIMIT.capacity} times in a burst and about {CLICK_LIMIT.refillPerSec} times per second sustained.
+					Faster than that, clicks made by scripts or auto-clickers, and clicks on menus or buttons do not pay. Fight clicks have no such limit (see Monsters
+					&amp; Fighting).
 				</p>
 			</section>
 
 			<section>
 				<h3 className='px-h'>Castle</h3>
 				<p className='text-[#d8c8a0]'>
-					The castle gives a bonus to <b>all</b> resources: +{pct(castleStart)} at level 1, doubling with every level
-					up to +{pct(castleAtDoublingEnd)} at level {CASTLE_UPGRADE.doublingUntil}, then +
-					{pct(CASTLE_UPGRADE.lateLevelStep)} more per level up to +{pct(castleMax)} at level{' '}
-					{CASTLE_UPGRADE.maxLevel}. Upgrades cost resources and take real time (
-					{formatTime(CASTLE_UPGRADE.durationsSec[0])} for the first, {formatTime(totalCastleTime)} in total); the
-					castle keeps its current bonus while it is being built. From level 2 it also produces +
-					{CASTLE_UPGRADE.xpBonus} XP/s per level above 1. The violet area around it is the castle&apos;s range: everything inside produces +50% (+100% or more once the walls stand). It is 3x3 at first, growing by a
-						tile on every side with each level from {CASTLE_RANGE.growFromLevel} (9x9 at level {CASTLE_UPGRADE.maxLevel}); from level{' '}
-						{CASTLE_FORTRESS.fromLevel} walls surround the inner 3x3 and no monsters or chests appear there. If you lose the castle while
-						exploring, an arrow at the edge of the screen points to it and <b>Back to castle</b> brings you home. Once the castle is at its maximum level, clicking it opens the Rebirth
-					window, where you can rebirth.
+					The castle gives a bonus to <b>all</b> resources: +{pct(castleStart)} at level 1, doubling with every level up to +{pct(castleAtDoublingEnd)} at level{' '}
+					{CASTLE_UPGRADE.doublingUntil}, then +{pct(CASTLE_UPGRADE.lateLevelStep)} more per level up to +{pct(castleMax)} at level {CASTLE_UPGRADE.maxLevel}.
+					Upgrades cost resources and take real time ({formatTime(CASTLE_UPGRADE.durationsSec[0])} for the first, {formatTime(totalCastleTime)} in total); the
+					castle keeps its current bonus while it is being built. From level 2 it also produces +{CASTLE_UPGRADE.xpBonus} XP/s per level above 1. The violet
+					area around it is the castle&apos;s range: everything inside produces +50% (+100% or more once the walls stand). It is 3x3 at first, growing by a tile
+					on every side with each level from {CASTLE_RANGE.growFromLevel} (9x9 at level {CASTLE_UPGRADE.maxLevel}); from level {CASTLE_FORTRESS.fromLevel} walls
+					surround the inner 3x3 and no monsters or chests appear there. If you lose the castle while exploring, an arrow at the edge of the screen points to it
+					and <b>Back to castle</b> brings you home. Once the castle is at its maximum level, clicking it opens the Rebirth window, where you can rebirth.
 				</p>
 			</section>
 
 			<section>
 				<h3 className='px-h'>Monsters &amp; Fighting</h3>
 				<p className='text-[#d8c8a0] mb-2'>
-					A <b>monster</b> appears on land you own (not water, and never right next to the castle: {MONSTERS.thistleBoar.spawn.minCastleDistance} to {MONSTERS.thistleBoar.spawn.maxCastleDistance} tiles from it) after{' '}
-					{formatTime(COMBAT.spawn.firstSec)}, then another every {formatTime(COMBAT.spawn.intervalSec)} (monsters
-					and chests together never fill more than {pct(SPAWN_LIMIT.maxFraction)} of your free land). Monsters have a <b>level</b>: a new plains monster appears at level {MONSTERS.thistleBoar.spawnWindow.base} to {MONSTERS.thistleBoar.spawnWindow.cap} (the higher, the further your castle has
-					grown; every biome has its own, stronger monsters) and gains a level every {formatTime(LIMITS.monsterGrowthIntervalSec)} on the map, up to {LIMITS.monsterGrowthLevels} levels above the one it appeared at: more HP, harder hits, some armor
-					and better rewards. Every {formatTime(COMBAT.spawn.bossIntervalSec)} a <b>boss</b> appears, one at a time: the boss of a biome (the Great Auroch on the plains: level {MONSTERS.bossGreatAuroch.spawnWindow.base}-{MONSTERS.bossGreatAuroch.spawnWindow.cap} at the start, with a skull on
+					A <b>monster</b> appears on land you own (not water, and never right next to the castle: {MONSTERS.thistleBoar.spawn.minCastleDistance} to{' '}
+					{MONSTERS.thistleBoar.spawn.maxCastleDistance} tiles from it) after {formatTime(COMBAT.spawn.firstSec)}, then another every{' '}
+					{formatTime(COMBAT.spawn.intervalSec)} (monsters and chests together never fill more than {pct(SPAWN_LIMIT.maxFraction)} of your free land). Monsters
+					have a <b>level</b>: a new plains monster appears at level {MONSTERS.thistleBoar.spawnWindow.base} to {MONSTERS.thistleBoar.spawnWindow.cap} (the
+					higher, the further your castle has grown; every biome has its own, stronger monsters) and gains a level every{' '}
+					{formatTime(LIMITS.monsterGrowthIntervalSec)} on the map, up to {LIMITS.monsterGrowthLevels} levels above the one it appeared at: more HP, harder
+					hits, some armor and better rewards. Every {formatTime(COMBAT.spawn.bossIntervalSec)} a <b>boss</b> appears, one at a time: the boss of a biome (the
+					Great Auroch on the plains: level {MONSTERS.bossGreatAuroch.spawnWindow.base}-{MONSTERS.bossGreatAuroch.spawnWindow.cap} at the start, with a skull on
 					his badge). Bosses can crit, can resist Stun and carry drops nobody else has.
-					<b>Click a monster</b> to fight it (click more monsters while a fight is open and they join the <b>battle queue</b>, up to {LIMITS.battleQueue}: they are fought one after the other, a number on the map shows the order, a second click takes one out again; a defeat or Flee clears the queue): your weapon and the monster then each swing at their own attack speed on their own (nobody clicks to hit). With{' '}
-					<b>Auto-battle</b> on (right-click menu or the fight panel; locked until your first rebirth, off at the start) the server also sends you against the next monster, one at a time, so you do not have to look for them.
-					The fight window opens the moment you click, shows only while a fight is open and can be minimized to an icon; when you win it stays with the dead monster and its loot until you close it. Potions and skills have
-					hotkeys (1-5), or switch on <b>Auto-use</b> to let the server drink and cast for you. Right-click a monster for <b>Dismiss</b>: after a confirmation
-					it is removed from the map with no reward, which frees a place when one is too strong for you.
+					<b>Click a monster</b> to fight it (click more monsters while a fight is open and they join the <b>battle queue</b>, up to {LIMITS.battleQueue}: they
+					are fought one after the other, a number on the map shows the order, a second click takes one out again; a defeat or Flee clears the queue): your
+					weapon and the monster then each swing at their own attack speed on their own (nobody clicks to hit). With <b>Auto-battle</b> on (right-click menu or
+					the fight panel; locked until your first rebirth, off at the start) the server also sends you against the next monster, one at a time, so you do not
+					have to look for them. The fight window opens the moment you click, shows only while a fight is open and can be minimized to an icon; when you win it
+					stays with the dead monster and its loot until you close it. Potions and skills have hotkeys (1-5), or switch on <b>Auto-use</b> to let the server
+					drink and cast for you. Right-click a monster for <b>Dismiss</b>: after a confirmation it is removed from the map with no reward, which frees a place
+					when one is too strong for you.
 				</p>
 				<ul className='list-disc pl-5 text-[#d8c8a0] text-xs space-y-1'>
 					<li>
-						Every click in the fight hits for your gear&apos;s Damage, plus {STAT_RULES.physicalDamagePerStrength}% per point of Strength above {STAT_RULES.base} with
-						physical weapons or {STAT_RULES.magicDamagePerIntelligence}% per point of Intelligence above {STAT_RULES.base} with a staff or wand. <b>There is no click-speed limit</b> in fights: fast clicking is a
-						skill (only real clicks count). A click can <b>crit</b> (x{COMBAT.crit.mult}) with your Crit chance - Dexterity and Charisma
-						plus gear - and a crit can become a <b>super crit</b> (x{COMBAT.crit.superMult}) with {COMBAT.crit.superBase}% plus the gear&apos;s Super Crit.
+						Every click in the fight hits for your gear&apos;s Damage, plus {STAT_RULES.physicalDamagePerStrength}% per point of Strength above{' '}
+						{STAT_RULES.base} with physical weapons or {STAT_RULES.magicDamagePerIntelligence}% per point of Intelligence above {STAT_RULES.base} with a staff
+						or wand. <b>There is no click-speed limit</b> in fights: fast clicking is a skill (only real clicks count). A click can <b>crit</b> (x
+						{COMBAT.crit.mult}) with your Crit chance - Dexterity and Charisma plus gear - and a crit can become a <b>super crit</b> (x{COMBAT.crit.superMult})
+						with {COMBAT.crit.superBase}% plus the gear&apos;s Super Crit.
 					</li>
 					<li>
-						The monster hits back on a timer; Armor reduces every hit (armor / (armor + {COMBAT.armorK}) up to {pct(COMBAT.armorSoftCap)}, then each point is worth half as much, so
-							no armor can take away more than {pct(COMBAT.armorSoftCap + (1 - COMBAT.armorSoftCap) * COMBAT.armorSoftSlope)}: the rest of your survival is HP, regen and dodge). Your HP is about{' '}
-						{COMBAT.baseHp + 16} at the start, regenerates {COMBAT.regenPerSec} HP/s outside fights (gear Regen adds to that and also heals in
-						fights) and at 0 you are knocked out with {pct(COMBAT.knockoutHpFraction)} HP back; nothing is lost. Fleeing resets the monster.
+						The monster hits back on a timer; Armor reduces every hit (armor / (armor + {COMBAT.armorK}) up to {pct(COMBAT.armorSoftCap)}, then each point is
+						worth half as much, so no armor can take away more than {pct(COMBAT.armorSoftCap + (1 - COMBAT.armorSoftCap) * COMBAT.armorSoftSlope)}: the rest of
+						your survival is HP, regen and dodge). Your HP is about {COMBAT.baseHp + 16} at the start, regenerates {COMBAT.regenPerSec} HP/s outside fights
+						(gear Regen adds to that and also heals in fights) and at 0 you are knocked out with {pct(COMBAT.knockoutHpFraction)} HP back; nothing is lost.
+						Fleeing resets the monster.
+					</li>
+					<li>Potions (hotkeys 1-3 in a fight, a shared {COMBAT.potionCooldownSec}s cooldown) heal 35 or 90 HP and work outside fights too.</li>
+					<li>
+						<b>Skills</b> cost mana (Intelligence and some gear raise it and how fast it refills). <b>{SKILLS.heal.name}</b> (level {SKILLS.heal.unlockLevel},
+						hotkey 4, {SKILLS.heal.manaCost} mana, {SKILLS.heal.cooldownSec}s cooldown) restores {pct(SKILLS.heal.healFraction ?? 0)} of your max HP, more with
+						Intelligence and Spell Power, and works outside fights too. <b>{SKILLS.stun.name}</b> (level {SKILLS.stun.unlockLevel}, hotkey 5,{' '}
+						{SKILLS.stun.manaCost} mana, {SKILLS.stun.cooldownSec}s cooldown) freezes the monster&apos;s attacks for {SKILLS.stun.stunSec} seconds. They do no
+						damage: they buy time for your clicks.
 					</li>
 					<li>
-						Potions (hotkeys 1-3 in a fight, a shared {COMBAT.potionCooldownSec}s cooldown) heal 35 or 90 HP and work outside fights too.
-					</li>
-					<li>
-						<b>Skills</b> cost mana (Intelligence and some gear raise it and how fast it refills). <b>{SKILLS.heal.name}</b> (level {SKILLS.heal.unlockLevel}, hotkey 4,{' '}
-						{SKILLS.heal.manaCost} mana, {SKILLS.heal.cooldownSec}s cooldown) restores {pct(SKILLS.heal.healFraction ?? 0)} of your max HP, more with Intelligence and Spell Power, and works
-						outside fights too. <b>{SKILLS.stun.name}</b> (level {SKILLS.stun.unlockLevel}, hotkey 5, {SKILLS.stun.manaCost} mana, {SKILLS.stun.cooldownSec}s cooldown) freezes the monster&apos;s attacks for{' '}
-						{SKILLS.stun.stunSec} seconds. They do no damage: they buy time for your clicks.
-					</li>
-					<li>
-						Winning pays gold and XP worth some seconds of your income, a share of the hide your farm makes, plus a chance of gear and potions. Monsters drop wood, cloth and, from
-						older ones, steel and obsidian gear. A <b>boss</b> (like the Great Auroch: armor, {MONSTERS.bossGreatAuroch.critChance}% crits, resists Stun {MONSTERS.bossGreatAuroch.stunResist}%, a {MONSTERS.bossGreatAuroch.timeLimitSec}s time limit) is hard: it needs real
-						gear and quick clicking. It always drops a piece of the epic Rattatui set (the only place to get it), sometimes a second one or a legendary weapon, and potions.
+						Winning pays gold and XP worth some seconds of your income, a share of the hide your farm makes, plus a chance of gear and potions. Monsters drop
+						wood, cloth and, from older ones, steel and obsidian gear. A <b>boss</b> (like the Great Auroch: armor, {MONSTERS.bossGreatAuroch.critChance}%
+						crits, resists Stun {MONSTERS.bossGreatAuroch.stunResist}%, a {MONSTERS.bossGreatAuroch.timeLimitSec}s time limit) is hard: it needs real gear and
+						quick clicking. It always drops a piece of the epic Rattatui set (the only place to get it), sometimes a second one or a legendary weapon, and
+						potions.
 					</li>
 				</ul>
 			</section>
@@ -252,11 +255,10 @@ const Tutorial: React.FC = () => {
 			<section>
 				<h3 className='px-h'>Gear &amp; Items</h3>
 				<p className='text-[#d8c8a0] mb-2'>
-					The Equipment tab has 13 gear slots (head, shoulder, chest, hands, legs, feet, neck, cape, two rings, charm, weapon, shield)
-					and a 36-slot bag. Double-click a bag item to equip it (or drink a potion); right-click it for Equip / Drink, Sell one, Sell all (a stack of potions) and{' '}
-					<b>Discard</b> (destroys it for good, after a confirmation, no gold). Click gear to take it off, drag to
-					rearrange, or press <b>Organize</b> to merge stacks and sort the bag. Gear cannot be changed during a fight. Items give Damage (weapons), Armor, Max HP, Crit, Super Crit, HP Regen and Luck;
-					hover for a tooltip.
+					The Equipment tab has 13 gear slots (head, shoulder, chest, hands, legs, feet, neck, cape, two rings, charm, weapon, shield) and a 36-slot bag.
+					Double-click a bag item to equip it (or drink a potion); right-click it for Equip / Drink, Sell one, Sell all (a stack of potions) and <b>Discard</b>{' '}
+					(destroys it for good, after a confirmation, no gold). Click gear to take it off, drag to rearrange, or press <b>Organize</b> to merge stacks and sort
+					the bag. Gear cannot be changed during a fight. Items give Damage (weapons), Armor, Max HP, Crit, Super Crit, HP Regen and Luck; hover for a tooltip.
 				</p>
 				<div className='flex flex-wrap gap-x-4 gap-y-1 mb-2 text-xs'>
 					{RARITY_ORDER.map((r) => (
@@ -267,17 +269,21 @@ const Tutorial: React.FC = () => {
 				</div>
 				<ul className='list-disc pl-5 text-[#d8c8a0] text-xs space-y-1'>
 					<li>
-						<b>Sets</b>: wear several pieces of one set for bonuses that add up (both rings count). Obsidian pays the kingdom (income, XP, kill rewards, away time), Rattatui adds percent damage and health:{' '}
-						{Object.values(SETS).map((set) => `${set.label} (${Object.keys(set.bonuses).join(' / ')} pieces)`).join(', ')}.
+						<b>Sets</b>: wear several pieces of one set for bonuses that add up (both rings count). Obsidian pays the kingdom (income, XP, kill rewards, away
+						time), Rattatui adds percent damage and health:{' '}
+						{Object.values(SETS)
+							.map((set) => `${set.label} (${Object.keys(set.bonuses).join(' / ')} pieces)`)
+							.join(', ')}
+						.
 					</li>
 					<li>
-						Wood and leather (common) and Apprentice cloth (common, more HP, regen and luck) drop from monsters and chests; Knight&apos;s steel
-						(uncommon) comes from older monsters and chests, and the merchant&apos;s shelf may carry some; Obsidian (rare) needs tier-5 rats or a good
-						chest; the Rattatui set (epic) is dropped by bosses; legendary weapons are very rare finds.
+						Wood and leather (common) and Apprentice cloth (common, more HP, regen and luck) drop from monsters and chests; Knight&apos;s steel (uncommon) comes
+						from older monsters and chests, and the merchant&apos;s shelf may carry some; Obsidian (rare) needs tier-5 rats or a good chest; the Rattatui set
+						(epic) is dropped by bosses; legendary weapons are very rare finds.
 					</li>
 					<li>
-						Weapons come in many types - swords, maces, mauls, axes, daggers, spears, bows, crossbows, staves and wands. Maces and mauls hit
-						hardest, bows and daggers crit more, staves and wands trade damage for regen and luck.
+						Weapons come in many types - swords, maces, mauls, axes, daggers, spears, bows, crossbows, staves and wands. Maces and mauls hit hardest, bows and
+						daggers crit more, staves and wands trade damage for regen and luck.
 					</li>
 					<li>Chests, monsters and bosses drop items; the merchant buys spare gear for gold.</li>
 				</ul>
@@ -286,21 +292,23 @@ const Tutorial: React.FC = () => {
 			<section>
 				<h3 className='px-h'>Rebirth &amp; Embers</h3>
 				<p className='text-[#d8c8a0]'>
-					When your castle reaches level {REBIRTH.minCastleLevel} and you own at least {REBIRTH.minTiles} tiles (+{REBIRTH.tilesPerRebirth} for every rebirth done) you can
-					Rebirth from the Rebirth window: the map, resources, castle, farm, gear and bag start again (you keep the starter kit), and you keep your name,
-					hero, level, gems and Embers. Your attribute points are handed back to spend again. Every Ember you earn adds to your income for ever (the more you have, the less each new one adds) and can be spent in
-					the shop ({Object.values(EMBER_UPGRADES).map((u) => u.label).join(', ')}). A higher castle level and more tiles
-					at the moment of rebirth give more Embers, so pushing on to level {CASTLE_UPGRADE.maxLevel} first pays.
+					When your castle reaches level {REBIRTH.minCastleLevel} and you own at least {REBIRTH.minTiles} tiles (+{REBIRTH.tilesPerRebirth} for every rebirth
+					done) you can Rebirth from the Rebirth window: the map, resources, castle, farm, gear and bag start again (you keep the starter kit), and you keep
+					your name, hero, level, gems and Embers. Your attribute points are handed back to spend again. Every Ember you earn adds to your income for ever (the
+					more you have, the less each new one adds) and can be spent in the shop (
+					{Object.values(EMBER_UPGRADES)
+						.map((u) => u.label)
+						.join(', ')}
+					). A higher castle level and more tiles at the moment of rebirth give more Embers, so pushing on to level {CASTLE_UPGRADE.maxLevel} first pays.
 				</p>
 			</section>
 
 			<section>
 				<h3 className='px-h'>Farm</h3>
 				<p className='text-[#d8c8a0] mb-2'>
-					Buy animals with <Res r='food'>food</Res> in the animal panel on the right (Buy, x10 or Max). Each animal
-					produces meat every second plus a farm product (<Res r='eggs'>eggs</Res>, <Res r='milk'>milk</Res> or{' '}
-					<Res r='hide'>hide</Res>) you can sell or spend on the upgrades along the bottom; the next one of the same
-					kind costs more, and the pen holds a limited number of each kind.
+					Buy animals with <Res r='food'>food</Res> in the animal panel on the right (Buy, x10 or Max). Each animal produces meat every second plus a farm
+					product (<Res r='eggs'>eggs</Res>, <Res r='milk'>milk</Res> or <Res r='hide'>hide</Res>) you can sell or spend on the upgrades along the bottom; the
+					next one of the same kind costs more, and the pen holds a limited number of each kind.
 				</p>
 				<div className='grid grid-cols-2 md:grid-cols-4 gap-2'>
 					{ANIMALS.map((a) => (
@@ -323,11 +331,13 @@ const Tutorial: React.FC = () => {
 			<section>
 				<h3 className='px-h'>Merchant</h3>
 				<p className='text-[#d8c8a0] mb-2'>
-					The <b>Resources</b> tab is one table: pick an amount (1, 10, 100, 25 %, 50 % or Max) and use the Sell and Buy buttons of each row; sell prices include Haggler, and farm products only sell. Buying resources costs{' '}
-					{MERCHANT_BUY_MULTIPLIER}x the selling price, so trading back and forth never gains anything. <b>Goods</b> shows a shelf of
-					six pieces of gear, mixed with the potions that are always in stock, that is reshuffled every {MERCHANT_GOODS.rotateSec / 60} minutes of play (or at once with Refresh: {MERCHANT_GOODS.refresh.freePerWindow} free every {MERCHANT_GOODS.refresh.windowSec / 3600} hours of play, after that for gold, doubling each time);
-					hover a Buy button for the price. Below it is your bag to sell spare gear from. <b>Upgrades</b> has click power and the permanent bonuses (Haggler, Bulk Discount,
-					Lucky Charm, Pack Rat). The shelf never holds legendary gear and Rattatui gear is not for sale: bosses drop it.
+					The <b>Resources</b> tab is one table: pick an amount (1, 10, 100, 25 %, 50 % or Max) and use the Sell and Buy buttons of each row; sell prices
+					include Haggler, and farm products only sell. Buying resources costs {MERCHANT_BUY_MULTIPLIER}x the selling price, so trading back and forth never
+					gains anything. <b>Goods</b> shows a shelf of six pieces of gear, mixed with the potions that are always in stock, that is reshuffled every{' '}
+					{MERCHANT_GOODS.rotateSec / 60} minutes of play (or at once with Refresh: {MERCHANT_GOODS.refresh.freePerWindow} free every{' '}
+					{MERCHANT_GOODS.refresh.windowSec / 3600} hours of play, after that for gold, doubling each time); hover a Buy button for the price. Below it is your
+					bag to sell spare gear from. <b>Upgrades</b> has click power and the permanent bonuses (Haggler, Bulk Discount, Lucky Charm, Pack Rat). The shelf
+					never holds legendary gear and Rattatui gear is not for sale: bosses drop it.
 				</p>
 				<div className='grid grid-cols-2 md:grid-cols-5 gap-2'>
 					{Object.entries(MERCHANT_RESOURCE_PRICES).map(([r, price]) => (
@@ -345,11 +355,10 @@ const Tutorial: React.FC = () => {
 			<section>
 				<h3 className='px-h'>Chests</h3>
 				<p className='text-[#d8c8a0]'>
-					A chest appears on one of your tiles every {formatTime(CHEST.intervalSec)} (while there is room: they share {pct(SPAWN_LIMIT.maxFraction)} of your free land with the monsters).
-					Click it to open it: usually {CHEST.minMinutes}-{CHEST.maxMinutes} minutes&apos; worth of your passive gold
-					income, sometimes a lucky x{CHEST.boostMultiplier} chest, a bundle of wood, stone, coal or food, a burst of XP, or
-					even a piece of gear. Chests like the edge of your land. Each point of Luck (from Charisma) adds
-					+{pct(CHEST.luckBonusPerPoint, 1)} gold and makes the lucky chest and gear likelier.
+					A chest appears on one of your tiles every {formatTime(CHEST.intervalSec)} (while there is room: they share {pct(SPAWN_LIMIT.maxFraction)} of your
+					free land with the monsters). Click it to open it: usually {CHEST.minMinutes}-{CHEST.maxMinutes} minutes&apos; worth of your passive gold income,
+					sometimes a lucky x{CHEST.boostMultiplier} chest, a bundle of wood, stone, coal or food, a burst of XP, or even a piece of gear. Chests like the edge
+					of your land. Each point of Luck (from Charisma) adds +{pct(CHEST.luckBonusPerPoint, 1)} gold and makes the lucky chest and gear likelier.
 				</p>
 			</section>
 
@@ -376,10 +385,13 @@ const Tutorial: React.FC = () => {
 			<section>
 				<h3 className='px-h'>Leveling</h3>
 				<p className='text-[#d8c8a0] text-xs px-card font-mono'>
-					Each level needs more XP than the one before: level {LEVELING.anchors[0][0]} takes about {formatCompact(LEVELING.anchors[0][1])} XP in all, level {LEVELING.anchors[1][0]} {formatCompact(LEVELING.anchors[1][1])}, the soft cap (level {LEVELING.softCapLevel}) {formatCompact(LEVELING.anchors[2][1])} and the maximum (level {LEVELING.maxLevel}) {formatCompact(LEVELING.anchors[4][1])}
+					Each level needs more XP than the one before: level {LEVELING.anchors[0][0]} takes about {formatCompact(LEVELING.anchors[0][1])} XP in all, level{' '}
+					{LEVELING.anchors[1][0]} {formatCompact(LEVELING.anchors[1][1])}, the soft cap (level {LEVELING.softCapLevel}) {formatCompact(LEVELING.anchors[2][1])}{' '}
+					and the maximum (level {LEVELING.maxLevel}) {formatCompact(LEVELING.anchors[4][1])}
 				</p>
 				<p className='text-[#a89878] mt-1'>
-					XP comes from time (more with the castle and some buildings) and from every tile you buy. Your level and XP are kept when you rebirth (the attribute points are given back to spend again): the soft cap (level {LEVELING.softCapLevel}) takes about three rebirths, the maximum many more.
+					XP comes from time (more with the castle and some buildings) and from every tile you buy. Your level and XP are kept when you rebirth (the attribute
+					points are given back to spend again): the soft cap (level {LEVELING.softCapLevel}) takes about three rebirths, the maximum many more.
 				</p>
 			</section>
 

@@ -110,7 +110,13 @@ const fullBody = (save: StoredSave) => ({ ...save.core, land: save.world?.land, 
 /** The cloud save in Supabase (service role: players have no write access to these tables). */
 export const supabaseSaveRepo = (db: SupabaseClient): SaveRepo => {
 	const trim = async (userId: string, pinned: boolean, keep: number) => {
-		const { data } = await db.from('save_history').select('id').eq('user_id', userId).eq('pinned', pinned).order('rev', { ascending: false }).range(keep, keep + 50);
+		const { data } = await db
+			.from('save_history')
+			.select('id')
+			.eq('user_id', userId)
+			.eq('pinned', pinned)
+			.order('rev', { ascending: false })
+			.range(keep, keep + 50);
 		const ids = (data ?? []).map((row: { id: number }) => row.id);
 		if (ids.length) await db.from('save_history').delete().in('id', ids);
 	};
@@ -163,9 +169,15 @@ export const supabaseSaveRepo = (db: SupabaseClient): SaveRepo => {
 		async pin(userId, save, keep) {
 			const { data } = await db.from('save_history').update({ pinned: true }).eq('user_id', userId).eq('rev', save.rev).select('id');
 			if (!data?.length) {
-				const { error } = await db
-					.from('save_history')
-					.insert({ user_id: userId, rev: save.rev, schema: save.schema, state: fullBody(save), flags: save.flags, server_saved_at: iso(save.serverSavedAt), pinned: true });
+				const { error } = await db.from('save_history').insert({
+					user_id: userId,
+					rev: save.rev,
+					schema: save.schema,
+					state: fullBody(save),
+					flags: save.flags,
+					server_saved_at: iso(save.serverSavedAt),
+					pinned: true,
+				});
 				if (error) return;
 			}
 			await trim(userId, true, keep);
@@ -180,7 +192,14 @@ export const supabaseSaveRepo = (db: SupabaseClient): SaveRepo => {
 
 		async recordRebirth(userId, record) {
 			// the run's length is this rebirth's play time minus the previous rebirth's
-			const { data: last } = await db.from('rebirth_history').select('play_seconds').eq('user_id', userId).lt('rebirth_no', record.rebirthNo).order('rebirth_no', { ascending: false }).limit(1).maybeSingle();
+			const { data: last } = await db
+				.from('rebirth_history')
+				.select('play_seconds')
+				.eq('user_id', userId)
+				.lt('rebirth_no', record.rebirthNo)
+				.order('rebirth_no', { ascending: false })
+				.limit(1)
+				.maybeSingle();
 			const { error } = await db.from('rebirth_history').upsert(
 				{
 					user_id: userId,
@@ -200,14 +219,15 @@ export const supabaseSaveRepo = (db: SupabaseClient): SaveRepo => {
 					legacy_earned: record.legacyEarned,
 					stats: { rates: record.rates },
 				},
-				{ onConflict: 'user_id,rebirth_no', ignoreDuplicates: true }
+				{ onConflict: 'user_id,rebirth_no', ignoreDuplicates: true },
 			);
 			if (error) throw new Error(error.message);
 		},
 	};
 };
 
-const HISTORY_COLUMNS = 'rebirth_no, at, run_seconds, play_seconds, tiles, buildings, castle_level, level, xp, gold, gold_per_sec, click_level, embers_gained, legacy_earned, stats';
+const HISTORY_COLUMNS =
+	'rebirth_no, at, run_seconds, play_seconds, tiles, buildings, castle_level, level, xp, gold, gold_per_sec, click_level, embers_gained, legacy_earned, stats';
 
 /** The rebirths of a player, newest first (the Rebirths tab). `db` is the player's own client: row level security lets them read only their own rows. */
 export const loadRebirthHistory = async (db: SupabaseClient, userId: string, limit = 200): Promise<RebirthEntry[]> => {

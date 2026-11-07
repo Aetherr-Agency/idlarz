@@ -53,7 +53,12 @@ test('isInWard: the 3x3 around the castle from level 7, nothing before and nothi
 test('the range area: 3x3 up to level 7, then one more tile on every side per level up to 9x9; the ward stays 3x3', () => {
 	assert.deepEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(castleRangeRadius), [1, 1, 1, 1, 1, 1, 1, 2, 3, 4]);
 	assert.equal(MAX_CASTLE_RANGE_RADIUS, 4);
-	for (const [level, r] of [[7, 1], [8, 2], [9, 3], [10, 4]]) {
+	for (const [level, r] of [
+		[7, 1],
+		[8, 2],
+		[9, 3],
+		[10, 4],
+	]) {
 		assert.equal(inCastleRange(CASTLE_X + r, CASTLE_Y - r, level), true, `level ${level}: corner at ${r}`);
 		assert.equal(inCastleRange(CASTLE_X + r + 1, CASTLE_Y, level), false, `level ${level}: one past`);
 		assert.equal(inCastleRange(CASTLE_X, CASTLE_Y - r - 1, level), false);
@@ -73,7 +78,7 @@ test('pickSpawnTile never picks a building, a lake or a chest tile, however ofte
 			const y = CASTLE_Y + dy;
 			const kind = (Math.abs(dx) + 2 * Math.abs(dy)) % 4;
 			if (kind === 0) w = setTile(w, x, y, { biome: 'lake', isOwned: true });
-			else if (kind === 1) w =setTile(w, x, y, { biome: 'swamp', isOwned: true, building: 'farm' });
+			else if (kind === 1) w = setTile(w, x, y, { biome: 'swamp', isOwned: true, building: 'farm' });
 			else if (kind === 2) w = setTile(w, x, y, { biome: 'plains', isOwned: true, hasChest: true });
 			else {
 				w = setTile(w, x, y, { biome: 'plains', isOwned: true });

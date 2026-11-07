@@ -9,9 +9,14 @@ const T = TILE_SIZE;
 
 // The middle of the screen may roam the explored land plus PAN_MARGIN_TILES; nothing else limits the map.
 
-test('centre and position are each other\'s inverse at every zoom', () => {
+test("centre and position are each other's inverse at every zoom", () => {
 	for (const zoom of [0.75, 1, 1.5, 2]) {
-		for (const [wx, wy] of [[0, 0], [1200, 1200], [-5000, 77], [123456, -98765]]) {
+		for (const [wx, wy] of [
+			[0, 0],
+			[1200, 1200],
+			[-5000, 77],
+			[123456, -98765],
+		]) {
 			const pos = positionForCenter(wx, wy, zoom, SIZE);
 			const c = centerOf(pos, zoom, SIZE);
 			assert.ok(Math.abs(c.x - wx) < 1e-6 && Math.abs(c.y - wy) < 1e-6, `zoom ${zoom} at ${wx},${wy}`);

@@ -34,12 +34,14 @@ export const reconcileTickets = (
 	serverNowSec: number,
 	limits: LimitContext = {},
 	/** `placeChests: false` still takes extra chests off but puts no missing one back: for an answer that may be older than a chest the player just opened */
-	options: { placeChests?: boolean } = {}
+	options: { placeChests?: boolean } = {},
 ): ReconcileResult => {
 	const standing = new Set(state.monsters.map((mon) => mon.ticket));
 	const waiting = [
 		...tickets.rats.map((t) => ({ ...t, type: t.type && t.type in MONSTERS ? t.type : (FALLBACK_MONSTER as MonsterType), lucky: t.lucky })),
-		...(tickets.king ? [{ ...tickets.king, type: tickets.king.type && tickets.king.type in MONSTERS ? tickets.king.type : (FALLBACK_BOSS as MonsterType), lucky: false }] : []),
+		...(tickets.king
+			? [{ ...tickets.king, type: tickets.king.type && tickets.king.type in MONSTERS ? tickets.king.type : (FALLBACK_BOSS as MonsterType), lucky: false }]
+			: []),
 	].sort((a, b) => a.n - b.n);
 
 	let placedMonsters = 0;

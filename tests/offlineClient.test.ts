@@ -26,17 +26,37 @@ const chestList = (n: number) =>
 		.slice(0, n)
 		.map(({ x, y }, i) => ({ n: 100 + i, x, y }));
 /** A monster ticket the server has placed: its tile and the level it appeared at come from the server. */
-const placed = (n: number, at: number, over: { lucky?: boolean; x?: number; y?: number; spawnLevel?: number } = {}) => ({ n, at, lucky: false, x: CASTLE_X + 2, y: CASTLE_Y, spawnLevel: 1, ...over });
+const placed = (n: number, at: number, over: { lucky?: boolean; x?: number; y?: number; spawnLevel?: number } = {}) => ({
+	n,
+	at,
+	lucky: false,
+	x: CASTLE_X + 2,
+	y: CASTLE_Y,
+	spawnLevel: 1,
+	...over,
+});
 
 test('placed tickets become monsters exactly where the server put them, aged as the server says', () => {
 	freshGame();
 	growTo(30);
 	const out = reconcileTickets(
 		state(),
-		tickets({ rats: [placed(1, NOW - 3600, { x: CASTLE_X + 2, y: CASTLE_Y, spawnLevel: 2 }), placed(2, NOW - 100, { lucky: true, x: CASTLE_X, y: CASTLE_Y + 3, spawnLevel: 1 })] }),
-		NOW);
+		tickets({
+			rats: [
+				placed(1, NOW - 3600, { x: CASTLE_X + 2, y: CASTLE_Y, spawnLevel: 2 }),
+				placed(2, NOW - 100, { lucky: true, x: CASTLE_X, y: CASTLE_Y + 3, spawnLevel: 1 }),
+			],
+		}),
+		NOW,
+	);
 	assert.equal(out.monsters.length, 2);
-	assert.deepEqual(out.monsters.map((m) => [m.id, m.ticket, m.x, m.y]), [[1, 1, CASTLE_X + 2, CASTLE_Y], [2, 2, CASTLE_X, CASTLE_Y + 3]]);
+	assert.deepEqual(
+		out.monsters.map((m) => [m.id, m.ticket, m.x, m.y]),
+		[
+			[1, 1, CASTLE_X + 2, CASTLE_Y],
+			[2, 2, CASTLE_X, CASTLE_Y + 3],
+		],
+	);
 	assert.equal(out.monsters[0].ageSec, 3600);
 	assert.equal(out.monsters[0].level, out.monsters[0].spawnLevel + 2, 'an hour old: two growth intervals');
 	assert.equal(out.monsters[1].lucky, true);
@@ -62,7 +82,10 @@ test('a monster the server does not list is removed, one it lists stays; nothing
 		{ id: 5, type: 'thistleBoar', level: 1, spawnLevel: 1, x: CASTLE_X - 2, y: CASTLE_Y, ageSec: 0, ticket: 5 },
 	];
 	const out = reconcileTickets({ ...state(), monsters: standing }, tickets({ rats: [placed(4, NOW, { x: CASTLE_X + 2 })] }), NOW);
-	assert.deepEqual(out.monsters.map((m) => m.id), [4]);
+	assert.deepEqual(
+		out.monsters.map((m) => m.id),
+		[4],
+	);
 	assert.equal(out.removed.monsters, 1);
 	assert.equal(out.placed.monsters, 0);
 });
@@ -98,7 +121,14 @@ test('a chest the server moved is taken off its old tile and drawn on the new on
 
 // ---------------------------------------------------------------------------------------------------- the store action
 
-const claimResult = (over: Partial<ClaimResult> = {}): ClaimResult => ({ grant: null, reason: 'short', tickets: tickets(), serverNowSec: NOW, gems: 1000, ...over });
+const claimResult = (over: Partial<ClaimResult> = {}): ClaimResult => ({
+	grant: null,
+	reason: 'short',
+	tickets: tickets(),
+	serverNowSec: NOW,
+	gems: 1000,
+	...over,
+});
 
 test('applyOfflineClaim pays the grant, places the tickets, takes the server gem balance and leaves a valid save', () => {
 	freshGame();
@@ -106,9 +136,18 @@ test('applyOfflineClaim pays the grant, places the tickets, takes the server gem
 	api().tick(1000);
 	setResources({ gold: 100 });
 	const before = api();
-	const grant = computeOfflineGrant({ rates: { ...zeroGrant(), gold: 7, xp: 2 }, ratesAfterCastle: null, castleUpgrade: null, xpGainPct: 0, gapSec: 4 * 3600, capSec: 8 * 3600, efficiency: 0.5, minGapSec: 300 })!;
+	const grant = computeOfflineGrant({
+		rates: { ...zeroGrant(), gold: 7, xp: 2 },
+		ratesAfterCastle: null,
+		castleUpgrade: null,
+		xpGainPct: 0,
+		gapSec: 4 * 3600,
+		capSec: 8 * 3600,
+		efficiency: 0.5,
+		minGapSec: 300,
+	})!;
 	const report = api().applyOfflineClaim(
-		claimResult({ grant, reason: 'paid', gems: 1037, tickets: tickets({ chests: chestList(2), rats: [placed(1, NOW - 3 * 3600, { spawnLevel: 2 })] }) })
+		claimResult({ grant, reason: 'paid', gems: 1037, tickets: tickets({ chests: chestList(2), rats: [placed(1, NOW - 3 * 3600, { spawnLevel: 2 })] }) }),
 	);
 	const after = api();
 	assert.equal(after.resources.gold, before.resources.gold + 7 * 4 * 3600 * 0.5);

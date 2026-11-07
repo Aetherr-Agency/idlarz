@@ -13,7 +13,8 @@ import { totalStatPoints, xpToNextLevel } from '../src/utils/gameUtils';
 /** A plain JSON copy of a (valid) persisted game, as it would come out of a save file. */
 const snapshot = () => rawSnapshot();
 
-const rejects = (mutate: (raw: any) => void, label: string) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const rejects = (mutate: (raw: any) => void, label: string) => {
 	const raw = snapshot();
 	mutate(raw);
 	const result = sanitizeSave(raw);
@@ -156,7 +157,8 @@ const spot = (n = 0) => {
 const rat = (over: Record<string, unknown> = {}) => ({ id: 1, type: 'thistleBoar', level: 1, spawnLevel: 1, ...spot(), ageSec: 100, ...over });
 
 /** A played game with some gear, one monster and damaged HP; returns its raw snapshot after `mutate`. */
-const combatSave = (mutate: (raw: any) => void) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const combatSave = (mutate: (raw: any) => void) => {
 	freshGame();
 	growTo(8);
 	const bag = emptyBag();
@@ -201,7 +203,8 @@ test('a played game with gear and damaged HP round-trips unchanged', () => {
 });
 
 test('forged inventories and HP are rejected', () => {
-	const bad = (mutate: (raw: any) => void, label: string) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const bad = (mutate: (raw: any) => void, label: string) => {
 		assert.equal(sanitizeSave(combatSave(mutate)).ok, false, `${label} should be rejected`);
 	};
 	bad((r) => (r.equipment.head = 'mythic_crown'), 'a bare item id (the old format) is not an item');
@@ -218,11 +221,24 @@ test('forged inventories and HP are rejected', () => {
 	bad((r) => (r.equipment.head = { ...plainItem('leather_cap'), level: 90 }), 'item level past the base window');
 	bad((r) => (r.equipment.head = { ...plainItem('leather_cap'), quality: 101 }), 'quality out of range');
 	bad((r) => (r.equipment.head = { ...plainItem('leather_cap'), stats: { damage: 9999 } }), 'a stat field smuggled into an instance');
-	bad((r) => (r.equipment.head = { ...plainItem('leather_cap'), affixes: [{ id: 'maxHp_prefix', roll: 5 }, { id: 'armor_prefix', roll: 5 }] }), 'two affixes on a common item');
+	bad(
+		(r) =>
+			(r.equipment.head = {
+				...plainItem('leather_cap'),
+				affixes: [
+					{ id: 'maxHp_prefix', roll: 5 },
+					{ id: 'armor_prefix', roll: 5 },
+				],
+			}),
+		'two affixes on a common item',
+	);
 	bad((r) => (r.equipment.head = { ...plainItem('leather_cap'), rarity: 'uncommon', affixes: [{ id: 'nope', roll: 5 }] }), 'unknown affix');
 	bad((r) => (r.equipment.head = { ...plainItem('leather_cap'), rarity: 'uncommon', affixes: [{ id: 'damage_prefix', roll: 5 }] }), 'a weapon affix on a cap');
 	bad((r) => (r.equipment.head = { ...plainItem('leather_cap'), rarity: 'uncommon', affixes: [{ id: 'maxHp_prefix', roll: 500 }] }), 'affix roll out of range');
-	bad((r) => (r.equipment.head = { ...plainItem('leather_cap'), rarity: 'uncommon', affixes: [{ id: 'maxHp_prefix', roll: 5, value: 9999 }] }), 'a value smuggled into an affix');
+	bad(
+		(r) => (r.equipment.head = { ...plainItem('leather_cap'), rarity: 'uncommon', affixes: [{ id: 'maxHp_prefix', roll: 5, value: 9999 }] }),
+		'a value smuggled into an affix',
+	);
 	bad((r) => (r.equipment.head = { ...plainItem('rattatui_cap'), rarity: 'common' }), 'a named item with another rarity');
 	bad((r) => (r.bag[3].item.rarity = 'mythic'), 'a bag item with an unknown rarity');
 	bad((r) => (r.bag[3] = { item: plainItem('rattatui_tunic'), extra: 1 }), 'a stray key on a gear entry');
@@ -274,7 +290,8 @@ test('buildings on any land biome save and load; water, nonsense and stray level
 	api().resetGame();
 	growTo(12);
 	const spot = gridCells().find(({ t }) => t.isOwned && t.biome !== 'castle')!;
-	const place = (tile: Record<string, unknown>) => (raw: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	const place = (tile: Record<string, unknown>) => (raw: any) => {
 		setLandAt(raw, spot.x, spot.y, tile);
 	};
 	const load = (tile: Record<string, unknown>) => {
@@ -288,7 +305,9 @@ test('buildings on any land biome save and load; water, nonsense and stray level
 	assert.equal(load({ biome: 'grounds' }).ok, false, 'an old empty lot');
 	assert.equal(load({ biome: 'lake', building: 'tavern' }).ok, false, 'a building on water');
 	assert.equal(load({ biome: 'forest', building: 'nonsense' }).ok, false);
-	assert.equal(load({ biome: 'forest', building: 'tavern', level: 2 }).ok,false, 'a building never has a level');
+	assert.equal(load({ biome: 'forest', building: 'tavern', level: 2 }).ok, false, 'a building never has a level');
 	assert.equal(load({ biome: 'forest', level: 2 }).ok, false, 'a level without a building');
-	rejects((raw) => { landAt(raw, CASTLE_X, CASTLE_Y).building = 'tavern'; }, 'a building on the castle');
+	rejects((raw) => {
+		landAt(raw, CASTLE_X, CASTLE_Y).building = 'tavern';
+	}, 'a building on the castle');
 });

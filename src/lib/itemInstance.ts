@@ -1,6 +1,18 @@
 import type { AffixDef } from '@/catalog/affixes';
 import type { RarityDef } from '@/catalog/rarity';
-import { MAX_ITEM_LEVEL, STAT_KEYS, affixMagnitude, affixesValue, levelScale, qualityValue, valueCurve, qualityMultiplier, roundStat, scaleStats, type ItemStats } from '@/catalog/stats';
+import {
+	MAX_ITEM_LEVEL,
+	STAT_KEYS,
+	affixMagnitude,
+	affixesValue,
+	levelScale,
+	qualityValue,
+	valueCurve,
+	qualityMultiplier,
+	roundStat,
+	scaleStats,
+	type ItemStats,
+} from '@/catalog/stats';
 import { LOOT_DATA, type LootData } from '@/lib/loot/data';
 import { lerp } from '@/lib/rng';
 import type { ItemDef, ItemInstance } from '@/types/game';

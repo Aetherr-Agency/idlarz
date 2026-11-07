@@ -173,14 +173,21 @@ test('history is sparse: first save, one copy per 30 minutes of the clock, and t
 		return out;
 	};
 	await save(state, 0);
-	assert.deepEqual(history.map((h) => h.rev), [1]);
+	assert.deepEqual(
+		history.map((h) => h.rev),
+		[1],
+	);
 
 	// a burst of event saves (every 11 s for 20 min) makes no copies: the clock decides, not the revision count
 	for (let i = 0; i < 100; i++) {
 		state = { ...state, playSeconds: state.playSeconds + 11 };
 		await save(state, 11_000);
 	}
-	assert.deepEqual(history.map((h) => h.rev), [1], '100 saves in 18 min: still only the first copy');
+	assert.deepEqual(
+		history.map((h) => h.rev),
+		[1],
+		'100 saves in 18 min: still only the first copy',
+	);
 
 	// then one save every 5 min: a copy every 6th save (30 min)
 	for (let i = 0; i < 6 * (HISTORY_KEEP + 2); i++) {
@@ -189,12 +196,18 @@ test('history is sparse: first save, one copy per 30 minutes of the clock, and t
 	}
 	assert.equal(history.length, HISTORY_KEEP);
 	const revs = history.map((h) => h.rev).sort((x, y) => x - y);
-	assert.ok(revs.slice(1).every((r, i) => r - revs[i] === 6), `one copy per 6 saves, got ${revs.join()}`);
+	assert.ok(
+		revs.slice(1).every((r, i) => r - revs[i] === 6),
+		`one copy per 6 saves, got ${revs.join()}`,
+	);
 
 	const cheat = { ...state, gems: state.gems + 1 };
 	const flagged = await save(cheat, 60_000);
 	assert.ok(flagged.kind === 'ok' && flagged.flags.includes('gems_increase'));
-	assert.ok(history.some((h) => h.flags.includes('gems_increase')), 'a flagged save is archived at once');
+	assert.ok(
+		history.some((h) => h.flags.includes('gems_increase')),
+		'a flagged save is archived at once',
+	);
 
 	// the same flag on the next saves does not fill the history again
 	const before = history.length;
@@ -222,7 +235,10 @@ test('starting over (a much younger game) pins the replaced game so history neve
 		state = { ...state, playSeconds: state.playSeconds + 11 };
 		await accept(repo, 'u1', state, rev, now);
 	}
-	assert.ok(history.some((h) => h.rev === 1 && h.pinned), 'the old game is still there');
+	assert.ok(
+		history.some((h) => h.rev === 1 && h.pinned),
+		'the old game is still there',
+	);
 	assert.ok(history.filter((h) => h.pinned).length <= PINNED_KEEP);
 });
 
@@ -291,7 +307,11 @@ test('more play time than real time, going back in time, and extra gems are flag
 test('a gold or xp jump that income cannot explain is flagged, a burst within the allowance is not', () => {
 	const prev = game();
 	const rate = summarize(prev).rates.gold;
-	assert.ok(flagsOf(prev, withResources(prev, { gold: prev.resources.gold + (rate * VERIFY.burstSec + VERIFY.goldFloor) * 10 + 1e9 }), T0 + 60_000).includes('gold_jump'));
+	assert.ok(
+		flagsOf(prev, withResources(prev, { gold: prev.resources.gold + (rate * VERIFY.burstSec + VERIFY.goldFloor) * 10 + 1e9 }), T0 + 60_000).includes(
+			'gold_jump',
+		),
+	);
 	assert.deepEqual(flagsOf(prev, withResources(prev, { gold: prev.resources.gold + VERIFY.goldFloor / 2 }), T0 + 60_000), []);
 	assert.ok(flagsOf(prev, withResources(prev, { xp: prev.resources.xp + 1e12 }), T0 + 60_000).includes('xp_jump'));
 });
@@ -381,15 +401,23 @@ test('a castle level whose timer ran out on the clock raises no flag; a level th
 test('a running castle timer that lost more seconds than passed is a castle_jump; one that ran normally is not', () => {
 	const prev = castleAt(game(), 1, 7200);
 	assert.ok(!flagsOf(prev, castleAt({ ...prev, playSeconds: prev.playSeconds + 60 }, 1, 7140), T0 + 61_000).includes('castle_jump'));
-	assert.ok(flagsOf(prev, castleAt({ ...prev, playSeconds: prev.playSeconds + 60 }, 1, 0), T0 + 61_000).includes('castle_jump'), 'remainingSec set to 0 in the save');
+	assert.ok(
+		flagsOf(prev, castleAt({ ...prev, playSeconds: prev.playSeconds + 60 }, 1, 0), T0 + 61_000).includes('castle_jump'),
+		'remainingSec set to 0 in the save',
+	);
 });
 
 test('a rebirth resets the castle without a flag', () => {
 	const prev = castleAt(game(), 6, null);
 	const reborn = castleAt(
-		{ ...prev, prestige: { ...prev.prestige, rebirths: prev.prestige.rebirths + 1, legacyEarned: prev.prestige.legacyEarned + 5 }, playSeconds: prev.playSeconds + 60, resources: { ...prev.resources, gold: 0, xp: 0 } },
+		{
+			...prev,
+			prestige: { ...prev.prestige, rebirths: prev.prestige.rebirths + 1, legacyEarned: prev.prestige.legacyEarned + 5 },
+			playSeconds: prev.playSeconds + 60,
+			resources: { ...prev.resources, gold: 0, xp: 0 },
+		},
 		1,
-		null
+		null,
 	);
 	assert.ok(!flagsOf(prev, reborn, T0 + 61_000).includes('castle_jump'));
 });
@@ -419,13 +447,23 @@ test('a rebirth is recorded from the save before it: the run that ended, once, w
 	assert.equal((await accept(repo, 'u1', { ...next, playSeconds: next.playSeconds + 12 }, 2, T0 + 2 * (MIN_SAVE_INTERVAL_MS + 1000))).kind, 'ok');
 	assert.equal(rebirths.length, 1);
 	assert.equal((await accept(repo, 'u1', rebirthed(next, 2, 9), 3, T0 + 3 * (MIN_SAVE_INTERVAL_MS + 1000))).kind, 'ok');
-	assert.deepEqual(rebirths.map((r) => [r.rebirthNo, r.embersGained]), [[1, 4], [2, 5]]);
+	assert.deepEqual(
+		rebirths.map((r) => [r.rebirthNo, r.embersGained]),
+		[
+			[1, 4],
+			[2, 5],
+		],
+	);
 });
 
 test('the rebirth history ignores a New Game, a repeat and a save that is not a rebirth', () => {
 	const base = summarize(game());
 	assert.equal(rebirthRecordOf(base, base, T0), null);
-	assert.equal(rebirthRecordOf(base, { ...base, rebirths: base.rebirths + 1, playSeconds: base.playSeconds - 500 }, T0), null, 'play time going back is a New Game');
+	assert.equal(
+		rebirthRecordOf(base, { ...base, rebirths: base.rebirths + 1, playSeconds: base.playSeconds - 500 }, T0),
+		null,
+		'play time going back is a New Game',
+	);
 	const record = rebirthRecordOf(base, { ...base, rebirths: base.rebirths + 1, legacyEarned: base.legacyEarned + 2 }, T0);
 	assert.equal(record?.rebirthNo, base.rebirths + 1);
 	assert.equal(record?.embersGained, 2);

@@ -106,9 +106,7 @@ const FarmUpgradeDock: React.FC<FarmUpgradeDockProps> = ({ open, onOpenChange })
 			<button className='farm-dock-toggle' onClick={() => onOpenChange(!open)} aria-expanded={open}>
 				Upgrades {open ? '▼' : '▲'}
 			</button>
-			<div className='farm-drawer'>
-				{shown && <UpgradeCards />}
-			</div>
+			<div className='farm-drawer'>{shown && <UpgradeCards />}</div>
 		</div>
 	);
 };

@@ -120,7 +120,7 @@ test('a castle upgrade that finishes while away switches the rest of the time to
 			efficiency: 1,
 			castleUpgrade: { toLevel: 3, remainingSec: 1000 },
 			ratesAfterCastle: res({ gold: 30, wood: 2, xp: 1 }),
-		})
+		}),
 	)!;
 	assert.equal(grant.castle?.finished, true);
 	assert.equal(grant.resources.gold, 10 * 1000 + 30 * 2600);
@@ -128,7 +128,7 @@ test('a castle upgrade that finishes while away switches the rest of the time to
 
 test('a castle upgrade that does not finish keeps the old rates and is reported as unfinished', () => {
 	const grant = computeOfflineGrant(
-		input({ gapSec: 600, efficiency: 1, castleUpgrade: { toLevel: 3, remainingSec: 5000 }, ratesAfterCastle: res({ gold: 30 }) })
+		input({ gapSec: 600, efficiency: 1, castleUpgrade: { toLevel: 3, remainingSec: 5000 }, ratesAfterCastle: res({ gold: 30 }) }),
 	)!;
 	assert.equal(grant.castle?.finished, false);
 	assert.equal(grant.resources.gold, 10 * 600);
@@ -153,7 +153,11 @@ test('the first rat comes after 2 minutes, the next ones every 15, chests every 
 	assert.equal(hour.minted.rats[1].at, COMBAT.spawn.firstSec + COMBAT.spawn.intervalSec);
 	// chests and monsters share one counter, so every ticket has its own number and they come in the order they appeared
 	const numbers = [...hour.minted.chests, ...hour.minted.rats].sort((a, b) => a.at - b.at || a.n - b.n).map((t) => t.n);
-	assert.deepEqual(numbers, [...numbers].sort((a, b) => a - b), 'tickets are numbered in order');
+	assert.deepEqual(
+		numbers,
+		[...numbers].sort((a, b) => a - b),
+		'tickets are numbered in order',
+	);
 	assert.equal(new Set(numbers).size, numbers.length);
 });
 
@@ -161,8 +165,14 @@ test('tickets are the same however the time is cut up', () => {
 	const whole = advanceBank(openBank(), 7200, ctx(), NO_LUCKY).bank;
 	let bank = openBank();
 	for (let i = 0; i < 72; i++) bank = advanceBank(bank, 100, ctx(), NO_LUCKY).bank;
-	assert.deepEqual(bank.chests.map((c) => [c.n, Math.round(c.at)]), whole.chests.map((c) => [c.n, Math.round(c.at)]));
-	assert.deepEqual(bank.rats.map((r) => Math.round(r.at)), whole.rats.map((r) => Math.round(r.at)));
+	assert.deepEqual(
+		bank.chests.map((c) => [c.n, Math.round(c.at)]),
+		whole.chests.map((c) => [c.n, Math.round(c.at)]),
+	);
+	assert.deepEqual(
+		bank.rats.map((r) => Math.round(r.at)),
+		whole.rats.map((r) => Math.round(r.at)),
+	);
 	assert.equal(bank.ratsMinted, whole.ratsMinted);
 });
 
@@ -265,7 +275,10 @@ test('applying a grant adds the income, levels the hero up and fills HP after a 
 	assert.equal(patch.resources!.gold, before.resources.gold + 5 * 7200 * 0.5);
 	assert.ok(patch.resources!.xp > before.resources.xp);
 	assert.equal(summary.levelsGained, patch.level!.level - before.level.level);
-	assert.equal(patch.characterStats!.availablePoints, before.characterStats.availablePoints + totalStatPoints(patch.level!.level) - totalStatPoints(before.level.level));
+	assert.equal(
+		patch.characterStats!.availablePoints,
+		before.characterStats.availablePoints + totalStatPoints(patch.level!.level) - totalStatPoints(before.level.level),
+	);
 	assert.equal(patch.previousLevel, patch.level!.level, 'no level-up popup: the welcome-back window reports it');
 	assert.ok(patch.playerHp! >= before.playerHp);
 });
@@ -289,7 +302,10 @@ test('applying a grant counts the castle upgrade down and finishes it, with the 
 	assert.equal(done.patch.castleUpgrade, null);
 	assert.equal(done.summary.castleReached, 2);
 	assert.equal(tileAt(done.patch.tiles!, CASTLE_X, CASTLE_Y).level, 2);
-	assert.deepEqual(done.patch.resourceRates, calculateResourceRates(done.patch.tiles!, state.characterStats, state.farmLevels, state.prestige, state.farmUpgrades));
+	assert.deepEqual(
+		done.patch.resourceRates,
+		calculateResourceRates(done.patch.tiles!, state.characterStats, state.farmLevels, state.prestige, state.farmUpgrades),
+	);
 });
 
 test('monsters grow by the whole absence, not by the efficiency', () => {

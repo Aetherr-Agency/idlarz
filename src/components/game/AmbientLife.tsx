@@ -74,7 +74,8 @@ const AmbientLife: React.FC<{ getViewport: () => Viewport }> = ({ getViewport })
 								'--f': c.flip ? -1 : 1,
 								'--life': `${c.lifeMs}ms`,
 							} as React.CSSProperties
-						}>
+						}
+					>
 						<div className='amb-move'>
 							<span
 								className='amb-sprite'

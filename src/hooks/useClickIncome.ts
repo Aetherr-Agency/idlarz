@@ -27,7 +27,7 @@ export function useClickIncome() {
 				items: [{ resource: 'gold', amount: goldToAdd }],
 			});
 		},
-		[clickForGold]
+		[clickForGold],
 	);
 
 	useEffect(() => {

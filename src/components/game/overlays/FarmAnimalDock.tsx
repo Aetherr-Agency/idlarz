@@ -3,13 +3,7 @@ import { useGameStore } from '@/stores/gameStore';
 import { ANIMALS, FARM_UPGRADES } from '@/config/gameConfig';
 import { ANIMAL_PIXEL_ICONS } from '@/config/pixelIcons';
 import { formatNumber } from '@/utils/formatters';
-import {
-	animalBatchCost,
-	animalOutput,
-	calculateAnimalCost,
-	farmCap,
-	farmUpgradeLevel,
-} from '@/utils/gameUtils';
+import { animalBatchCost, animalOutput, calculateAnimalCost, farmCap, farmUpgradeLevel } from '@/utils/gameUtils';
 import type { Animal } from '@/types/game';
 import audioManager from '@/utils/audioManager';
 import PixelIcon from '../PixelIcon';
@@ -41,9 +35,7 @@ interface AnimalRowProps {
 /** The hover card of a buy button: what it buys, the price, and (when the button is off) why */
 const buyTip = (name: string, count: number, cost: number, reason: string | null) => (
 	<>
-		<div className='px-tip-title'>
-			Buy {count > 1 ? `${count} ${name}s` : name}
-		</div>
+		<div className='px-tip-title'>Buy {count > 1 ? `${count} ${name}s` : name}</div>
 		<CostList cost={{ food: cost }} />
 		{reason && <div className='px-tip-muted'>{reason}</div>}
 	</>
@@ -77,7 +69,8 @@ const AnimalRow: React.FC<AnimalRowProps> = ({ animal, owned, upgrades, food, on
 			role='group'
 			aria-label={animal.name}
 			onMouseEnter={() => onHover(true)}
-			onMouseLeave={() => onHover(false)}>
+			onMouseLeave={() => onHover(false)}
+		>
 			<div className='farm-animal-head'>
 				<PixelIcon name={ANIMAL_PIXEL_ICONS[animal.id]} scale={0.75} alt='' />
 				<span className='farm-animal-name'>{animal.name}</span>

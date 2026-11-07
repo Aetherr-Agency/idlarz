@@ -21,7 +21,11 @@ export async function POST(request: Request) {
 		const supabase = await createSupabaseServer();
 		const { data, error } = await supabase.auth.signUp(credentials.value);
 		if (isOutage(error)) return unavailable();
-		if (error) return fail(/registered|exists/i.test(error.message) ? 'That email already has an account. Log in instead.' : error.message, error.status === 429 ? 429 : 400);
+		if (error)
+			return fail(
+				/registered|exists/i.test(error.message) ? 'That email already has an account. Log in instead.' : error.message,
+				error.status === 429 ? 429 : 400,
+			);
 		if (!data.user || !data.session) return fail('Sign-up needs email confirmation, which this game does not use yet.', 500);
 
 		const { characterName, playerClass } = profileInput.value;

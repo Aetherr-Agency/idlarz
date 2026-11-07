@@ -61,7 +61,11 @@ out();
 
 out('## Per source');
 out();
-out('| Source | Source level | Gear / kill | ' + RARITY_ORDER.map((r) => RARITIES[r].label).join(' | ') + ' | Item level p50 / p90 / max | P(epic+ per kill) | Named / kill | Empty-pool warnings |');
+out(
+	'| Source | Source level | Gear / kill | ' +
+		RARITY_ORDER.map((r) => RARITIES[r].label).join(' | ') +
+		' | Item level p50 / p90 / max | P(epic+ per kill) | Named / kill | Empty-pool warnings |',
+);
 out('|---|---:|---:|' + RARITY_ORDER.map(() => '---:').join('|') + '|---|---:|---:|---:|');
 for (const s of SCENARIOS) {
 	const rng = mulberry32(SEED);
@@ -89,14 +93,16 @@ for (const s of SCENARIOS) {
 	}
 	levels.sort((a, b) => a - b);
 	out(
-		`| ${s.label} | ${sourceLevel} | ${(gear / KILLS).toFixed(3)} | ${RARITY_ORDER.map((r) => pct(byRarity.get(r) ?? 0, gear)).join(' | ')} | ${percentile(levels, 0.5)} / ${percentile(levels, 0.9)} / ${levels[levels.length - 1] ?? 0} | ${pct(high, KILLS)} | ${(named / KILLS).toFixed(4)} | ${warnings} |`
+		`| ${s.label} | ${sourceLevel} | ${(gear / KILLS).toFixed(3)} | ${RARITY_ORDER.map((r) => pct(byRarity.get(r) ?? 0, gear)).join(' | ')} | ${percentile(levels, 0.5)} / ${percentile(levels, 0.9)} / ${levels[levels.length - 1] ?? 0} | ${pct(high, KILLS)} | ${(named / KILLS).toFixed(4)} | ${warnings} |`,
 	);
 }
 
 out();
 out('## What Luck does');
 out();
-out('Rat level 9 and a castle 5 chest at several Luck totals (Charisma + Lucky Charm + gear). Gems and lucky monsters exist only for signed-in players (the server rolls them).');
+out(
+	'Rat level 9 and a castle 5 chest at several Luck totals (Charisma + Lucky Charm + gear). Gems and lucky monsters exist only for signed-in players (the server rolls them).',
+);
 out();
 out('| Luck | Chest every | Rat gear / kill | Rare+ share of rat gear | Rare+ share of chest gear | Gem find / chest | Gems / chest | Lucky rat |');
 out('|---:|---:|---:|---:|---:|---:|---:|---:|');
@@ -119,13 +125,17 @@ for (const luck of [0, 10, 30, 60, 100, 200]) {
 	const rng = mulberry32(SEED + 1);
 	let gems = 0;
 	for (let i = 0; i < KILLS; i++) gems += rollGemFind(luck, rng);
-	out(`| ${luck} | ${(chestIntervalSec(luck) / 60).toFixed(1)} min | ${rat.perKill.toFixed(3)} | ${rat.rare} | ${chest.rare} | ${(gemChance(luck) * 100).toFixed(1)}% | ${(gems / KILLS).toFixed(2)} | ${(luckyRatChance(luck) * 100).toFixed(1)}% |`);
+	out(
+		`| ${luck} | ${(chestIntervalSec(luck) / 60).toFixed(1)} min | ${rat.perKill.toFixed(3)} | ${rat.rare} | ${chest.rare} | ${(gemChance(luck) * 100).toFixed(1)}% | ${(gems / KILLS).toFixed(2)} | ${(luckyRatChance(luck) * 100).toFixed(1)}% |`,
+	);
 }
 
 out();
 out('## Item power over the level range');
 out();
-out('Base stats of a few items at item level 1, 10, 25, 50, 100 (common, quality 50, no affixes), straight from the level curve. Items below their first level are shown at it.');
+out(
+	'Base stats of a few items at item level 1, 10, 25, 50, 100 (common, quality 50, no affixes), straight from the level curve. Items below their first level are shown at it.',
+);
 out();
 const SAMPLE = ['wooden_sword', 'iron_sword', 'obsidian_blade', 'rattatui_fang_blade', 'emberbrand', 'steel_cuirass'];
 const LEVELS = [1, 10, 25, 50, 100];
@@ -146,7 +156,13 @@ out('## Profiles');
 out();
 for (const p of Object.values(LOOT_PROFILES)) {
 	const total = Object.values(p.rarityWeights).reduce((a, b) => a + b, 0);
-	out(`- **${p.id}**: ${p.rolls.min}-${p.rolls.max} roll(s), ${p.rolls.guaranteed ?? 0} guaranteed, ${(p.rolls.chancePerRoll * 100).toFixed(0)}% per roll; rarity weights ${Object.entries(p.rarityWeights).map(([r, w]) => `${r} ${((w / total) * 100).toFixed(1)}%`).join(', ')}; bonus: ${p.bonusTables.map((t) => t.id).join(', ') || 'none'}`);
+	out(
+		`- **${p.id}**: ${p.rolls.min}-${p.rolls.max} roll(s), ${p.rolls.guaranteed ?? 0} guaranteed, ${(p.rolls.chancePerRoll * 100).toFixed(0)}% per roll; rarity weights ${Object.entries(
+			p.rarityWeights,
+		)
+			.map(([r, w]) => `${r} ${((w / total) * 100).toFixed(1)}%`)
+			.join(', ')}; bonus: ${p.bonusTables.map((t) => t.id).join(', ') || 'none'}`,
+	);
 }
 
 console.log(lines.join('\n'));

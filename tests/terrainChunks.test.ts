@@ -27,12 +27,13 @@ import type { BiomeType, Tile } from '../src/types/game';
 // The map is drawn in chunks. A chunk's picture must be a function of the ground inside chunk + CHUNK_HALO only (so the
 // signature of that window decides when it is redrawn), and chunks must agree with each other along their borders.
 
-const NAMES: Record<string, BiomeType> = { P: 'plains', S: 'swamp', L: 'lake', T: 'tundra', H: 'hills', F: 'forest',B: 'coast', C: 'castle' };
+const NAMES: Record<string, BiomeType> = { P: 'plains', S: 'swamp', L: 'lake', T: 'tundra', H: 'hills', F: 'forest', B: 'coast', C: 'castle' };
 const rows = (lines: string[]): Tile[][] =>
 	lines.map((row) =>
-		[...row].map((c): Tile =>
-			c === 'Y' ? { biome: 'plains', isOwned: true, building: 'tavern' } : NAMES[c] ? { biome: NAMES[c], isOwned: true } : { biome: 'empty', isOwned: false }
-		)
+		[...row].map(
+			(c): Tile =>
+				c === 'Y' ? { biome: 'plains', isOwned: true, building: 'tavern' } : NAMES[c] ? { biome: NAMES[c], isOwned: true } : { biome: 'empty', isOwned: false },
+		),
 	);
 
 test('the map ground matches the array ground for every position(explored, building, mist ring, nothing)', () => {
@@ -158,7 +159,10 @@ test('sprites that reach over a chunk border are listed by both chunks', () => {
 					const overlaps = s.x < left + CHUNK_TILES * CELL && s.x + w > left && s.bottom - h < top + CHUNK_TILES * CELL && s.bottom > top;
 					if (!overlaps) continue;
 					crossing++;
-					assert.ok(chunkSprites(world, nx, ny).some((o) => key(o) === key(s)), `${key(s)} reaches chunk ${nx},${ny} from ${cx},${cy}`);
+					assert.ok(
+						chunkSprites(world, nx, ny).some((o) => key(o) === key(s)),
+						`${key(s)} reaches chunk ${nx},${ny} from ${cx},${cy}`,
+					);
 				}
 			}
 		}
@@ -202,5 +206,10 @@ test('the 50 x 50 rows view of a world holds exactly the tiles inside that squar
 	const w = syntheticWorld(600, 2);
 	const inside = ownedEntries(w).filter((e) => e.x >= 0 && e.x < 50 && e.y >= 0 && e.y < 50).length;
 	assert.ok(inside > 0 && inside <= 600);
-	assert.equal(worldToRows(w, 0, 0, 50, 50).flat().filter((t) => t.isOwned).length, inside);
+	assert.equal(
+		worldToRows(w, 0, 0, 50, 50)
+			.flat()
+			.filter((t) => t.isOwned).length,
+		inside,
+	);
 });

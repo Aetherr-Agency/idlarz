@@ -29,25 +29,18 @@ const CastleUpgradeDialog: FC = () => {
 
 	// Get the required resources for the next level
 	const nextLevelIndex = castleLevel - 1;
-	const nextLevelCosts =
-		!isMaxLevel && nextLevelIndex < CASTLE_UPGRADE.upgradeCosts.length
-			? CASTLE_UPGRADE.upgradeCosts[nextLevelIndex]
-			: null;
+	const nextLevelCosts = !isMaxLevel && nextLevelIndex < CASTLE_UPGRADE.upgradeCosts.length ? CASTLE_UPGRADE.upgradeCosts[nextLevelIndex] : null;
 
 	// Get the costs for the level after next (for preview)
 	const afterNextLevelIndex = castleLevel;
 	const afterNextLevelCosts =
-		!isNextToMaxLevel && afterNextLevelIndex < CASTLE_UPGRADE.upgradeCosts.length
-			? CASTLE_UPGRADE.upgradeCosts[afterNextLevelIndex]
-			: null;
+		!isNextToMaxLevel && afterNextLevelIndex < CASTLE_UPGRADE.upgradeCosts.length ? CASTLE_UPGRADE.upgradeCosts[afterNextLevelIndex] : null;
 
 	// Check if player has enough resources
 	const isUpgrading = !!castleUpgrade;
 	const canAfford =
 		!isUpgrading && nextLevelCosts
-			? Object.entries(nextLevelCosts).every(
-					([resource, amount]) => resources[resource as keyof typeof resources] >= (amount || 0)
-			  )
+			? Object.entries(nextLevelCosts).every(([resource, amount]) => resources[resource as keyof typeof resources] >= (amount || 0))
 			: false;
 
 	const handleUpgrade = () => {
@@ -77,21 +70,15 @@ const CastleUpgradeDialog: FC = () => {
 	const nextRange = castleRangeRadius(castleLevel + 1);
 	const rangeLabel = (radius: number) => `${radius * 2 + 1}x${radius * 2 + 1}`;
 
-	const CostGrid: React.FC<{ costs: Partial<Record<string, number>>; muted?: boolean }> = ({
-		costs,
-		muted,
-	}) => (
+	const CostGrid: React.FC<{ costs: Partial<Record<string, number>>; muted?: boolean }> = ({ costs, muted }) => (
 		<div className='grid grid-cols-3 gap-2'>
 			{sortedCostEntries(costs).map(([resource, amount]) => (
 				<div
 					key={resource}
 					className={`flex items-center gap-1 text-sm ${
-						muted
-							? 'text-[#7a6a52]'
-							: resources[resource as keyof typeof resources] >= amount
-							? 'text-green-400'
-							: 'text-red-400'
-					}`}>
+						muted ? 'text-[#7a6a52]' : resources[resource as keyof typeof resources] >= amount ? 'text-green-400' : 'text-red-400'
+					}`}
+				>
 					<ResourceIcon resource={resource} />
 					{formatNumber(amount)}
 				</div>
@@ -117,9 +104,7 @@ const CastleUpgradeDialog: FC = () => {
 				)}
 			</div>
 			<div className='text-sm text-[#a89878] mb-1'>
-				Current bonus:{' '}
-				<span className='text-green-400'>+{formatPercent(currentMultiplier * 100)}</span> to all
-				resources
+				Current bonus: <span className='text-green-400'>+{formatPercent(currentMultiplier * 100)}</span> to all resources
 			</div>
 			<div className='text-sm text-[#a89878] mb-3'>
 				Castle XP: <span className='text-amber-400'>+{formatCompact(currentXpBonus)} XP/s</span> flat
@@ -136,9 +121,7 @@ const CastleUpgradeDialog: FC = () => {
 			{!isMaxLevel && nextLevelCosts ? (
 				<>
 					<div className='text-sm text-[#a89878] mb-1'>
-						Next level:{' '}
-						<span className='text-green-400'>+{formatPercent(nextMultiplier * 100)}</span> to
-						all resources
+						Next level: <span className='text-green-400'>+{formatPercent(nextMultiplier * 100)}</span> to all resources
 					</div>
 					<div className='text-sm text-[#a89878] mb-3'>
 						Castle XP: <span className='text-amber-400'>+{formatCompact(nextXpBonus)} XP/s</span> flat
@@ -158,8 +141,7 @@ const CastleUpgradeDialog: FC = () => {
 
 					{!isNextToMaxLevel && afterNextLevelCosts && (
 						<div className='text-[#7a6a52] text-xs mb-3'>
-							Level {castleLevel + 2}: +{formatPercent(afterNextMultiplier * 100)} to all
-							resources, +{formatCompact(afterNextXpBonus)} XP/s
+							Level {castleLevel + 2}: +{formatPercent(afterNextMultiplier * 100)} to all resources, +{formatCompact(afterNextXpBonus)} XP/s
 						</div>
 					)}
 

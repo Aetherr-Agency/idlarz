@@ -11,7 +11,7 @@ export const RATTATUI_SET = SETS.rattatui;
 
 /** What a new character wears. */
 export const STARTER_EQUIPMENT: Equipment = Object.fromEntries(
-	Object.entries(STARTER_EQUIPMENT_IDS).map(([slot, id]) => [slot as EquipmentSlot, plainItem(id as string)])
+	Object.entries(STARTER_EQUIPMENT_IDS).map(([slot, id]) => [slot as EquipmentSlot, plainItem(id as string)]),
 );
 
 /** Plain gear a level-1 source (a fresh rat or chest) can drop: the bases whose window includes item level 1. The Rattatui set is NOT here: it drops only from the Rat King. */

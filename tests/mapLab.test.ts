@@ -67,7 +67,14 @@ test('a stroke skips cells outside the map and is capped', () => {
 
 test('paint overwrites land and extends it only from land; the castle is never repainted', () => {
 	const w = world();
-	const painted = applyStroke(w, [{ x: CASTLE_X, y: CASTLE_Y }, { x: CASTLE_X + 1, y: CASTLE_Y }], paintTool('swamp'));
+	const painted = applyStroke(
+		w,
+		[
+			{ x: CASTLE_X, y: CASTLE_Y },
+			{ x: CASTLE_X + 1, y: CASTLE_Y },
+		],
+		paintTool('swamp'),
+	);
 	assert.equal(getTile(painted, CASTLE_X, CASTLE_Y)?.biome, 'castle');
 	assert.equal(getTile(painted, CASTLE_X + 1, CASTLE_Y)?.biome, 'swamp');
 	const far = applyStroke(w, [{ x: CASTLE_X + 20, y: CASTLE_Y }], paintTool('swamp'));
@@ -94,7 +101,16 @@ test('erase keeps the castle and the last tile of land', () => {
 	const w = world();
 	const erased = applyStroke(w, [{ x: CASTLE_X, y: CASTLE_Y }], eraseTool);
 	assert.equal(getTile(erased, CASTLE_X, CASTLE_Y)?.biome, 'castle');
-	const bare = applyStroke(w, [{ x: CASTLE_X + 1, y: CASTLE_Y }, { x: CASTLE_X - 1, y: CASTLE_Y }, { x: CASTLE_X, y: CASTLE_Y + 1 }, { x: CASTLE_X, y: CASTLE_Y - 1 }], eraseTool);
+	const bare = applyStroke(
+		w,
+		[
+			{ x: CASTLE_X + 1, y: CASTLE_Y },
+			{ x: CASTLE_X - 1, y: CASTLE_Y },
+			{ x: CASTLE_X, y: CASTLE_Y + 1 },
+			{ x: CASTLE_X, y: CASTLE_Y - 1 },
+		],
+		eraseTool,
+	);
 	assert.equal(bare.stats.owned, 1);
 });
 

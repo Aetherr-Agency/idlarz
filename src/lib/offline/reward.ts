@@ -27,7 +27,14 @@ export interface KillPayout {
  * Pays the kill of ticket `n`: the ticket leaves the bank, the roll is sealed on the number of kills this run (so a replay cannot roll
  * it again), and the gold, XP and hide go into what the server has granted. Null when the ticket is not there.
  */
-export const payKill = (secret: string, userId: string, ledger: Ledger, stored: StoredSave, n: number, nowSec: number): { ledger: Ledger; payout: KillPayout } | null => {
+export const payKill = (
+	secret: string,
+	userId: string,
+	ledger: Ledger,
+	stored: StoredSave,
+	n: number,
+	nowSec: number,
+): { ledger: Ledger; payout: KillPayout } | null => {
 	const taken = takeMonster(ledger.bank, n);
 	if (!taken) return null;
 	const ticket: MonsterTicket = taken.ticket;
@@ -39,8 +46,18 @@ export const payKill = (secret: string, userId: string, ledger: Ledger, stored: 
 	const inv = ledger.inv!;
 	const loot = rollKillLoot(
 		{ type, level },
-		{ goldPerSec: stored.summary.rates.gold, xpPerSec: stored.summary.rates.xp * (1 + stored.summary.xpGainPct / 100), hidePerSec: stored.summary.rates.hide, luck, goldFind, killRewardPct, owned: ownedBases(inv), pity: inv.lootPity, lucky: ticket.lucky },
-		rng
+		{
+			goldPerSec: stored.summary.rates.gold,
+			xpPerSec: stored.summary.rates.xp * (1 + stored.summary.xpGainPct / 100),
+			hidePerSec: stored.summary.rates.hide,
+			luck,
+			goldFind,
+			killRewardPct,
+			owned: ownedBases(inv),
+			pity: inv.lootPity,
+			lucky: ticket.lucky,
+		},
+		rng,
 	);
 	// the drops go where they go on the server: the bag (or gold when it is full, or the auto-sell filter), and the pity counters move on
 	const received = receiveInto(inv, loot.items, sellContextOf(stored.core), loot.pity);

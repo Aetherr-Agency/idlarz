@@ -39,9 +39,7 @@ const BuildDialogBody: React.FC<{ x: number; y: number }> = ({ x, y }) => {
 			<div className='flex flex-wrap items-center gap-2 text-sm mb-3'>
 				<span className='text-[#a89878]'>Next building costs:</span>
 				<CostList cost={cost} />
-				<span className='px-tip-muted'>
-					{built} built - each costs more than the last
-				</span>
+				<span className='px-tip-muted'>{built} built - each costs more than the last</span>
 			</div>
 			{!free && (
 				<div className='text-amber-300 text-sm mb-2'>
@@ -50,11 +48,7 @@ const BuildDialogBody: React.FC<{ x: number; y: number }> = ({ x, y }) => {
 			)}
 			<div className='build-menu-grid'>
 				{Object.values(BUILDINGS).map((building) => (
-					<button
-						key={building.name}
-						onClick={() => build(building.name)}
-						disabled={!canAfford || !free}
-						className='px-card build-menu-item'>
+					<button key={building.name} onClick={() => build(building.name)} disabled={!canAfford || !free} className='px-card build-menu-item'>
 						<span className={`build-menu-patch tile-ground tile-ground-${biome}`}>
 							<span className='build-menu-pad' aria-hidden />
 							<PixelIcon name={BUILDING_PIXEL_ICONS[building.name]} alt={building.label} className='build-menu-sprite' />

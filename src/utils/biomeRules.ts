@@ -11,16 +11,29 @@ export interface BiomeVerdict {
 	extends?: boolean; // continues a biome already touching this tile (4-neighbour)
 }
 
-const SIDES4: [number, number][] = [[0, -1], [1, 0], [0, 1], [-1, 0]];
-const SIDES8: [number, number][] = [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]];
+const SIDES4: [number, number][] = [
+	[0, -1],
+	[1, 0],
+	[0, 1],
+	[-1, 0],
+];
+const SIDES8: [number, number][] = [
+	[-1, -1],
+	[0, -1],
+	[1, -1],
+	[-1, 0],
+	[1, 0],
+	[-1, 1],
+	[0, 1],
+	[1, 1],
+];
 
 const label = (b: string) => BIOMES[b]?.label ?? b;
 const ownedBiome = (t: Tile | undefined): BiomeType | null => (t?.isOwned && t.biome !== 'castle' ? t.biome : null);
 
 /** Biomes of the owned non-castle neighbours: 4-neighbours and all 8. */
 export function neighbourBiomes(tiles: World, x: number, y: number) {
-	const pick = (sides: [number, number][]) =>
-		sides.map(([dx, dy]) => ownedBiome(getTile(tiles, x + dx, y + dy))).filter((b): b is BiomeType => b !== null);
+	const pick = (sides: [number, number][]) => sides.map(([dx, dy]) => ownedBiome(getTile(tiles, x + dx, y + dy))).filter((b): b is BiomeType => b !== null);
 	return { four: pick(SIDES4), eight: pick(SIDES8) };
 }
 
@@ -32,7 +45,7 @@ function isLonely(tiles: World, x: number, y: number): boolean {
 
 /** Every biome a purchase can produce (castle and empty are not). */
 export const SELECTABLE_BIOMES = Object.keys(BIOMES).filter(
-	(name) => !SPECIAL_SINGLE_TYPE_BIOMES.includes(name as BiomeType) && !EMPTY_BIOMES.includes(name as BiomeType)
+	(name) => !SPECIAL_SINGLE_TYPE_BIOMES.includes(name as BiomeType) && !EMPTY_BIOMES.includes(name as BiomeType),
 ) as BiomeType[];
 
 /** Verdict for each biome a purchase can produce on tile (x, y) after `purchased` purchases. */
@@ -54,7 +67,12 @@ export function biomeVerdicts(tiles: World, x: number, y: number, purchased: num
 	});
 }
 
-const DIAGONALS: [number, number][] = [[-1, -1], [1, -1], [1, 1], [-1, 1]];
+const DIAGONALS: [number, number][] = [
+	[-1, -1],
+	[1, -1],
+	[1, 1],
+	[-1, 1],
+];
 
 /**
  * What the four 2x2 blocks round (x, y) say about the new tile, to keep two tiles of a biome from touching only at a corner
@@ -92,7 +110,9 @@ function weighted<T>(items: [T, number][], roll: number): T {
  * (BIOME_SPAWN). Always returns an allowed biome (plains is never blocked).
  */
 export function rollBiome(tiles: World, x: number, y: number, purchased: number, random: () => number = Math.random): BiomeType {
-	const everyAllowed = biomeVerdicts(tiles, x, y, purchased).filter((v) => v.allowed).map((v) => v.biome);
+	const everyAllowed = biomeVerdicts(tiles, x, y, purchased)
+		.filter((v) => v.allowed)
+		.map((v) => v.biome);
 	const { four } = neighbourBiomes(tiles, x, y);
 
 	// No corner-only contacts (see saddleRules): join the pair that needs it, otherwise stay off the biomes that would pinch.
@@ -119,10 +139,7 @@ export function rollBiome(tiles: World, x: number, y: number, purchased: number,
 	if (copyable.length) {
 		const pick = copyable.length === 1 ? copyable[0] : copyable[Math.floor(random() * copyable.length)];
 		const same = four.filter((b) => b === pick).length;
-		const pct = Math.min(
-			BIOME_RULES.cluster.capPct,
-			(BIOME_RULES.cluster.basePct[pick] ?? 40) + BIOME_RULES.cluster.perExtraNeighbourPct * (same - 1)
-		);
+		const pct = Math.min(BIOME_RULES.cluster.capPct, (BIOME_RULES.cluster.basePct[pick] ?? 40) + BIOME_RULES.cluster.perExtraNeighbourPct * (same - 1));
 		if (random() * 100 < pct) return pick;
 	}
 
@@ -138,8 +155,12 @@ export function rollBiome(tiles: World, x: number, y: number, purchased: number,
 }
 
 /** The four starting tiles beside the castle: north, east, south, west. */
-export const RING: [number, number][] = [[0, -1], [1, 0], [0, 1], [-1, 0]];
-
+export const RING: [number, number][] = [
+	[0, -1],
+	[1, 0],
+	[0, 1],
+	[-1, 0],
+];
 
 /**
  * The castle's four starting neighbours for a new game: the basic biomes (plains most), always at least `minPlains`

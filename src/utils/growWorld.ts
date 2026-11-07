@@ -17,7 +17,12 @@ const seededRandom = (seed: number): (() => number) => {
 /** How the next tile to buy is chosen: the free tile nearest the castle (a tidy blob) or any free tile beside the land (ragged edges). */
 export type BuyPolicy = 'nearest' | 'random';
 
-const SIDES: [number, number][] = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+const SIDES: [number, number][] = [
+	[0, -1],
+	[1, 0],
+	[0, 1],
+	[-1, 0],
+];
 
 /** Every unowned tile with an owned 4-neighbour. */
 function frontierTiles(world: World): [number, number][] {

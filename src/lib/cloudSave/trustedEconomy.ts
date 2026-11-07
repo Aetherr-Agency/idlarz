@@ -14,7 +14,8 @@ import type { SaveSummary } from './summary';
  */
 
 /** A baseline exists when the previous save is of the same run: after a rebirth or a New Game its rates describe another game. */
-export const sameRunAs = (prev: SaveSummary | null, next: SaveSummary): prev is SaveSummary => !!prev && next.rebirths === prev.rebirths && next.playSeconds >= prev.playSeconds - 1;
+export const sameRunAs = (prev: SaveSummary | null, next: SaveSummary): prev is SaveSummary =>
+	!!prev && next.rebirths === prev.rebirths && next.playSeconds >= prev.playSeconds - 1;
 
 const scaled = (rates: Resources | null, factor: number): Resources | null => {
 	if (!rates || factor >= 1) return rates;
@@ -34,11 +35,19 @@ export const trustedEconomy = (prev: SaveSummary | null, claimed: SaveSummary, r
 			...claimed,
 			rates: { ...prev.rates },
 			castleLevel: prev.castleLevel,
-			derived: { ...claimed.derived, castleUpgrade: prev.derived.castleUpgrade ? { ...prev.derived.castleUpgrade } : null, ratesAfterCastle: prev.derived.ratesAfterCastle ? { ...prev.derived.ratesAfterCastle } : null },
+			derived: {
+				...claimed.derived,
+				castleUpgrade: prev.derived.castleUpgrade ? { ...prev.derived.castleUpgrade } : null,
+				ratesAfterCastle: prev.derived.ratesAfterCastle ? { ...prev.derived.ratesAfterCastle } : null,
+			},
 		};
 	}
 	const factor = Number.isFinite(ratio) && ratio > 1 ? 1 / ratio : ratio > 1 ? 0 : 1;
-	return { ...claimed, rates: scaled(claimed.rates, factor)!, derived: { ...claimed.derived, ratesAfterCastle: scaled(claimed.derived.ratesAfterCastle, factor) } };
+	return {
+		...claimed,
+		rates: scaled(claimed.rates, factor)!,
+		derived: { ...claimed.derived, ratesAfterCastle: scaled(claimed.derived.ratesAfterCastle, factor) },
+	};
 };
 
 /**

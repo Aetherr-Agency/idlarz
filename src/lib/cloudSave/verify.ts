@@ -99,7 +99,17 @@ export const rejectedFlags = (flags: readonly SaveFlag[], enforcement: Enforceme
 	enforcement.enabled ? flags.filter((flag) => FLAG_POLICY[flag] === 'reject' && enforcement.reject.has(flag)) : [];
 
 /** Flags that make an account ineligible for rankings for good. Going back in time is a player choice (older save), not a cheat. */
-export const POISON_FLAGS: ReadonlySet<SaveFlag> = new Set<SaveFlag>(['baseline_rich', 'networth_exceeds', 'playtime_fast', 'gold_jump', 'xp_jump', 'gems_increase', 'prestige_regress', 'castle_jump', 'ember_jump']);
+export const POISON_FLAGS: ReadonlySet<SaveFlag> = new Set<SaveFlag>([
+	'baseline_rich',
+	'networth_exceeds',
+	'playtime_fast',
+	'gold_jump',
+	'xp_jump',
+	'gems_increase',
+	'prestige_regress',
+	'castle_jump',
+	'ember_jump',
+]);
 
 /**
  * `grants`: what the server itself handed out since the previous save (income while away, chest and kill rewards): a save may
@@ -126,7 +136,8 @@ const castleJumped = (before: SaveSummary, next: SaveSummary, elapsedSec: number
 /** Gold-equivalent income per second: gold plus every sellable resource at the merchant's best price (stock sold is gold gained). */
 const goldWorthRate = (summary: SaveSummary): number => {
 	let perSec = summary.rates.gold;
-	for (const [key, price] of Object.entries(MERCHANT_RESOURCE_PRICES) as [keyof Resources, number][]) perSec += (summary.rates[key] ?? 0) * price * VERIFY.sellBonusMax;
+	for (const [key, price] of Object.entries(MERCHANT_RESOURCE_PRICES) as [keyof Resources, number][])
+		perSec += (summary.rates[key] ?? 0) * price * VERIFY.sellBonusMax;
 	return perSec;
 };
 

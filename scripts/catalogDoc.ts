@@ -1,6 +1,19 @@
 // Renders docs/generated/item-catalog.md straight from src/catalog (never edit that file by hand): `npm run catalog-report` writes it and
 // tests/catalogDoc.test.ts checks that the committed file is what this produces.
-import { AFFIXES, ITEMS, LOOT_POOLS, LOOT_PROFILES, LOOT_SOURCES, RARITIES, RARITY_ORDER, SETS, formatStat, formatStats, shopItems, sumStats } from '../src/catalog';
+import {
+	AFFIXES,
+	ITEMS,
+	LOOT_POOLS,
+	LOOT_PROFILES,
+	LOOT_SOURCES,
+	RARITIES,
+	RARITY_ORDER,
+	SETS,
+	formatStat,
+	formatStats,
+	shopItems,
+	sumStats,
+} from '../src/catalog';
 import { LOOT_DATA } from '../src/lib/loot/data';
 import { resolveSourceLevel } from '../src/lib/loot/generate';
 import { eligibleCandidates } from '../src/lib/loot/pools';
@@ -28,31 +41,41 @@ export const renderItemCatalog = (): string => {
 	out('|---|---|---|---|---|');
 	for (const r of RARITY_ORDER) {
 		const d = RARITIES[r];
-		out(`| ${d.label} | \`${d.color}\` | ${d.minAffixes}-${d.maxAffixes} | ${d.sellValue} | ${d.glow.blur}px @ ${d.glow.alpha}${d.glow.pulse ? ', pulses' : ''} |`);
+		out(
+			`| ${d.label} | \`${d.color}\` | ${d.minAffixes}-${d.maxAffixes} | ${d.sellValue} | ${d.glow.blur}px @ ${d.glow.alpha}${d.glow.pulse ? ', pulses' : ''} |`,
+		);
 	}
 
 	out();
 	out('## Sets');
 	out();
-	out('Two sets exist for now. Every threshold reached applies, so the bonuses add up; both rings count. The wood, cloth and steel families are plain loot (no set bonus), and so are the three legendary weapons and the potions: they are left out of this file until they get a role.');
+	out(
+		'Two sets exist for now. Every threshold reached applies, so the bonuses add up; both rings count. The wood, cloth and steel families are plain loot (no set bonus), and so are the three legendary weapons and the potions: they are left out of this file until they get a role.',
+	);
 	out();
-	out('Set-only stats (no item rolls them) and where they pay out. The server derives every economy one from the saved gear (`lib/gearEconomy.ts`, `cloudSave/summary.ts`), so they count on the server\'s side as well:');
+	out(
+		"Set-only stats (no item rolls them) and where they pay out. The server derives every economy one from the saved gear (`lib/gearEconomy.ts`, `cloudSave/summary.ts`), so they count on the server's side as well:",
+	);
 	out();
 	out('| Stat | Effect | Applied by |');
 	out('|---|---|---|');
-	out('| Income | more of every resource but XP | income rates (`calculateResourceBreakdown`), so passive income, away income, kill gold and chest gold follow |');
+	out(
+		'| Income | more of every resource but XP | income rates (`calculateResourceBreakdown`), so passive income, away income, kill gold and chest gold follow |',
+	);
 	out('| XP Gain | more XP from every source | `xpGainPct`: tiles, passive XP, kills, chests and away time |');
 	out('| Kill Rewards | more gold and XP from a kill | server kill payout (`killIncome`, `derived.killRewardPct`) |');
 	out('| Away Income / Away Time | share of the income paid while away / hours paid | `offlineEfficiency` / `offlineCapHours` limits (`LimitContext.gear`) |');
-	out('| Click Gold | more gold per map click | `clickForGold` (clicks are the browser\'s income, checked only by plausibility) |');
-	out('| Damage / Max HP | percent on top of the flat stat | `damagePerHit` / `maxHp`, shared by the browser and the server\'s fights |');
+	out("| Click Gold | more gold per map click | `clickForGold` (clicks are the browser's income, checked only by plausibility) |");
+	out("| Damage / Max HP | percent on top of the flat stat | `damagePerHit` / `maxHp`, shared by the browser and the server's fights |");
 	out();
 	for (const set of Object.values(SETS)) {
 		out(`### ${set.label} (${set.size} slots)`);
 		out();
 		out(set.theme);
 		out();
-		const thresholds = Object.keys(set.bonuses).map(Number).sort((a, b) => a - b);
+		const thresholds = Object.keys(set.bonuses)
+			.map(Number)
+			.sort((a, b) => a - b);
 		out('| Pieces worn | Bonus | Total so far |');
 		out('|---|---|---|');
 		for (const n of thresholds) {
@@ -72,7 +95,9 @@ export const renderItemCatalog = (): string => {
 	out('|---|---|---|---|---|---|---|---|---|');
 	for (const def of ITEMS.filter((item) => item.set)) {
 		const type = def.weaponType ? `${def.kind} (${def.weaponType})` : def.kind;
-		out(`| ${def.name} | \`${def.id}\` | ${type} | ${def.tier} | ${def.generation ?? 'consumable'}${def.fixedRarity ? ` (${RARITIES[def.fixedRarity as keyof typeof RARITIES].label})` : ''} | ${window(def)} | ${stats(def)} | ${def.shop ?? ''} | ${where(def)} |`);
+		out(
+			`| ${def.name} | \`${def.id}\` | ${type} | ${def.tier} | ${def.generation ?? 'consumable'}${def.fixedRarity ? ` (${RARITIES[def.fixedRarity as keyof typeof RARITIES].label})` : ''} | ${window(def)} | ${stats(def)} | ${def.shop ?? ''} | ${where(def)} |`,
+		);
 	}
 
 	out();
@@ -85,23 +110,37 @@ export const renderItemCatalog = (): string => {
 	out();
 	out('## Loot sources');
 	out();
-	out('Rarity chances are the profile weights normalised over the rarities that pass their item level gate; level is the item level at the source (the monster level; castle level 1 for chests).');
+	out(
+		'Rarity chances are the profile weights normalised over the rarities that pass their item level gate; level is the item level at the source (the monster level; castle level 1 for chests).',
+	);
 	out();
 	for (const source of Object.values(LOOT_SOURCES)) {
 		const profile = LOOT_PROFILES[source.lootProfileId];
-		const sourceLevels = source.levels ? (source.id === 'monster' ? [1, 5, 9, 20] : [source.levels.min, source.levels.max]) : [source.level ? resolveSourceLevel(source.level, 1) : 1];
+		const sourceLevels = source.levels
+			? source.id === 'monster'
+				? [1, 5, 9, 20]
+				: [source.levels.min, source.levels.max]
+			: [source.level ? resolveSourceLevel(source.level, 1) : 1];
 		for (const sourceLevel of sourceLevels) {
 			const level = sourceLevel + profile.itemLevel.offset;
 			const weights = Object.entries(profile.rarityWeights).filter(([r, w]) => w > 0 && level >= (profile.rarityLevelGate?.[r] ?? 1));
 			const total = weights.reduce((s, [, w]) => s + w, 0);
 			const share = weights.map(([r, w]) => `${RARITIES[r as keyof typeof RARITIES].label} ${((w / total) * 100).toFixed(1)}%`).join(', ');
 			const pool = profile.generalPoolId ? eligibleCandidates(LOOT_DATA, profile.generalPoolId, level).length : 0;
-			out(`- **${source.id}${source.levels ? ` level ${sourceLevel}` : ''}** (profile \`${profile.id}\`, item level ${level}): ${pool} bases eligible; ${share}`);
+			out(
+				`- **${source.id}${source.levels ? ` level ${sourceLevel}` : ''}** (profile \`${profile.id}\`, item level ${level}): ${pool} bases eligible; ${share}`,
+			);
 		}
-		for (const t of profile.bonusTables) out(`  - bonus \`${t.id}\` from pool \`${t.poolId}\`${t.chance !== undefined ? `, chance ${t.chance}` : ''}${t.placement ? `, ${t.placement}` : ''}`);
+		for (const t of profile.bonusTables)
+			out(`  - bonus \`${t.id}\` from pool \`${t.poolId}\`${t.chance !== undefined ? `, chance ${t.chance}` : ''}${t.placement ? `, ${t.placement}` : ''}`);
 	}
 	out();
-	out('Pools: ' + Object.values(LOOT_POOLS).map((p) => `\`${p.id}\``).join(', '));
+	out(
+		'Pools: ' +
+			Object.values(LOOT_POOLS)
+				.map((p) => `\`${p.id}\``)
+				.join(', '),
+	);
 
 	out();
 	out('## Merchant stock');
@@ -113,7 +152,8 @@ export const renderItemCatalog = (): string => {
 	out();
 	out('| Resource | Label | Merchant buys at | Source |');
 	out('|---|---|---|---|');
-	for (const [key, def] of Object.entries(RESOURCES)) out(`| \`${key}\` | ${def.label} | ${'merchant' in def ? (def as { merchant: { price: number } }).merchant.price : ''} | ${def.source} |`);
+	for (const [key, def] of Object.entries(RESOURCES))
+		out(`| \`${key}\` | ${def.label} | ${'merchant' in def ? (def as { merchant: { price: number } }).merchant.price : ''} | ${def.source} |`);
 
 	return lines.join('\n') + '\n';
 };

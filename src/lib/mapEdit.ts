@@ -44,7 +44,8 @@ export const paintTool =
 /** "Extend": adds `biome` only where there is no land yet, next to land (the unexplored ring), never overwriting. */
 export const extendTool =
 	(biome: string): StrokeTool =>
-	(world, c) => (getTile(world, c.x, c.y) || !hasOwnedNeighbour(world, c.x, c.y) ? 'skip' : { biome, isOwned: true });
+	(world, c) =>
+		getTile(world, c.x, c.y) || !hasOwnedNeighbour(world, c.x, c.y) ? 'skip' : { biome, isOwned: true };
 
 /** Removes land (the castle stays). */
 export const eraseTool: StrokeTool = (world, c) => (getTile(world, c.x, c.y) ? undefined : 'skip');

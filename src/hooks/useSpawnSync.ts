@@ -24,7 +24,8 @@ export const useSpawnSync = (userId: string, active: boolean) => {
 		// where this browser stopped in the server's combat log (so a fight that ended while the page was away is still paid out, once)
 		setCursorUser(userId);
 		const cursor = readCursor(userId);
-		if (cursor !== null && useGameStore.getState().combat.eventNo === null) useGameStore.setState((state) => ({ combat: { ...state.combat, eventNo: cursor } }));
+		if (cursor !== null && useGameStore.getState().combat.eventNo === null)
+			useGameStore.setState((state) => ({ combat: { ...state.combat, eventNo: cursor } }));
 		let stopped = false;
 		let running = false;
 		let timer: ReturnType<typeof setTimeout> | undefined;

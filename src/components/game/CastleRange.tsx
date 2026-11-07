@@ -15,7 +15,8 @@ const CastleRange: React.FC<{ radius?: number }> = ({ radius = CASTLE_RANGE.radi
 				width: side,
 				height: side,
 			}}
-			aria-hidden>
+			aria-hidden
+		>
 			<i className='range-edge top' />
 			<i className='range-edge right' />
 			<i className='range-edge bottom' />

@@ -2,16 +2,7 @@ import React, { memo, useState } from 'react';
 import { formatCompact } from '@/utils/formatters';
 import { createPortal } from 'react-dom';
 import { TileProps, type MonsterType } from '@/types/game';
-import {
-	CASTLE_X,
-	CASTLE_Y,
-	BIOMES,
-	BUILDINGS,
-	BuildingType,
-	CASTLE_FORTRESS,
-	CASTLE_UPGRADE,
-	TILE_SIZE,
-} from '@/config/gameConfig';
+import { CASTLE_X, CASTLE_Y, BIOMES, BUILDINGS, BuildingType, CASTLE_FORTRESS, CASTLE_UPGRADE, TILE_SIZE } from '@/config/gameConfig';
 import '@/styles/Buildings.css';
 import { useMapSource } from './mapSource';
 import { castleLevelOf, inCastleRange, MAX_CASTLE_RANGE_RADIUS } from '@/lib/castleWard';
@@ -38,7 +29,15 @@ import { openMenuAt } from '@/lib/globalMenu';
 import '@/styles/ContextMenu.css';
 
 /** The monster on the map with its growth shown: a blue badge at full size, otherwise a thin bar that fills towards the next level (a CSS animation, so no timer runs). */
-const MapMonster: React.FC<{ id: number; type: MonsterType; level: number; max: number; lucky: boolean; art?: string; queued: number }> = ({ id, type, level, max, lucky, art, queued }) => {
+const MapMonster: React.FC<{ id: number; type: MonsterType; level: number; max: number; lucky: boolean; art?: string; queued: number }> = ({
+	id,
+	type,
+	level,
+	max,
+	lucky,
+	art,
+	queued,
+}) => {
 	const state = useMapSource().game.getState();
 	const monster = art ? undefined : state.monsters.find((m) => m.id === id);
 	const ctx = { merchantUpgrades: state.merchantUpgrades, prestige: state.prestige };
@@ -58,7 +57,14 @@ const MapMonster: React.FC<{ id: number; type: MonsterType; level: number; max: 
 };
 
 /** Hover card of a monster: level, HP, time to its next level, boss traits and the call to fight. Reads the age at render time. */
-const MonsterTip: React.FC<{ id: number; type: MonsterType; level: number; art?: string; queued: number; lineOpen: boolean }> = ({ id, type, level, art, queued, lineOpen }) => {
+const MonsterTip: React.FC<{ id: number; type: MonsterType; level: number; art?: string; queued: number; lineOpen: boolean }> = ({
+	id,
+	type,
+	level,
+	art,
+	queued,
+	lineOpen,
+}) => {
 	const state = useMapSource().game.getState();
 	const wip = art ? MONSTER_CATALOG.find((m) => m.id === art) : undefined;
 	if (wip) {
@@ -84,7 +90,8 @@ const MonsterTip: React.FC<{ id: number; type: MonsterType; level: number; art?:
 			{isBoss(type) && <div className='text-[#ff8a6a] font-bold'>BOSS</div>}
 			{monster && (
 				<div className='px-tip-muted'>
-					Level {formatCompact(level)} of {formatCompact(maxLevelOf(monster.spawnLevel, { merchantUpgrades: state.merchantUpgrades, prestige: state.prestige }))}
+					Level {formatCompact(level)} of{' '}
+					{formatCompact(maxLevelOf(monster.spawnLevel, { merchantUpgrades: state.merchantUpgrades, prestige: state.prestige }))}
 					{nextLevel !== null ? `, grows in ${Math.max(1, Math.ceil(nextLevel / 60))} min` : ' - fully grown'}
 				</div>
 			)}
@@ -93,20 +100,14 @@ const MonsterTip: React.FC<{ id: number; type: MonsterType; level: number; art?:
 					Crits {stats.critChance}%, resists Stun {stats.stunResist}%. Beat it within {MONSTERS[type].timeLimitSec} seconds for a Rattatui piece
 				</div>
 			)}
-			<div className='text-[#f0d27a]'>{queued > 0 ? `In the queue (${queued}) - click to leave it` : lineOpen ? 'Click to add to the queue' : 'Click to fight'}</div>
+			<div className='text-[#f0d27a]'>
+				{queued > 0 ? `In the queue (${queued}) - click to leave it` : lineOpen ? 'Click to add to the queue' : 'Click to fight'}
+			</div>
 		</div>
 	);
 };
 
-const Tile: React.FC<TileProps> = ({
-	biome,
-	isOwned,
-	x,
-	y,
-	level,
-	building,
-	canAfford = false,
-}) => {
+const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, level, building, canAfford = false }) => {
 	const { game, onTile, drag } = useMapSource();
 	// Only primitives are read from the store: a tile re-renders for its own chest, monster or castle level, not for every change of the map
 	const buyTile = game((state) => state.buyTile);
@@ -115,7 +116,9 @@ const Tile: React.FC<TileProps> = ({
 	// string selector: the tile re-renders when its monster appears, changes level or leaves, not on every tick
 	const monsterKey = game((state) => {
 		const m = monsterAt(state.monsters, x, y);
-		return m ? `${m.id}:${m.type}:${m.level}:${m.lucky ? 1 : 0}:${maxLevelOf(m.spawnLevel, { merchantUpgrades: state.merchantUpgrades, prestige: state.prestige })}:${m.art ?? ''}` : '';
+		return m
+			? `${m.id}:${m.type}:${m.level}:${m.lucky ? 1 : 0}:${maxLevelOf(m.spawnLevel, { merchantUpgrades: state.merchantUpgrades, prestige: state.prestige })}:${m.art ?? ''}`
+			: '';
 	});
 	const [monsterId, monsterType, monsterLevel, monsterLucky, monsterMax, monsterArt] = monsterKey ? monsterKey.split(':') : [];
 	// the battle queue: this monster's place in the line (0: not queued) and whether clicks now join the line instead of starting a fight
@@ -141,10 +144,7 @@ const Tile: React.FC<TileProps> = ({
 
 	// Owned tiles around the castle get gold sparkles: they are inside the castle's range (it grows from castle level 8). A tile
 	// farther than the biggest range never reads the castle level.
-	const mayBeInRange =
-		isOwned &&
-		biome !== 'castle' &&
-		Math.max(Math.abs(x - CASTLE_X), Math.abs(y - CASTLE_Y)) <= MAX_CASTLE_RANGE_RADIUS;
+	const mayBeInRange = isOwned && biome !== 'castle' && Math.max(Math.abs(x - CASTLE_X), Math.abs(y - CASTLE_Y)) <= MAX_CASTLE_RANGE_RADIUS;
 	const inRange = game((state) => mayBeInRange && inCastleRange(x, y, castleLevelOf(state.tiles)));
 
 	const handleClick = (e: React.MouseEvent) => {
@@ -215,8 +215,16 @@ const Tile: React.FC<TileProps> = ({
 		if (monsterKey) {
 			const id = Number(monsterId);
 			own.push(
-				{ id: 'fight', label: lineOpen ? (queuePos > 0 ? 'Remove from the queue' : `Add ${MONSTERS[monsterType as MonsterType].label} to the queue`) : `Fight ${MONSTERS[monsterType as MonsterType].label}`, onSelect: () => void startFight(id) },
-				{ id: 'dismiss', label: `Dismiss ${MONSTERS[monsterType as MonsterType].label}...`, danger: true, onSelect: () => ui.askDismissMonster(id) }
+				{
+					id: 'fight',
+					label: lineOpen
+						? queuePos > 0
+							? 'Remove from the queue'
+							: `Add ${MONSTERS[monsterType as MonsterType].label} to the queue`
+						: `Fight ${MONSTERS[monsterType as MonsterType].label}`,
+					onSelect: () => void startFight(id),
+				},
+				{ id: 'dismiss', label: `Dismiss ${MONSTERS[monsterType as MonsterType].label}...`, danger: true, onSelect: () => ui.askDismissMonster(id) },
 			);
 		} else if (hasChest) {
 			own.push({ id: 'chest', label: 'Open chest', onSelect: () => void collectChest(x, y) });
@@ -238,39 +246,30 @@ const Tile: React.FC<TileProps> = ({
 				onSelect: () => ui.flashCluster(game.getState().tiles, x, y),
 			});
 		}
-		openMenuAt(e.clientX, e.clientY, biome === 'castle' ? 'Castle' : BIOMES[biome]?.label ?? biome, own);
+		openMenuAt(e.clientX, e.clientY, biome === 'castle' ? 'Castle' : (BIOMES[biome]?.label ?? biome), own);
 	};
 
 	return (
 		<>
 			<div
 				id={`tile-${x}-${y}`}
-				className={cn(
-					'absolute transition-all duration-200 ease-in-out select-none',
-					{
-						'opacity-100': isOwned,
-						// the ground itself is drawn by TerrainLayer; a tile is a transparent hit area with its overlays
-						'tile-unknown': !isOwned && isAdjacent,
-						'tile-owned': isOwned,
-						'hover:z-10 cursor-pointer border border-transparent':
-							!isOwned && isAdjacent,
-						'hover:border-green-700': !isOwned && isAdjacent && canAfford,
-						'hover:border-red-700 cursor-not-allowed':
-							!isOwned && isAdjacent && !canAfford,
-						'border-2 border-amber-300':
-							castleLevel >= CASTLE_UPGRADE.maxLevel &&
-							biome === 'castle' &&
-							!isFortress,
-						'group hover:z-20': true,
-						'opacity-75 border-2 border-red-500': isShaking,
-						'cursor-pointer':
-							isOwned && (biome === 'castle' || hasChest || !!monsterKey),
-						'tile-has-monster': isOwned && !!monsterKey,
-						'castle-tile': isOwned && biome === 'castle',
-						'castle-max-tile': isOwned && isGlowingCastle && !isFortress,
-						'tile-fortress': isOwned && isFortress,
-					}
-				)}
+				className={cn('absolute transition-all duration-200 ease-in-out select-none', {
+					'opacity-100': isOwned,
+					// the ground itself is drawn by TerrainLayer; a tile is a transparent hit area with its overlays
+					'tile-unknown': !isOwned && isAdjacent,
+					'tile-owned': isOwned,
+					'hover:z-10 cursor-pointer border border-transparent': !isOwned && isAdjacent,
+					'hover:border-green-700': !isOwned && isAdjacent && canAfford,
+					'hover:border-red-700 cursor-not-allowed': !isOwned && isAdjacent && !canAfford,
+					'border-2 border-amber-300': castleLevel >= CASTLE_UPGRADE.maxLevel && biome === 'castle' && !isFortress,
+					'group hover:z-20': true,
+					'opacity-75 border-2 border-red-500': isShaking,
+					'cursor-pointer': isOwned && (biome === 'castle' || hasChest || !!monsterKey),
+					'tile-has-monster': isOwned && !!monsterKey,
+					'castle-tile': isOwned && biome === 'castle',
+					'castle-max-tile': isOwned && isGlowingCastle && !isFortress,
+					'tile-fortress': isOwned && isFortress,
+				})}
 				style={{
 					width: TILE_SIZE,
 					height: TILE_SIZE,
@@ -286,15 +285,12 @@ const Tile: React.FC<TileProps> = ({
 					setHovered(false);
 					setShowChestTooltip(false);
 				}}
-				role='button'>
+				role='button'
+			>
 				<div className='w-full h-full flex items-center justify-center relative'>
 					{isOwned && biome === 'castle' && <CastleSprite level={castleLevel} />}
-					{!isOwned && isAdjacent && (
-						<PixelIcon name='unknown' alt='Unexplored' className='unknown-mark' />
-					)}
-					{biome === 'castle' && (
-						<span className='tile-badge'>{castleLevel}</span>
-					)}
+					{!isOwned && isAdjacent && <PixelIcon name='unknown' alt='Unexplored' className='unknown-mark' />}
+					{biome === 'castle' && <span className='tile-badge'>{castleLevel}</span>}
 					{isOwned && biome === 'castle' && <CastleTimerBadge />}
 
 					{inRange && (
@@ -318,18 +314,26 @@ const Tile: React.FC<TileProps> = ({
 					)}
 
 					{isOwned && monsterKey && (
-						<MapMonster id={Number(monsterId)} type={monsterType as MonsterType} level={Number(monsterLevel)} max={Number(monsterMax)} lucky={monsterLucky === '1'} art={monsterArt || undefined} queued={queuePos} />
+						<MapMonster
+							id={Number(monsterId)}
+							type={monsterType as MonsterType}
+							level={Number(monsterLevel)}
+							max={Number(monsterMax)}
+							lucky={monsterLucky === '1'}
+							art={monsterArt || undefined}
+							queued={queuePos}
+						/>
 					)}
 
 					{/* Bonus treasure chest on the tile */}
 					{isOwned && hasChest && biome === 'lake' && (
-							<span className='tile-chest-ripple' aria-label='Something glints in the water'>
-								<i />
-								<i />
-								<i />
-							</span>
-						)}
-						{isOwned && hasChest && biome !== 'lake' && (
+						<span className='tile-chest-ripple' aria-label='Something glints in the water'>
+							<i />
+							<i />
+							<i />
+						</span>
+					)}
+					{isOwned && hasChest && biome !== 'lake' && (
 						<span className='tile-chest-wrap'>
 							<span className='tile-chest'>
 								<PixelSheet name='chest_map_anim' frames={4} durationMs={1600} alt='Treasure chest' />
@@ -338,18 +342,11 @@ const Tile: React.FC<TileProps> = ({
 					)}
 
 					{hasBuilding && (
-						<span
-							className='tile-building'
-							style={{ '--glow': BUILDING_GLOW[building as string] ?? '#ffd860' } as React.CSSProperties}>
-							<PixelIcon
-								name={BUILDING_PIXEL_ICONS[building as string]}
-								alt={BUILDINGS[building as BuildingType]?.label ?? 'Building'}
-								className='tile-icon'
-							/>
+						<span className='tile-building' style={{ '--glow': BUILDING_GLOW[building as string] ?? '#ffd860' } as React.CSSProperties}>
+							<PixelIcon name={BUILDING_PIXEL_ICONS[building as string]} alt={BUILDINGS[building as BuildingType]?.label ?? 'Building'} className='tile-icon' />
 						</span>
 					)}
 				</div>
-
 			</div>
 
 			{/* Tooltips live in the map's tooltip layer (above the ambient critters), anchored to this tile */}
@@ -359,7 +356,14 @@ const Tile: React.FC<TileProps> = ({
 				createPortal(
 					<div className='absolute' style={{ left: x * TILE_SIZE, top: y * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE }}>
 						{isOwned && monsterKey && (
-							<MonsterTip id={Number(monsterId)} type={monsterType as MonsterType} level={Number(monsterLevel)} art={monsterArt || undefined} queued={queuePos} lineOpen={lineOpen} />
+							<MonsterTip
+								id={Number(monsterId)}
+								type={monsterType as MonsterType}
+								level={Number(monsterLevel)}
+								art={monsterArt || undefined}
+								queued={queuePos}
+								lineOpen={lineOpen}
+							/>
 						)}
 						{isOwned && hasChest && showChestTooltip && (
 							<div className='map-tip map-tip-up map-tip-in absolute bottom-full mb-1 left-1/2 -translate-x-1/2 w-max px-tooltip text-xs text-[#f0d27a]'>
@@ -370,21 +374,13 @@ const Tile: React.FC<TileProps> = ({
 						{!(isOwned && monsterKey) && (
 							<div className='map-tip map-tip-in absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full w-max min-w-[190px] max-w-[290px]'>
 								<div className='px-tooltip break-words'>
-									<TileStatus
-										biome={biome}
-										isOwned={isOwned}
-										isAdjacent={isAdjacent}
-										level={level}
-										x={x}
-										y={y}
-									/>
+									<TileStatus biome={biome} isOwned={isOwned} isAdjacent={isAdjacent} level={level} x={x} y={y} />
 								</div>
 							</div>
 						)}
 					</div>,
-					tipLayer
+					tipLayer,
 				)}
-
 		</>
 	);
 };

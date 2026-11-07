@@ -34,7 +34,16 @@ test('higher level and quality make the same base stronger', () => {
 });
 
 test('affixes add their derived value and name the item', () => {
-	const instance: ItemInstance = { base: 'iron_sword', level: 10, rarity: 'rare', quality: 50, affixes: [{ id: 'critChance_prefix', roll: 50 }, { id: 'damage_suffix', roll: 100 }] };
+	const instance: ItemInstance = {
+		base: 'iron_sword',
+		level: 10,
+		rarity: 'rare',
+		quality: 50,
+		affixes: [
+			{ id: 'critChance_prefix', roll: 50 },
+			{ id: 'damage_suffix', roll: 100 },
+		],
+	};
 	assert.equal(instanceProblem(instance), null);
 	const resolved = resolveItem(instance)!;
 	assert.equal(resolved.name, 'Keen Iron Sword of Power');
@@ -71,10 +80,25 @@ test('instanceProblem rejects what the generator could not make', () => {
 	assert.ok(bad({ level: 4.5 }));
 	assert.ok(bad({ level: 2 })); // below the steel window
 	assert.ok(bad({ quality: 101 }));
-	assert.ok(bad({ affixes: [{ id: 'damage_prefix', roll: 10 }, { id: 'armor_prefix', roll: 10 }] })); // uncommon takes one
+	assert.ok(
+		bad({
+			affixes: [
+				{ id: 'damage_prefix', roll: 10 },
+				{ id: 'armor_prefix', roll: 10 },
+			],
+		}),
+	); // uncommon takes one
 	assert.ok(bad({ affixes: [{ id: 'constructor', roll: 10 }] }));
 	assert.ok(bad({ affixes: [{ id: 'damage_prefix', roll: 101 }] }));
-	assert.ok(bad({ rarity: 'rare', affixes: [{ id: 'damage_prefix', roll: 1 }, { id: 'damage_suffix', roll: 1 }] })); // same group twice
+	assert.ok(
+		bad({
+			rarity: 'rare',
+			affixes: [
+				{ id: 'damage_prefix', roll: 1 },
+				{ id: 'damage_suffix', roll: 1 },
+			],
+		}),
+	); // same group twice
 	const named: ItemInstance = { base: 'emberbrand', level: 5, rarity: 'legendary', quality: 50, affixes: [] };
 	assert.equal(instanceProblem(named), null);
 	assert.ok(instanceProblem({ ...named, rarity: 'common' })); // named items have one rarity

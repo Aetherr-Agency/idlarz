@@ -29,7 +29,8 @@ const CastleFortress: React.FC<{ level: number }> = ({ level }) => {
 					'--tower': icon(`castle_tower_${Math.max(7, Math.min(10, level))}`),
 				} as React.CSSProperties
 			}
-			aria-hidden>
+			aria-hidden
+		>
 			<i className='fort-wall n' />
 			<i className='fort-wall s' />
 			<i className='fort-wall w' />

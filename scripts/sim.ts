@@ -81,7 +81,10 @@ const main = async () => {
 		spreads[name] = {};
 		const keys = new Set(runs.flatMap((r) => Object.keys(r)));
 		keys.forEach((key) => {
-			const values = runs.map((r) => r[key]).filter((v): v is number => v != null).sort((a, b) => a - b);
+			const values = runs
+				.map((r) => r[key])
+				.filter((v): v is number => v != null)
+				.sort((a, b) => a - b);
 			if (values.length < Math.ceil(runs.length / 2)) {
 				results[name][key] = null;
 				return;
@@ -95,10 +98,7 @@ const main = async () => {
 	const md = renderMarkdown(results, legacy, seeds > 1 ? spreads : undefined);
 	console.log(md);
 	if (!legacy && !args.includes('--no-write')) {
-		const target = resolve(
-			dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')),
-			'../docs/generated/sim-milestones.md'
-		);
+		const target = resolve(dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '../docs/generated/sim-milestones.md');
 		mkdirSync(dirname(target), { recursive: true });
 		writeFileSync(target, md);
 		console.error(`Wrote ${target}`);
@@ -153,7 +153,11 @@ const HARDCORE_WINDOWS: [number, number][] = [
 	[18, 23],
 ];
 // SIM_DECISION / SIM_HOARD: calibration knobs (docs/06: a person who checks in hourly while playing, buys a few tiles per visit and never sells surplus (calibrated to the owner: ~185 tiles after 3.3 days))
-const HUMAN = { decisionSec: Number(process.env.SIM_DECISION ?? 3600), hoard: Number(process.env.SIM_HOARD ?? 1e9), tilesPerVisit: Number(process.env.SIM_TILES ?? 8) };
+const HUMAN = {
+	decisionSec: Number(process.env.SIM_DECISION ?? 3600),
+	hoard: Number(process.env.SIM_HOARD ?? 1e9),
+	tilesPerVisit: Number(process.env.SIM_TILES ?? 8),
+};
 const HUMAN_WINDOWS: [number, number][] = [
 	[8, 9],
 	[12, 13],
@@ -268,9 +272,7 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 
 		// Stat points -> Charisma / Intelligence
 		while (s.characterStats.availablePoints > 0) {
-			api().addStatPoint(
-				s.characterStats.charisma <= s.characterStats.intelligence ? 'charisma' : 'intelligence'
-			);
+			api().addStatPoint(s.characterStats.charisma <= s.characterStats.intelligence ? 'charisma' : 'intelligence');
 			s = api();
 		}
 
@@ -311,9 +313,7 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 			const level = utils.farmUpgradeLevel(s.farmUpgrades, id);
 			if (level >= cfg.FARM_UPGRADES[id].maxLevel) continue;
 			const cost = utils.farmUpgradeCost(id, level);
-			const roomy = Object.entries(cost).every(
-				([r, v]) => s.resources[r as keyof typeof s.resources] >= (v ?? 0) * 1.5 + (castleNeed[r] ?? 0)
-			);
+			const roomy = Object.entries(cost).every(([r, v]) => s.resources[r as keyof typeof s.resources] >= (v ?? 0) * 1.5 + (castleNeed[r] ?? 0));
 			if (roomy && api().buyFarmUpgrade(id)) s = api();
 		}
 
@@ -348,7 +348,7 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 			if (!s.castleUpgrade && (castleTile.level ?? 1) < cfg.CASTLE_UPGRADE.maxLevel && castleTile.upgradeCost) {
 				const after = utils.subtractBundle(s.resources, bundle);
 				const blocked = Object.entries(castleTile.upgradeCost).some(
-					([r, v]) => r !== 'gold' && s.resources[r as keyof typeof s.resources] >= (v ?? 0) && after[r as keyof typeof after] < (v ?? 0)
+					([r, v]) => r !== 'gold' && s.resources[r as keyof typeof s.resources] >= (v ?? 0) && after[r as keyof typeof after] < (v ?? 0),
 				);
 				if (blocked) break;
 			}
@@ -452,7 +452,15 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 			const equipment = fightSim.fullSet(gear.set, gear.weapon);
 			store.setState((st) => ({
 				equipment,
-				resourceRates: utils.calculateResourceRates(st.tiles, st.characterStats, st.farmLevels, st.prestige, st.farmUpgrades, st.merchantUpgrades, gearEco.gearIncomePct(equipment)),
+				resourceRates: utils.calculateResourceRates(
+					st.tiles,
+					st.characterStats,
+					st.farmLevels,
+					st.prestige,
+					st.farmUpgrades,
+					st.merchantUpgrades,
+					gearEco.gearIncomePct(equipment),
+				),
 			}));
 		}
 		const rates = api().resourceRates.total;
@@ -486,17 +494,16 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 		waiting = left;
 	};
 	const killReward = (type: 'thistleBoar' | 'bossGreatAuroch', level: number, rates: { gold: number; xp: number; hide: number }) =>
-		kill.killIncome({ type, level }, { goldPerSec: rates.gold, xpPerSec: rates.xp, hidePerSec: rates.hide, luck: 0, killRewardPct: gearEco.gearEconomy(api().equipment).killRewardPct });
+		kill.killIncome(
+			{ type, level },
+			{ goldPerSec: rates.gold, xpPerSec: rates.xp, hidePerSec: rates.hide, luck: 0, killRewardPct: gearEco.gearEconomy(api().equipment).killRewardPct },
+		);
 	if (profile.combat) resetCombat();
 
 	const finished = () => {
 		const s = api();
 		const castle = tileAt(s.tiles, cfg.CASTLE_X, cfg.CASTLE_Y).level ?? 1;
-		return (
-			castle >= FIRST_FINISH_CASTLE &&
-			s.clickLevel >= cfg.CLICK_LADDER.length - 1 &&
-			utils.economyTiles(s.tiles, s.freeTiles) >= cfg.REBIRTH.minTiles
-		);
+		return castle >= FIRST_FINISH_CASTLE && s.clickLevel >= cfg.CLICK_LADDER.length - 1 && utils.economyTiles(s.tiles, s.freeTiles) >= cfg.REBIRTH.minTiles;
 	};
 
 	let lastDecision = -1e9;
@@ -510,7 +517,7 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 			const s = api();
 			const r = s.resourceRates.total;
 			console.error(
-				`[${name}] day ${lastTraceDay} tiles ${utils.economyTiles(s.tiles, s.freeTiles)} castle ${tileAt(s.tiles, cfg.CASTLE_X, cfg.CASTLE_Y).level} up=${s.castleUpgrade ? Math.round(s.castleUpgrade.remainingSec / 3600) + 'h' : '-'} lvl ${s.level.level} click${s.clickLevel} gold ${Math.round(s.resources.gold)} (+${r.gold.toFixed(1)}/s) wood ${Math.round(s.resources.wood)} stone ${Math.round(s.resources.stone)} coal ${Math.round(s.resources.coal)} food ${Math.round(s.resources.food)} (+${r.food.toFixed(1)}) hide ${Math.round(s.resources.hide)} (+${r.hide.toFixed(2)}) meat ${Math.round(s.resources.meat)} (+${r.meat.toFixed(1)}) farm ${JSON.stringify(s.farmLevels)}`
+				`[${name}] day ${lastTraceDay} tiles ${utils.economyTiles(s.tiles, s.freeTiles)} castle ${tileAt(s.tiles, cfg.CASTLE_X, cfg.CASTLE_Y).level} up=${s.castleUpgrade ? Math.round(s.castleUpgrade.remainingSec / 3600) + 'h' : '-'} lvl ${s.level.level} click${s.clickLevel} gold ${Math.round(s.resources.gold)} (+${r.gold.toFixed(1)}/s) wood ${Math.round(s.resources.wood)} stone ${Math.round(s.resources.stone)} coal ${Math.round(s.resources.coal)} food ${Math.round(s.resources.food)} (+${r.food.toFixed(1)}) hide ${Math.round(s.resources.hide)} (+${r.hide.toFixed(2)}) meat ${Math.round(s.resources.meat)} (+${r.meat.toFixed(1)}) farm ${JSON.stringify(s.farmLevels)}`,
 			);
 		}
 		const active = isActive(t);
@@ -555,7 +562,7 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 			});
 			if (finished()) mark('finished', t);
 			const castleNow = tileAt(api().tiles, cfg.CASTLE_X, cfg.CASTLE_Y).level ?? 1;
-			const totalRebirths = profile.rebirthAtCastle ? profile.rebirths ?? 1 : 0;
+			const totalRebirths = profile.rebirthAtCastle ? (profile.rebirths ?? 1) : 0;
 			const territory = utils.economyTiles(api().tiles, api().freeTiles) >= cfg.REBIRTH.minTiles;
 			if (profile.rebirthAtCastle && run <= totalRebirths && castleNow >= profile.rebirthAtCastle && territory && !api().castleUpgrade) {
 				mark('rebirth', t);
@@ -631,20 +638,15 @@ const ORDER = [
 	'finished',
 ];
 
-function renderMarkdown(
-	results: Record<string, Milestones>,
-	legacy: boolean,
-	spreads?: Record<string, Record<string, [number, number]>>
-): string {
+function renderMarkdown(results: Record<string, Milestones>, legacy: boolean, spreads?: Record<string, Record<string, [number, number]>>): string {
 	const names = Object.keys(results);
-	const fmt = (d: number | null | undefined) =>
-		d == null ? '—' : d < 1 ? `${(d * 24).toFixed(1)} h` : `${d.toFixed(1)} d`;
+	const fmt = (d: number | null | undefined) => (d == null ? '—' : d < 1 ? `${(d * 24).toFixed(1)} h` : `${d.toFixed(1)} d`);
 	const lines: string[] = [];
 	lines.push(`# Simulation milestones${legacy ? ' (LEGACY parameters — sanity check only)' : ''}`);
 	lines.push('');
 	lines.push(
 		'> Generated by `npm run sim` (scripts/sim.ts): the real game store driven by a bot with a seeded RNG. ' +
-			'Time to first reach each milestone, in game time. "finished" = castle 6 + max click power + the rebirth territory (REBIRTH.minTiles); the run continues to the last castle level.'
+			'Time to first reach each milestone, in game time. "finished" = castle 6 + max click power + the rebirth territory (REBIRTH.minTiles); the run continues to the last castle level.',
 	);
 	lines.push('');
 	lines.push(`| milestone | ${names.join(' | ')} |`);
@@ -653,9 +655,15 @@ function renderMarkdown(
 	const extraKeys = Array.from(
 		new Set(
 			names.flatMap((n) =>
-				Object.keys(results[n]).filter((k) => !ORDER.includes(k) && /^(embers[0-9]+|kills.*|rebirth|rebirthDay[0-9]+|waitHcastle[0-9]+|lvlAtRebirth[0-9]+|xpAtRebirth[0-9]+|(lvl|xp)@[0-9.]+h|r[0-9]+[.](castle6|tiles100|finished))$/.test(k))
-			)
-		)
+				Object.keys(results[n]).filter(
+					(k) =>
+						!ORDER.includes(k) &&
+						/^(embers[0-9]+|kills.*|rebirth|rebirthDay[0-9]+|waitHcastle[0-9]+|lvlAtRebirth[0-9]+|xpAtRebirth[0-9]+|(lvl|xp)@[0-9.]+h|r[0-9]+[.](castle6|tiles100|finished))$/.test(
+							k,
+						),
+				),
+			),
+		),
 	).sort((x, y) => x.localeCompare(y, undefined, { numeric: true }));
 	[...ORDER, ...extraKeys].forEach((key) => {
 		if (!names.some((n) => results[n][key] != null) && !ORDER.includes(key)) return;
@@ -676,7 +684,8 @@ function renderMarkdown(
 		const first = results[n].finished;
 		if (first == null) return [];
 		const cells: string[] = [];
-		for (let run = 2; results[n][`r${run}.finished`] != null; run++) cells.push(`run ${run}: ${Math.round((Number(results[n][`r${run}.finished`]) / first) * 100)} %`);
+		for (let run = 2; results[n][`r${run}.finished`] != null; run++)
+			cells.push(`run ${run}: ${Math.round((Number(results[n][`r${run}.finished`]) / first) * 100)} %`);
 		return cells.length ? [`| ${n} | ${cells.join(', ')} |`] : [];
 	});
 	if (ratioRows.length) {
@@ -690,19 +699,21 @@ function renderMarkdown(
 	const waitNames = names.filter((n) => tileWaits[n]);
 	if (waitNames.length) {
 		lines.push('');
-		lines.push('Minutes the income needs to cover what is still missing of each part of the next tile, right after the purchase that reached that tile count (first run; the biggest number holds the player back):');
+		lines.push(
+			'Minutes the income needs to cover what is still missing of each part of the next tile, right after the purchase that reached that tile count (first run; the biggest number holds the player back):',
+		);
 		lines.push('');
 		lines.push('| profile | tiles | gold | wood | stone | coal | food | hide |');
 		lines.push('| --- | --- | --- | --- | --- | --- | --- | --- |');
 		waitNames.forEach((n) =>
 			Object.entries(tileWaits[n]).forEach(([tiles, w]) =>
-				lines.push(`| ${n} | ${tiles} | ${['gold', 'wood', 'stone', 'coal', 'food', 'hide'].map((r) => (w[r] == null ? '—' : w[r])).join(' | ')} |`)
-			)
+				lines.push(`| ${n} | ${tiles} | ${['gold', 'wood', 'stone', 'coal', 'food', 'hide'].map((r) => (w[r] == null ? '—' : w[r])).join(' | ')} |`),
+			),
 		);
 	}
 	lines.push(
 		'Profiles: idle = never clicks; casual = 1 click/s for 3 h/day; hardcore = 4 clicks/s for 8 h/day; ' +
-			'autoclicker = 20 clicks/s 24 h/day (the limiter should keep it at roughly hardcore pace).'
+			'autoclicker = 20 clicks/s 24 h/day (the limiter should keep it at roughly hardcore pace).',
 	);
 	return lines.join('\n');
 }

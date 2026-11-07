@@ -42,7 +42,14 @@ const bagOf = (...slots: BagSlot[]): BagSlot[] => {
 	return out;
 };
 /** The inventory the server would hold if it had the browser's current picture at this version. */
-const serverInv = (over: Partial<Inventory> = {}): Inventory => ({ ver: (api().invVer ?? 0) + 1, bag: api().bag, equipment: api().equipment, lootPity: api().lootPity, autoSellUpTo: api().autoSellUpTo, ...over });
+const serverInv = (over: Partial<Inventory> = {}): Inventory => ({
+	ver: (api().invVer ?? 0) + 1,
+	bag: api().bag,
+	equipment: api().equipment,
+	lootPity: api().lootPity,
+	autoSellUpTo: api().autoSellUpTo,
+	...over,
+});
 /** What the server answers to an operation, using its own functions on the picture it holds. */
 const serverDoes = (before: Inventory, body: Record<string, unknown>, sellCtx = {}): InventoryReply => {
 	const op = parseOp(body)!;
@@ -55,7 +62,7 @@ const withSwordAndHelm = () => {
 	store.setState({ bag: bagOf({ item: plainItem('steel_helm') }, { item: plainItem('steel_mace') }, { id: 'potion_minor', qty: 2 }), invVer: 5 });
 };
 
-test('an equip is previewed at once, asked of the server with its own key, and the server\'s inventory is taken when it answers', async () => {
+test("an equip is previewed at once, asked of the server with its own key, and the server's inventory is taken when it answers", async () => {
 	withSwordAndHelm();
 	const calls = held();
 	try {
@@ -114,7 +121,22 @@ test('a picture from another answer is not taken while a change of ours is on it
 			serverNowSec: 1,
 			gemsTotal: 1000,
 			nextInSec: null,
-			combat: { hp: 90, mp: 30, maxHp: 101, maxMp: 40, cd: { heal: 0, stun: 0, potion: 0 }, fight: null, autoBattle: false, autoUse: false, retrySec: 0, at: 9999, eventNo: 0, events: [], behind: false, nextPollSec: 8 },
+			combat: {
+				hp: 90,
+				mp: 30,
+				maxHp: 101,
+				maxMp: 40,
+				cd: { heal: 0, stun: 0, potion: 0 },
+				fight: null,
+				autoBattle: false,
+				autoUse: false,
+				retrySec: 0,
+				at: 9999,
+				eventNo: 0,
+				events: [],
+				behind: false,
+				nextPollSec: 8,
+			},
 			inv: serverInv({ ver: 6, equipment: {} }),
 		});
 		assert.equal(api().equipment.head?.base, 'steel_helm', 'our preview stays');
@@ -139,7 +161,11 @@ test('a sale: the preview pays at once, and the gold the server says it paid is 
 		await settle();
 		assert.equal(calls[0].body.action, 'sell');
 		// the server pays 7 gold more than the preview (its price is the one that counts)
-		const reply = serverDoes(serverInv({ ver: 5, bag: bagOf({ item: plainItem('steel_helm') }, { item: plainItem('steel_mace') }, { id: 'potion_minor', qty: 2 }) }), calls[0].body, { merchantUpgrades: { haggler: 3 } });
+		const reply = serverDoes(
+			serverInv({ ver: 5, bag: bagOf({ item: plainItem('steel_helm') }, { item: plainItem('steel_mace') }, { id: 'potion_minor', qty: 2 }) }),
+			calls[0].body,
+			{ merchantUpgrades: { haggler: 3 } },
+		);
 		calls[0].answer(200, { ...reply, gold: preview + 7 });
 		await settle();
 		assert.equal(api().resources.gold, 1000 + preview + 7);
@@ -148,7 +174,7 @@ test('a sale: the preview pays at once, and the gold the server says it paid is 
 	}
 });
 
-test('a sale the server refuses is undone: the gold goes back and the item comes back with the server\'s bag', async () => {
+test("a sale the server refuses is undone: the gold goes back and the item comes back with the server's bag", async () => {
 	withSwordAndHelm();
 	setResources({ gold: 1000 });
 	const calls = held();
@@ -208,7 +234,7 @@ test('a purchase is previewed; a purchase the server refuses gives the price bac
 	}
 });
 
-test('a purchase the server accepts keeps the price paid and takes the server\'s bag', async () => {
+test("a purchase the server accepts keeps the price paid and takes the server's bag", async () => {
 	freshGame();
 	setResources({ gold: 50_000 });
 	store.setState({ invVer: 3 });
@@ -222,7 +248,11 @@ test('a purchase the server accepts keeps the price paid and takes the server\'s
 		calls[0].answer(200, serverDoes(serverInv({ ver: 3, bag: freshBagWithoutPotions() }), calls[0].body));
 		await settle();
 		assert.equal(before - api().resources.gold, paid);
-		assert.ok((api().bag.map(stackOf).find((s) => s?.id === 'potion_minor')?.qty ?? 0) >= 2);
+		assert.ok(
+			(api()
+				.bag.map(stackOf)
+				.find((s) => s?.id === 'potion_minor')?.qty ?? 0) >= 2,
+		);
 	} finally {
 		restore();
 	}
@@ -240,7 +270,7 @@ test('a New Game drops the answers to what was asked in the game before it', asy
 		const fresh = api().equipment;
 		calls[0].answer(200, serverDoes(serverInv({ ver: 5 }), calls[0].body));
 		await settle();
-		assert.deepEqual(api().equipment, fresh, 'the old game\'s answer does not touch the new game');
+		assert.deepEqual(api().equipment, fresh, "the old game's answer does not touch the new game");
 		assert.equal(api().invVer, null);
 	} finally {
 		restore();

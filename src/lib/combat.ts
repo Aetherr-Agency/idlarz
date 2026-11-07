@@ -104,8 +104,7 @@ export const leechHeal = (damage: number, equipment: Equipment, bonus?: CombatBo
 export const armorOf = (equipment: Equipment, stats?: Attributes): number => aggregateStats(equipment).armor + (stats ? statArmor(stats) : 0);
 
 /** Mana: the attributes' pool plus the gear's. */
-export const maxMana = (characterStats: CharacterStats, equipment: Equipment): number =>
-	Math.round(characterStats.mp + aggregateStats(equipment).maxMana);
+export const maxMana = (characterStats: CharacterStats, equipment: Equipment): number => Math.round(characterStats.mp + aggregateStats(equipment).maxMana);
 
 /** Mana per second, in and out of fights. */
 export const manaRegenPerSec = (stats: Attributes, equipment: Equipment): number => statManaRegen(stats) + aggregateStats(equipment).manaRegen;
@@ -125,8 +124,7 @@ export const armorReduction = (armor: number): number => {
 	return raw <= cap ? raw : cap + (raw - cap) * slope;
 };
 
-export const mitigate = (rawDamage: number, armor: number): number =>
-	Math.max(1, Math.round(rawDamage * (1 - armorReduction(armor))));
+export const mitigate = (rawDamage: number, armor: number): number => Math.max(1, Math.round(rawDamage * (1 - armorReduction(armor))));
 
 /** HP regeneration outside fights: the base rate plus the gear's regen stat. */
 export const regen = (hp: number, max: number, dtSec: number, gearRegenPerSec = 0): number => {
@@ -135,5 +133,4 @@ export const regen = (hp: number, max: number, dtSec: number, gearRegenPerSec = 
 };
 
 /** Chance (0-1) that a monster's hit misses: the gear's Dodge, capped. */
-export const dodgeChance = (equipment: Equipment): number =>
-	Math.max(0, Math.min(COMBAT.maxDodge, aggregateStats(equipment).dodge)) / 100;
+export const dodgeChance = (equipment: Equipment): number => Math.max(0, Math.min(COMBAT.maxDodge, aggregateStats(equipment).dodge)) / 100;

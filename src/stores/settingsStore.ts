@@ -19,15 +19,11 @@ export interface SettingsState {
 
 const DEFAULTS = { soundEnabled: true, volume: 0.6, ambientLife: true };
 
-const clampVolume = (value: unknown): number =>
-	typeof value === 'number' && Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : DEFAULTS.volume;
+const clampVolume = (value: unknown): number => (typeof value === 'number' && Number.isFinite(value) ? Math.min(1, Math.max(0, value)) : DEFAULTS.volume);
 
 const save = (state: Pick<SettingsState, 'soundEnabled' | 'volume' | 'ambientLife'>) => {
 	try {
-		localStorage.setItem(
-			STORAGE_KEY,
-			JSON.stringify({ soundEnabled: state.soundEnabled, volume: state.volume, ambientLife: state.ambientLife })
-		);
+		localStorage.setItem(STORAGE_KEY, JSON.stringify({ soundEnabled: state.soundEnabled, volume: state.volume, ambientLife: state.ambientLife }));
 	} catch {
 		/* storage blocked: the settings simply do not persist */
 	}

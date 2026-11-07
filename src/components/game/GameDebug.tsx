@@ -35,9 +35,15 @@ const rollLoot = (sourceId: 'monster' | 'boss' | 'chest', level?: number) => {
 	].filter((id): id is string => !!id);
 	const result = generateLoot({ sourceId, level, castleLevel, owned, pity: state.lootPity }, Math.random);
 	const received = receiveDrops(state.bag, result.drops, state.autoSellUpTo, state);
-	useGameStore.setState({ bag: received.bag, lootPity: result.pity, resources: { ...state.resources, gold: state.resources.gold + received.autoSold.gold + received.convertedGold } });
+	useGameStore.setState({
+		bag: received.bag,
+		lootPity: result.pity,
+		resources: { ...state.resources, gold: state.resources.gold + received.autoSold.gold + received.convertedGold },
+	});
 	console.table(result.trace);
-	const names = result.drops.map((d) => (d.kind === 'gear' ? `${resolveItem(d.item)?.name} (${d.item.rarity}, il ${d.item.level})` : `${d.qty}x ${ITEM_CATALOG[d.id].name}`));
+	const names = result.drops.map((d) =>
+		d.kind === 'gear' ? `${resolveItem(d.item)?.name} (${d.item.rarity}, il ${d.item.level})` : `${d.qty}x ${ITEM_CATALOG[d.id].name}`,
+	);
 	toast(`${sourceId} (level ${result.sourceLevel}): ${names.join(', ') || 'nothing'}`);
 };
 
@@ -53,7 +59,15 @@ const growMap = (count: number) => {
 	let needed = 0;
 	for (let k = 2; k <= economyTiles(tiles, s.freeTiles); k++) needed += calculateXpGain(k);
 	const xp = Math.max(s.resources.xp, Math.min(needed * 1.01, XP_CAP));
-	const resourceRates = calculateResourceRates(tiles, s.characterStats, s.farmLevels, s.prestige, s.farmUpgrades, s.merchantUpgrades, gearIncomePct(s.equipment));
+	const resourceRates = calculateResourceRates(
+		tiles,
+		s.characterStats,
+		s.farmLevels,
+		s.prestige,
+		s.farmUpgrades,
+		s.merchantUpgrades,
+		gearIncomePct(s.equipment),
+	);
 	useGameStore.setState({ tiles, resources: { ...s.resources, xp }, resourceRates });
 	toast(`Added ${n.toLocaleString('en')} tiles in ${Math.round(performance.now() - t0)} ms (${ownedCount(tiles).toLocaleString('en')} in all)`);
 };
@@ -67,7 +81,15 @@ const rolledMap = (purchases: number, policy: 'nearest' | 'random') => {
 	let needed = 0;
 	for (let k = 2; k <= economyTiles(tiles, s.freeTiles); k++) needed += calculateXpGain(k);
 	const xp = Math.max(s.resources.xp, Math.min(needed * 1.01, XP_CAP));
-	const resourceRates = calculateResourceRates(tiles, s.characterStats, s.farmLevels, s.prestige, s.farmUpgrades, s.merchantUpgrades, gearIncomePct(s.equipment));
+	const resourceRates = calculateResourceRates(
+		tiles,
+		s.characterStats,
+		s.farmLevels,
+		s.prestige,
+		s.farmUpgrades,
+		s.merchantUpgrades,
+		gearIncomePct(s.equipment),
+	);
 	useGameStore.setState({ tiles, resources: { ...s.resources, xp }, resourceRates, monsters: [], activeChests: 0 });
 	toast(`Rolled map: seed ${seed}, ${purchases} purchases (${policy})`);
 };
@@ -149,10 +171,7 @@ const GameDebug: React.FC = () => {
 					<div className='text-[#a89878] mb-1'>{group.title}</div>
 					<div className='flex flex-wrap gap-1'>
 						{group.actions.map((action) => (
-							<button
-								key={action.label}
-								className={`px-btn px-btn-sm${action.tone ? ` px-btn-${action.tone}` : ''}`}
-								onClick={action.run}>
+							<button key={action.label} className={`px-btn px-btn-sm${action.tone ? ` px-btn-${action.tone}` : ''}`} onClick={action.run}>
 								{action.label}
 							</button>
 						))}

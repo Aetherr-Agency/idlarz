@@ -9,13 +9,36 @@ import { ownedRowMajor } from '../src/utils/world';
 // seconds; an answer computed before the server opened the chest still counts it, and used to put a "missing" chest back on the map.
 
 const view: CombatView = {
-	hp: 90, mp: 30, maxHp: 101, maxMp: 40, cd: { heal: 0, stun: 0, potion: 0 }, fight: null, autoBattle: true, autoUse: true,
-	retrySec: 0, at: 1, eventNo: 0, events: [], behind: false, nextPollSec: 8,
+	hp: 90,
+	mp: 30,
+	maxHp: 101,
+	maxMp: 40,
+	cd: { heal: 0, stun: 0, potion: 0 },
+	fight: null,
+	autoBattle: true,
+	autoUse: true,
+	retrySec: 0,
+	at: 1,
+	eventNo: 0,
+	events: [],
+	behind: false,
+	nextPollSec: 8,
 };
 const tickets = (chests: PublicChest[], opened?: number): PublicTickets => ({ chests, rats: [], king: null, ...(opened === undefined ? {} : { opened }) });
-const sync = (chests: PublicChest[], opened?: number): SyncResult => ({ tickets: tickets(chests, opened), serverNowSec: 1_800_000_000, gemsTotal: 1000, nextInSec: null, combat: view });
+const sync = (chests: PublicChest[], opened?: number): SyncResult => ({
+	tickets: tickets(chests, opened),
+	serverNowSec: 1_800_000_000,
+	gemsTotal: 1000,
+	nextInSec: null,
+	combat: view,
+});
 const reward = (chests: PublicChest[], opened: number): ChestReward => ({
-	ok: true, loot: { kind: 'gold', gold: 10, minutes: 1, goldRate: 1 }, gems: 0, gemsTotal: 1000, tickets: tickets(chests, opened), serverNowSec: 1_800_000_000,
+	ok: true,
+	loot: { kind: 'gold', gold: 10, minutes: 1, goldRate: 1 },
+	gems: 0,
+	gemsTotal: 1000,
+	tickets: tickets(chests, opened),
+	serverNowSec: 1_800_000_000,
 });
 
 const realFetch = globalThis.fetch;

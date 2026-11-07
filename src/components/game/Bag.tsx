@@ -25,7 +25,8 @@ const Bag: React.FC<{ onNotice: (message: string) => void }> = ({ onNotice }) =>
 		const slot = bag[index];
 		if (!slot) return;
 		if ('id' in slot && ITEM_CATALOG[slot.id]?.consumable) {
-			if (useGameStore.getState().playerHp >= useGameStore.getState().combat.maxHp && useGameStore.getState().combat.maxHp > 0) onNotice('Already at full health');
+			if (useGameStore.getState().playerHp >= useGameStore.getState().combat.maxHp && useGameStore.getState().combat.maxHp > 0)
+				onNotice('Already at full health');
 			else requestPotion(slot.id);
 		} else if (!equipItem(index)) {
 			onNotice(useGameStore.getState().combat.fight ? 'Finish the fight first' : 'Cannot equip that');

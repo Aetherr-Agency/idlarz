@@ -86,13 +86,7 @@ export const globalMenuItems = (full = false): ContextMenuItem[] => {
 };
 
 /** Opens the menu at a screen position: the given entries first, then the global ones below a rule. */
-export const openMenuAt = (
-	x: number,
-	y: number,
-	title: string | undefined,
-	own: ContextMenuItem[] = [],
-	full = false
-): void => {
+export const openMenuAt = (x: number, y: number, title: string | undefined, own: ContextMenuItem[] = [], full = false): void => {
 	const global = globalMenuItems(full);
 	if (own.length) global[0] = { ...global[0], separator: true };
 	useUiStore.getState().openContextMenu({ x, y, title, items: [...own, ...global] });

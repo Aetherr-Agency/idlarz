@@ -22,7 +22,13 @@ const REQUEST_TIMEOUT_MS = 8000;
 const request = async (path: string, init?: RequestInit): Promise<AuthResult> => {
 	try {
 		const response = await fetch(path, { ...init, credentials: 'same-origin', cache: 'no-store', signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
-		const body = (await response.json().catch(() => ({}))) as { user?: { id?: string }; profile?: Profile | null; error?: string; unavailable?: boolean; reason?: UnavailableReason };
+		const body = (await response.json().catch(() => ({}))) as {
+			user?: { id?: string };
+			profile?: Profile | null;
+			error?: string;
+			unavailable?: boolean;
+			reason?: UnavailableReason;
+		};
 		if (response.ok) return { status: 'ok', userId: body.user?.id ?? '', profile: body.profile ?? null };
 		if (response.status === 503 || response.status >= 500 || body.unavailable) {
 			return { status: 'unavailable', reason: body.reason === 'not_configured' ? 'not_configured' : 'outage' };

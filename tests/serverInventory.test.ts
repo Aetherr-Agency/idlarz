@@ -61,10 +61,13 @@ const game = (): PersistedGame => {
 	return structuredClone(pickPersisted(api()));
 };
 /** A loot table that keeps a bad-luck counter (the only keys a save may hold in `lootPity`) */
-const PITY_KEY = Object.values(LOOT_PROFILES).flatMap((profile) => profile.bonusTables.filter((table) => table.pity).map((table) => `${profile.id}:${table.id}`))[0];
+const PITY_KEY = Object.values(LOOT_PROFILES).flatMap((profile) =>
+	profile.bonusTables.filter((table) => table.pity).map((table) => `${profile.id}:${table.id}`),
+)[0];
 const T0 = 1_800_000_000_000;
 const MIN = 60_000;
-const save = (m: ReturnType<typeof memory>, id: string, state: PersistedGame, baseRev: number, at: number) => acceptSave(m.saves, id, 'Zoë', encodeSave(state), baseRev, at, false, m.ledgerRepo);
+const save = (m: ReturnType<typeof memory>, id: string, state: PersistedGame, baseRev: number, at: number) =>
+	acceptSave(m.saves, id, 'Zoë', encodeSave(state), baseRev, at, false, m.ledgerRepo);
 const ok = <T>(out: Online<T>): T => {
 	assert.equal(out.kind, 'ok', JSON.stringify(out));
 	return (out as { kind: 'ok'; value: T }).value;
@@ -95,7 +98,7 @@ const bag = (...slots: BagSlot[]): BagSlot[] => {
 
 // ---------------------------------------------------------------------------------------------------- the ledger owns it
 
-test('a save seeds the ledger\'s inventory the first time, and the answer to an online call carries it when the browser\'s version is not the current one', async () => {
+test("a save seeds the ledger's inventory the first time, and the answer to an online call carries it when the browser's version is not the current one", async () => {
 	const p = await player();
 	assert.equal(p.m.ledgers.get(p.id)!.inv?.ver, 1, 'the first save seeds it');
 	const first = ok(await syncTickets(p.m.deps, p.id, T0 + MIN));
@@ -105,7 +108,7 @@ test('a save seeds the ledger\'s inventory the first time, and the answer to an 
 	assert.equal(same.inv, undefined, 'the same version: nothing to send');
 });
 
-test('an uploaded save cannot change the bag, the gear, the pity or the auto-sell filter: the stored copy carries the ledger\'s', async () => {
+test("an uploaded save cannot change the bag, the gear, the pity or the auto-sell filter: the stored copy carries the ledger's", async () => {
 	const state = game();
 	const p = await player(state);
 	const real = structuredClone(p.inv());
@@ -127,12 +130,24 @@ test('an uploaded save cannot change the bag, the gear, the pity or the auto-sel
 	assert.deepEqual(p.inv(), real, 'and the ledger did not move');
 });
 
-test('the summary is worked out from the ledger\'s gear: a set claimed in an upload gives no bonus', async () => {
+test("the summary is worked out from the ledger's gear: a set claimed in an upload gives no bonus", async () => {
 	const state = game();
 	const p = await player(state);
 	const before = p.m.rows.get(p.id)!.summary;
 	const set = ['head', 'shoulder', 'chest', 'hands', 'legs', 'feet', 'neck', 'cape', 'ring1', 'ring2', 'charm'] as const;
-	const ids = ['obsidian_helm', 'obsidian_pauldrons', 'obsidian_cuirass', 'obsidian_gauntlets', 'obsidian_greaves', 'obsidian_sabatons', 'obsidian_pendant', 'obsidian_cloak', 'obsidian_ring', 'obsidian_ring', 'obsidian_charm'];
+	const ids = [
+		'obsidian_helm',
+		'obsidian_pauldrons',
+		'obsidian_cuirass',
+		'obsidian_gauntlets',
+		'obsidian_greaves',
+		'obsidian_sabatons',
+		'obsidian_pendant',
+		'obsidian_cloak',
+		'obsidian_ring',
+		'obsidian_ring',
+		'obsidian_charm',
+	];
 	const equipment = { ...state.equipment, ...Object.fromEntries(set.map((slot, i) => [slot, plainItem(ids[i])])) };
 	await save(p.m, p.id, { ...state, playSeconds: state.playSeconds + 120, equipment }, 1, T0 + 2 * MIN);
 	const after = p.m.rows.get(p.id)!.summary;
@@ -140,13 +155,22 @@ test('the summary is worked out from the ledger\'s gear: a set claimed in an upl
 	assert.equal(after.derived.killRewardPct ?? 0, 0);
 });
 
-test('a New Game starts the ledger\'s inventory again from the new game; a rebirth wipes it to the starter kit', async () => {
+test("a New Game starts the ledger's inventory again from the new game; a rebirth wipes it to the starter kit", async () => {
 	const state = rebirthReadyGame();
 	const p = await player(state);
 	const worn = { ...p.inv().equipment, head: plainItem('steel_helm') };
 	p.m.ledgers.set(p.id, { ...p.m.ledgers.get(p.id)!, inv: { ...p.inv(), equipment: worn, ver: 5 } });
 	// a rebirth (more rebirths in the save): the gear and the bag are wiped, even though the upload still carried them
-	const reborn: PersistedGame = { ...state, playSeconds: state.playSeconds + 120, prestige: { ...state.prestige, rebirths: state.prestige.rebirths + 1, legacyPoints: state.prestige.legacyPoints + 5, legacyEarned: state.prestige.legacyEarned + 5 } };
+	const reborn: PersistedGame = {
+		...state,
+		playSeconds: state.playSeconds + 120,
+		prestige: {
+			...state.prestige,
+			rebirths: state.prestige.rebirths + 1,
+			legacyPoints: state.prestige.legacyPoints + 5,
+			legacyEarned: state.prestige.legacyEarned + 5,
+		},
+	};
 	const rebirth = await save(p.m, p.id, reborn, 1, T0 + 2 * MIN);
 	assert.equal(rebirth.kind, 'ok', JSON.stringify(rebirth));
 	assert.equal(p.inv().equipment.head, undefined, 'the worn helm is gone');
@@ -165,7 +189,18 @@ test('a bag grows with the Pack Rat level of the save and never shrinks', async 
 	const state = game();
 	const p = await player(state);
 	const size = p.inv().bag.length;
-	await save(p.m, p.id, { ...state, playSeconds: state.playSeconds + 120, merchantUpgrades: { ...state.merchantUpgrades, packrat: 2 }, bag: [...state.bag, null, null, null, null, null, null, null, null] }, 1, T0 + 2 * MIN);
+	await save(
+		p.m,
+		p.id,
+		{
+			...state,
+			playSeconds: state.playSeconds + 120,
+			merchantUpgrades: { ...state.merchantUpgrades, packrat: 2 },
+			bag: [...state.bag, null, null, null, null, null, null, null, null],
+		},
+		1,
+		T0 + 2 * MIN,
+	);
 	ok(await syncTickets(p.m.deps, p.id, T0 + 3 * MIN));
 	assert.equal(p.inv().bag.length, size + 8);
 	const stamped = stampInventory(state, { ...p.inv(), bag: p.inv().bag.slice(0, size) });
@@ -174,7 +209,7 @@ test('a bag grows with the Pack Rat level of the save and never shrinks', async 
 
 // ---------------------------------------------------------------------------------------------------- the player's operations
 
-test('equip, unequip, move, organize and discard change the ledger\'s inventory and bump its version; the answer is the inventory', async () => {
+test("equip, unequip, move, organize and discard change the ledger's inventory and bump its version; the answer is the inventory", async () => {
 	const p = await player();
 	ok(await syncTickets(p.m.deps, p.id, T0 + MIN)); // seeds nothing new: the ledger exists
 	const seeded: Inventory = { ...p.inv(), bag: bag({ item: plainItem('steel_helm') }, { id: 'potion_minor', qty: 2 }, { item: plainItem('steel_mace') }) };
@@ -202,7 +237,7 @@ test('equip, unequip, move, organize and discard change the ledger\'s inventory 
 	assert.deepEqual(p.inv(), off.inv, 'what was answered is what the ledger holds');
 });
 
-test('a sale pays the server\'s price (Haggler from the save) and records the gold as granted, so the save that holds it passes', async () => {
+test("a sale pays the server's price (Haggler from the save) and records the gold as granted, so the save that holds it passes", async () => {
 	const state: PersistedGame = { ...game() };
 	state.merchantUpgrades = { ...state.merchantUpgrades, haggler: 3 };
 	const p = await player(state);
@@ -225,10 +260,13 @@ test('a sale pays the server\'s price (Haggler from the save) and records the go
 	assert.equal(tooMany.ok, false);
 });
 
-test('sellJunk sells the gear up to a rarity and leaves potions and better gear; the auto-sell filter is the ledger\'s too', async () => {
+test("sellJunk sells the gear up to a rarity and leaves potions and better gear; the auto-sell filter is the ledger's too", async () => {
 	const p = await player();
 	const rare = { ...plainItem('steel_mace'), rarity: 'rare' as const };
-	p.m.ledgers.set(p.id, { ...p.m.ledgers.get(p.id)!, inv: { ...p.inv(), bag: bag({ item: plainItem('steel_helm') }, { item: rare }, { id: 'potion_minor', qty: 1 }, { item: plainItem('steel_cuirass') }) } });
+	p.m.ledgers.set(p.id, {
+		...p.m.ledgers.get(p.id)!,
+		inv: { ...p.inv(), bag: bag({ item: plainItem('steel_helm') }, { item: rare }, { id: 'potion_minor', qty: 1 }, { item: plainItem('steel_cuirass') }) },
+	});
 	const junk = await op(p, { action: 'sellJunk', maxRarity: 'uncommon' });
 	assert.equal(junk.count, 2);
 	assert.ok(junk.gold > 0);
@@ -242,7 +280,7 @@ test('sellJunk sells the gear up to a rarity and leaves potions and better gear;
 	assert.equal((await op(p, { action: 'autoSell', rarity: null })).inv.autoSellUpTo, null);
 });
 
-test('purchases add to the ledger\'s bag: shop items and an offered piece; a full bag refuses, an invalid piece refuses', async () => {
+test("purchases add to the ledger's bag: shop items and an offered piece; a full bag refuses, an invalid piece refuses", async () => {
 	const p = await player();
 	const bought = await op(p, { action: 'buyShop', id: 'potion_minor', qty: 3 });
 	assert.equal(bought.ok, true);
@@ -289,7 +327,17 @@ test('changes that swap or sell gear are refused while a fight is open, purchase
 });
 
 test('an operation that is not one is not parsed', () => {
-	for (const body of [{}, { action: 'steal' }, { action: 'equip' }, { action: 'equip', index: 1.5 }, { action: 'unequip', slot: 'wings' }, { action: 'sell', index: 1, qty: 'x' }, { action: 'move', from: 1 }, { action: 'autoSell', rarity: 4 }, { action: 'buyOffer' }]) {
+	for (const body of [
+		{},
+		{ action: 'steal' },
+		{ action: 'equip' },
+		{ action: 'equip', index: 1.5 },
+		{ action: 'unequip', slot: 'wings' },
+		{ action: 'sell', index: 1, qty: 'x' },
+		{ action: 'move', from: 1 },
+		{ action: 'autoSell', rarity: 4 },
+		{ action: 'buyOffer' },
+	]) {
 		assert.equal(parseOp(body), null, JSON.stringify(body));
 	}
 	assert.deepEqual(parseOp({ action: 'sell', index: 2, qty: 3 }), { action: 'sell', index: 2, qty: 3 });
@@ -298,7 +346,12 @@ test('an operation that is not one is not parsed', () => {
 test('applyOp leaves the inventory untouched when it refuses', () => {
 	const inv: Inventory = { ver: 3, bag: bag({ item: plainItem('wooden_sword') }), equipment: {}, lootPity: {}, autoSellUpTo: null };
 	const frozen = structuredClone(inv);
-	for (const refused of [{ action: 'equip', index: 9 }, { action: 'move', from: 0, to: 0 }, { action: 'discard', index: 3 }, { action: 'unequip', slot: 'head' }] as const) {
+	for (const refused of [
+		{ action: 'equip', index: 9 },
+		{ action: 'move', from: 0, to: 0 },
+		{ action: 'discard', index: 3 },
+		{ action: 'unequip', slot: 'head' },
+	] as const) {
 		const result = applyOp(inv, refused, {});
 		assert.equal(result.ok, false);
 		assert.deepEqual(result.inv, frozen);
@@ -307,7 +360,7 @@ test('applyOp leaves the inventory untouched when it refuses', () => {
 
 // ---------------------------------------------------------------------------------------------------- what the server does with drops
 
-test('a chest\'s item goes into the ledger\'s bag (or the auto-sell filter), and the gold of what it sold is granted', async () => {
+test("a chest's item goes into the ledger's bag (or the auto-sell filter), and the gold of what it sold is granted", async () => {
 	const p = await player();
 	await stay(p, 30);
 	const listed = ok(await syncTickets(p.m.deps, p.id, T0 + 31 * MIN)).tickets.chests;

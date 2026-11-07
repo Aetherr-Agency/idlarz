@@ -26,7 +26,7 @@ const tickets = { chests: [], rats: [], king: null };
 
 // ---------------------------------------------------------------------------------------------------- opening a chest on the server
 
-test('a chest opens through the server: the reward is the server\'s, the gems are its balance', async () => {
+test("a chest opens through the server: the reward is the server's, the gems are its balance", async () => {
 	freshGame();
 	growTo(30);
 	patchTileAt(CASTLE_X + 1, CASTLE_Y, { hasChest: true });
@@ -91,20 +91,48 @@ test('the monsters on the map are the server list, where the server put them', (
 	freshGame();
 	growTo(30);
 	const sync = {
-		tickets: { chests: [], rats: [{ n: 4, at: 1000 - 100, lucky: true, x: CASTLE_X + 3, y: CASTLE_Y, spawnLevel: 2 }], king: { n: 9, at: 1000, x: CASTLE_X, y: CASTLE_Y - 4, spawnLevel: 16 } },
+		tickets: {
+			chests: [],
+			rats: [{ n: 4, at: 1000 - 100, lucky: true, x: CASTLE_X + 3, y: CASTLE_Y, spawnLevel: 2 }],
+			king: { n: 9, at: 1000, x: CASTLE_X, y: CASTLE_Y - 4, spawnLevel: 16 },
+		},
 		serverNowSec: 1000,
 		gemsTotal: 1100,
 		nextInSec: 30,
-		combat: { hp: 90, mp: 30, maxHp: 101, maxMp: 40, cd: { heal: 0, stun: 0, potion: 0 }, fight: null, autoBattle: true, autoUse: true, retrySec: 0, at: 1, eventNo: 0, events: [], behind: false, nextPollSec: 8 },
+		combat: {
+			hp: 90,
+			mp: 30,
+			maxHp: 101,
+			maxMp: 40,
+			cd: { heal: 0, stun: 0, potion: 0 },
+			fight: null,
+			autoBattle: true,
+			autoUse: true,
+			retrySec: 0,
+			at: 1,
+			eventNo: 0,
+			events: [],
+			behind: false,
+			nextPollSec: 8,
+		},
 	};
 	const placed = api().applyServerTickets(sync);
 	assert.equal(placed.monsters, 2);
-	assert.deepEqual(api().monsters.map((m) => [m.id, m.type, m.x, m.y, m.level, m.ticket]), [[4, 'thistleBoar', CASTLE_X + 3, CASTLE_Y, 2, 4], [9, 'bossGreatAuroch', CASTLE_X, CASTLE_Y - 4, 16, 9]]);
+	assert.deepEqual(
+		api().monsters.map((m) => [m.id, m.type, m.x, m.y, m.level, m.ticket]),
+		[
+			[4, 'thistleBoar', CASTLE_X + 3, CASTLE_Y, 2, 4],
+			[9, 'bossGreatAuroch', CASTLE_X, CASTLE_Y - 4, 16, 9],
+		],
+	);
 	assert.equal(api().monsters[0].lucky, true);
 	assert.equal(api().gems, 1100);
 	// the next answer lists only the King: the rat is gone from the map
 	api().applyServerTickets({ ...sync, tickets: { ...sync.tickets, rats: [] }, combat: { ...sync.combat, at: 2 } });
-	assert.deepEqual(api().monsters.map((m) => m.id), [9]);
+	assert.deepEqual(
+		api().monsters.map((m) => m.id),
+		[9],
+	);
 });
 
 // ---------------------------------------------------------------------------------------------------- Luck in the loot
@@ -131,7 +159,10 @@ test('Luck raises the chance of gear from a monster and moves the odds toward ra
 
 test('Luck 0 leaves the loot exactly as it was', () => {
 	for (let seed = 1; seed <= 200; seed++) {
-		assert.deepEqual(generateLoot({ sourceId: 'monster', level: 5 }, mulberry32(seed)), generateLoot({ sourceId: 'monster', level: 5, luck: 0 }, mulberry32(seed)));
+		assert.deepEqual(
+			generateLoot({ sourceId: 'monster', level: 5 }, mulberry32(seed)),
+			generateLoot({ sourceId: 'monster', level: 5, luck: 0 }, mulberry32(seed)),
+		);
 	}
 });
 

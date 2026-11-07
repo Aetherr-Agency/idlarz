@@ -50,7 +50,13 @@ test('what an item sells for follows its rarity, item level, quality and affixes
 	assert.ok(sellValueOf({ ...base, quality: 100 }) > plain, 'a better quality roll is worth more');
 	assert.ok(sellValueOf({ ...base, quality: 0 }) < plain);
 	const one = sellValueOf({ ...base, affixes: [{ id: 'regen_prefix', roll: 50 }] });
-	const two = sellValueOf({ ...base, affixes: [{ id: 'regen_prefix', roll: 50 }, { id: 'luck_prefix', roll: 50 }] });
+	const two = sellValueOf({
+		...base,
+		affixes: [
+			{ id: 'regen_prefix', roll: 50 },
+			{ id: 'luck_prefix', roll: 50 },
+		],
+	});
 	assert.ok(one > plain && two > one, 'every affix adds to the value');
 	assert.ok(sellValueOf({ ...base, affixes: [{ id: 'regen_prefix', roll: 100 }] }) > one, 'and a better roll adds more');
 	assert.ok(sellValueOf(ofRarity('common', 1)) >= 100, 'even the plainest drop is worth a few minutes of early income, not a coin');
@@ -163,7 +169,9 @@ test('buyItem: charges the price, adds the item, and a full bag costs nothing', 
 	const { id, price } = MERCHANT_SHOP_ITEMS[0];
 	assert.equal(api().buyItem(id, 3), true);
 	assert.equal(api().resources.gold, 10_000 - price * 3);
-	const bought = api().bag.map((s) => stackOf(s)).find((s) => s?.id === id);
+	const bought = api()
+		.bag.map((s) => stackOf(s))
+		.find((s) => s?.id === id);
 	assert.ok(bought ? bought.qty >= 3 : api().bag.filter((s) => slotItemId(s) === id).length >= 3);
 
 	store.setState({ bag: emptyBag().map(() => ({ item: plainItem('wooden_sword') })), resources: { ...api().resources, gold: 1e9 } });

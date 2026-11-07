@@ -32,8 +32,7 @@ import { connectedCluster } from '../src/utils/cluster';
 import { syntheticWorld } from '../src/utils/worldGen';
 
 const own = (biome: BiomeType, extra: Partial<Tile> = {}): Tile => ({ biome, isOwned: true, ...extra });
-const label = (set: Set<number>) =>
-	[...set].map((k) => `${keyX(k)},${keyY(k)}`).sort();
+const label = (set: Set<number>) => [...set].map((k) => `${keyX(k)},${keyY(k)}`).sort();
 
 test('tile keys round trip, including negative and extreme coordinates', () => {
 	for (const [x, y] of [
@@ -122,7 +121,7 @@ test('owned tiles are listed in insertion order, and the entry list is cached pe
 	]);
 	assert.deepEqual(
 		ownedEntries(w).map((e) => `${e.x},${e.y}`),
-		['9,9', '-2,4', '0,0']
+		['9,9', '-2,4', '0,0'],
 	);
 	assert.equal(ownedEntries(w), ownedEntries(w));
 	const seen: string[] = [];
@@ -143,9 +142,7 @@ test('neighbours and the frontier', () => {
 
 const parse = (rows: string[]): Tile[][] => {
 	const map: Record<string, BiomeType> = { F: 'forest', P: 'plains', C: 'castle', L: 'lake', '.': 'empty' };
-	return rows.map((r) =>
-		[...r].map((c) => (c === '.' ? ({ biome: 'empty', isOwned: false } as Tile) : own(map[c])))
-	);
+	return rows.map((r) => [...r].map((c) => (c === '.' ? ({ biome: 'empty', isOwned: false } as Tile) : own(map[c]))));
 };
 
 test('rows adapter round trips with an offset', () => {
@@ -158,7 +155,7 @@ test('rows adapter round trips with an offset', () => {
 	const back = worldToRows(w, -1, 10, 3, 2);
 	assert.deepEqual(
 		back.map((r) => r.map((t) => (t.isOwned ? t.biome : '.')).join(',')),
-		['forest,plains,.', '.,castle,lake']
+		['forest,plains,.', '.,castle,lake'],
 	);
 });
 
@@ -184,11 +181,11 @@ test('syntheticWorld is deterministic, connected, holds the castle and reaches n
 	assert.equal(ownedCount(a), 800);
 	assert.deepEqual(
 		ownedEntries(a).map((e) => [e.x, e.y, e.tile.biome]),
-		ownedEntries(b).map((e) => [e.x, e.y, e.tile.biome])
+		ownedEntries(b).map((e) => [e.x, e.y, e.tile.biome]),
 	);
 	assert.notDeepEqual(
 		ownedEntries(a).map((e) => [e.x, e.y]),
-		ownedEntries(syntheticWorld(800, 8)).map((e) => [e.x, e.y])
+		ownedEntries(syntheticWorld(800, 8)).map((e) => [e.x, e.y]),
 	);
 	assert.equal(getTile(a, CASTLE_X, CASTLE_Y)?.biome, 'castle');
 	assert.ok((ownedBounds(a)?.minX ?? 0) < 0, 'drifts left past x = 0');
@@ -197,7 +194,12 @@ test('syntheticWorld is deterministic, connected, holds the castle and reaches n
 	const stack = [tileKey(CASTLE_X, CASTLE_Y)];
 	while (stack.length) {
 		const k = stack.pop() as number;
-		for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) {
+		for (const [dx, dy] of [
+			[-1, 0],
+			[1, 0],
+			[0, -1],
+			[0, 1],
+		]) {
 			const nk = tileKey(keyX(k) + dx, keyY(k) + dy);
 			if (!seen.has(nk) && isOwnedAt(a, keyX(k) + dx, keyY(k) + dy)) {
 				seen.add(nk);

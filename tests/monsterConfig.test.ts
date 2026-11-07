@@ -32,19 +32,30 @@ test('monsters may spawn up to 9 tiles from the castle but never beside it, each
 });
 
 test('each biome is a step up: its monsters and its boss start at higher levels, hit harder and have more HP than the biome before', () => {
-	const ladder = [['thistleBoar', 'bossGreatAuroch'], ['mossbackWolf', 'bossElderStag'], ['garbageOgre', 'bossMireMatriarch'], ['frostHare', 'bossWinterWyrm']] as const;
+	const ladder = [
+		['thistleBoar', 'bossGreatAuroch'],
+		['mossbackWolf', 'bossElderStag'],
+		['garbageOgre', 'bossMireMatriarch'],
+		['frostHare', 'bossWinterWyrm'],
+	] as const;
 	for (let i = 1; i < ladder.length; i++) {
 		const [before, after] = [MONSTERS[ladder[i - 1][0]], MONSTERS[ladder[i][0]]];
 		assert.ok(after.spawnWindow.base > before.spawnWindow.base && after.spawnWindow.cap > before.spawnWindow.cap, 'higher levels');
 		assert.ok(after.hp > before.hp * 0.6 && after.armor >= before.armor, 'tougher at the start');
 		const [kingBefore, kingAfter] = [MONSTERS[ladder[i - 1][1]], MONSTERS[ladder[i][1]]];
-		assert.ok(kingAfter.hp > kingBefore.hp && kingAfter.armor > kingBefore.armor && kingAfter.spawnWindow.base > kingBefore.spawnWindow.base, 'the boss climbs too');
+		assert.ok(
+			kingAfter.hp > kingBefore.hp && kingAfter.armor > kingBefore.armor && kingAfter.spawnWindow.base > kingBefore.spawnWindow.base,
+			'the boss climbs too',
+		);
 	}
 });
 
 test('the plains monster and boss carry the numbers of the old rat and Rat King (the balance sims keep their meaning)', () => {
 	assert.deepEqual([MONSTERS.thistleBoar.hp, MONSTERS.thistleBoar.attack, MONSTERS.thistleBoar.attackSpeed, MONSTERS.thistleBoar.rewardSec], [100, 4, 0.5, 90]);
-	assert.deepEqual([MONSTERS.bossGreatAuroch.hp, MONSTERS.bossGreatAuroch.attack, MONSTERS.bossGreatAuroch.armor, MONSTERS.bossGreatAuroch.timeLimitSec], [1000, 11, 15, 75]);
+	assert.deepEqual(
+		[MONSTERS.bossGreatAuroch.hp, MONSTERS.bossGreatAuroch.attack, MONSTERS.bossGreatAuroch.armor, MONSTERS.bossGreatAuroch.timeLimitSec],
+		[1000, 11, 15, 75],
+	);
 });
 
 test('every monster attacks at a speed (attacks per second, like a weapon), has a loot source and a reward', () => {

@@ -36,21 +36,13 @@ const CastleSprite: React.FC<CastleSpriteProps> = ({ level, variant = 'tile', cl
 
 	// Fortress levels: the castle is a keep on its own tile (the walls and towers are drawn by CastleFortress around the area)
 	if (level >= CASTLE_FORTRESS.fromLevel) {
-		return (
-			<span
-				role='img'
-				aria-label={`Castle level ${level}`}
-				className={cn('castle-sprite castle-keep', inline && 'castle-inline', className)}
-			/>
-		);
+		return <span role='img' aria-label={`Castle level ${level}`} className={cn('castle-sprite castle-keep', inline && 'castle-inline', className)} />;
 	}
 
 	if (glowing) {
 		const tier = castleTier(level);
 		return (
-			<span
-				className={cn('castle-sprite castle-max', inline && 'castle-inline', className)}
-				style={{ '--tier': tier } as React.CSSProperties}>
+			<span className={cn('castle-sprite castle-max', inline && 'castle-inline', className)} style={{ '--tier': tier } as React.CSSProperties}>
 				{!inline &&
 					SPARKS.slice(0, Math.min(SPARKS.length, 4 + Math.ceil(tier / 2))).map((s) => (
 						<i key={s.x} className='castle-spark' style={{ '--x': s.x, '--d': s.d } as React.CSSProperties} />
@@ -59,13 +51,7 @@ const CastleSprite: React.FC<CastleSpriteProps> = ({ level, variant = 'tile', cl
 		);
 	}
 
-	return (
-		<PixelIcon
-			name={castleIconName(level)}
-			alt={`Castle level ${level}`}
-			className={cn('castle-sprite', inline && 'castle-inline', className)}
-		/>
-	);
+	return <PixelIcon name={castleIconName(level)} alt={`Castle level ${level}`} className={cn('castle-sprite', inline && 'castle-inline', className)} />;
 };
 
 export default CastleSprite;

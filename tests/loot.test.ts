@@ -60,8 +60,14 @@ test('the Rat King always drops a Rattatui piece and every potion that lists him
 	const king = { type: 'bossGreatAuroch', level: 15 } as const;
 	const r = rollKillLoot(king, ctx, () => 0.999);
 	assert.equal(r.items.filter(isSetPiece).length, 1);
-	assert.deepEqual(r.items.find((d) => baseOf(d) === 'potion_minor'), { kind: 'consumable', id: 'potion_minor', qty: 2 });
-	assert.deepEqual(r.items.find((d) => baseOf(d) === 'potion_greater'), { kind: 'consumable', id: 'potion_greater', qty: 1 });
+	assert.deepEqual(
+		r.items.find((d) => baseOf(d) === 'potion_minor'),
+		{ kind: 'consumable', id: 'potion_minor', qty: 2 },
+	);
+	assert.deepEqual(
+		r.items.find((d) => baseOf(d) === 'potion_greater'),
+		{ kind: 'consumable', id: 'potion_greater', qty: 1 },
+	);
 	assert.equal(r.items.some(isLegendaryWeapon), false);
 	const lucky = rollKillLoot(king, ctx, () => 0).items;
 	assert.equal(lucky.filter(isSetPiece).length, 2);
@@ -103,7 +109,8 @@ test('older rats unlock better material: steel from level 5, obsidian from level
 		return ids;
 	};
 	assert.ok(!seen(5).has('potion_greater') && seen(7).has('potion_greater'));
-	for (const level of [1, 5, 9]) for (const id of seen(level)) assert.ok(!ITEM_CATALOG[id].pools?.length || id.startsWith('potion'), `${id} is not a named item`);
+	for (const level of [1, 5, 9])
+		for (const id of seen(level)) assert.ok(!ITEM_CATALOG[id].pools?.length || id.startsWith('potion'), `${id} is not a named item`);
 });
 
 test('the king prefers pieces you do not own yet, and falls back to duplicates once you own all', () => {
@@ -159,7 +166,11 @@ test('every base a level 1 rat can drop comes up, in even shares (all pool weigh
 test('the monster level sets the item level of kill drops; the pity counters come back updated', () => {
 	const rng = mulberry32(35);
 	const top = (level: number) =>
-		Math.max(...Array.from({ length: 4000 }, () => Math.max(0, ...gearOnly(rollKillLoot({ type: 'thistleBoar', level }, ctx, rng).items).map((d) => (d.kind === 'gear' ? d.item.level : 0)))));
+		Math.max(
+			...Array.from({ length: 4000 }, () =>
+				Math.max(0, ...gearOnly(rollKillLoot({ type: 'thistleBoar', level }, ctx, rng).items).map((d) => (d.kind === 'gear' ? d.item.level : 0))),
+			),
+		);
 	assert.ok(top(20) > top(5) + 10);
 	assert.equal(top(5), 6, 'level 5 plus the one level of variance');
 	const king = rollKillLoot({ type: 'bossGreatAuroch', level: 15 }, { ...ctx, pity: { 'boss:king_legendary': 4 } }, () => 0.999);
@@ -179,7 +190,7 @@ test('Gold Find raises kill gold by its percentage and leaves a plain kill alone
 	assert.equal(rollKillLoot(T1, { ...ctx, goldFind: 0 }, () => 0.999).gold, plain);
 });
 
-test('a kill pays pelts: a share of the farm hide income for the monster\'s reward seconds, nothing without a farm', () => {
+test("a kill pays pelts: a share of the farm hide income for the monster's reward seconds, nothing without a farm", () => {
 	const rat = monsterStats('thistleBoar', 5).rewardSec;
 	assert.equal(rollKillLoot({ type: 'thistleBoar', level: 5 }, { ...ctx, hidePerSec: 4 }, () => 0.5).hide, Math.floor(4 * rat * COMBAT.rewards.hideShare));
 	assert.equal(rollKillLoot({ type: 'thistleBoar', level: 5 }, ctx, () => 0.5).hide, 0, 'no hide income, no pelts');

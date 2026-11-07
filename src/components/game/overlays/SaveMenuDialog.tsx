@@ -2,15 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useUiStore } from '@/stores/uiStore';
 import { useGameStore } from '@/stores/gameStore';
 import { pickPersisted, type PersistedGame } from '@/lib/sanitizeSave';
-import {
-	commitImport,
-	exportSaveText,
-	getDamagedSave,
-	getSaveInfo,
-	parseSaveText,
-	resetSave,
-	type SaveInfo,
-} from '@/lib/saveStorage';
+import { commitImport, exportSaveText, getDamagedSave, getSaveInfo, parseSaveText, resetSave, type SaveInfo } from '@/lib/saveStorage';
 import { copyText } from '@/lib/clipboard';
 import { formatTime } from '@/utils/formatters';
 import { castleLevelOf } from '@/lib/castleWard';
@@ -33,10 +25,7 @@ const ago = (time: number | null): string => {
 	return `${Math.round(sec / 60)} min ago`;
 };
 
-type Parsed =
-	| { kind: 'none' }
-	| { kind: 'ok'; state: PersistedGame; savedAt: number | null }
-	| { kind: 'error'; reason: string };
+type Parsed = { kind: 'none' } | { kind: 'ok'; state: PersistedGame; savedAt: number | null } | { kind: 'error'; reason: string };
 
 /**
  * Save & backup: the game saves itself in this browser; here the player can see that it works, copy the whole save
@@ -71,11 +60,7 @@ const SaveDialogBody: React.FC = () => {
 		let alive = true;
 		void parseSaveText(importText).then((result) => {
 			if (!alive) return;
-			setParsed(
-				result.ok
-					? { kind: 'ok', state: result.state, savedAt: result.savedAt }
-					: { kind: 'error', reason: result.reason }
-			);
+			setParsed(result.ok ? { kind: 'ok', state: result.state, savedAt: result.savedAt } : { kind: 'error', reason: result.reason });
 		});
 		return () => {
 			alive = false;
@@ -141,14 +126,11 @@ const SaveDialogBody: React.FC = () => {
 				</div>
 				{info?.persisted === true && <div className='text-xs text-green-400'>Browser storage is protected from clean-up.</div>}
 				{info?.persisted === false && (
-					<div className='text-xs text-amber-300'>
-						The browser may clear this save if space runs low. Copy it below now and then.
-					</div>
+					<div className='text-xs text-amber-300'>The browser may clear this save if space runs low. Copy it below now and then.</div>
 				)}
 				{info?.error && (
 					<div className='text-xs text-red-400'>
-						The browser refuses to store the save ({info.error === 'full' ? 'storage full' : 'storage blocked'}). Copy it
-						below to keep your progress.
+						The browser refuses to store the save ({info.error === 'full' ? 'storage full' : 'storage blocked'}). Copy it below to keep your progress.
 					</div>
 				)}
 			</div>
@@ -223,8 +205,7 @@ const SaveDialogBody: React.FC = () => {
 							<div className='mt-3'>
 								<div className='px-h'>Replace current progress?</div>
 								<div className='text-[#d8c8a0] mb-3'>
-									Level {ok.level.level}, castle {castleLevelOf(ok.tiles)}, {countOwnedTiles(ok.tiles)} tiles,{' '}
-									{formatTime(ok.playSeconds)} played
+									Level {ok.level.level}, castle {castleLevelOf(ok.tiles)}, {countOwnedTiles(ok.tiles)} tiles, {formatTime(ok.playSeconds)} played
 									{parsed.kind === 'ok' && parsed.savedAt ? `, saved ${new Date(parsed.savedAt).toLocaleString()}` : ''}.
 								</div>
 								<div className='flex justify-between'>

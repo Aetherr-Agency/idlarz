@@ -78,5 +78,5 @@ export const AFFIXES: AffixDef[] = [
 // No prototype: an affix id from a save must not resolve to 'constructor' and friends
 export const AFFIX_CATALOG: Record<string, AffixDef> = Object.assign(
 	Object.create(null) as Record<string, AffixDef>,
-	Object.fromEntries(AFFIXES.map((affix) => [affix.id, affix]))
+	Object.fromEntries(AFFIXES.map((affix) => [affix.id, affix])),
 );

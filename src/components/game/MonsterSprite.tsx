@@ -29,7 +29,14 @@ const MonsterSprite: React.FC<{
 	const size = wip ? monsterArtSize(wip.id, wip.grade) : undefined;
 	const boss = wip ? wip.grade === 'boss' : MONSTERS[type].grade === 'boss';
 	return (
-		<span className='tile-monster' data-king={boss} data-boss={boss} data-lucky={lucky} title={lucky ? 'A lucky monster: bigger rewards' : undefined} style={wip ? { width: size, height: size } : undefined}>
+		<span
+			className='tile-monster'
+			data-king={boss}
+			data-boss={boss}
+			data-lucky={lucky}
+			title={lucky ? 'A lucky monster: bigger rewards' : undefined}
+			style={wip ? { width: size, height: size } : undefined}
+		>
 			{wip ? (
 				// eslint-disable-next-line @next/next/no-img-element
 				<img src={monsterArtUrl(wip)} alt={wip.label} className='tile-monster-img tile-monster-still' draggable={false} />
@@ -43,7 +50,12 @@ const MonsterSprite: React.FC<{
 			)}
 			{growth && (
 				// the bar restarts with every level (key) and fills over the time that is left
-				<span key={level} className='tile-monster-grow' aria-hidden style={{ '--grow-left': `${growth.leftSec}s`, '--grow-from': growth.fraction, '--grow-total': `${intervalSec}s` } as React.CSSProperties} />
+				<span
+					key={level}
+					className='tile-monster-grow'
+					aria-hidden
+					style={{ '--grow-left': `${growth.leftSec}s`, '--grow-from': growth.fraction, '--grow-total': `${intervalSec}s` } as React.CSSProperties}
+				/>
 			)}
 			<span className='tile-monster-tier' data-boss={boss} data-maxed={maxed} title={maxed ? 'Fully grown' : undefined}>
 				{boss ? '☠ ' : ''}

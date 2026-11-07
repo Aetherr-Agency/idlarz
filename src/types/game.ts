@@ -63,27 +63,9 @@ export interface Tile {
 	hasChest?: boolean;
 }
 
-export type EquipmentSlot =
-	| 'head'
-	| 'shoulder'
-	| 'chest'
-	| 'hands'
-	| 'legs'
-	| 'feet'
-	| 'neck'
-	| 'cape'
-	| 'ring1'
-	| 'ring2'
-	| 'charm'
-	| 'mainHand'
-	| 'offHand';
+export type EquipmentSlot = 'head' | 'shoulder' | 'chest' | 'hands' | 'legs' | 'feet' | 'neck' | 'cape' | 'ring1' | 'ring2' | 'charm' | 'mainHand' | 'offHand';
 
-export type EquipmentRarity =
-	| 'common'
-	| 'uncommon'
-	| 'rare'
-	| 'epic'
-	| 'legendary';
+export type EquipmentRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
 
 export type ItemKind = 'weapon' | 'offhand' | 'armor' | 'accessory' | 'consumable';
 
@@ -252,12 +234,7 @@ export interface TileProps {
 	canAfford?: boolean;
 }
 
-export type MerchantTab =
-	| 'resources'
-	| 'goods'
-	| 'upgrades'
-	| 'quests'
-	| 'gambling';
+export type MerchantTab = 'resources' | 'goods' | 'upgrades' | 'quests' | 'gambling';
 
 /** The merchant's shuffling shelf: gear offers rolled at `at` (play seconds); the price is derived from the item, never saved */
 export interface MerchantStock {

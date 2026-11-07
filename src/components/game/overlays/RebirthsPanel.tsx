@@ -70,7 +70,9 @@ const RebirthsPanel: React.FC = () => {
 			{entries === null && <p className='text-xs text-[#a89878]'>The history could not be loaded. Check your connection and open this tab again.</p>}
 			{entries && entries.length === 0 && (
 				<p className='text-xs text-[#a89878]'>
-					{rebirths > 0 ? 'Rebirths from before the history existed are not listed. The next one will be.' : 'No rebirth yet. Your runs are listed here once you start over.'}
+					{rebirths > 0
+						? 'Rebirths from before the history existed are not listed. The next one will be.'
+						: 'No rebirth yet. Your runs are listed here once you start over.'}
 				</p>
 			)}
 			{entries?.map((entry, index) => <Run key={entry.rebirthNo} entry={entry} latest={index === 0} />)}

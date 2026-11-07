@@ -5,7 +5,9 @@
 	overflow: hidden;
 	background: #0a0e1c;
 	border: 2px solid #8a6a2c;
-	box-shadow: 0 0 0 1px #2a1a08, 0 3px 10px rgba(0, 0, 0, 0.55);
+	box-shadow:
+		0 0 0 1px #2a1a08,
+		0 3px 10px rgba(0, 0, 0, 0.55);
 	image-rendering: pixelated;
 	cursor: crosshair;
 	touch-action: none;

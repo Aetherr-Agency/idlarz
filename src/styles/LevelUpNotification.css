@@ -97,7 +97,9 @@
 	height: 180px;
 	border-radius: 50%;
 	border: 6px solid #fff0b0;
-	box-shadow: 0 0 0 3px #b27aff, 0 0 24px 4px rgba(255, 210, 100, 0.8);
+	box-shadow:
+		0 0 0 3px #b27aff,
+		0 0 24px 4px rgba(255, 210, 100, 0.8);
 	opacity: 0;
 	animation: lu-ring 1.8s steps(14) infinite;
 }
@@ -176,7 +178,9 @@
 .lu-orb {
 	margin-bottom: 4px;
 	filter: drop-shadow(0 0 22px rgba(170, 100, 255, 0.95)) drop-shadow(0 0 60px rgba(255, 200, 90, 0.6));
-	animation: lu-pop 0.8s cubic-bezier(0.2, 1.6, 0.4, 1) 0.15s both, lu-bob 2.4s steps(4) 1s infinite alternate;
+	animation:
+		lu-pop 0.8s cubic-bezier(0.2, 1.6, 0.4, 1) 0.15s both,
+		lu-bob 2.4s steps(4) 1s infinite alternate;
 }
 
 .lu-orb .level-orb {
@@ -184,7 +188,12 @@
 }
 
 .lu-orb .level-orb-num {
-	text-shadow: 6px 0 0 #10042c, -6px 0 0 #10042c, 0 6px 0 #10042c, 0 -6px 0 #10042c, 0 12px 0 #10042c;
+	text-shadow:
+		6px 0 0 #10042c,
+		-6px 0 0 #10042c,
+		0 6px 0 #10042c,
+		0 -6px 0 #10042c,
+		0 12px 0 #10042c;
 	color: #fff6c8;
 }
 
@@ -270,7 +279,12 @@
 	letter-spacing: 3px;
 	line-height: 1;
 	color: #fff2b0;
-	text-shadow: 0 4px 0 #6a3a00, 4px 0 0 #6a3a00, -4px 0 0 #6a3a00, 0 -4px 0 #6a3a00, 0 0 22px rgba(255, 200, 70, 0.9);
+	text-shadow:
+		0 4px 0 #6a3a00,
+		4px 0 0 #6a3a00,
+		-4px 0 0 #6a3a00,
+		0 -4px 0 #6a3a00,
+		0 0 22px rgba(255, 200, 70, 0.9);
 }
 
 .lu-title span {
@@ -305,7 +319,9 @@
 	font-style: normal;
 	font-weight: 700;
 	color: #d7b4ff;
-	text-shadow: 0 3px 0 #1a0640, 0 0 12px rgba(170, 100, 255, 0.9);
+	text-shadow:
+		0 3px 0 #1a0640,
+		0 0 12px rgba(170, 100, 255, 0.9);
 }
 
 .lu-reward {
@@ -317,7 +333,9 @@
 	text-shadow: 0 2px 0 #0a1a06;
 	background: rgba(10, 18, 8, 0.75);
 	border: 3px solid #4a8a2c;
-	box-shadow: 0 0 0 2px #080504, 0 0 16px rgba(120, 255, 80, 0.35);
+	box-shadow:
+		0 0 0 2px #080504,
+		0 0 16px rgba(120, 255, 80, 0.35);
 	animation: lu-rise 0.5s steps(5) 1.35s both;
 }
 
@@ -327,7 +345,9 @@
 	letter-spacing: 2px;
 	text-transform: uppercase;
 	color: #8a7a62;
-	animation: lu-rise 0.5s steps(5) 2s both, lu-blink 1.4s steps(2) 2.5s infinite;
+	animation:
+		lu-rise 0.5s steps(5) 2s both,
+		lu-blink 1.4s steps(2) 2.5s infinite;
 }
 
 @keyframes lu-rise {

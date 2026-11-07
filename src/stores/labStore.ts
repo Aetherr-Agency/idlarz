@@ -278,12 +278,14 @@ export const useLabStore = create<LabState>((set, get) => {
 			const castleLevel = castleLevelOf(tiles);
 			// the monster's own biome (its art folder), clear of the castle ward, buildings, chests and other monsters
 			const eligible = ownedEntries(tiles).filter(
-				({ x, y, tile }) =>
-					tile.biome === entry.biomes[0] && !tile.building && !tile.hasChest && !taken.has(`${x},${y}`) && !isInWard(x, y, castleLevel)
+				({ x, y, tile }) => tile.biome === entry.biomes[0] && !tile.building && !tile.hasChest && !taken.has(`${x},${y}`) && !isInWard(x, y, castleLevel),
 			);
 			for (let i = 0; i < count && eligible.length; i++) {
 				const { x, y } = eligible.splice(Math.floor(random() * eligible.length), 1)[0];
-				monsters = [...monsters, { id: nextId, type: (id in MONSTERS ? id : 'thistleBoar') as MonsterType, level: monsterLevel, spawnLevel: monsterLevel, x, y, ageSec: 0, art: id }];
+				monsters = [
+					...monsters,
+					{ id: nextId, type: (id in MONSTERS ? id : 'thistleBoar') as MonsterType, level: monsterLevel, spawnLevel: monsterLevel, x, y, ageSec: 0, art: id },
+				];
 				nextId += 1;
 			}
 			set({ monsters, nextId });

@@ -6,11 +6,7 @@ import { RATTATUI_SET, STARTER_EQUIPMENT } from '../src/config/itemCatalog';
 import { ITEM_STAT_KEYS, MAX_ITEM_LEVEL, familyPieces, STAT_BASE_BY_TIER, WEAPON_ATTACK_SPEED, baseStat, levelScale, weaponDps } from '../src/catalog';
 import type { EquipmentSlot } from '../src/types/game';
 
-const ALL_SLOTS: EquipmentSlot[] = [
-	...EQUIPMENT_LAYOUT.left,
-	...EQUIPMENT_LAYOUT.right,
-	...EQUIPMENT_LAYOUT.bottom,
-];
+const ALL_SLOTS: EquipmentSlot[] = [...EQUIPMENT_LAYOUT.left, ...EQUIPMENT_LAYOUT.right, ...EQUIPMENT_LAYOUT.bottom];
 
 test('catalog keys equal item ids', () => {
 	for (const [key, def] of Object.entries(ITEM_CATALOG)) assert.equal(def.id, key);
@@ -93,7 +89,11 @@ test('rarity follows the family: wood and cloth common, steel uncommon, obsidian
 });
 
 test('every weapon type has a steel or obsidian version and every weapon comes with its stats', () => {
-	const types = new Set(Object.values(ITEM_CATALOG).filter((d) => d.kind === 'weapon').map((d) => d.weaponType));
+	const types = new Set(
+		Object.values(ITEM_CATALOG)
+			.filter((d) => d.kind === 'weapon')
+			.map((d) => d.weaponType),
+	);
 	for (const t of ['sword', 'mace', 'maul', 'axe', 'dagger', 'spear', 'bow', 'crossbow', 'staff', 'wand']) assert.ok(types.has(t as never), t);
 });
 

@@ -9,7 +9,6 @@ import { plainItem } from '../src/lib/itemInstance';
 import { emptyBag } from '../src/lib/inventory';
 import { ownedCount, patchTile, setTile } from '../src/utils/world';
 
-
 /** A played game with buildings, a chest, gear and a monster, as a plain persisted slice. */
 const playedGame = (): PersistedGame => {
 	api().resetGame();
@@ -18,7 +17,7 @@ const playedGame = (): PersistedGame => {
 	bag[2] = { item: plainItem('rattatui_tunic') };
 	store.setState((s) => {
 		const lots = gridCells(s.tiles).filter(({ t }) => t.isOwned && t.biome !== 'castle');
-		let tiles = setTile(s.tiles, lots[0].x, lots[0].y,{ biome: 'forest', isOwned: true, building: 'tavern' });
+		let tiles = setTile(s.tiles, lots[0].x, lots[0].y, { biome: 'forest', isOwned: true, building: 'tavern' });
 		tiles = patchTile(tiles, lots[1].x, lots[1].y, { hasChest: true });
 		return { tiles, activeChests: 1, bag, equipment: { ...STARTER_EQUIPMENT, head: plainItem('rattatui_cap') }, playerName: 'Zoë' } as never;
 	});
@@ -67,7 +66,10 @@ test('the text is compact: only owned land is written, derived values are not', 
 	assert.equal('level' in body, false);
 	assert.equal('activeChests' in body, false);
 	assert.deepEqual(Object.keys(body.characterStats as object).sort(), ['availablePoints', 'charisma', 'dexterity', 'intelligence', 'strength', 'vitality']);
-	assert.equal((body.land as [number, number, string][]).reduce((n, row) => n + row[2].length, 0), ownedCount(game.tiles));
+	assert.equal(
+		(body.land as [number, number, string][]).reduce((n, row) => n + row[2].length, 0),
+		ownedCount(game.tiles),
+	);
 	assert.ok(encodeSave(game).length < 8000, 'a 16-tile game is a few KB');
 });
 
@@ -76,7 +78,15 @@ test('pasted text survives line breaks, spaces and quotes; damage is reported, n
 	const wrapped = `"${text.replace(/(.{60})/g, '$1\r\n  ')}"\n`;
 	assert.equal(decodeSave(wrapped).ok, true);
 
-	for (const broken of ['', 'hello', SAVE_PREFIX, `${SAVE_PREFIX}abc.def`, text.slice(0, text.length - 20), text.slice(0, 40) + 'A' + text.slice(41), text + 'x']) {
+	for (const broken of [
+		'',
+		'hello',
+		SAVE_PREFIX,
+		`${SAVE_PREFIX}abc.def`,
+		text.slice(0, text.length - 20),
+		text.slice(0, 40) + 'A' + text.slice(41),
+		text + 'x',
+	]) {
 		const r = decodeSave(broken);
 		assert.equal(r.ok, false, broken.slice(0, 30));
 	}

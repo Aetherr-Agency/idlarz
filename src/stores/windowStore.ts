@@ -67,8 +67,7 @@ export const useWindowStore = create<WindowState>((set, get) => ({
 		else if (order[order.length - 1] !== id) set({ order: toFront(order, id) });
 		else set({ order: order.filter((other) => other !== id) });
 	},
-	focusWindow: (id) =>
-		set((state) => (state.order[state.order.length - 1] === id || !isOpen(state.order, id) ? state : { order: toFront(state.order, id) })),
+	focusWindow: (id) => set((state) => (state.order[state.order.length - 1] === id || !isOpen(state.order, id) ? state : { order: toFront(state.order, id) })),
 	moveWindow: (id, x, y) => set((state) => ({ positions: { ...state.positions, [id]: { x, y } } })),
 	savePositions: () => writeJsonPref(POSITIONS_KEY, get().positions),
 	resizeWindow: (id, w, h) => set((state) => ({ sizes: { ...state.sizes, [id]: { w, h } } })),

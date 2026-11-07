@@ -77,7 +77,13 @@ export const validateLootData = (data: LootData = LOOT_DATA, { maxCastleLevel = 
 	// ---- pools
 	for (const [id, pool] of Object.entries(data.pools)) {
 		if (pool.id !== id) err(`pool ${id}: id field is ${pool.id}`);
-		for (const ref of [...(pool.includeIds ?? []), ...(pool.excludeIds ?? []), ...Object.keys(pool.weights ?? {}), ...Object.keys(pool.quantities ?? {}), ...Object.keys(pool.minLevels ?? {})]) {
+		for (const ref of [
+			...(pool.includeIds ?? []),
+			...(pool.excludeIds ?? []),
+			...Object.keys(pool.weights ?? {}),
+			...Object.keys(pool.quantities ?? {}),
+			...Object.keys(pool.minLevels ?? {}),
+		]) {
 			if (!data.items[ref]) err(`pool ${id}: unknown item ${ref}`);
 		}
 		if (pool.enabled && poolMembers(data, id).length === 0) err(`pool ${id}: enabled but has no items`);
@@ -85,7 +91,8 @@ export const validateLootData = (data: LootData = LOOT_DATA, { maxCastleLevel = 
 
 	// ---- profiles and sources
 	const checkRolls = (where: string, rolls: RollsDef) => {
-		if (!(Number.isInteger(rolls.min) && Number.isInteger(rolls.max) && rolls.min >= 0 && rolls.max >= rolls.min)) err(`${where}: bad roll count ${rolls.min}-${rolls.max}`);
+		if (!(Number.isInteger(rolls.min) && Number.isInteger(rolls.max) && rolls.min >= 0 && rolls.max >= rolls.min))
+			err(`${where}: bad roll count ${rolls.min}-${rolls.max}`);
 		if ((rolls.guaranteed ?? 0) > rolls.max) err(`${where}: guaranteed rolls exceed the maximum`);
 		if (!isProb(rolls.chancePerRoll)) err(`${where}: chancePerRoll must be 0-1`);
 	};
@@ -147,8 +154,15 @@ export const validateLootData = (data: LootData = LOOT_DATA, { maxCastleLevel = 
 				else any = true;
 				for (const c of fits) {
 					const room = Object.values(data.affixes).filter((a) => affixFits(a, c.def, level, rarity)).length;
-					const groups = new Set(Object.values(data.affixes).filter((a) => affixFits(a, c.def, level, rarity)).map((a) => a.group)).size;
-					if (groups < rarity.minAffixes) warnings.push(`item ${c.def.id} at level ${level} can only roll ${groups} affix group(s) of the ${rarity.minAffixes} ${r} asks for (${room} affixes fit)`);
+					const groups = new Set(
+						Object.values(data.affixes)
+							.filter((a) => affixFits(a, c.def, level, rarity))
+							.map((a) => a.group),
+					).size;
+					if (groups < rarity.minAffixes)
+						warnings.push(
+							`item ${c.def.id} at level ${level} can only roll ${groups} affix group(s) of the ${rarity.minAffixes} ${r} asks for (${room} affixes fit)`,
+						);
 				}
 			}
 			if (!any) err(`source ${source.id}: nothing can drop at item level ${level}`);

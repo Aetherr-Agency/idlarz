@@ -41,11 +41,7 @@ export const MerchantItemsSection: React.FC = () => {
 
 	const junk = (maxRarity: string) => {
 		const { gold, count } = sellJunk(maxRarity);
-		say(
-			count > 0
-				? `Sold ${formatNumber(count)} piece${count === 1 ? '' : 's'} of gear for ${formatNumber(gold)} Gold`
-				: 'No junk to sell'
-		);
+		say(count > 0 ? `Sold ${formatNumber(count)} piece${count === 1 ? '' : 's'} of gear for ${formatNumber(gold)} Gold` : 'No junk to sell');
 	};
 
 	const worth = bag.reduce((sum, slot) => {
@@ -69,8 +65,7 @@ export const MerchantItemsSection: React.FC = () => {
 				</div>
 			</div>
 			<p className='text-xs text-[#a89878] mb-3'>
-				Click an item to sell one, Shift-click to sell the whole stack. Only your bag is listed, worn gear is safe.
-				Plain gear in your bag is worth{' '}
+				Click an item to sell one, Shift-click to sell the whole stack. Only your bag is listed, worn gear is safe. Plain gear in your bag is worth{' '}
 				<span className='inline-flex items-center gap-1 text-yellow-400'>
 					{formatNumber(worth)} <ResourceIcon resource='gold' />
 				</span>
@@ -78,10 +73,7 @@ export const MerchantItemsSection: React.FC = () => {
 			</p>
 			<label className='flex items-center gap-2 text-xs text-[#a89878] mb-2'>
 				Auto-sell new gear up to
-				<select
-					className='px-input'
-					value={autoSellUpTo ?? ''}
-					onChange={(e) => setAutoSell(e.target.value === '' ? null : e.target.value)}>
+				<select className='px-input' value={autoSellUpTo ?? ''} onChange={(e) => setAutoSell(e.target.value === '' ? null : e.target.value)}>
 					<option value=''>Off (keep everything)</option>
 					{autoChoices.map((id) => (
 						<option key={id} value={id}>
@@ -92,12 +84,7 @@ export const MerchantItemsSection: React.FC = () => {
 			</label>
 			<div className='inv-bag'>
 				{bag.map((slot, i) => (
-					<ItemSlot
-						key={i}
-						{...slotProps(slot)}
-						compare
-						onClick={(e) => sell(i, e.shiftKey)}
-					/>
+					<ItemSlot key={i} {...slotProps(slot)} compare onClick={(e) => sell(i, e.shiftKey)} />
 				))}
 			</div>
 		</div>

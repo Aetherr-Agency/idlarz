@@ -65,16 +65,19 @@ export default function Home() {
 	);
 
 	/** Who is signed in. `quiet` keeps the current screen while it looks (the "accounts unavailable" dialog retrying). */
-	const check = useCallback(async (quiet = false) => {
-		if (!quiet) setPhase({ name: 'checking' });
-		const result = await fetchMe();
-		if (result.status === 'guest') return setPhase({ name: 'guest' });
-		if (result.status !== 'ok') return setPhase({ name: 'unavailable', reason: result.status === 'unavailable' ? result.reason : 'outage' });
-		if (!result.profile) return setPhase({ name: 'profile' });
-		const player = { userId: result.userId, profile: result.profile };
-		if (readEntered() === 'account') return enterGame(player); // same tab, refreshed while playing
-		await admit(player);
-	}, [admit, enterGame]);
+	const check = useCallback(
+		async (quiet = false) => {
+			if (!quiet) setPhase({ name: 'checking' });
+			const result = await fetchMe();
+			if (result.status === 'guest') return setPhase({ name: 'guest' });
+			if (result.status !== 'ok') return setPhase({ name: 'unavailable', reason: result.status === 'unavailable' ? result.reason : 'outage' });
+			if (!result.profile) return setPhase({ name: 'profile' });
+			const player = { userId: result.userId, profile: result.profile };
+			if (readEntered() === 'account') return enterGame(player); // same tab, refreshed while playing
+			await admit(player);
+		},
+		[admit, enterGame],
+	);
 
 	useEffect(() => {
 		void check();
@@ -106,9 +109,9 @@ export default function Home() {
 		case 'checking':
 			return <LoadingView />;
 		case 'guest':
-			return <StartDialog startMode='guest' onSignedIn={signedIn}onUnavailable={() => setPhase({ name: 'unavailable', reason: 'outage' })} />;
+			return <StartDialog startMode='guest' onSignedIn={signedIn} onUnavailable={() => setPhase({ name: 'unavailable', reason: 'outage' })} />;
 		case 'profile':
-			return <StartDialog startMode='profile' onSignedIn={signedIn}onUnavailable={() => setPhase({ name: 'unavailable', reason: 'outage' })} />;
+			return <StartDialog startMode='profile' onSignedIn={signedIn} onUnavailable={() => setPhase({ name: 'unavailable', reason: 'outage' })} />;
 		case 'unavailable':
 			return <AuthUnavailable reason={phase.reason} onRetry={() => check(true)} />;
 		case 'hub':

@@ -20,14 +20,7 @@ const ResourceIcon: React.FC<ResourceIconProps> = ({ resource, scale = 0.6, clas
 			</span>
 		);
 	}
-	return (
-		<PixelIcon
-			name={name}
-			alt={resource}
-			scale={scale}
-			className={className ?? 'inline-block align-middle'}
-		/>
-	);
+	return <PixelIcon name={name} alt={resource} scale={scale} className={className ?? 'inline-block align-middle'} />;
 };
 
 export default ResourceIcon;

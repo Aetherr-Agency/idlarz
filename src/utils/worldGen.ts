@@ -52,12 +52,11 @@ export const syntheticWorld = (count: number, seed = 1, base: World = EMPTY_WORL
 		const x = from.x + dx;
 		const y = from.y + dy;
 		if (seen.has(tileKey(x, y)) || isOwnedAt(base, x, y)) continue;
-		const biome: BiomeType =
-			from.tile.biome !== 'castle' && rnd() < 0.75 ? from.tile.biome : land[Math.floor(rnd() * land.length)];
+		const biome: BiomeType = from.tile.biome !== 'castle' && rnd() < 0.75 ? from.tile.biome : land[Math.floor(rnd() * land.length)];
 		add(x, y, { biome, isOwned: true });
 	}
 	return setTiles(
 		base,
-		placed.slice(0, count).map(({ x, y, tile }) => ({ x, y, tile }))
+		placed.slice(0, count).map(({ x, y, tile }) => ({ x, y, tile })),
 	);
 };

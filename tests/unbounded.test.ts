@@ -13,7 +13,14 @@ import { syntheticWorld } from '../src/utils/worldGen';
 // The map has no edge: tiles can be bought past x = 0 / y = 0 (negative coordinates) and as far as the limits allow.
 
 const rich = () =>
-	setResources({ gold: RESOURCE_CAP / 10, wood: RESOURCE_CAP / 10, stone: RESOURCE_CAP / 10, coal: RESOURCE_CAP / 10, food: RESOURCE_CAP / 10, hide: RESOURCE_CAP / 10 });
+	setResources({
+		gold: RESOURCE_CAP / 10,
+		wood: RESOURCE_CAP / 10,
+		stone: RESOURCE_CAP / 10,
+		coal: RESOURCE_CAP / 10,
+		food: RESOURCE_CAP / 10,
+		hide: RESOURCE_CAP / 10,
+	});
 
 test('a line of tiles can be bought to the left, past x = 0 and far beyond the old 50 x 50 square', () => {
 	freshGame();
@@ -95,7 +102,16 @@ const findFrontier = (): [number, number] | null => {
 	const b = ownedBounds(world)!;
 	for (let y = b.minY - 1; y <= b.maxY + 1; y++)
 		for (let x = b.minX - 1; x <= b.maxX + 1; x++)
-			if (!isOwnedAt(world, x, y) && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => isOwnedAt(world, x + dx, y + dy))) return [x, y];
+			if (
+				!isOwnedAt(world, x, y) &&
+				[
+					[1, 0],
+					[-1, 0],
+					[0, 1],
+					[0, -1],
+				].some(([dx, dy]) => isOwnedAt(world, x + dx, y + dy))
+			)
+				return [x, y];
 	return null;
 };
 
@@ -113,11 +129,35 @@ test('chests and monsters the server lists show on land with negative coordinate
 	const spots = spawnTiles('thistleBoar', world, new Set());
 	assert.ok(spots.length >= 3 && spots.some(({ x, y }) => x < 25 || y < 25));
 	api().applyServerTickets({
-		tickets: { chests: world.stats.owned ? ownedRowMajor(world).filter(({ tile }) => tile.biome !== 'castle').slice(0, 5).map(({ x, y }, i) => ({ n: 50 + i, x, y })) : [], rats: spots.slice(0, 3).map(({ x, y }, i) => ({ n: i + 1, at: 0, lucky: false, x, y, spawnLevel: 1 })), king: null },
+		tickets: {
+			chests: world.stats.owned
+				? ownedRowMajor(world)
+						.filter(({ tile }) => tile.biome !== 'castle')
+						.slice(0, 5)
+						.map(({ x, y }, i) => ({ n: 50 + i, x, y }))
+				: [],
+			rats: spots.slice(0, 3).map(({ x, y }, i) => ({ n: i + 1, at: 0, lucky: false, x, y, spawnLevel: 1 })),
+			king: null,
+		},
 		serverNowSec: 10,
 		gemsTotal: 1000,
 		nextInSec: 60,
-		combat: { hp: 100, mp: 40, maxHp: 101, maxMp: 40, cd: { heal: 0, stun: 0, potion: 0 }, fight: null, autoBattle: true, autoUse: true, retrySec: 0, at: 1, eventNo: 0, events: [], behind: false, nextPollSec: 8 },
+		combat: {
+			hp: 100,
+			mp: 40,
+			maxHp: 101,
+			maxMp: 40,
+			cd: { heal: 0, stun: 0, potion: 0 },
+			fight: null,
+			autoBattle: true,
+			autoUse: true,
+			retrySec: 0,
+			at: 1,
+			eventNo: 0,
+			events: [],
+			behind: false,
+			nextPollSec: 8,
+		},
 	});
 	const placed = [...api().tiles.map.entries()].filter(([, t]) => t.hasChest).length;
 	assert.ok(placed === 5 && placed <= spawnCap(world, 1), `chests on the map: ${placed}`);

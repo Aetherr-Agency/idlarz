@@ -32,8 +32,22 @@ export const monsterArtUrl = (entry: Pick<MonsterCatalogEntry, 'id' | 'biomes'>)
 	return `/pixel/enemies/${entry.biomes[0]}/${kebab}.png`;
 };
 
-const normal = (id: string, label: string, biome: CatalogBiome, art: boolean): MonsterCatalogEntry => ({ id, label, grade: 'normal', biomes: [biome], enabled: id in MONSTERS, art });
-const boss = (id: string, label: string, biome: CatalogBiome, art: boolean): MonsterCatalogEntry => ({ id, label, grade: 'boss', biomes: [biome], enabled: id in MONSTERS, art });
+const normal = (id: string, label: string, biome: CatalogBiome, art: boolean): MonsterCatalogEntry => ({
+	id,
+	label,
+	grade: 'normal',
+	biomes: [biome],
+	enabled: id in MONSTERS,
+	art,
+});
+const boss = (id: string, label: string, biome: CatalogBiome, art: boolean): MonsterCatalogEntry => ({
+	id,
+	label,
+	grade: 'boss',
+	biomes: [biome],
+	enabled: id in MONSTERS,
+	art,
+});
 
 export const MONSTER_CATALOG: readonly MonsterCatalogEntry[] = [
 	normal('thistleBoar', 'Thistle Boar', 'plains', true),
