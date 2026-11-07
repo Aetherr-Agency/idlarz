@@ -555,6 +555,7 @@ const createGameSlice = (
 				gems: state.gems, // the premium currency survives a rebirth
 				autoSellUpTo: state.autoSellUpTo, // a setting, not gear
 				merchantUpgrades,
+				merchantStock: state.merchantStock, // the shelf and its rotation clock carry over: a rebirth is no free reshuffle
 				merchantRefreshes: state.merchantRefreshes, // the refresh price and the free window are not reset by a rebirth
 				merchantRefresh: state.merchantRefresh,
 				playerHp: maxHp(characterStats, kit.equipment),
