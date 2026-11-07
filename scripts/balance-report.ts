@@ -104,7 +104,7 @@ line();
 line(
 	'`n` = tiles owned *before* the purchase (the castle counts, so the first purchase is n = 1). ' +
 		'Costs are with the starting Charisma (5 -> 2.5% discount). Extra resources are required from the tile counts in `TILE_RESOURCE_COST`. ' +
-		'XP is before the XP-gain multiplier. The biome of every purchase is rolled (there is no biome picker).'
+		'XP is before the XP-gain multiplier. The biome of every purchase is rolled (there is no biome picker).',
 );
 line();
 {
@@ -124,7 +124,7 @@ line();
 	line();
 	line(
 		`Past ${TILE_PRICE.tailFrom} tiles the price grows like (n / ${TILE_PRICE.tailFrom})^${TILE_PRICE.tailExponent} instead of ×${SCALING_CONFIG.growthEndgame} per tile, capped at ${TILE_PRICE.ceiling.toExponential(0).replace('e+', 'e')}; ` +
-			`XP per tile has the same shape past ${XP_TILE.growthUntil} tiles (exponent ${XP_TILE.tailExponent}). Knobs: \`TILE_PRICE\`, \`XP_TILE\`, \`RESOURCE_CAP\` (${fmt(RESOURCE_CAP)}). See docs/05 BL16.`
+			`XP per tile has the same shape past ${XP_TILE.growthUntil} tiles (exponent ${XP_TILE.tailExponent}). Knobs: \`TILE_PRICE\`, \`XP_TILE\`, \`RESOURCE_CAP\` (${fmt(RESOURCE_CAP)}). See docs/05 BL16.`,
 	);
 	line();
 	const late: (string | number)[][] = [];
@@ -143,7 +143,9 @@ line();
 // ---------------------------------------------------------------------------
 line('## 2. Level curve');
 line();
-line(`The level curve is written as anchors (total XP to reach a level): ${LEVELING.anchors.map(([l, x]) => `level ${l} = ${fmt(x)}`).join(', ')}; between two anchors every step is a constant factor bigger than the one before (\`xpToNextLevel\`). Soft cap at level ${LEVELING.softCapLevel}, maximum level ${LEVELING.maxLevel}. One attribute point per level, plus ${LEVELING.earlyBonusPoints} more for levels 2-${LEVELING.earlyBonusUntil}. Level, XP and attributes carry over a rebirth.`);
+line(
+	`The level curve is written as anchors (total XP to reach a level): ${LEVELING.anchors.map(([l, x]) => `level ${l} = ${fmt(x)}`).join(', ')}; between two anchors every step is a constant factor bigger than the one before (\`xpToNextLevel\`). Soft cap at level ${LEVELING.softCapLevel}, maximum level ${LEVELING.maxLevel}. One attribute point per level, plus ${LEVELING.earlyBonusPoints} more for levels 2-${LEVELING.earlyBonusUntil}. Level, XP and attributes carry over a rebirth.`,
+);
 line();
 {
 	const rows: (string | number)[][] = [];
@@ -160,7 +162,7 @@ line('## 3. Castle');
 line();
 line(
 	`Resource modifier: +${CASTLE_UPGRADE.baseResourceMultiplier * 100}% at level 1, doubling each level up to level ${CASTLE_UPGRADE.doublingUntil}, then +${CASTLE_UPGRADE.lateLevelStep * 100}% per level (added to **every** resource). ` +
-		`Flat XP: +${CASTLE_UPGRADE.xpBonus}/s per level above 1. Max level ${CASTLE_UPGRADE.maxLevel}; each upgrade is a timed build paid up front.`
+		`Flat XP: +${CASTLE_UPGRADE.xpBonus}/s per level above 1. Max level ${CASTLE_UPGRADE.maxLevel}; each upgrade is a timed build paid up front.`,
 );
 line();
 {
@@ -178,7 +180,7 @@ line();
 	table(['Upgrade', 'Build time', 'Modifier after', ...RES], rows);
 	line(
 		`Total build time to level ${CASTLE_UPGRADE.maxLevel}: ${formatTime(CASTLE_UPGRADE.durationsSec.slice(0, CASTLE_UPGRADE.maxLevel - 1).reduce((a, b) => a + b, 0))} ` +
-			`(to level 6: ${formatTime(CASTLE_UPGRADE.durationsSec.slice(0, 5).reduce((a, b) => a + b, 0))}).`
+			`(to level 6: ${formatTime(CASTLE_UPGRADE.durationsSec.slice(0, 5).reduce((a, b) => a + b, 0))}).`,
 	);
 	line();
 }
@@ -188,7 +190,7 @@ line('## 4. Farm animals');
 line();
 line(
 	'Every purchase adds one animal (production = `baseProduction × count`). Cost (food) of the N-th animal = `floor(baseCost × costScaling^(N-1))`. ' +
-		`Payback = food cost × ${MERCHANT_RESOURCE_PRICES.food} gold ÷ (meat/s of one animal × ${MERCHANT_RESOURCE_PRICES.meat} gold), before castle/Plains/stat meat modifiers.`
+		`Payback = food cost × ${MERCHANT_RESOURCE_PRICES.food} gold ÷ (meat/s of one animal × ${MERCHANT_RESOURCE_PRICES.meat} gold), before castle/Plains/stat meat modifiers.`,
 );
 line();
 ANIMALS.forEach((a) => {
@@ -209,7 +211,7 @@ ANIMALS.forEach((a) => {
 line('### Farm products and upgrades');
 line();
 line(
-	`The pen holds ${FARM.baseCap} animals per kind (+4 per Pen Expansion level). Every animal also yields a product; once sold it is worth about a third of its meat.`
+	`The pen holds ${FARM.baseCap} animals per kind (+4 per Pen Expansion level). Every animal also yields a product; once sold it is worth about a third of its meat.`,
 );
 line();
 table(
@@ -226,7 +228,7 @@ table(
 			(a.baseProduction * MERCHANT_RESOURCE_PRICES.meat).toFixed(2),
 			`${((sold / (a.baseProduction * MERCHANT_RESOURCE_PRICES.meat)) * 100).toFixed(0)}%`,
 		];
-	})
+	}),
 );
 table(
 	['Upgrade', 'effect per level', 'max level', 'cost of level 1', 'cost of the last level'],
@@ -237,13 +239,15 @@ table(
 				.map(([r, v]) => `${fmt(v as number)} ${r}`)
 				.join(' + ');
 		return [def.label, def.description(1), def.maxLevel, fmtCost(farmUpgradeCost(id, 0)), fmtCost(farmUpgradeCost(id, def.maxLevel - 1))];
-	})
+	}),
 );
 
 // ---------------------------------------------------------------------------
 line('## 5. Biomes and buildings');
 line();
-line(`Per-second output of one tile before adjacency and modifiers (already multiplied by BIOME_YIELD.scale = ${BIOME_YIELD.scale}; the castle is not scaled).`);
+line(
+	`Per-second output of one tile before adjacency and modifiers (already multiplied by BIOME_YIELD.scale = ${BIOME_YIELD.scale}; the castle is not scaled).`,
+);
 line();
 {
 	const rows = Object.values(BIOMES).map((b) => [
@@ -256,7 +260,9 @@ line();
 	line(
 		`Building cost: ${Object.entries(BUILDING_COST.base)
 			.map(([r, v]) => `${fmt(v as number)} ${r}`)
-			.join(', ')} as the base price. Building number n costs base × ${[0, 1, 2, 3, 4, 8, 16, 32].map((n) => `${n + 1}: ×${+buildingCostFactor(n).toFixed(2)}`).join(', ')} (first ${BUILDING_COST.starter.length} cheap, then ×${BUILDING_COST.growthEarly} for ${BUILDING_COST.earlyCount}, ×${BUILDING_COST.growthMid} for ${BUILDING_COST.midCount}, ×${BUILDING_COST.growthLate} after).`
+			.join(
+				', ',
+			)} as the base price. Building number n costs base × ${[0, 1, 2, 3, 4, 8, 16, 32].map((n) => `${n + 1}: ×${+buildingCostFactor(n).toFixed(2)}`).join(', ')} (first ${BUILDING_COST.starter.length} cheap, then ×${BUILDING_COST.growthEarly} for ${BUILDING_COST.earlyCount}, ×${BUILDING_COST.growthMid} for ${BUILDING_COST.midCount}, ×${BUILDING_COST.growthLate} after).`,
 	);
 	line();
 }
@@ -279,7 +285,7 @@ line();
 	});
 	table(['Stat (1 point)', 'Resource modifiers'], rows);
 	line(
-		`Charisma tile discount: ${CHARACTER_STAT_CONFIG.tileDiscountPercentPerCharisma}% per point, capped at ${CHARACTER_STAT_CONFIG.tileDiscountCapPercent}%.`
+		`Charisma tile discount: ${CHARACTER_STAT_CONFIG.tileDiscountPercentPerCharisma}% per point, capped at ${CHARACTER_STAT_CONFIG.tileDiscountCapPercent}%.`,
 	);
 	line();
 	const c = calculateCombatStats(INITIAL_CHARACTER_STATS);
@@ -287,7 +293,7 @@ line();
 	line();
 	table(
 		['Stat', 'calculateCombatStats()', 'INITIAL_CHARACTER_STATS'],
-		Object.entries(c).map(([k, v]) => [k, String(v), String(INITIAL_CHARACTER_STATS[k as keyof typeof INITIAL_CHARACTER_STATS])])
+		Object.entries(c).map(([k, v]) => [k, String(v), String(INITIAL_CHARACTER_STATS[k as keyof typeof INITIAL_CHARACTER_STATS])]),
 	);
 }
 
@@ -301,14 +307,7 @@ line();
 	const keys = Object.keys(r.total) as (keyof Resources)[];
 	table(
 		['Resource', 'BASE_GENERATION_RATES', 'CASTLE_BASE_RATES', 'base (computed)', 'modifier (computed)', 'total /s'],
-		keys.map((k) => [
-			k,
-			BASE_GENERATION_RATES[k],
-			CASTLE_BASE_RATES[k],
-			r.base[k].toFixed(3),
-			`${(r.modifiers[k] * 100).toFixed(1)}%`,
-			r.total[k].toFixed(3),
-		])
+		keys.map((k) => [k, BASE_GENERATION_RATES[k], CASTLE_BASE_RATES[k], r.base[k].toFixed(3), `${(r.modifiers[k] * 100).toFixed(1)}%`, r.total[k].toFixed(3)]),
 	);
 }
 
@@ -317,7 +316,7 @@ line('## 8. Click power and merchant');
 line();
 table(
 	['Level', 'gold per click (x gold/s)', 'price'],
-	CLICK_LADDER.map((l, i) => [i, `${(l.power * 100).toFixed(0)}%`, l.price ? fmt(l.price) : '(start)'])
+	CLICK_LADDER.map((l, i) => [i, `${(l.power * 100).toFixed(0)}%`, l.price ? fmt(l.price) : '(start)']),
 );
 table(
 	['Resource', 'sells for', `costs (x${MERCHANT_BUY_MULTIPLIER})`],
@@ -325,7 +324,7 @@ table(
 		r,
 		p,
 		(['wood', 'stone', 'coal', 'food', 'meat'] as string[]).includes(r) ? p * MERCHANT_BUY_MULTIPLIER : 'not for sale',
-	])
+	]),
 );
 line('### Merchant bonuses and gear shop');
 line();
@@ -334,14 +333,14 @@ table(
 	(Object.keys(MERCHANT_UPGRADES) as MerchantUpgradeId[]).map((id) => {
 		const def = MERCHANT_UPGRADES[id];
 		return [def.label, def.description(1), def.maxLevel, fmt(merchantUpgradeCost(id, 0)), fmt(merchantUpgradeCost(id, def.maxLevel - 1))];
-	})
+	}),
 );
 table(
 	['Item', 'rarity', 'sells for', 'shop price', 'shop / sell'],
 	MERCHANT_SHOP_ITEMS.map(({ id, price }) => {
 		const def = ITEM_CATALOG[id];
 		return [def.name, def.rarity, def.sellValue, fmt(price), `${(price / def.sellValue).toFixed(1)}x`];
-	})
+	}),
 );
 
 // ---------------------------------------------------------------------------
@@ -349,14 +348,14 @@ line('## 9. Rebirth and Embers');
 line();
 line(
 	`Rebirth needs castle level ≥ ${REBIRTH.minCastleLevel} and ≥ ${REBIRTH.minTiles} tiles. Embers = \`floor(${REBIRTH.gainScale} × (castle − 5) × sqrt(tiles / 10))\`; ` +
-		`all Embers earned together give +${REBIRTH.incomePerPoint * 100}% × earned^${REBIRTH.incomeExponent} income for ever.`
+		`all Embers earned together give +${REBIRTH.incomePerPoint * 100}% × earned^${REBIRTH.incomeExponent} income for ever.`,
 );
 line();
 {
 	const tilesList = [100, 150, 200, 300, 500];
 	table(
 		['castle level', ...tilesList.map((n) => `${n} tiles`)],
-		[6, 7, 8, 9, 10].map((c) => [c, ...tilesList.map((n) => emberGain(c, n))])
+		[6, 7, 8, 9, 10].map((c) => [c, ...tilesList.map((n) => emberGain(c, n))]),
 	);
 	const ids = Object.keys(EMBER_UPGRADES) as EmberUpgradeId[];
 	line('Shop (cost in points of the next level, by current level):');
@@ -366,18 +365,17 @@ line();
 		ids.map((id) => [
 			EMBER_UPGRADES[id].label,
 			id === 'provisions'
-				? Object.entries(EMBER_UPGRADES.provisions.bundle).map(([r, v]) => `${fmt(v as number)} ${r}`).join(' + ')
+				? Object.entries(EMBER_UPGRADES.provisions.bundle)
+						.map(([r, v]) => `${fmt(v as number)} ${r}`)
+						.join(' + ')
 				: `${EMBER_UPGRADES[id].effectPerLevel * 100}%`,
 			EMBER_UPGRADES[id].maxLevel,
 			...[0, 1, 2, 3, 5, 9].map((l) => emberUpgradeCost(id, l)),
-		])
+		]),
 	);
 }
 
-const target = resolve(
-	dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')),
-	'../docs/generated/balance-tables.md'
-);
+const target = resolve(dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '../docs/generated/balance-tables.md');
 mkdirSync(dirname(target), { recursive: true });
 writeFileSync(target, out.join('\n'));
 console.log(`Wrote ${target} (${out.length} lines)`);

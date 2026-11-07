@@ -12,21 +12,12 @@ import { maxHp, maxMana } from '@/lib/combat';
 type FlaskKind = 'hp' | 'mp';
 
 // Potion flask: liquid level is driven by value/max, with rippling surface and rising bubbles
-const Flask: React.FC<{ kind: FlaskKind; value: number; max: number }> = ({
-	kind,
-	value,
-	max,
-}) => {
+const Flask: React.FC<{ kind: FlaskKind; value: number; max: number }> = ({ kind, value, max }) => {
 	const fill = max > 0 ? Math.max(0, Math.min(1, value / max)) : 0;
 	const label = kind === 'hp' ? 'HP' : 'MP';
 	return (
-		<div
-			className='hero-flask'
-			data-side={kind === 'hp' ? 'left' : 'right'}
-			title={`${label}: ${formatNumber(value)} / ${formatNumber(max)}`}>
-			<div
-				className={`px-flask px-flask-${kind}`}
-				style={{ '--s': 2 } as React.CSSProperties}>
+		<div className='hero-flask' data-side={kind === 'hp' ? 'left' : 'right'} title={`${label}: ${formatNumber(value)} / ${formatNumber(max)}`}>
+			<div className={`px-flask px-flask-${kind}`} style={{ '--s': 2 } as React.CSSProperties}>
 				<div className='px-flask-liquid-wrap'>
 					<div className='px-flask-liquid' style={{ '--p': fill } as React.CSSProperties} />
 				</div>
@@ -61,28 +52,26 @@ export const LevelBar: React.FC = () => {
 	const mpMax = maxMana(characterStats, equipment);
 	return (
 		<div className='eq-level-wrap'>
-		<div className='eq-level'>
-			<div className='eq-level-orb' title={`Level ${level.level}`}>
-				<LevelOrb scale={2} level={level.level} />
-			</div>
-			<div className='group relative flex-1'>
-				<div className='hero-xp eq-xp' style={{ '--pct': level.progress * 100 } as React.CSSProperties}>
-					<div className='hero-xp-fill' />
-					<div className='hero-xp-text'>
-						{xpLabel(level)}
+			<div className='eq-level'>
+				<div className='eq-level-orb' title={`Level ${level.level}`}>
+					<LevelOrb scale={2} level={level.level} />
+				</div>
+				<div className='group relative flex-1'>
+					<div className='hero-xp eq-xp' style={{ '--pct': level.progress * 100 } as React.CSSProperties}>
+						<div className='hero-xp-fill' />
+						<div className='hero-xp-text'>{xpLabel(level)}</div>
+					</div>
+					<div className='absolute left-1/2 top-full -translate-x-1/2 mt-2 w-max z-[60] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150'>
+						<div className='px-tooltip'>
+							<LevelUpTimer resourceRates={resourceRates} resources={resources} level={level} />
+						</div>
 					</div>
 				</div>
-				<div className='absolute left-1/2 top-full -translate-x-1/2 mt-2 w-max z-[60] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150'>
-					<div className='px-tooltip'>
-						<LevelUpTimer resourceRates={resourceRates} resources={resources} level={level} />
-					</div>
-				</div>
 			</div>
-		</div>
-		<div className='eq-vitals'>
-			<VitalBar kind='hp' value={Math.floor(playerHp)} max={hpMax} />
-			<VitalBar kind='mp' value={Math.floor(playerMp)} max={mpMax} />
-		</div>
+			<div className='eq-vitals'>
+				<VitalBar kind='hp' value={Math.floor(playerHp)} max={hpMax} />
+				<VitalBar kind='mp' value={Math.floor(playerMp)} max={mpMax} />
+			</div>
 		</div>
 	);
 };
@@ -96,7 +85,6 @@ const LevelDetails: React.FC = () => {
 	const hpMax = maxHp(characterStats, equipment);
 	const mpMax = maxMana(characterStats, equipment);
 	const info = PLAYER_CLASSES[playerClass] ?? PLAYER_CLASSES[DEFAULT_PLAYER_CLASS];
-
 
 	return (
 		<div className='hero-hud'>
@@ -120,9 +108,7 @@ const LevelDetails: React.FC = () => {
 			<div className='group'>
 				<div className='hero-xp' style={{ '--pct': level.progress * 100 } as React.CSSProperties}>
 					<div className='hero-xp-fill' />
-					<div className='hero-xp-text'>
-						{xpLabel(level)}
-					</div>
+					<div className='hero-xp-text'>{xpLabel(level)}</div>
 				</div>
 				<div className='absolute left-1/2 top-full -translate-x-1/2 mt-2 w-max z-[60] opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-150'>
 					<div className='px-tooltip'>

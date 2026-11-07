@@ -84,7 +84,8 @@ export const MerchantResources: React.FC = () => {
 							onClick={() => {
 								setPreset(value);
 								setCustom('');
-							}}>
+							}}
+						>
 							{label}
 						</button>
 					);

@@ -4,7 +4,14 @@ import { PERSONAL_SPACE, randomSpot, roomySpot, walkable } from '../src/componen
 import { mulberry32 } from '../src/lib/rng';
 
 // prop centres of the pasture (sprites_farm.py): the barn, the coop, a trough, a hay stack, a barrel, the pond
-const PROPS: [number, number][] = [[8.5, 8.5], [-1, 11], [-3.3, 1.4], [-6, 7], [11.6, 5.6], [-12, -4]];
+const PROPS: [number, number][] = [
+	[8.5, 8.5],
+	[-1, 11],
+	[-3.3, 1.4],
+	[-6, 7],
+	[11.6, 5.6],
+	[-12, -4],
+];
 
 test('animals cannot stand on or right beside a building, trough, hay stack, barrel or the pond', () => {
 	for (const [x, y] of PROPS) {
@@ -26,7 +33,11 @@ test('animals stay inside the fence, and random spots are always walkable', () =
 });
 
 test('roomySpot picks the spot farthest from the others', () => {
-	const others = [{ x: 0, y: 0 }, { x: 5, y: 5 }, { x: -5, y: 5 }];
+	const others = [
+		{ x: 0, y: 0 },
+		{ x: 5, y: 5 },
+		{ x: -5, y: 5 },
+	];
 	const rnd = mulberry32(9);
 	const spot = roomySpot(others, 60, rnd);
 	const room = (p: { x: number; y: number }) => Math.min(...others.map((o) => Math.hypot(o.x - p.x, o.y - p.y)));

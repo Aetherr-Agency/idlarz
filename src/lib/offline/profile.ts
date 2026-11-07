@@ -75,5 +75,8 @@ export const playerProfile = (core: Core): PlayerProfile => {
 export const savedVitals = (core: Core): { hp: number; mp: number } => {
 	const num = (value: unknown, fallback: number) => (typeof value === 'number' && Number.isFinite(value) ? value : fallback);
 	const profile = playerProfile(core);
-	return { hp: Math.min(profile.maxHp, Math.max(1, num(core.playerHp, profile.maxHp))), mp: Math.min(profile.maxMp, Math.max(0, num(core.playerMp, profile.maxMp))) };
+	return {
+		hp: Math.min(profile.maxHp, Math.max(1, num(core.playerHp, profile.maxHp))),
+		mp: Math.min(profile.maxMp, Math.max(0, num(core.playerMp, profile.maxMp))),
+	};
 };

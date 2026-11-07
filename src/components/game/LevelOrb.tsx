@@ -23,7 +23,8 @@ const LevelOrb: React.FC<LevelOrbProps> = ({ level, scale = 1, notify, notifyLab
 		style={{ '--s': scale } as React.CSSProperties}
 		data-digits={level === undefined ? 0 : String(level).length}
 		role='img'
-		aria-label={level === undefined ? 'Level' : `Level ${level}`}>
+		aria-label={level === undefined ? 'Level' : `Level ${level}`}
+	>
 		{level !== undefined && <span className='level-orb-num'>{level}</span>}
 		<NotifyDot show={!!notify} label={notifyLabel} />
 	</span>

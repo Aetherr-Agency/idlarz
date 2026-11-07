@@ -13,12 +13,22 @@ const copy = (): LootData => JSON.parse(JSON.stringify(LOOT_DATA)) as LootData;
 test('weightedPick follows normalised weights, whatever they sum to', () => {
 	const rng = mulberry32(1);
 	const counts = { a: 0, b: 0, c: 0 };
-	const entries = [{ id: 'a' as const, w: 3 }, { id: 'b' as const, w: 1 }, { id: 'c' as const, w: 0 }];
+	const entries = [
+		{ id: 'a' as const, w: 3 },
+		{ id: 'b' as const, w: 1 },
+		{ id: 'c' as const, w: 0 },
+	];
 	for (let i = 0; i < 20000; i++) counts[weightedPick(entries, (e) => e.w, rng)!.id]++;
 	assert.equal(counts.c, 0);
 	assert.ok(Math.abs(counts.a / 20000 - 0.75) < 0.02);
-	assert.equal(weightedPick([], () => 1, rng), undefined);
-	assert.equal(weightedPick([{ w: 0 }, { w: -1 }], (e) => e.w, rng), undefined);
+	assert.equal(
+		weightedPick([], () => 1, rng),
+		undefined,
+	);
+	assert.equal(
+		weightedPick([{ w: 0 }, { w: -1 }], (e) => e.w, rng),
+		undefined,
+	);
 });
 
 test('randomInt covers its range and mulberry32 is reproducible', () => {
@@ -37,7 +47,10 @@ test('a chest level comes from the castle level and is clamped; a monster passes
 	assert.equal(resolveSourceLevel(chest, 0), 4);
 	assert.equal(generateLoot({ sourceId: 'monster', level: 7 }, mulberry32(1)).sourceLevel, 7);
 	assert.equal(generateLoot({ sourceId: 'monster', level: 1000 }, mulberry32(1)).sourceLevel, 100);
-	assert.ok(generateLoot({ sourceId: 'monster' }, mulberry32(1)).warnings.length > 0, 'a monster source with no level is a configuration problem, not a silent level 1');
+	assert.ok(
+		generateLoot({ sourceId: 'monster' }, mulberry32(1)).warnings.length > 0,
+		'a monster source with no level is a configuration problem, not a silent level 1',
+	);
 });
 
 test('item level stays inside the profile bounds', () => {
@@ -127,15 +140,29 @@ test('the Rat King always drops a general roll, a set piece, and every potion', 
 	for (let i = 0; i < 500; i++) {
 		const { drops } = generateLoot({ sourceId: 'boss', level: 25 }, rng);
 		const items = gear(drops);
-		assert.ok(items.some((g) => LOOT_DATA.items[g.base].pools?.includes('rattatui_set')), 'set piece');
-		assert.ok(items.some((g) => !LOOT_DATA.items[g.base].pools?.includes('rattatui_set') && !LOOT_DATA.items[g.base].pools?.includes('legendary_weapons')), 'general roll');
-		assert.deepEqual(drops.filter((d) => d.kind === 'consumable').map((d) => (d.kind === 'consumable' ? [d.id, d.qty] : null)), [['potion_minor', 2], ['potion_greater', 1]]);
+		assert.ok(
+			items.some((g) => LOOT_DATA.items[g.base].pools?.includes('rattatui_set')),
+			'set piece',
+		);
+		assert.ok(
+			items.some((g) => !LOOT_DATA.items[g.base].pools?.includes('rattatui_set') && !LOOT_DATA.items[g.base].pools?.includes('legendary_weapons')),
+			'general roll',
+		);
+		assert.deepEqual(
+			drops.filter((d) => d.kind === 'consumable').map((d) => (d.kind === 'consumable' ? [d.id, d.qty] : null)),
+			[
+				['potion_minor', 2],
+				['potion_greater', 1],
+			],
+		);
 		for (const g of items.filter((x) => LOOT_DATA.items[x.base].pools?.includes('rattatui_set'))) assert.equal(g.level, 25);
 	}
 });
 
 test('the King prefers set pieces the player does not own yet, then duplicates', () => {
-	const setIds = Object.values(LOOT_DATA.items).filter((d) => d.pools?.includes('rattatui_set')).map((d) => d.id);
+	const setIds = Object.values(LOOT_DATA.items)
+		.filter((d) => d.pools?.includes('rattatui_set'))
+		.map((d) => d.id);
 	assert.equal(setIds.length, 12);
 	const rng = mulberry32(9);
 	const missing = setIds[3];
@@ -214,7 +241,18 @@ test('the explain trace says why an item dropped', () => {
 
 test('new content is data only: a fake rarity drops through the unchanged generator', () => {
 	const data = copy();
-	data.rarities.mythic = { id: 'mythic', label: 'Mythic', color: '#f0f', order: 9, sellValue: 5000, glow: { blur: 8, alpha: 1, pulse: true }, minAffixes: 2, maxAffixes: 2, statMultiplier: 1, enabled: true };
+	data.rarities.mythic = {
+		id: 'mythic',
+		label: 'Mythic',
+		color: '#f0f',
+		order: 9,
+		sellValue: 5000,
+		glow: { blur: 8, alpha: 1, pulse: true },
+		minAffixes: 2,
+		maxAffixes: 2,
+		statMultiplier: 1,
+		enabled: true,
+	};
 	for (const item of Object.values(data.items)) if (item.generation === 'base') item.allowedRarities = [...(item.allowedRarities ?? []), 'mythic'];
 	data.profiles.normal_monster.rarityWeights.mythic = 50;
 	data.profiles.normal_monster.rolls = { min: 1, max: 1, guaranteed: 1, chancePerRoll: 1 };

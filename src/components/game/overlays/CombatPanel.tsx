@@ -30,7 +30,13 @@ export const drainMs = (sinceLastAnswerMs: number): number | null => (sinceLastA
  * makes the HP of both sides move continuously. `snapKey` changes with a new fight: the bar starts at once from its first number.
  * It paints itself (no re-render per frame).
  */
-const Bar: React.FC<{ value: number; max: number; kind: 'monster' | 'player' | 'mana'; label: string; snapKey?: unknown }> = ({ value, max, kind, label, snapKey }) => {
+const Bar: React.FC<{ value: number; max: number; kind: 'monster' | 'player' | 'mana'; label: string; snapKey?: unknown }> = ({
+	value,
+	max,
+	kind,
+	label,
+	snapKey,
+}) => {
 	const fillRef = useRef<HTMLDivElement>(null);
 	const trailRef = useRef<HTMLDivElement>(null);
 	const textRef = useRef<HTMLDivElement>(null);
@@ -48,7 +54,7 @@ const Bar: React.FC<{ value: number; max: number; kind: 'monster' | 'player' | '
 			if (trailRef.current) trailRef.current.style.width = `${pct}%`;
 			if (textRef.current) textRef.current.textContent = `${label} ${formatCompact(Math.ceil(v))} / ${formatCompact(Math.round(maxRef.current))}`;
 		},
-		[label]
+		[label],
 	);
 
 	useLayoutEffect(() => {
@@ -108,7 +114,11 @@ const FightResult: React.FC<{ notice: CombatNotice }> = ({ notice }) => {
 						)}
 					</div>
 					{summary.items.length > 0 ? (
-						<div className='victory-loot'>{summary.items.map((drop, i) => (drop.kind === 'gear' ? <ItemSlot key={i} item={drop.item} /> : <ItemSlot key={i} itemId={drop.id} qty={drop.qty} />))}</div>
+						<div className='victory-loot'>
+							{summary.items.map((drop, i) =>
+								drop.kind === 'gear' ? <ItemSlot key={i} item={drop.item} /> : <ItemSlot key={i} itemId={drop.id} qty={drop.qty} />,
+							)}
+						</div>
 					) : (
 						<div className='victory-note'>No drops this time</div>
 					)}
@@ -118,7 +128,9 @@ const FightResult: React.FC<{ notice: CombatNotice }> = ({ notice }) => {
 							Auto-sold {summary.autoSold.count} piece{summary.autoSold.count === 1 ? '' : 's'} of gear for {formatNumber(summary.autoSold.gold)} gold
 						</div>
 					)}
-					{summary.convertedGold > 0 && <div className='victory-note'>Bag full - {formatNumber(summary.convertedGold)} gold paid for the drops that did not fit</div>}
+					{summary.convertedGold > 0 && (
+						<div className='victory-note'>Bag full - {formatNumber(summary.convertedGold)} gold paid for the drops that did not fit</div>
+					)}
 				</>
 			) : (
 				<>
@@ -205,7 +217,8 @@ const CombatPanel: React.FC<CombatPanelProps> = (p) => {
 									className='fight-skill'
 									data-locked={locked}
 									data-nomana={!locked && player.mp < skill.manaCost}
-									title={`${skill.name}: ${skillDescription(skill)} (${locked ? `unlocks at level ${skill.unlockLevel}` : `${skill.manaCost} mana, ${skill.cooldownSec} s cooldown`}). Press ${4 + i}.`}>
+									title={`${skill.name}: ${skillDescription(skill)} (${locked ? `unlocks at level ${skill.unlockLevel}` : `${skill.manaCost} mana, ${skill.cooldownSec} s cooldown`}). Press ${4 + i}.`}
+								>
 									<span className='fight-skill-name'>{skill.name}</span>
 									<span className='fight-skill-cost'>{locked ? `Lv ${skill.unlockLevel}` : `${skill.manaCost} MP`}</span>
 									<span className='fight-hotkey'>{4 + i}</span>
@@ -228,9 +241,15 @@ const CombatPanel: React.FC<CombatPanelProps> = (p) => {
 			)}
 			<div className='combat-switches'>
 				<label
-					title={p.autoLocked ? 'Unlocks after your first rebirth' : 'After a fight the server sends you against the next monster, one at a time. Off: click a monster to fight it'}
-					data-locked={p.autoLocked}>
-					<input type='checkbox' checked={p.autoBattle && !p.autoLocked} disabled={p.autoLocked} onChange={(e) => p.onAutoBattle(e.target.checked)} /> Auto-battle
+					title={
+						p.autoLocked
+							? 'Unlocks after your first rebirth'
+							: 'After a fight the server sends you against the next monster, one at a time. Off: click a monster to fight it'
+					}
+					data-locked={p.autoLocked}
+				>
+					<input type='checkbox' checked={p.autoBattle && !p.autoLocked} disabled={p.autoLocked} onChange={(e) => p.onAutoBattle(e.target.checked)} />{' '}
+					Auto-battle
 				</label>
 				{p.autoBattle && !fight && p.autoNote === 'no_winnable' && (
 					<span className='px-tip-muted text-xs' title='Click a monster to fight it anyway'>
@@ -251,7 +270,12 @@ const CombatPanel: React.FC<CombatPanelProps> = (p) => {
 			src={monsterArtUrl(wip)}
 			alt={wip.label}
 			draggable={false}
-			style={{ width: monsterArtSize(wip.id, wip.grade) * STAGE_ART_FACTOR, height: monsterArtSize(wip.id, wip.grade) * STAGE_ART_FACTOR, objectFit: 'contain', imageRendering: 'pixelated' }}
+			style={{
+				width: monsterArtSize(wip.id, wip.grade) * STAGE_ART_FACTOR,
+				height: monsterArtSize(wip.id, wip.grade) * STAGE_ART_FACTOR,
+				objectFit: 'contain',
+				imageRendering: 'pixelated',
+			}}
 		/>
 	) : (
 		<MonsterArt type={monster.type} scale={isBoss(monster.type) ? 1.5 : 2} />
@@ -263,7 +287,12 @@ const CombatPanel: React.FC<CombatPanelProps> = (p) => {
 				<b>{`${boss ? '☠ ' : ''}${label} - Lv ${monster.level}`}</b>
 				<span className='flex gap-1'>
 					{fight && (
-						<button className='combat-flee' onClick={p.onFlee} aria-label='Flee from the fight' title='Leave the fight: no reward, no penalty, the monster stays. Switches Auto-battle off'>
+						<button
+							className='combat-flee'
+							onClick={p.onFlee}
+							aria-label='Flee from the fight'
+							title='Leave the fight: no reward, no penalty, the monster stays. Switches Auto-battle off'
+						>
 							Flee
 						</button>
 					)}
@@ -330,13 +359,19 @@ const CombatPanel: React.FC<CombatPanelProps> = (p) => {
 								className='fight-queue-item'
 								data-boss={monsterDef(q.type).grade === 'boss'}
 								data-lucky={!!q.lucky}
-								title={`${i + 1}. ${q.lucky ? 'Lucky ' : ''}${monsterDef(q.type).label}, level ${q.level}`}>
+								title={`${i + 1}. ${q.lucky ? 'Lucky ' : ''}${monsterDef(q.type).label}, level ${q.level}`}
+							>
 								<span className='fight-queue-art'>
 									<MonsterArt type={q.type} scale={0.8} />
 								</span>
 								<i className='fight-queue-lv'>{formatCompact(q.level)}</i>
 								{p.onUnqueue && (
-									<button className='fight-queue-x' onClick={() => p.onUnqueue!(q.n)} aria-label={`Take ${monsterDef(q.type).label} out of the queue`} title='Take it out of the queue'>
+									<button
+										className='fight-queue-x'
+										onClick={() => p.onUnqueue!(q.n)}
+										aria-label={`Take ${monsterDef(q.type).label} out of the queue`}
+										title='Take it out of the queue'
+									>
 										x
 									</button>
 								)}

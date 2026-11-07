@@ -24,10 +24,23 @@ const blank = (): Tile[][] => Array.from({ length: SIZE }, () => Array.from({ le
 const territory = (r: number): Tile[][] => {
 	const g = blank();
 	for (let y = -r; y <= r; y++)
-		for (let x = -r; x <= r; x++) g[CASTLE_Y + y][CASTLE_X + x] = { biome: x === 0 && y === 0 ? 'castle' : 'plains', isOwned: true, ...(x === 0 && y === 0 ? { level: 1 } : {}) };
+		for (let x = -r; x <= r; x++)
+			g[CASTLE_Y + y][CASTLE_X + x] = { biome: x === 0 && y === 0 ? 'castle' : 'plains', isOwned: true, ...(x === 0 && y === 0 ? { level: 1 } : {}) };
 	return g;
 };
-const rates = (over: Partial<Resources> = {}): Resources => ({ gold: 2, wood: 1, stone: 1, coal: 0.5, food: 1, meat: 0, eggs: 0, milk: 0, hide: 0, xp: 1, ...over });
+const rates = (over: Partial<Resources> = {}): Resources => ({
+	gold: 2,
+	wood: 1,
+	stone: 1,
+	coal: 0.5,
+	food: 1,
+	meat: 0,
+	eggs: 0,
+	milk: 0,
+	hide: 0,
+	xp: 1,
+	...over,
+});
 
 test('chest spot: only owned tiles, never the castle, a building, a monster or another chest', () => {
 	const g = territory(2);
@@ -38,14 +51,24 @@ test('chest spot: only owned tiles, never the castle, a building, a monster or a
 	for (let i = 0; i < 400; i++) {
 		const spot = pickChestSpot(w, taken, 1, rng(i))!;
 		const t = tileAt(w, spot.x, spot.y);
-		assert.ok(t.isOwned && t.biome !== 'castle' &&!t.hasChest && !t.building);
+		assert.ok(t.isOwned && t.biome !== 'castle' && !t.hasChest && !t.building);
 		assert.ok(!taken.has(`${spot.x},${spot.y}`));
 	}
 });
 
 test('chest spot: a lake is fine (drawn as a glowing ripple), a building is not', () => {
 	const g = territory(1);
-	for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [-1, 1], [1, -1]])g[CASTLE_Y + dy][CASTLE_X + dx] = { biome: 'plains', isOwned: true, building: 'farm' };
+	for (const [dx, dy] of [
+		[1, 0],
+		[-1, 0],
+		[0, 1],
+		[0, -1],
+		[1, 1],
+		[-1, -1],
+		[-1, 1],
+		[1, -1],
+	])
+		g[CASTLE_Y + dy][CASTLE_X + dx] = { biome: 'plains', isOwned: true, building: 'farm' };
 	g[CASTLE_Y + 1][CASTLE_X + 1] = { biome: 'lake', isOwned: true }; // the only tile left that is not castle or built
 	const w = worldFromRows(g);
 	for (let i = 0; i < 40; i++) assert.deepEqual(pickChestSpot(w, new Set(), 1, rng(i)), { x: CASTLE_X + 1, y: CASTLE_Y + 1 });

@@ -89,7 +89,10 @@ test('three hours away pay half the income of those hours, and chests and rats c
 	assert.equal(result.grant?.resources.gold, Math.floor(rates.gold * 3 * 3600 * 0.5));
 	assert.ok(result.tickets.chests.length > 0, 'chests appeared while away (and the server gave them a tile)');
 	assert.ok(result.tickets.rats.length > 0, 'rats appeared while away');
-	assert.ok(result.tickets.rats.every((rat) => rat.at > T0 / 1000 && rat.at <= (T0 + 3 * HOUR) / 1000), 'stamped inside the absence, so they have grown by the time you are back');
+	assert.ok(
+		result.tickets.rats.every((rat) => rat.at > T0 / 1000 && rat.at <= (T0 + 3 * HOUR) / 1000),
+		'stamped inside the absence, so they have grown by the time you are back',
+	);
 });
 
 test('the same claim repeated returns the same answer and pays once; a new claim right after pays nothing', async () => {
@@ -164,11 +167,27 @@ test('a claim made before the ledger exists seeds it from the save: the gems sta
 	assert.equal(ledger.combat, null, 'combat is seeded by the first fight request, not here');
 	// a stored save written before monsters moved to the server still lists them: they become tickets with no tile yet (the server places them)
 	const stored = (await m.saves.load('u1'))!;
-	const legacy = { ...stored, core: { ...stored.core, monsters: [{ id: 1, type: 'thistleBoar', ageSec: 100 }, { id: 2, type: 'thistleBoar', ageSec: 50 }], nextMonsterId: 3 } };
+	const legacy = {
+		...stored,
+		core: {
+			...stored.core,
+			monsters: [
+				{ id: 1, type: 'thistleBoar', ageSec: 100 },
+				{ id: 2, type: 'thistleBoar', ageSec: 50 },
+			],
+			nextMonsterId: 3,
+		},
+	};
 	const seeded = seedLedger(legacy, T0);
 	assert.equal(seeded.bank.rats.length, 2);
-	assert.deepEqual(seeded.bank.rats.map((r) => r.n), [1, 2]);
-	assert.ok(seeded.bank.rats.every((r) => r.x === undefined && r.spawnLevel === undefined), 'not placed yet');
+	assert.deepEqual(
+		seeded.bank.rats.map((r) => r.n),
+		[1, 2],
+	);
+	assert.ok(
+		seeded.bank.rats.every((r) => r.x === undefined && r.spawnLevel === undefined),
+		'not placed yet',
+	);
 });
 
 // ---------------------------------------------------------------------------------------------------- the verifier knows the grants
@@ -292,7 +311,10 @@ test('a New Game on the server leaves nothing to claim, keeps the gems, and the 
 	assert.equal(ledger.inv, null);
 	assert.equal(ledger.combat, null);
 	assert.equal(ledger.anchorAt, T0 + 3 * HOUR);
-	assert.equal(Object.values(ledger.granted).every((v) => v === 0), true);
+	assert.equal(
+		Object.values(ledger.granted).every((v) => v === 0),
+		true,
+	);
 	assert.equal((await claimOffline(m.deps, 'u1', 'claim-0001', T0 + 3 * HOUR + 5000)).kind, 'no_save', 'no absence is paid for a game that no longer exists');
 
 	// the player comes back much later: the hours since the reset are neither played time nor an absence

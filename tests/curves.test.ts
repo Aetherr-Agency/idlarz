@@ -16,7 +16,7 @@ const stagedPrice = (n: number) => {
 		BASE_TILE_COST *
 			Math.pow(S.growthEarly, Math.min(n, S.earlyTiles)) *
 			Math.pow(S.growthLate, Math.max(Math.min(n, S.lateTiles) - S.earlyTiles, 0)) *
-			Math.pow(S.growthEndgame, Math.max(n - S.lateTiles, 0))
+			Math.pow(S.growthEndgame, Math.max(n - S.lateTiles, 0)),
 	);
 };
 const tileXp = (n: number) => BASE_XP_PER_TILE * Math.pow(XP_TILE.growth, n - 1) * (n / 4);
@@ -116,7 +116,11 @@ test('stats and percentages use the same short notation: plain below 10,000 (5,0
 });
 
 test('building cost stays finite however many buildings stand', () => {
-	const built = Array.from({ length: 6000 }, (_, i) => ({ x: i % 100, y: Math.floor(i / 100), tile: { biome: 'plains' as const, isOwned: true, building: 'farm' } }));
+	const built = Array.from({ length: 6000 }, (_, i) => ({
+		x: i % 100,
+		y: Math.floor(i / 100),
+		tile: { biome: 'plains' as const, isOwned: true, building: 'farm' },
+	}));
 	const cost = calculateBuildingCost(setTiles(EMPTY_WORLD, built));
 	for (const [resource, amount] of Object.entries(cost)) {
 		assert.ok(Number.isFinite(amount) && (amount as number) <= RESOURCE_CAP / 100, `${resource}: ${amount}`);

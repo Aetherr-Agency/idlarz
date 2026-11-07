@@ -112,7 +112,7 @@ export const packLand = (world: World): PackedLand => {
 				for (const { x, y, tile } of ownedRowMajor(world)) {
 					yield { x, y, biome: tile.biome, level: tile.level, building: tile.building, chest: tile.hasChest };
 				}
-			})()
+			})(),
 		);
 		packedCache.set(world, packed);
 	}
@@ -218,8 +218,7 @@ export const sealWire = (wire: unknown): string => {
 	return `${SAVE_PREFIX}${payload}.${checkCode(payload)}`;
 };
 
-export const encodeSave = (state: PersistedGame, now: number = Date.now()): string =>
-	sealWire({ v: SAVE_SCHEMA, t: now, s: packBody(state) });
+export const encodeSave = (state: PersistedGame, now: number = Date.now()): string => sealWire({ v: SAVE_SCHEMA, t: now, s: packBody(state) });
 
 export type DecodeResult = { ok: true; state: PersistedGame; savedAt: number | null; schema: number } | { ok: false; reason: string };
 

@@ -77,12 +77,7 @@ const LevelUpNotification: React.FC = () => {
 				<g filter='url(#lu-block)'>
 					<g className='lu-spin'>
 						{RAYS.map((deg, i) => (
-							<polygon
-								key={deg}
-								points='400,400 372,0 428,0'
-								fill={i % 2 ? 'url(#lu-ray-violet)' : 'url(#lu-ray-gold)'}
-								transform={`rotate(${deg} 400 400)`}
-							/>
+							<polygon key={deg} points='400,400 372,0 428,0' fill={i % 2 ? 'url(#lu-ray-violet)' : 'url(#lu-ray-gold)'} transform={`rotate(${deg} 400 400)`} />
 						))}
 					</g>
 				</g>

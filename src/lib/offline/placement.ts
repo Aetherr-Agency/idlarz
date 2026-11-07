@@ -25,13 +25,20 @@ export const worldFromPart = (part: { land: unknown; extra: unknown }): World | 
 	const placed: Placed[] = (unpacked.raw.land as LandEntry[]).map(({ x, y, biome, level, building, chest }) => ({
 		x,
 		y,
-		tile: { biome, isOwned: true, ...(level !== undefined ? { level } : {}), ...(building !== undefined ? { building } : {}), ...(chest ? { hasChest: true } : {}) },
+		tile: {
+			biome,
+			isOwned: true,
+			...(level !== undefined ? { level } : {}),
+			...(building !== undefined ? { building } : {}),
+			...(chest ? { hasChest: true } : {}),
+		},
 	}));
 	return createWorld(placed);
 };
 
 /** The monsters a ticket of this kind can turn into: every `MONSTERS` entry of the matching grade (normal monsters for a rat ticket, bosses for the King's). */
-const typesOf = (kind: 'rat' | 'king'): MonsterType[] => (Object.keys(MONSTERS) as MonsterType[]).filter((type) => (MONSTERS[type].grade === 'boss') === (kind === 'king'));
+const typesOf = (kind: 'rat' | 'king'): MonsterType[] =>
+	(Object.keys(MONSTERS) as MonsterType[]).filter((type) => (MONSTERS[type].grade === 'boss') === (kind === 'king'));
 
 /** A ticket that is on the map (it has a tile and the level it appeared at). */
 export const isPlaced = (ticket: MonsterTicket): boolean => ticket.x !== undefined && ticket.y !== undefined && ticket.spawnLevel !== undefined;
@@ -58,7 +65,8 @@ export const placeTickets = (bank: TicketBank, world: World, key: string, rebirt
 	const castleLevel = castleLevelOf(world);
 	const noneTaken = new Set<string>();
 	// how many tiles some monster of the kind may stand on (a tile several monsters could use counts once)
-	const siteCount = (kind: 'rat' | 'king') => new Set(typesOf(kind).flatMap((type) => spawnTiles(type, world, noneTaken, rebirths).map((spot) => `${spot.x},${spot.y}`))).size;
+	const siteCount = (kind: 'rat' | 'king') =>
+		new Set(typesOf(kind).flatMap((type) => spawnTiles(type, world, noneTaken, rebirths).map((spot) => `${spot.x},${spot.y}`))).size;
 	const sites = {
 		rat: siteCount('rat'),
 		king: siteCount('king'),
@@ -118,7 +126,7 @@ export const placeTickets = (bank: TicketBank, world: World, key: string, rebirt
 				if (!spot) return [ticket.n, ticket];
 				taken.add(`${spot.x},${spot.y}`);
 				return [ticket.n, { ...ticket, x: spot.x, y: spot.y }];
-			})
+			}),
 	);
 	return {
 		...bank,

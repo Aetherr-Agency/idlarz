@@ -23,7 +23,7 @@ import { RATTATUI_SET, STARTER_EQUIPMENT } from '../src/config/itemCatalog';
 import { plainItem as p, resolveItem } from '../src/lib/itemInstance';
 import type { BagSlot, Equipment, ItemInstance } from '../src/types/game';
 
-const deepFreeze = <T,>(o: T): T => {
+const deepFreeze = <T>(o: T): T => {
 	if (o && typeof o === 'object') {
 		Object.values(o as object).forEach(deepFreeze);
 		Object.freeze(o);
@@ -70,12 +70,24 @@ test('addToBag takes consumables only, and rejects object prototype names as ite
 		const r = addToBag(emptyBag(), id, 1);
 		assert.equal(r.added, 0, id);
 		assert.equal(r.overflow, 1, id);
-		assert.ok(r.bag.every((s) => s === null), id);
+		assert.ok(
+			r.bag.every((s) => s === null),
+			id,
+		);
 	}
 });
 
 test('gear never stacks: each piece takes its own slot and keeps its own rolls', () => {
-	const rolled: ItemInstance = { base: 'iron_sword', level: 9, rarity: 'rare', quality: 80, affixes: [{ id: 'damage_prefix', roll: 40 }, { id: 'critChance_suffix', roll: 90 }] };
+	const rolled: ItemInstance = {
+		base: 'iron_sword',
+		level: 9,
+		rarity: 'rare',
+		quality: 80,
+		affixes: [
+			{ id: 'damage_prefix', roll: 40 },
+			{ id: 'critChance_suffix', roll: 90 },
+		],
+	};
 	let bag = emptyBag();
 	for (const item of [p('wooden_sword'), p('wooden_sword'), rolled]) bag = addGear(bag, item).bag;
 	assert.deepEqual(bag.slice(0, 4), [{ item: p('wooden_sword') }, { item: p('wooden_sword') }, { item: rolled }, null]);
@@ -178,7 +190,16 @@ test('aggregateStats sums the starter kit to damage 6 armor 2', () => {
 
 test('aggregateStats uses the item level, quality and affixes of what is worn', () => {
 	const plain = aggregateStats({ mainHand: p('iron_sword') }).damage;
-	const better: ItemInstance = { base: 'iron_sword', level: 30, rarity: 'rare', quality: 100, affixes: [{ id: 'damage_prefix', roll: 100 }, { id: 'critChance_suffix', roll: 100 }] };
+	const better: ItemInstance = {
+		base: 'iron_sword',
+		level: 30,
+		rarity: 'rare',
+		quality: 100,
+		affixes: [
+			{ id: 'damage_prefix', roll: 100 },
+			{ id: 'critChance_suffix', roll: 100 },
+		],
+	};
 	const total = aggregateStats({ mainHand: better });
 	assert.ok(total.damage > plain * 1.5, `${total.damage} vs ${plain}`);
 	assert.ok(total.critChance > 0);
@@ -216,7 +237,15 @@ test('aggregateStats adds gear stats and every set bonus threshold reached', () 
 });
 
 test('two sets at once: each counts its own pieces', () => {
-	const mixed: Equipment = { head: p('obsidian_helm'), chest: p('obsidian_cuirass'), hands: p('obsidian_gauntlets'), legs: p('rattatui_trousers'), feet: p('rattatui_boots'), neck: p('rattatui_amulet'), cape: p('steel_cloak') };
+	const mixed: Equipment = {
+		head: p('obsidian_helm'),
+		chest: p('obsidian_cuirass'),
+		hands: p('obsidian_gauntlets'),
+		legs: p('rattatui_trousers'),
+		feet: p('rattatui_boots'),
+		neck: p('rattatui_amulet'),
+		cape: p('steel_cloak'),
+	};
 	assert.deepEqual(setCounts(mixed), { obsidian: 3, rattatui: 3 }); // a steel piece belongs to no set
 });
 
@@ -325,7 +354,10 @@ test('compareDetailed reports the set tiers a swap switches on and off', () => {
 	const change = gain.setChanges.find((c) => c.setId === RATTATUI_SET.id)!;
 	assert.equal(change.from, lowest - 1);
 	assert.equal(change.to, lowest);
-	assert.deepEqual(change.gained.map((t) => t.count), [lowest]);
+	assert.deepEqual(
+		change.gained.map((t) => t.count),
+		[lowest],
+	);
 	assert.equal(change.lost.length, 0);
 });
 

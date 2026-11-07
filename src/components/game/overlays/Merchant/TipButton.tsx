@@ -23,7 +23,8 @@ export const TipButton: React.FC<{
 				const { left, top, right, bottom } = e.currentTarget.getBoundingClientRect();
 				setAnchor({ left, top, right, bottom });
 			}}
-			onMouseLeave={() => setAnchor(null)}>
+			onMouseLeave={() => setAnchor(null)}
+		>
 			<button className={`${className} tip-btn`} disabled={disabled} aria-label={ariaLabel} onClick={onClick}>
 				{label}
 			</button>
@@ -32,7 +33,7 @@ export const TipButton: React.FC<{
 					<FloatingTip anchor={anchor}>
 						<div className='px-tooltip text-sm'>{tip}</div>
 					</FloatingTip>,
-					document.body
+					document.body,
 				)}
 		</span>
 	);

@@ -13,8 +13,7 @@ export const fail = (error: string, status: number) => json({ error }, status);
  * `reason` tells the two apart: `not_configured` (the server has no Supabase variables: retrying cannot help) or `outage`.
  */
 export type UnavailableReason = 'not_configured' | 'outage';
-export const unavailable = (reason: UnavailableReason = 'outage') =>
-	json({ error: 'Accounts are unavailable right now.', unavailable: true, reason }, 503);
+export const unavailable = (reason: UnavailableReason = 'outage') => json({ error: 'Accounts are unavailable right now.', unavailable: true, reason }, 503);
 
 export const guardConfigured = () => (supabaseConfigured() ? null : unavailable('not_configured'));
 

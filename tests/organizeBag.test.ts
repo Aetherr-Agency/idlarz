@@ -32,22 +32,37 @@ test('organizeBag sorts gear by kind, slot, rarity, level and quality; the best 
 		gear('wooden_sword', { rarity: 'rare', level: 1 }),
 		gear('wooden_sword', { rarity: 'rare', level: 9 }),
 		gear('wooden_sword', { rarity: 'rare', level: 9, quality: 90 }),
-		gear('cloth_ring')
+		gear('cloth_ring'),
 	);
-	const out = organizeBag(bag).slice(0, 7).map((s) => gearOf(s)!);
-	assert.deepEqual(out.slice(0, 4).map((i) => [i.base, i.rarity, i.level, i.quality]), [
-		['wooden_sword', 'rare', 9, 90],
-		['wooden_sword', 'rare', 9, out[1].quality],
-		['wooden_sword', 'rare', 1, out[2].quality],
-		['wooden_sword', 'common', 3, out[3].quality],
-	]);
+	const out = organizeBag(bag)
+		.slice(0, 7)
+		.map((s) => gearOf(s)!);
+	assert.deepEqual(
+		out.slice(0, 4).map((i) => [i.base, i.rarity, i.level, i.quality]),
+		[
+			['wooden_sword', 'rare', 9, 90],
+			['wooden_sword', 'rare', 9, out[1].quality],
+			['wooden_sword', 'rare', 1, out[2].quality],
+			['wooden_sword', 'common', 3, out[3].quality],
+		],
+	);
 	assert.ok(out[0].quality >= out[1].quality);
 	// weapons, then the shield, then armor, then jewelry
-	assert.deepEqual(out.slice(4).map((i) => ITEM_CATALOG[i.base].kind), ['offhand', 'armor', 'accessory']);
+	assert.deepEqual(
+		out.slice(4).map((i) => ITEM_CATALOG[i.base].kind),
+		['offhand', 'armor', 'accessory'],
+	);
 });
 
 test('organizeBag keeps the number of slots, never mutates its input, and organising twice changes nothing more', () => {
-	const bag = bagOf(gear('steel_mace'), { id: 'potion_minor', qty: 1 }, null, gear('wooden_sword'), { id: 'potion_greater', qty: 2 }, { id: 'potion_minor', qty: 1 });
+	const bag = bagOf(
+		gear('steel_mace'),
+		{ id: 'potion_minor', qty: 1 },
+		null,
+		gear('wooden_sword'),
+		{ id: 'potion_greater', qty: 2 },
+		{ id: 'potion_minor', qty: 1 },
+	);
 	const snapshot = JSON.stringify(bag);
 	const once = organizeBag(bag);
 	assert.equal(JSON.stringify(bag), snapshot, 'the input is untouched');
@@ -61,7 +76,10 @@ test('organizeBag keeps the number of slots, never mutates its input, and organi
 });
 
 test('a full bag organises without losing anything', () => {
-	const full = Array.from({ length: COMBAT.bagSize }, (_, i): BagSlot => (i % 3 === 0 ? { id: 'potion_minor', qty: 2 } : gear(i % 2 ? 'wooden_sword' : 'steel_mace')));
+	const full = Array.from(
+		{ length: COMBAT.bagSize },
+		(_, i): BagSlot => (i % 3 === 0 ? { id: 'potion_minor', qty: 2 } : gear(i % 2 ? 'wooden_sword' : 'steel_mace')),
+	);
 	const out = organizeBag(full);
 	assert.equal(out.length, full.length);
 	assert.equal(total(out), total(full));

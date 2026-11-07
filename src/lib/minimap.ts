@@ -243,7 +243,7 @@ export const paintMinimap = (data: Uint8ClampedArray, world: World, l: MinimapLa
 /** The box rectangle (px) of a (fractional) tile range: the part of the map that is on screen. */
 export const viewRectangle = (
 	l: MinimapLayout,
-	tiles: { minX: number; maxX: number; minY: number; maxY: number }
+	tiles: { minX: number; maxX: number; minY: number; maxY: number },
 ): { left: number; top: number; width: number; height: number } => {
 	const a = tileToMinimap(l, tiles.minX, tiles.minY);
 	const b = tileToMinimap(l, tiles.maxX, tiles.maxY);

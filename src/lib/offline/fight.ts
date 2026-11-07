@@ -72,12 +72,14 @@ const pickTarget = (
 	combat: CombatState,
 	tSec: number,
 	/** Auto-battle only: whether the player is expected to win against this monster (left out: no check) */
-	winnable?: (type: MonsterType, level: number) => boolean
+	winnable?: (type: MonsterType, level: number) => boolean,
 ): { ticket: MonsterTicket; type: MonsterType } | null => {
 	const levelOf = (ticket: MonsterTicket) => levelAtAge(ticket.spawnLevel ?? 1, tSec - ticket.at);
 	const ready = (ticket: MonsterTicket, kind: 'rat' | 'king') =>
 		isPlaced(ticket) && tSec >= (combat.retryAt[ticket.n] ?? 0) && (!winnable || winnable(monsterTypeOf(ticket, kind), levelOf(ticket)));
-	const rats = ledger.bank.rats.filter((ticket) => ready(ticket, 'rat')).sort((a, b) => (COMBAT.auto.engageOrder === 'weakest' ? levelOf(a) - levelOf(b) : 0) || a.n - b.n);
+	const rats = ledger.bank.rats
+		.filter((ticket) => ready(ticket, 'rat'))
+		.sort((a, b) => (COMBAT.auto.engageOrder === 'weakest' ? levelOf(a) - levelOf(b) : 0) || a.n - b.n);
 	if (rats[0]) return { ticket: rats[0], type: monsterTypeOf(rats[0], 'rat') };
 	const king = ledger.bank.king;
 	if (king && ready(king, 'king')) return { ticket: king, type: monsterTypeOf(king, 'king') };
@@ -88,8 +90,10 @@ const pickTarget = (
  * Whether auto-battle expects to beat a monster: the estimate (offline/winChance.ts) with the HP it would start with (at least the resume
  * line, so a player who is still resting is not judged on a low HP) and the potions auto-use would drink. A click on a monster skips this.
  */
-const winnableBy = (profile: PlayerProfile, hp: number, potions: PotionStock[]) => (type: MonsterType, level: number): boolean =>
-	estimateWin(profile, Math.max(hp, (profile.maxHp * COMBAT.auto.resumeHpPct) / 100), type, level, potions).chance >= COMBAT.auto.minWinChance;
+const winnableBy =
+	(profile: PlayerProfile, hp: number, potions: PotionStock[]) =>
+	(type: MonsterType, level: number): boolean =>
+		estimateWin(profile, Math.max(hp, (profile.maxHp * COMBAT.auto.resumeHpPct) / 100), type, level, potions).chance >= COMBAT.auto.minWinChance;
 
 /** The soonest time a monster that is waiting out its retry cooldown becomes a target again (Infinity: none). */
 const nextRetry = (ledger: Ledger, combat: CombatState, tSec: number): number => {
@@ -112,7 +116,11 @@ export interface CombatTotals {
  * Brings the player's combat up to `env.nowSec`, then applies what the player asked for (switches, hotkeys) and starts the next fight when
  * auto-battle allows. Returns the new ledger. All events are in `ledger.combat.log`.
  */
-export const runCombat = (input: Ledger, env: CombatEnv, ask: { commands?: CombatCommand[]; autoBattle?: boolean; autoUse?: boolean; ack?: number } = {}): CombatTotals => {
+export const runCombat = (
+	input: Ledger,
+	env: CombatEnv,
+	ask: { commands?: CombatCommand[]; autoBattle?: boolean; autoUse?: boolean; ack?: number } = {},
+): CombatTotals => {
 	// the bag is the ledger's (the engine tests and the sim build a ledger from a core: the inventory is read from it then)
 	let ledger: Ledger = input.inv ? input : { ...input, inv: inventoryFromCore(env.stored.core) };
 	const base = combatOf(ledger, env);
@@ -313,7 +321,22 @@ export const runCombat = (input: Ledger, env: CombatEnv, ask: { commands?: Comba
 			const paid = payKill(env.secret, env.userId, ledger, env.stored, f.n, t);
 			if (!paid) return endFight(t, 'retreat');
 			ledger = paid.ledger;
-			push(t, 'won', { n: f.n, type: f.type, level: paid.payout.level, reward: { gold: paid.payout.gold, xp: paid.payout.xp, hide: paid.payout.hide, items: paid.payout.items, stored: paid.payout.stored, convertedGold: paid.payout.convertedGold, autoSold: paid.payout.autoSold, pity: paid.payout.pity, lucky: paid.payout.lucky } });
+			push(t, 'won', {
+				n: f.n,
+				type: f.type,
+				level: paid.payout.level,
+				reward: {
+					gold: paid.payout.gold,
+					xp: paid.payout.xp,
+					hide: paid.payout.hide,
+					items: paid.payout.items,
+					stored: paid.payout.stored,
+					convertedGold: paid.payout.convertedGold,
+					autoSold: paid.payout.autoSold,
+					pity: paid.payout.pity,
+					lucky: paid.payout.lucky,
+				},
+			});
 			c.fight = null;
 			return;
 		}
@@ -452,7 +475,9 @@ export const combatView = (ledger: Ledger, env: CombatEnv, since: number, behind
 		// a queued monster starts by itself once the hero is back above the resume line, with auto-battle on or off: ask again when that is
 		// (without this the idle wait below, up to ten minutes, applied and the queue looked stuck after a fight)
 		const regen = Math.max(0.1, COMBAT.regenPerSec + p.hpRegen);
-		const queuedWaiting = (c.queue ?? []).some((n) => ledger.bank.rats.some((ticket) => ticket.n === n && isPlaced(ticket)) || (ledger.bank.king?.n === n && isPlaced(ledger.bank.king)));
+		const queuedWaiting = (c.queue ?? []).some(
+			(n) => ledger.bank.rats.some((ticket) => ticket.n === n && isPlaced(ticket)) || (ledger.bank.king?.n === n && isPlaced(ledger.bank.king)),
+		);
 		if (queuedWaiting) {
 			resting = c.hp < resume;
 			restSec = resting ? Math.ceil((resume - c.hp) / regen) : 0;
@@ -468,7 +493,20 @@ export const combatView = (ledger: Ledger, env: CombatEnv, since: number, behind
 		maxHp: p.maxHp,
 		maxMp: p.maxMp,
 		cd: c.cd,
-		fight: f ? { n: f.n, type: f.type, level: f.level, lucky: f.lucky, monsterHp: f.monsterHp, monsterMaxHp: f.monsterMaxHp, stunLeft: f.stunLeft, timeLeftSec: f.timeLeftSec, x: f.x, y: f.y } : null,
+		fight: f
+			? {
+					n: f.n,
+					type: f.type,
+					level: f.level,
+					lucky: f.lucky,
+					monsterHp: f.monsterHp,
+					monsterMaxHp: f.monsterMaxHp,
+					stunLeft: f.stunLeft,
+					timeLeftSec: f.timeLeftSec,
+					x: f.x,
+					y: f.y,
+				}
+			: null,
 		queue: (c.queue ?? []).flatMap((n) => {
 			const rat = ledger.bank.rats.find((ticket) => ticket.n === n && isPlaced(ticket));
 			const king = ledger.bank.king && ledger.bank.king.n === n && isPlaced(ledger.bank.king) ? ledger.bank.king : undefined;

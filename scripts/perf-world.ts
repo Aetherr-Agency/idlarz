@@ -49,13 +49,29 @@ for (const count of [5_000, 50_000, 250_000]) {
 	// the next tile to buy: any open neighbour of the explored land
 	const b = ownedBounds(world)!;
 	let spot: [number, number] | null = null;
-	for (let y = b.minY - 1; y <= b.maxY + 1 && !spot; y++) for (let x = b.minX - 1; x <= b.maxX + 1; x++) if (!isOwnedAt(world, x, y) && hasOwnedNeighbour(world, x, y)) { spot = [x, y]; break; }
+	for (let y = b.minY - 1; y <= b.maxY + 1 && !spot; y++)
+		for (let x = b.minX - 1; x <= b.maxX + 1; x++)
+			if (!isOwnedAt(world, x, y) && hasOwnedNeighbour(world, x, y)) {
+				spot = [x, y];
+				break;
+			}
 
 	const rich = () => useGameStore.setState((s) => ({ resources: { ...s.resources, gold: 1e20, wood: 1e20, stone: 1e20, coal: 1e20, food: 1e20 } }));
 	rich();
 	const [, buy] = time(() => api().buyTile(spot![0], spot![1]));
 	const tick = median(() => api().tick(100));
-	const rates = median(() => void calculateResourceRates(api().tiles, api().characterStats, api().farmLevels, api().prestige, api().farmUpgrades, api().merchantUpgrades, gearIncomePct(api().equipment)));
+	const rates = median(
+		() =>
+			void calculateResourceRates(
+				api().tiles,
+				api().characterStats,
+				api().farmLevels,
+				api().prestige,
+				api().farmUpgrades,
+				api().merchantUpgrades,
+				gearIncomePct(api().equipment),
+			),
+	);
 	const chest = median(() => void pickChestSpot(api().tiles, new Set(), castleLevelOf(api().tiles)), 3);
 	const persisted = pickPersisted(api());
 	const [text, encodeFirst] = time(() => encodeSave(persisted));

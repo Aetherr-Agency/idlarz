@@ -28,10 +28,7 @@ const SettingsDialog: React.FC = () => {
 	return (
 		<PixelModal title='Settings' size='sm' icon={<PixelIcon name='menu_settings' alt='' />} onClose={close}>
 			<Row label='Sound effects'>
-				<button
-					className={`px-btn px-btn-sm ${soundEnabled ? '' : 'px-btn-gray'}`}
-					onClick={() => setSoundEnabled(!soundEnabled)}
-					aria-pressed={soundEnabled}>
+				<button className={`px-btn px-btn-sm ${soundEnabled ? '' : 'px-btn-gray'}`} onClick={() => setSoundEnabled(!soundEnabled)} aria-pressed={soundEnabled}>
 					{soundEnabled ? 'On' : 'Off'}
 				</button>
 			</Row>
@@ -51,10 +48,7 @@ const SettingsDialog: React.FC = () => {
 			</Row>
 
 			<Row label='Life on the map' hint='Critters wander over your land and ripples play on the water'>
-				<button
-					className={`px-btn px-btn-sm ${ambientLife ? '' : 'px-btn-gray'}`}
-					onClick={() => setAmbientLife(!ambientLife)}
-					aria-pressed={ambientLife}>
+				<button className={`px-btn px-btn-sm ${ambientLife ? '' : 'px-btn-gray'}`} onClick={() => setAmbientLife(!ambientLife)} aria-pressed={ambientLife}>
 					{ambientLife ? 'On' : 'Off'}
 				</button>
 			</Row>
@@ -65,7 +59,8 @@ const SettingsDialog: React.FC = () => {
 					onClick={() => {
 						close();
 						toggleSaveMenu();
-					}}>
+					}}
+				>
 					Save & backup (export / import)
 				</button>
 				<button
@@ -73,7 +68,8 @@ const SettingsDialog: React.FC = () => {
 					onClick={() => {
 						close();
 						openTutorial();
-					}}>
+					}}
+				>
 					Show guide
 				</button>
 			</div>

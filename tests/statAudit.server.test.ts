@@ -25,7 +25,7 @@ test('structural forgery is refused outright: unpaid Ember shop levels, extra at
 	assert.match(get('stat-points').reason!, /too many stat points/);
 });
 
-test('XP is the server\'s to bound: a save with more XP than the game could have paid is clamped and flagged', () => {
+test("XP is the server's to bound: a save with more XP than the game could have paid is clamped and flagged", () => {
 	const row = get('xp-inflated');
 	assert.equal(row.verdict, 'clamped');
 	assert.ok(row.flags.includes('xp_jump'));

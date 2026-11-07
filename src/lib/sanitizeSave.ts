@@ -44,16 +44,7 @@ import {
 	STARTER_FREE_TILES,
 } from '@/utils/gameUtils';
 import { RING } from '@/utils/biomeRules';
-import {
-	EMPTY_WORLD,
-	MAX_OWNED_TILES,
-	inRange,
-	keyX,
-	keyY,
-	setTiles,
-	tileKey,
-	type Placed,
-} from '@/utils/world';
+import { EMPTY_WORLD, MAX_OWNED_TILES, inRange, keyX, keyY, setTiles, tileKey, type Placed } from '@/utils/world';
 import type {
 	BagSlot,
 	CastleUpgradeState,
@@ -109,9 +100,7 @@ export const pickPersisted = (state: GameState): PersistedGame => {
 	return out as unknown as PersistedGame;
 };
 
-export type SanitizeResult =
-	| { ok: true; state: PersistedGame }
-	| { ok: false; reason: string };
+export type SanitizeResult = { ok: true; state: PersistedGame } | { ok: false; reason: string };
 
 const fail = (reason: string): SanitizeResult => ({ ok: false, reason });
 
@@ -131,8 +120,7 @@ export const readInstance = (value: unknown): ItemInstance | string => {
 	return instanceProblem(item) ?? item;
 };
 
-const num = (v: unknown, min = 0, max = RESOURCE_CAP): number | null =>
-	typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max ? v : null;
+const num = (v: unknown, min = 0, max = RESOURCE_CAP): number | null => (typeof v === 'number' && Number.isFinite(v) && v >= min && v <= max ? v : null);
 
 const int = (v: unknown, min: number, max: number): number | null => {
 	const n = num(v, min, max);
@@ -325,7 +313,6 @@ export const sanitizeSave = (raw: unknown): SanitizeResult => {
 	};
 	Object.assign(characterStats, calculateCombatStats(characterStats));
 
-
 	// ---- merchant bonuses (optional: an older save has none). Parsed first because Pack Rat sets the bag size ----------
 	const merchantUpgrades: Record<string, number> = {};
 	if (raw.merchantUpgrades !== undefined) {
@@ -514,9 +501,7 @@ export const sanitizeSave = (raw: unknown): SanitizeResult => {
 
 	const rawName = typeof raw.playerName === 'string' ? raw.playerName.trim().slice(0, 9) : '';
 	const playerClass: PlayerClassId =
-		typeof raw.playerClass === 'string' && raw.playerClass in PLAYER_CLASSES
-			? (raw.playerClass as PlayerClassId)
-			: DEFAULT_PLAYER_CLASS;
+		typeof raw.playerClass === 'string' && raw.playerClass in PLAYER_CLASSES ? (raw.playerClass as PlayerClassId) : DEFAULT_PLAYER_CLASS;
 
 	return {
 		ok: true,

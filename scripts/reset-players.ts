@@ -66,7 +66,10 @@ const fail = (what: string, error: { message: string } | null) => {
 const fetchAll = async <T>(table: string, columns: string): Promise<T[]> => {
 	const out: T[] = [];
 	for (let from = 0; ; from += 1000) {
-		let query = db.from(table).select(columns).range(from, from + 999);
+		let query = db
+			.from(table)
+			.select(columns)
+			.range(from, from + 999);
 		if (users.length) query = query.in(table === 'profiles' ? 'id' : 'user_id', users);
 		const { data, error } = await query;
 		fail(`read ${table}`, error);
@@ -98,7 +101,9 @@ const main = async () => {
 	for (const id of ids) {
 		const save = saves.find((s) => s.user_id === id);
 		const gems = ledgerOf.get(id)?.gems ?? save?.gems ?? 0;
-		console.log(`  ${(names.get(id) ?? '?').padEnd(10)} ${id}  level ${save?.level ?? '-'}  rebirths ${save?.rebirths ?? '-'}  gems kept: ${gems}  ledger anchor ${ledgerOf.get(id)?.anchor_at ?? '-'}`);
+		console.log(
+			`  ${(names.get(id) ?? '?').padEnd(10)} ${id}  level ${save?.level ?? '-'}  rebirths ${save?.rebirths ?? '-'}  gems kept: ${gems}  ledger anchor ${ledgerOf.get(id)?.anchor_at ?? '-'}`,
+		);
 	}
 	if (!execute) {
 		console.log('\nNothing changed. Re-run with --yes to apply.');
@@ -142,9 +147,7 @@ const main = async () => {
 			inv: null,
 			updated_at: new Date(now).toISOString(),
 		};
-		const ledgerWrite = old
-			? await db.from('player_ledger').update(row).eq('user_id', id)
-			: await db.from('player_ledger').insert({ user_id: id, ...row });
+		const ledgerWrite = old ? await db.from('player_ledger').update(row).eq('user_id', id) : await db.from('player_ledger').insert({ user_id: id, ...row });
 		fail(`ledger ${id}`, ledgerWrite.error);
 
 		// 2. the save: deleting it cascades to player_worlds and player_stats; the next login starts a new game. --hard deletes those rows explicitly as well
@@ -182,7 +185,9 @@ const main = async () => {
 		console.error(`CHECK FAILED: ${leftSaves.length} save(s) left, ${stale.length} ledger(s) not fresh.`);
 		process.exit(1);
 	}
-	console.log(`Reset ${done} player(s). Names, classes and gems kept.${purgeHistory ? ' save_history purged.' : ' save_history kept (rollback copies).'} Check passed: no saves left, ledgers anchored at the reset.`);
+	console.log(
+		`Reset ${done} player(s). Names, classes and gems kept.${purgeHistory ? ' save_history purged.' : ' save_history kept (rollback copies).'} Check passed: no saves left, ledgers anchored at the reset.`,
+	);
 	console.log('Reminder: a browser that still holds the old game locally must choose "New game" in the start hub.');
 };
 

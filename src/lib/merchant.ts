@@ -46,13 +46,7 @@ export const shelfLevels = (castleLevel: number, averageLevel: number): { centre
 };
 
 /** A new shelf of goods, rolled at the world (castle) level and the player's gear, and stamped with the play time it was made. */
-export const generateMerchantStock = (
-	castleLevel: number,
-	averageLevel: number,
-	rng: Rng,
-	playSeconds: number,
-	ctx: LimitContext = {}
-): MerchantStock => {
+export const generateMerchantStock = (castleLevel: number, averageLevel: number, rng: Rng, playSeconds: number, ctx: LimitContext = {}): MerchantStock => {
 	const { centre, max } = shelfLevels(castleLevel, averageLevel);
 	const result = generateLoot({ sourceId: 'merchant', castleLevel, level: centre, maxItemLevel: max }, rng);
 	if (result.warnings.length) console.warn('[loot]', ...result.warnings);
@@ -105,7 +99,7 @@ export const afterAbsence = (
 	refresh: MerchantRefresh,
 	playSeconds: number,
 	elapsedSec: number,
-	ctx: LimitContext = {}
+	ctx: LimitContext = {},
 ): { merchantStock: MerchantStock | null; merchantRefresh: MerchantRefresh } => {
 	const elapsed = Math.max(0, elapsedSec);
 	const dueAfter = stock ? secondsToRotation(stock, playSeconds, ctx) : 0;

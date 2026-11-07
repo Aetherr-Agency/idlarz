@@ -85,7 +85,7 @@ const SaveHub: React.FC<Props> = ({ mode, local, cloud, onEnter, onNewGame, onLo
 	};
 
 	const localOk = local.kind === 'ok' ? local : null;
-	const info = localOk ? PLAYER_CLASSES[localOk.state.playerClass] ?? PLAYER_CLASSES[DEFAULT_PLAYER_CLASS] : null;
+	const info = localOk ? (PLAYER_CLASSES[localOk.state.playerClass] ?? PLAYER_CLASSES[DEFAULT_PLAYER_CLASS]) : null;
 	const localCard = (action?: CardProps['action']) =>
 		localOk && info ? (
 			<SaveCard
@@ -117,12 +117,21 @@ const SaveHub: React.FC<Props> = ({ mode, local, cloud, onEnter, onNewGame, onLo
 			<div className='fixed inset-0 bg-[#14100c]'>
 				<PixelModal title='Save unreadable' size='sm' hideClose closeOnBackdrop={false} onClose={NOOP}>
 					<p className='text-sm text-center text-[#a89878] mb-4'>
-						A saved game is stored in this browser but could not be read. A copy of the damaged text is kept; you can copy it from the save tools (Ctrl x5 in the game).
+						A saved game is stored in this browser but could not be read. A copy of the damaged text is kept; you can copy it from the save tools (Ctrl x5 in
+						the game).
 					</p>
-					{problem && <p role='alert' className='text-xs text-center text-[#e07a6a] mb-2'>{problem}</p>}
+					{problem && (
+						<p role='alert' className='text-xs text-center text-[#e07a6a] mb-2'>
+							{problem}
+						</p>
+					)}
 					<div className='flex flex-col items-center gap-2'>
-						<button className='px-btn' onClick={() => enter('fresh')}>Start a new game</button>
-						<button type='button' className='text-xs text-[#a89878] underline' onClick={onLogout}>Log out</button>
+						<button className='px-btn' onClick={() => enter('fresh')}>
+							Start a new game
+						</button>
+						<button type='button' className='text-xs text-[#a89878] underline' onClick={onLogout}>
+							Log out
+						</button>
 					</div>
 				</PixelModal>
 			</div>
@@ -145,7 +154,9 @@ const SaveHub: React.FC<Props> = ({ mode, local, cloud, onEnter, onNewGame, onLo
 					{mode === 'cloud' && (
 						<>
 							{local.kind === 'unreadable' && (
-								<p className='text-xs text-[#e0a040] text-center w-full'>The save in this browser could not be read, so your account&apos;s save is used. A copy of the damaged text is kept.</p>
+								<p className='text-xs text-[#e0a040] text-center w-full'>
+									The save in this browser could not be read, so your account&apos;s save is used. A copy of the damaged text is kept.
+								</p>
 							)}
 							{cloudCard({ label: 'Continue', onClick: () => enter('cloud'), blue: true })}
 						</>
@@ -158,12 +169,20 @@ const SaveHub: React.FC<Props> = ({ mode, local, cloud, onEnter, onNewGame, onLo
 					)}
 				</div>
 
-				{problem && <p role='alert' className='text-xs text-center text-[#e07a6a] mb-3'>{problem}</p>}
+				{problem && (
+					<p role='alert' className='text-xs text-center text-[#e07a6a] mb-3'>
+						{problem}
+					</p>
+				)}
 
 				{!confirming ? (
 					<div className='flex flex-col items-center gap-2'>
-						<button className='px-btn' onClick={() => setConfirming(true)}>New Game</button>
-						<button type='button' className='text-xs text-[#a89878] underline' onClick={onLogout}>Log out</button>
+						<button className='px-btn' onClick={() => setConfirming(true)}>
+							New Game
+						</button>
+						<button type='button' className='text-xs text-[#a89878] underline' onClick={onLogout}>
+							Log out
+						</button>
 					</div>
 				) : (
 					<div className='flex flex-col items-center gap-3'>
@@ -171,8 +190,18 @@ const SaveHub: React.FC<Props> = ({ mode, local, cloud, onEnter, onNewGame, onLo
 							Start over? Your kingdom will be replaced by a fresh one{cloud ? ', here and in your account' : ''}. A copy of the old game is kept.
 						</p>
 						<div className='flex gap-2'>
-							<button className='px-btn' onClick={() => { setConfirming(false); setProblem(null); }}>Keep playing</button>
-							<button className='px-btn' onClick={wipe}>Yes, new game</button>
+							<button
+								className='px-btn'
+								onClick={() => {
+									setConfirming(false);
+									setProblem(null);
+								}}
+							>
+								Keep playing
+							</button>
+							<button className='px-btn' onClick={wipe}>
+								Yes, new game
+							</button>
 						</div>
 					</div>
 				)}

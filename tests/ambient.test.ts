@@ -5,8 +5,7 @@ import { AMBIENT_LIFE, TILE_SIZE } from '../src/config/gameConfig';
 import { nextSpawnDelay, pickAmbientCritter, type Viewport } from '../src/lib/ambientLife';
 import type { Tile } from '../src/types/game';
 
-const emptyGrid = (): Tile[][] =>
-	Array.from({ length: 50 }, () => Array.from({ length: 50 }, () => ({ biome: 'empty', isOwned: false }) as Tile));
+const emptyGrid = (): Tile[][] => Array.from({ length: 50 }, () => Array.from({ length: 50 }, () => ({ biome: 'empty', isOwned: false }) as Tile));
 const WHOLE_MAP: Viewport = { minX: 0, maxX: 49, minY: 0, maxY: 49 };
 
 /** A deterministic rng that walks through a fixed list of numbers. */
@@ -41,8 +40,14 @@ test('a critter picks a type that likes the biome and starts inside its tile', (
 });
 
 test('spawn delays stay in range', () => {
-	assert.equal(nextSpawnDelay(() => 0), AMBIENT_LIFE.spawnMinMs);
-	assert.equal(nextSpawnDelay(() => 1), AMBIENT_LIFE.spawnMaxMs);
+	assert.equal(
+		nextSpawnDelay(() => 0),
+		AMBIENT_LIFE.spawnMinMs,
+	);
+	assert.equal(
+		nextSpawnDelay(() => 1),
+		AMBIENT_LIFE.spawnMaxMs,
+	);
 });
 
 test('critters are cosmetic only: nothing to claim, nothing that carries a gift', () => {
@@ -74,7 +79,7 @@ test('fish only swim in open water', () => {
 	const rim = new Set<string>();
 	const inner = new Set<string>();
 	for (let i = 0; i < 1500; i++) {
-		const c = pickAmbientCritter(worldFromRows(pond), WHOLE_MAP, seq(((i * 0.6180339) % 1), ((i * 0.3819) % 1), 0.37, 0.61, 0.2, 0.9, 0.4))!;
+		const c = pickAmbientCritter(worldFromRows(pond), WHOLE_MAP, seq((i * 0.6180339) % 1, (i * 0.3819) % 1, 0.37, 0.61, 0.2, 0.9, 0.4))!;
 		const tx = Math.floor(c.x / TILE_SIZE);
 		const ty = Math.floor(c.y / TILE_SIZE);
 		const interior = tx > 5 && tx < 9 && ty > 10 && ty < 14;
@@ -85,12 +90,17 @@ test('fish only swim in open water', () => {
 });
 
 test('swamp frogs, coast crabs, hill goats and forest wolves exist and stay close to where they appear', () => {
-	for (const [biome, type] of [['swamp', 'frog'], ['coast', 'crab'], ['hills', 'goat'], ['forest', 'wolf']] as const) {
+	for (const [biome, type] of [
+		['swamp', 'frog'],
+		['coast', 'crab'],
+		['hills', 'goat'],
+		['forest', 'wolf'],
+	] as const) {
 		const tiles = emptyGrid();
 		tiles[12][7] = { biome, isOwned: true } as Tile;
 		const seen = new Set<string>();
 		for (let i = 0; i < 200; i++) {
-			const c = pickAmbientCritter(worldFromRows(tiles), WHOLE_MAP, () => ((i * 0.61803) % 1))!;
+			const c = pickAmbientCritter(worldFromRows(tiles), WHOLE_MAP, () => (i * 0.61803) % 1)!;
 			seen.add(c.type);
 			if (c.type === type) assert.ok(Math.abs(c.dx) <= AMBIENT_LIFE.roamTiles * TILE_SIZE * AMBIENT_LIFE.roamScale[type] + 1e-9);
 		}

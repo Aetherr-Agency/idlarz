@@ -7,11 +7,11 @@ test('a cost bundle is listed in catalog order whatever order it was built in', 
 	const tile = { wood: 5, stone: 4, coal: 3, food: 2, hide: 1, gold: 9 };
 	assert.deepEqual(
 		sortedCostEntries(tile).map(([key]) => key),
-		['gold', 'wood', 'stone', 'coal', 'food', 'hide']
+		['gold', 'wood', 'stone', 'coal', 'food', 'hide'],
 	);
 	assert.deepEqual(
 		sortedCostEntries({ food: 1, wood: 2 }).map(([key]) => key),
-		['wood', 'food']
+		['wood', 'food'],
 	);
 });
 
@@ -19,7 +19,7 @@ test('zero and missing amounts are left out, unknown keys go last', () => {
 	assert.deepEqual(sortedCostEntries({ stone: 0, wood: 3, coal: undefined }), [['wood', 3]]);
 	assert.deepEqual(
 		sortedCostEntries({ mystery: 1, gold: 2 }).map(([key]) => key),
-		['gold', 'mystery']
+		['gold', 'mystery'],
 	);
 });
 

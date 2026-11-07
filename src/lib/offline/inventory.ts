@@ -1,19 +1,7 @@
 import { isRecord } from '@/lib/isRecord';
 import { ITEM_CATALOG, RARITIES } from '@/catalog';
 import { MERCHANT_SHOP_ITEMS } from '@/config/gameConfig';
-import {
-	addDrop,
-	equipFromBag,
-	gearOf,
-	moveSlot,
-	organizeBag,
-	rebirthKit,
-	removeFromBag,
-	slotQty,
-	stackOf,
-	starterBag,
-	unequip,
-} from '@/lib/inventory';
+import { addDrop, equipFromBag, gearOf, moveSlot, organizeBag, rebirthKit, removeFromBag, slotQty, stackOf, starterBag, unequip } from '@/lib/inventory';
 import { instanceProblem, plainItem, sellValueOf } from '@/lib/itemInstance';
 import { limitOf } from '@/lib/limits';
 import { isAutoSold } from '@/lib/loot/autoSell';
@@ -31,7 +19,8 @@ import type { BagSlot, Drop, Equipment, EquipmentSlot, ItemInstance } from '@/ty
 type Core = Record<string, unknown>;
 
 /** The bag size a save entitles its owner to (the base plus the Pack Rat bonus the save holds). */
-const bagSizeFor = (merchantUpgrades: unknown): number => limitOf('bagSize', { merchantUpgrades: isRecord(merchantUpgrades) ? (merchantUpgrades as MerchantUpgrades) : undefined });
+const bagSizeFor = (merchantUpgrades: unknown): number =>
+	limitOf('bagSize', { merchantUpgrades: isRecord(merchantUpgrades) ? (merchantUpgrades as MerchantUpgrades) : undefined });
 
 /** The Pack Rat level a save holds (0 when none). */
 const packratOf = (merchantUpgrades: unknown): number => {
@@ -54,7 +43,8 @@ const padBag = (bag: BagSlot[], size: number): BagSlot[] => (bag.length >= size 
 export const inventoryFromCore = (core: Core): Inventory => {
 	const bag = Array.isArray(core.bag) ? (core.bag as BagSlot[]) : starterBag();
 	const lootPity: Record<string, number> = {};
-	if (isRecord(core.lootPity)) for (const [id, misses] of Object.entries(core.lootPity)) if (typeof misses === 'number' && Number.isFinite(misses)) lootPity[id] = misses;
+	if (isRecord(core.lootPity))
+		for (const [id, misses] of Object.entries(core.lootPity)) if (typeof misses === 'number' && Number.isFinite(misses)) lootPity[id] = misses;
 	const packrat = packratOf(core.merchantUpgrades);
 	return {
 		ver: 1,
@@ -80,7 +70,10 @@ export const fitInventory = (inv: Inventory, core: Core): Inventory => {
 };
 
 /** A save with the server's bag, gear, pity and auto-sell filter in place of the ones it carried. */
-export const stampInventory = <T extends Pick<PersistedGame, 'bag' | 'equipment' | 'lootPity' | 'autoSellUpTo' | 'merchantUpgrades'>>(state: T, inv: Inventory): T => {
+export const stampInventory = <T extends Pick<PersistedGame, 'bag' | 'equipment' | 'lootPity' | 'autoSellUpTo' | 'merchantUpgrades'>>(
+	state: T,
+	inv: Inventory,
+): T => {
 	const packrat = packratFor(inv, state.merchantUpgrades);
 	return {
 		...state,
@@ -106,10 +99,10 @@ export const sellContextOf = (core: Core): SellContext => ({
 const bump = (inv: Inventory, change: Partial<Omit<Inventory, 'ver'>>): Inventory => ({ ...inv, ...change, ver: inv.ver + 1 });
 
 /** The ids of the base items the player has, worn or in the bag (the King prefers a Rattatui piece that is still missing). */
-export const ownedBases = (inv: Inventory): string[] => [
-	...Object.values(inv.equipment).map((item) => item?.base),
-	...inv.bag.map((slot) => (slot && 'item' in slot ? slot.item.base : slot?.id)),
-].filter((id): id is string => typeof id === 'string');
+export const ownedBases = (inv: Inventory): string[] =>
+	[...Object.values(inv.equipment).map((item) => item?.base), ...inv.bag.map((slot) => (slot && 'item' in slot ? slot.item.base : slot?.id))].filter(
+		(id): id is string => typeof id === 'string',
+	);
 
 /** How many of a stackable (a potion) the bag holds. */
 export const bagCountOf = (inv: Inventory, id: string): number => {
@@ -128,7 +121,12 @@ export const takeOne = (inv: Inventory, id: string): Inventory | null => {
 };
 
 /** Hands drops to the player (the auto-sell filter, the full-bag rule): the new inventory and what happened, for the answer and the grant. */
-export const receiveInto = (inv: Inventory, drops: readonly Drop[], sellCtx: SellContext, pity?: Record<string, number>): { inv: Inventory; received: Received } => {
+export const receiveInto = (
+	inv: Inventory,
+	drops: readonly Drop[],
+	sellCtx: SellContext,
+	pity?: Record<string, number>,
+): { inv: Inventory; received: Received } => {
 	const received = receiveDrops(inv.bag, drops, inv.autoSellUpTo, sellCtx);
 	return { inv: bump(inv, { bag: received.bag, ...(pity ? { lootPity: pity } : {}) }), received };
 };
@@ -149,7 +147,21 @@ export interface OpResult {
 	count: number;
 }
 
-const EQUIPMENT_SLOTS: readonly string[] = ['head', 'shoulder', 'chest', 'hands', 'legs', 'feet', 'neck', 'cape', 'ring1', 'ring2', 'charm', 'mainHand', 'offHand'];
+const EQUIPMENT_SLOTS: readonly string[] = [
+	'head',
+	'shoulder',
+	'chest',
+	'hands',
+	'legs',
+	'feet',
+	'neck',
+	'cape',
+	'ring1',
+	'ring2',
+	'charm',
+	'mainHand',
+	'offHand',
+];
 
 const refused = (inv: Inventory): OpResult => ({ ok: false, inv, gold: 0, count: 0 });
 const done = (inv: Inventory, gold = 0, count = 0): OpResult => ({ ok: true, inv, gold, count });
@@ -254,7 +266,9 @@ export const parseOp = (raw: unknown): InventoryOp | null => {
 			return { action: 'organize' };
 		case 'discard':
 		case 'sell':
-			return int(raw.index) && (raw.qty === undefined || int(raw.qty)) ? { action: raw.action, index: raw.index, ...(raw.qty === undefined ? {} : { qty: raw.qty as number }) } : null;
+			return int(raw.index) && (raw.qty === undefined || int(raw.qty))
+				? { action: raw.action, index: raw.index, ...(raw.qty === undefined ? {} : { qty: raw.qty as number }) }
+				: null;
 		case 'sellJunk':
 			return typeof raw.maxRarity === 'string' ? { action: 'sellJunk', maxRarity: raw.maxRarity } : null;
 		case 'autoSell':

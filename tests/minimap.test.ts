@@ -61,7 +61,12 @@ test('layout without land centres on the castle; tile <-> box maths are inverses
 	const none = minimapLayout(null, BOX);
 	assert.equal(none.x0, CASTLE_X - MINIMAP_MARGIN);
 	const l = minimapLayout({ minX: -60, maxX: 110, minY: 3, maxY: 90 }, BOX);
-	for (const [tx, ty] of [[-60, 3], [0, 0], [110, 90], [25.5, 25.5]]) {
+	for (const [tx, ty] of [
+		[-60, 3],
+		[0, 0],
+		[110, 90],
+		[25.5, 25.5],
+	]) {
 		const p = tileToMinimap(l, tx, ty);
 		const t = minimapToTile(l, p.x, p.y);
 		assert.ok(Math.abs(t.x - tx) < 1e-9 && Math.abs(t.y - ty) < 1e-9);
@@ -70,8 +75,14 @@ test('layout without land centres on the castle; tile <-> box maths are inverses
 
 test('painting: every explored tile gets its biome colour, the rest stays background, negative coordinates included', () => {
 	const w = worldFromRows([
-		[{ biome: 'forest', isOwned: true }, { biome: 'lake', isOwned: true }] as Tile[],
-		[{ biome: 'plains', isOwned: true }, { biome: 'empty', isOwned: false }] as Tile[],
+		[
+			{ biome: 'forest', isOwned: true },
+			{ biome: 'lake', isOwned: true },
+		] as Tile[],
+		[
+			{ biome: 'plains', isOwned: true },
+			{ biome: 'empty', isOwned: false },
+		] as Tile[],
 	]);
 	// shift the map into negative coordinates
 	let neg = EMPTY_WORLD;
@@ -90,7 +101,8 @@ test('painting: every explored tile gets its biome colour, the rest stays backgr
 	assert.deepEqual(pixel(data, l.width, 0, 0), [10, 14, 28], 'the corner is background');
 	// each tile is a square of `scale` pixels
 	const p = tileToMinimap(l, -10, -20);
-	for (let dy = 0; dy < l.scale; dy++) for (let dx = 0; dx < l.scale; dx++) assert.deepEqual(pixel(data, l.width, Math.floor(p.x) + dx, Math.floor(p.y) + dy), rgb(BIOME_COLORS.forest));
+	for (let dy = 0; dy < l.scale; dy++)
+		for (let dx = 0; dx < l.scale; dx++) assert.deepEqual(pixel(data, l.width, Math.floor(p.x) + dx, Math.floor(p.y) + dy), rgb(BIOME_COLORS.forest));
 });
 
 test('markers: the castle is gold and a workshop is purple with a dark outline, on top of the biome colour', () => {
@@ -108,7 +120,10 @@ test('markers: the castle is gold and a workshop is purple with a dark outline, 
 	assert.deepEqual(centre(CASTLE_X + 1, CASTLE_Y), rgb(WORKSHOP_COLOR));
 	// a plain tile has no marker
 	const plain = tileToMinimap(l, CASTLE_X, CASTLE_Y - 1);
-	assert.deepEqual(pixel(data, l.width, Math.floor(plain.x) + 1, Math.floor(plain.y) + 1), rgb(BIOME_COLORS[ownedEntries(w).find((e) => e.x === CASTLE_X && e.y === CASTLE_Y - 1)!.tile.biome]));
+	assert.deepEqual(
+		pixel(data, l.width, Math.floor(plain.x) + 1, Math.floor(plain.y) + 1),
+		rgb(BIOME_COLORS[ownedEntries(w).find((e) => e.x === CASTLE_X && e.y === CASTLE_Y - 1)!.tile.biome]),
+	);
 });
 
 test('a workshop is found among thousands of tiles, even at a fraction of a pixel per tile', () => {
@@ -127,7 +142,8 @@ test('a workshop is found among thousands of tiles, even at a fraction of a pixe
 	for (let i = 0; i < data.length; i += 4) if (data[i] === wr && data[i + 1] === wg && data[i + 2] === wb) purple++;
 	assert.ok(purple >= 9, `${purple} purple pixels: a 3x3 dot`);
 	const painted = new Set<string>();
-	for (let i = 0; i < data.length; i += 4) if (!(data[i] === 10 && data[i + 1] === 14 && data[i + 2] === 28)) painted.add(`${data[i]},${data[i + 1]},${data[i + 2]}`);
+	for (let i = 0; i < data.length; i += 4)
+		if (!(data[i] === 10 && data[i + 1] === 14 && data[i + 2] === 28)) painted.add(`${data[i]},${data[i + 1]},${data[i + 2]}`);
 	assert.ok(painted.size >= 5, 'several biome colours appear');
 });
 
@@ -149,21 +165,40 @@ const countPixels = (data: Uint8ClampedArray, color: string) => {
 };
 
 test('clustering: dots that would overlap become one bigger dot at their mean, far ones stay apart', () => {
-	const two = clusterPoints([{ px: 20, py: 20 }, { px: 22, py: 21 }]);
+	const two = clusterPoints([
+		{ px: 20, py: 20 },
+		{ px: 22, py: 21 },
+	]);
 	assert.deepEqual(two, [{ px: 21, py: 21, n: 2 }]);
 	// across a grid line (cell = 7): 6.5 and 7.5 are one dot, not two touching ones
-	assert.equal(clusterPoints([{ px: CLUSTER_PX - 0.5, py: 3 }, { px: CLUSTER_PX + 0.5, py: 3 }]).length, 1);
-	assert.equal(clusterPoints([{ px: 10, py: 10 }, { px: 10 + CLUSTER_PX + 3, py: 10 }]).length, 2);
+	assert.equal(
+		clusterPoints([
+			{ px: CLUSTER_PX - 0.5, py: 3 },
+			{ px: CLUSTER_PX + 0.5, py: 3 },
+		]).length,
+		1,
+	);
+	assert.equal(
+		clusterPoints([
+			{ px: 10, py: 10 },
+			{ px: 10 + CLUSTER_PX + 3, py: 10 },
+		]).length,
+		2,
+	);
 	assert.deepEqual(clusterPoints([]), []);
 });
 
 test('clustering: nothing is lost or invented, no two dots are left touching, the result is stable', () => {
 	let seed = 7;
-	const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
+	const rnd = () => (seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296;
 	for (const count of [1, 5, 40, 400]) {
 		const pts = Array.from({ length: count }, () => ({ px: rnd() * 176, py: rnd() * 132 }));
 		const out = clusterPoints(pts);
-		assert.equal(out.reduce((s, c) => s + c.n, 0), count, 'every point is in exactly one cluster');
+		assert.equal(
+			out.reduce((s, c) => s + c.n, 0),
+			count,
+			'every point is in exactly one cluster',
+		);
 		for (let i = 0; i < out.length; i++) {
 			for (let j = i + 1; j < out.length; j++) {
 				const touching = Math.abs(out[i].px - out[j].px) < CLUSTER_PX - 1 && Math.abs(out[i].py - out[j].py) < CLUSTER_PX - 1;
@@ -193,7 +228,14 @@ test('markers: nearby chests merge, distant ones and the monsters stay their own
 test('painting: chests are yellow, monsters red and above the chests; without markers the picture is the old one', () => {
 	const w = withChests(row(), 5, 6, 14);
 	const l = minimapLayout(ownedBounds(w), BOX);
-	const markers = minimapMarkers(w, [{ x: CASTLE_X + 10, y: CASTLE_Y }, { x: CASTLE_X + 12, y: CASTLE_Y }], l);
+	const markers = minimapMarkers(
+		w,
+		[
+			{ x: CASTLE_X + 10, y: CASTLE_Y },
+			{ x: CASTLE_X + 12, y: CASTLE_Y },
+		],
+		l,
+	);
 	const plain = image(l);
 	paintMinimap(plain, w, l);
 	const withDots = image(l);
@@ -222,7 +264,10 @@ test('the chest glow: a soft yellow halo around chest dots only, nothing without
 	assert.equal(alphaAt(100, 100), 0);
 	assert.deepEqual([...glow.slice((50 * l.width + 60) * 4, (50 * l.width + 60) * 4 + 3)], rgb(CHEST_COLOR));
 	paintChestGlow(glow, l, []);
-	assert.ok(glow.every((v) => v === 0), 'repainting clears the old halo');
+	assert.ok(
+		glow.every((v) => v === 0),
+		'repainting clears the old halo',
+	);
 });
 
 test('markers on a 40,000 tile map with hundreds of chests and eight monsters stay cheap', () => {
@@ -243,7 +288,10 @@ test('markers on a 40,000 tile map with hundreds of chests and eight monsters st
 	const ms = performance.now() - t0;
 	assert.ok(ms < 200, `${ms.toFixed(0)} ms`);
 	assert.ok(markers.chests.length > 0 && markers.chests.length < 500, `${markers.chests.length} chest dots for 500 chests`);
-	assert.equal(markers.chests.reduce((s, c) => s + c.n, 0), w.stats.chests);
+	assert.equal(
+		markers.chests.reduce((s, c) => s + c.n, 0),
+		w.stats.chests,
+	);
 });
 
 test('the view rectangle follows the tiles on screen', () => {

@@ -35,7 +35,20 @@ const SERVER_ONLY = [
 	'@/lib/offline/supabaseLedger',
 	'@/lib/cloudSave/pipeline',
 ];
-const ROLLERS = ['rollChestLoot', 'rollKillLoot', 'rollGemFind', 'sealedRng', 'advanceBank', 'placeTickets', 'runCombat', 'payKill', 'pickChestSpot', 'chestSpots', 'receiveInto', 'applyOp'];
+const ROLLERS = [
+	'rollChestLoot',
+	'rollKillLoot',
+	'rollGemFind',
+	'sealedRng',
+	'advanceBank',
+	'placeTickets',
+	'runCombat',
+	'payKill',
+	'pickChestSpot',
+	'chestSpots',
+	'receiveInto',
+	'applyOp',
+];
 
 test('no browser code imports the modules that roll, seal, place or fight', () => {
 	assert.ok(browserFiles.length > 50, 'the check reads the real sources');
@@ -47,7 +60,9 @@ test('no browser code imports the modules that roll, seal, place or fight', () =
 
 test('no browser code calls a function that rolls a reward or a fight', () => {
 	for (const file of browserFiles) {
-		const text = readFileSync(file, 'utf8').replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+		const text = readFileSync(file, 'utf8')
+			.replace(/\/\/.*$/gm, '')
+			.replace(/\/\*[\s\S]*?\*\//g, '');
 		for (const name of ROLLERS) assert.ok(!new RegExp(`\\b${name}\\b`).test(text), `${relative(SRC, file)} mentions ${name}`);
 	}
 });

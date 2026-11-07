@@ -38,9 +38,34 @@ type Attrs = Partial<Pick<CharacterStats, 'strength' | 'dexterity' | 'intelligen
 // ---------------------------------------------------------------------------
 // Independent item oracle
 
-const LEVEL_SHARE: Record<string, number> = { critChance: 0.3, superCrit: 0.3, dodge: 0.3, lifeLeech: 0.3, regen: 0.6, luck: 0.5, goldFind: 0.5, manaRegen: 0.5, maxMana: 0.7, spellPower: 0.4 };
+const LEVEL_SHARE: Record<string, number> = {
+	critChance: 0.3,
+	superCrit: 0.3,
+	dodge: 0.3,
+	lifeLeech: 0.3,
+	regen: 0.6,
+	luck: 0.5,
+	goldFind: 0.5,
+	manaRegen: 0.5,
+	maxMana: 0.7,
+	spellPower: 0.4,
+};
 const INTEGER_STATS = new Set(['damage', 'armor', 'maxHp', 'luck', 'maxMana']);
-const TIER1: Record<string, number> = { damage: 6, armor: 1, maxHp: 3, critChance: 1, superCrit: 0.5, regen: 0.2, luck: 1, goldFind: 2, dodge: 1, maxMana: 8, manaRegen: 0.2, spellPower: 4, lifeLeech: 0.5 };
+const TIER1: Record<string, number> = {
+	damage: 6,
+	armor: 1,
+	maxHp: 3,
+	critChance: 1,
+	superCrit: 0.5,
+	regen: 0.2,
+	luck: 1,
+	goldFind: 2,
+	dodge: 1,
+	maxMana: 8,
+	manaRegen: 0.2,
+	spellPower: 4,
+	lifeLeech: 0.5,
+};
 const roundStat = (key: string, v: number) => (!v ? 0 : INTEGER_STATS.has(key) ? Math.max(1, Math.round(v)) : round2(v));
 const factor = (key: string, ratio: number) => 1 + (ratio - 1) * (LEVEL_SHARE[key] ?? 1);
 
@@ -100,7 +125,7 @@ test('affixes: each affix at levels 1..100 and rolls 0..100 = tier-1 base x leve
 	assert.equal(AFFIX_CATALOG.damage_prefix.stat, 'damage');
 });
 
-test('MISMATCH 5 (design question): affixes grow with the ABSOLUTE item level, base stats with level relative to the base\'s own minimum', () => {
+test("MISMATCH 5 (design question): affixes grow with the ABSOLUTE item level, base stats with level relative to the base's own minimum", () => {
 	const high = gearItems.find((d) => (d.minItemLevel ?? 1) >= 20);
 	if (!high) return; // no such base in the catalog: nothing to compare
 	const min = high.minItemLevel ?? 1;
@@ -115,8 +140,34 @@ test('MISMATCH 5 (design question): affixes grow with the ABSOLUTE item level, b
 // Sets
 
 const SET_TOTALS: Record<string, Partial<Record<StatKey, number>>> = {
-	obsidian: { incomePct: 26, maxHp: 60, xpPct: 25, goldFind: 30, armor: 16, killRewardPct: 37, damage: 5, luck: 3, offlineEff: 15, clickPct: 10, offlineCapHours: 3, superCrit: 6 },
-	rattatui: { maxHp: 25, armor: 3, damagePct: 35, critChance: 4, maxHpPct: 25, lifeLeech: 3, goldFind: 10, superCrit: 8, regen: 2, luck: 5, killRewardPct: 10, xpPct: 10 },
+	obsidian: {
+		incomePct: 26,
+		maxHp: 60,
+		xpPct: 25,
+		goldFind: 30,
+		armor: 16,
+		killRewardPct: 37,
+		damage: 5,
+		luck: 3,
+		offlineEff: 15,
+		clickPct: 10,
+		offlineCapHours: 3,
+		superCrit: 6,
+	},
+	rattatui: {
+		maxHp: 25,
+		armor: 3,
+		damagePct: 35,
+		critChance: 4,
+		maxHpPct: 25,
+		lifeLeech: 3,
+		goldFind: 10,
+		superCrit: 8,
+		regen: 2,
+		luck: 5,
+		killRewardPct: 10,
+		xpPct: 10,
+	},
 };
 
 test('sets: every threshold applies and adds up (2 / 4 / 6 / 9 / 12-13 pieces), checked at every possible piece count', () => {
@@ -162,9 +213,18 @@ test('aggregateStats = sum of every worn item + the set bonus (no rounding, no d
 // Strict combat environment
 
 const PLAIN: Equipment = { mainHand: plainItem('wooden_sword'), offHand: plainItem('wooden_shield') };
-const flat = (eq: Equipment, key: StatKey) => Object.values(eq).reduce((sum, item) => sum + ((ITEM_CATALOG[item!.base].stats as Record<string, number> | undefined)?.[key] ?? 0), 0);
+const flat = (eq: Equipment, key: StatKey) =>
+	Object.values(eq).reduce((sum, item) => sum + ((ITEM_CATALOG[item!.base].stats as Record<string, number> | undefined)?.[key] ?? 0), 0);
 const NO_BONUS: CombatBonus = { atkSpeedPct: 0, critPct: 0, superCritPct: 0, physPct: 0, magicPct: 0, leechPct: 0, regen: 0 };
-const ATTRS: Attrs[] = [{}, { strength: 20 }, { dexterity: 30 }, { intelligence: 40 }, { vitality: 25 }, { charisma: 35 }, { strength: 50, dexterity: 50, intelligence: 50, vitality: 50, charisma: 50 }];
+const ATTRS: Attrs[] = [
+	{},
+	{ strength: 20 },
+	{ dexterity: 30 },
+	{ intelligence: 40 },
+	{ vitality: 25 },
+	{ charisma: 35 },
+	{ strength: 50, dexterity: 50, intelligence: 50, vitality: 50, charisma: 50 },
+];
 
 test('strict start: a fresh character with the starter kit has 101 HP, 1.25 s-ish swings and no attribute bonus', () => {
 	const c = character();
@@ -192,7 +252,11 @@ test('damage: flat gear damage x (1 + attribute% + merchant%) x (1 + set damage 
 			const eq: Equipment = { mainHand: plainItem(weapon.id) };
 			const want = Math.max(1, round1(flat(eq, 'damage') * (1 + (o.magicPct(c.intelligence) + 6) / 100)));
 			assert.equal(damagePerHit(eq, c, { ...NO_BONUS, magicPct: 6 }), want, `${weapon.id} ${JSON.stringify(attrs)}`);
-			assert.equal(damagePerHit(eq, c, { ...NO_BONUS, physPct: 99 }), Math.max(1, round1(flat(eq, 'damage') * (1 + o.magicPct(c.intelligence) / 100))), 'Might never boosts a magic weapon');
+			assert.equal(
+				damagePerHit(eq, c, { ...NO_BONUS, physPct: 99 }),
+				Math.max(1, round1(flat(eq, 'damage') * (1 + o.magicPct(c.intelligence) / 100))),
+				'Might never boosts a magic weapon',
+			);
 		}
 	// the set's percent damage is its own multiplicative bucket
 	// the full Rattatui set includes its own weapon: swapping it for another weapon drops the piece count to 12 and the 13-piece bonus with it
@@ -215,7 +279,11 @@ test('attack speed: weapon speed table x (1 + Dex% + Swift%), rounded to 2 place
 			for (const swift of [0, 4, 16]) {
 				const c = character({ dexterity: dex });
 				const eq: Equipment = { mainHand: { ...plainItem(w.id), level: 60, quality: 100 } };
-				assert.equal(attacksPerSecond(eq, c, { ...NO_BONUS, atkSpeedPct: swift }), round2(table[w.weaponType!] * (1 + (o.atkSpeedPct(dex) + swift) / 100)), `${w.id} dex ${dex} swift ${swift}`);
+				assert.equal(
+					attacksPerSecond(eq, c, { ...NO_BONUS, atkSpeedPct: swift }),
+					round2(table[w.weaponType!] * (1 + (o.atkSpeedPct(dex) + swift) / 100)),
+					`${w.id} dex ${dex} swift ${swift}`,
+				);
 			}
 	const c = character({ dexterity: 20 });
 	assert.equal(damagePerSecond(PLAIN, c), round2(damagePerHit(PLAIN, c) * attacksPerSecond(PLAIN, c)));
@@ -227,7 +295,11 @@ test('crit: (Dex x 0.25 + Cha x 0.5, FULL values) + gear + Keen, capped at 75 %;
 			for (const deadly of [0, 4, 8, 60]) {
 				const c = character(attrs);
 				const odds = critOdds(c, PLAIN, { ...NO_BONUS, critPct: keen, superCritPct: deadly });
-				near(odds.crit, clamp(c.dexterity * 0.25 + c.charisma * 0.5 + flat(PLAIN, 'critChance') + keen, 0, 75) / 100, `crit ${JSON.stringify(attrs)} keen ${keen}`);
+				near(
+					odds.crit,
+					clamp(c.dexterity * 0.25 + c.charisma * 0.5 + flat(PLAIN, 'critChance') + keen, 0, 75) / 100,
+					`crit ${JSON.stringify(attrs)} keen ${keen}`,
+				);
 				near(odds.superCrit, clamp(5 + flat(PLAIN, 'superCrit') + deadly, 0, 50) / 100, `super ${deadly}`);
 			}
 	near(critOdds(character(), {}).crit, 0.0375, 'a fresh character crits 3.75 % (the attributes count in full, not above 5)');
@@ -241,7 +313,8 @@ test('armor: gear + 0.5 per Dex and Vit above 5 + 0.25 per Str above 5; reductio
 	}
 	for (const armor of [-5, 0, 1, 10, 40, 41, 80, 200, 1000, 100000]) {
 		near(armorReduction(armor), o.armorReduction(armor), `reduction at ${armor}`);
-		for (const raw of [1, 7, 100, 1234]) assert.equal(mitigate(raw, armor), Math.max(1, Math.round(raw * (1 - o.armorReduction(armor)))), `mitigate ${raw} at ${armor}`);
+		for (const raw of [1, 7, 100, 1234])
+			assert.equal(mitigate(raw, armor), Math.max(1, Math.round(raw * (1 - o.armorReduction(armor)))), `mitigate ${raw} at ${armor}`);
 	}
 	assert.ok(armorReduction(1e9) < 0.75 && armorReduction(1e9) > 0.7499);
 	assert.equal(armorReduction(40), 0.5, 'armor 40 = exactly the soft cap');
@@ -296,7 +369,11 @@ test('mana and regen: 20 + 4 per Int and 0.5 + 0.05 per Int (FULL Int), plus gea
 		assert.equal(maxMana(c, PLAIN), Math.round(o.attrMana(c.intelligence) + flat(PLAIN, 'maxMana')));
 		near(manaRegenPerSec(c, PLAIN), o.attrManaRegen(c.intelligence) + flat(PLAIN, 'manaRegen'), 'mana regen');
 		const gear = aggregateStats(PLAIN);
-		assert.equal(healAmount(c, PLAIN), Math.max(1, Math.round(maxHp(c, PLAIN) * 0.25 * (1 + o.magicPct(c.intelligence) / 100) * (1 + gear.spellPower / 100))), 'heal');
+		assert.equal(
+			healAmount(c, PLAIN),
+			Math.max(1, Math.round(maxHp(c, PLAIN) * 0.25 * (1 + o.magicPct(c.intelligence) / 100) * (1 + gear.spellPower / 100))),
+			'heal',
+		);
 	}
 });
 
@@ -311,7 +388,12 @@ test('display parity: the character window (effectiveStats) and the server profi
 			for (const equipment of [{}, PLAIN, fullSet('obsidian', 'wooden_sword'), fullSet('rattatui', 'wooden_sword')] as Equipment[]) {
 				const c = character(attrs);
 				const ui = effectiveStats({ characterStats: c, equipment, merchantUpgrades: merchant });
-				const server = playerProfile({ characterStats: { strength: c.strength, dexterity: c.dexterity, intelligence: c.intelligence, vitality: c.vitality, charisma: c.charisma }, equipment, merchantUpgrades: merchant, resources: { xp: 0 } });
+				const server = playerProfile({
+					characterStats: { strength: c.strength, dexterity: c.dexterity, intelligence: c.intelligence, vitality: c.vitality, charisma: c.charisma },
+					equipment,
+					merchantUpgrades: merchant,
+					resources: { xp: 0 },
+				});
 				const tag = `${JSON.stringify(attrs)} ${JSON.stringify(merchant)}`;
 				assert.equal(server.maxHp, ui.maxHp, `maxHp ${tag}`);
 				assert.equal(server.maxMp, ui.maxMana, `mana ${tag}`);
@@ -324,12 +406,12 @@ test('display parity: the character window (effectiveStats) and the server profi
 				assert.equal(server.leechPct, ui.lifeLeech, `leech ${tag}`);
 				near(server.critExtra * 2, ui.critMultiplier, `crit multiplier ${tag}`);
 				near(server.mpRegen, ui.manaRegen, `mana regen ${tag}`);
-				// MISMATCH 3: the window shows the out-of-fight regen (1 HP/s base); a fight runs on gear + Wind only
+				// MISMATCH 3 (IDL-170, now labelled): the window shows the out-of-fight regen (1 HP/s base); a fight runs on gear + Wind only. The Regen tooltip says so
 				near(ui.hpRegen - server.hpRegen, 1, `the window's HP regen is exactly the 1/s out-of-fight base above the fight's ${tag}`);
 			}
 });
 
-test('MISMATCH 4: the item tooltip "Damage per Second" is weapon damage x speed only; the character\'s real DPS includes attributes and merchant bonuses', () => {
+test('MISMATCH 4 (IDL-170, now labelled "Weapon damage per second"): the item tooltip figure is weapon damage x speed only; the character\'s real DPS includes attributes and merchant bonuses', () => {
 	const sword = ITEM_CATALOG.wooden_sword;
 	const eq: Equipment = { mainHand: plainItem('wooden_sword') };
 	const plain = character();
@@ -343,7 +425,12 @@ test('engine parity: the profile a fight freezes at its start equals the server 
 	const equipment = PLAIN;
 	const c = character({ strength: 12, dexterity: 14 });
 	const { ledger, env, start } = simSetup({ equipment, character: c, monsters: [{ type: 'thistleBoar', level: 1 }], seed: 'audit' });
-	const core = { equipment, characterStats: { strength: 12, dexterity: 14, intelligence: 5, vitality: 5, charisma: 5 }, level: { level: 1, progress: 0 }, bag: [] };
+	const core = {
+		equipment,
+		characterStats: { strength: 12, dexterity: 14, intelligence: 5, vitality: 5, charisma: 5 },
+		level: { level: 1, progress: 0 },
+		bag: [],
+	};
 	const started = runCombat(ledger, env(start), { autoUse: false, commands: [{ kind: 'fight', n: 1 }] }).ledger;
 	const frozen = started.combat!.fight!.profile;
 	const server = playerProfile(core);

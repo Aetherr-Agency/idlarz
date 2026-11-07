@@ -168,12 +168,10 @@ const SIDES: readonly (readonly [number, number])[] = [
 	[0, 1],
 ];
 
-export const hasOwnedNeighbour = (world: World, x: number, y: number): boolean =>
-	SIDES.some(([dx, dy]) => isOwnedAt(world, x + dx, y + dy));
+export const hasOwnedNeighbour = (world: World, x: number, y: number): boolean => SIDES.some(([dx, dy]) => isOwnedAt(world, x + dx, y + dy));
 
 /** An unexplored position next to an explored tile: the places a tile can be bought. */
-export const isFrontier = (world: World, x: number, y: number): boolean =>
-	inRange(x, y) && !isOwnedAt(world, x, y) && hasOwnedNeighbour(world, x, y);
+export const isFrontier = (world: World, x: number, y: number): boolean => inRange(x, y) && !isOwnedAt(world, x, y) && hasOwnedNeighbour(world, x, y);
 
 // ---- writing (copy-on-write) ---------------------------------------------------------------------------------------
 
@@ -210,8 +208,7 @@ export const setTiles = (world: World, changes: Iterable<{ x: number; y: number;
 	return { map, stats: tally, bounds };
 };
 
-export const setTile = (world: World, x: number, y: number, tile: Tile | undefined): World =>
-	setTiles(world, [{ x, y, tile }]);
+export const setTile = (world: World, x: number, y: number, tile: Tile | undefined): World => setTiles(world, [{ x, y, tile }]);
 
 /** Merges `patch` into the tile at (x, y); false-y when there is no such tile. */
 export const patchTile = (world: World, x: number, y: number, patch: Partial<Tile>): World => {
@@ -225,7 +222,7 @@ export const createWorld = (entries: Iterable<Placed>): World =>
 		EMPTY_WORLD,
 		(function* () {
 			for (const { x, y, tile } of entries) yield { x, y, tile };
-		})()
+		})(),
 	);
 
 // ---- adapters to the old row-major arrays (legacy saves, tests) --------------------------------------------------------
@@ -236,7 +233,7 @@ export const worldFromRows = (rows: readonly (readonly Tile[])[], ox = 0, oy = 0
 	rows.forEach((row, y) =>
 		row.forEach((tile, x) => {
 			if (tile && tile.isOwned) entries.push({ x: x + ox, y: y + oy, tile });
-		})
+		}),
 	);
 	return createWorld(entries);
 };

@@ -37,10 +37,22 @@ const view = (over: Partial<CombatView> = {}): CombatView => ({
 	nextPollSec: 8,
 	...over,
 });
-const reply = (combat: CombatView, over: Partial<FightReply> = {}): FightReply => ({ combat, tickets: { chests: [], rats: [], king: null }, serverNowSec: clock, gemsTotal: 1000, accepted: true, ...over });
+const reply = (combat: CombatView, over: Partial<FightReply> = {}): FightReply => ({
+	combat,
+	tickets: { chests: [], rats: [], king: null },
+	serverNowSec: clock,
+	gemsTotal: 1000,
+	accepted: true,
+	...over,
+});
 const event = (no: number, kind: FightEvent['kind'], extra: Partial<FightEvent> = {}): FightEvent => ({ no, t: clock, kind, ...extra });
 const won = (no: number, drops: Drop[], over: { gold?: number; xp?: number; lucky?: boolean; level?: number } = {}): FightEvent =>
-	event(no, 'won', { n: 1, type: 'thistleBoar', level: over.level ?? 1, reward: { gold: over.gold ?? 50, xp: over.xp ?? 20, items: drops, pity: {}, lucky: over.lucky ?? false } });
+	event(no, 'won', {
+		n: 1,
+		type: 'thistleBoar',
+		level: over.level ?? 1,
+		reward: { gold: over.gold ?? 50, xp: over.xp ?? 20, items: drops, pity: {}, lucky: over.lucky ?? false },
+	});
 const ratDrops = (level = 1) => generateLoot({ sourceId: 'monster', level }, () => 0).drops;
 
 /** The player's things as the server would hold them right now: the browser's own copy at the next version. */
@@ -63,7 +75,16 @@ const serverKill = (drops: Drop[], over: { gold?: number; xp?: number; autoSellU
 		n: 1,
 		type: 'thistleBoar',
 		level: 1,
-		reward: { gold: over.gold ?? 50, xp: over.xp ?? 20, items: drops, stored: received.stored, convertedGold: received.convertedGold, autoSold: received.autoSold, pity: {}, lucky: false },
+		reward: {
+			gold: over.gold ?? 50,
+			xp: over.xp ?? 20,
+			items: drops,
+			stored: received.stored,
+			convertedGold: received.convertedGold,
+			autoSold: received.autoSold,
+			pity: {},
+			lucky: false,
+		},
 	});
 	return { after, received, ev };
 };
@@ -77,10 +98,20 @@ const syncedGame = () => {
 
 // ---------------------------------------------------------------------------------------------------- applying the server's picture
 
-test('the first answer only says where the server\'s log stands: nothing in it is applied, the picture is', () => {
+test("the first answer only says where the server's log stands: nothing in it is applied, the picture is", () => {
 	freshGame();
 	const gold = api().resources.gold;
-	api().applyFightReply(reply(view({ hp: 77, mp: 12, eventNo: 5, events: [won(5, [])], fight: { n: 1, type: 'thistleBoar', level: 2, lucky: false, monsterHp: 40, monsterMaxHp: 150, stunLeft: 0, timeLeftSec: null, x: 1, y: 2 } })));
+	api().applyFightReply(
+		reply(
+			view({
+				hp: 77,
+				mp: 12,
+				eventNo: 5,
+				events: [won(5, [])],
+				fight: { n: 1, type: 'thistleBoar', level: 2, lucky: false, monsterHp: 40, monsterMaxHp: 150, stunLeft: 0, timeLeftSec: null, x: 1, y: 2 },
+			}),
+		),
+	);
 	assert.equal(api().resources.gold, gold);
 	assert.equal(api().playerHp, 77);
 	assert.equal(api().playerMp, 12);
@@ -89,7 +120,7 @@ test('the first answer only says where the server\'s log stands: nothing in it i
 	assert.equal(api().combat.notice, null);
 });
 
-test('a won fight pays gold and xp exactly once, shows what the server stored, and takes the server\'s bag', () => {
+test("a won fight pays gold and xp exactly once, shows what the server stored, and takes the server's bag", () => {
 	syncedGame();
 	const before = { ...api().resources };
 	const { after, received, ev } = serverKill(ratDrops(), { gold: 123, xp: 45 });
@@ -102,9 +133,18 @@ test('a won fight pays gold and xp exactly once, shows what the server stored, a
 	const ids = notice.summary!.items.map((d) => (d.kind === 'gear' ? d.item.base : d.id));
 	assert.ok(ids.includes('potion_minor'));
 	assert.ok(ids.some((id) => (BASIC_GEAR as readonly string[]).includes(id)));
-	assert.equal(ids.some((id) => RATTATUI_SET.pieces.includes(id)), false, 'a rat drops no Rattatui piece');
-	assert.deepEqual(api().bag, after.bag, 'the bag is the server\'s');
-	assert.equal(api().bag.map(stackOf).find((s) => s?.id === 'potion_minor')?.qty, 3);
+	assert.equal(
+		ids.some((id) => RATTATUI_SET.pieces.includes(id)),
+		false,
+		'a rat drops no Rattatui piece',
+	);
+	assert.deepEqual(api().bag, after.bag, "the bag is the server's");
+	assert.equal(
+		api()
+			.bag.map(stackOf)
+			.find((s) => s?.id === 'potion_minor')?.qty,
+		3,
+	);
 	assert.equal(api().invVer, after.ver);
 	// the same events again (a second poll overlapping the first) change nothing
 	const gold = api().resources.gold;
@@ -149,8 +189,15 @@ test('the auto-sell filter: the server sells matching gear on the spot (Haggler 
 	assert.ok(unit > 0);
 	assert.equal(summary.autoSold.count, 1);
 	assert.equal(summary.autoSold.gold, sellPayout(unit, 1, { merchantUpgrades: { haggler: 3 } }));
-	assert.equal(summary.items.some((d) => d.kind === 'gear'), false, 'the gear was sold, not stored');
-	assert.equal(summary.items.some((d) => d.kind === 'consumable'), true);
+	assert.equal(
+		summary.items.some((d) => d.kind === 'gear'),
+		false,
+		'the gear was sold, not stored',
+	);
+	assert.equal(
+		summary.items.some((d) => d.kind === 'consumable'),
+		true,
+	);
 	assert.equal(api().resources.gold - before, 10 + summary.autoSold.gold);
 	assert.equal(api().bag.filter((s) => s && 'item' in s).length, bagBefore.filter((s) => s && 'item' in s).length);
 });
@@ -165,9 +212,12 @@ test('the auto-sell setting is validated', () => {
 	assert.equal(api().autoSellUpTo, null);
 });
 
-test('a potion the server drank leaves the bag because the server\'s inventory says so, and an older inventory never comes back', () => {
+test("a potion the server drank leaves the bag because the server's inventory says so, and an older inventory never comes back", () => {
 	syncedGame();
-	const qty = () => api().bag.map(stackOf).find((s) => s?.id === 'potion_minor')?.qty;
+	const qty = () =>
+		api()
+			.bag.map(stackOf)
+			.find((s) => s?.id === 'potion_minor')?.qty;
 	assert.equal(qty(), 2);
 	const index = api().bag.findIndex((slot) => stackOf(slot)?.id === 'potion_minor');
 	const drunk = invOf({ bag: api().bag.map((slot, i) => (i === index ? { id: 'potion_minor', qty: 1 } : slot)) });
@@ -228,14 +278,21 @@ test('hotkeys, switches and dismissals are requests to the server: a key per pre
 		assert.equal(api().dismissMonster(3), true);
 		assert.equal(api().monsters.length, 0);
 		await flush();
-		assert.deepEqual(calls.map((c) => c.body.action), ['use', 'use', 'auto', 'auto', 'dismiss']);
+		assert.deepEqual(
+			calls.map((c) => c.body.action),
+			['use', 'use', 'auto', 'auto', 'dismiss'],
+		);
 		assert.deepEqual(calls[0].body.command, { kind: 'potion', id: 'potion_minor' });
 		assert.deepEqual(calls[1].body.command, { kind: 'skill', id: 'heal' });
 		assert.match(String(calls[0].body.key), /^[A-Za-z0-9_-]{8,64}$/);
 		assert.notEqual(calls[0].body.key, calls[1].body.key, 'every press has its own key');
 		assert.equal(calls[4].body.n, 3);
 		for (const call of calls) assert.equal(call.path, '/api/fight');
-		for (const call of calls) assert.deepEqual(Object.keys(call.body).filter((k) => ['damage', 'hp', 'level', 'gold'].includes(k)), []);
+		for (const call of calls)
+			assert.deepEqual(
+				Object.keys(call.body).filter((k) => ['damage', 'hp', 'level', 'gold'].includes(k)),
+				[],
+			);
 	} finally {
 		globalThis.fetch = realFetch;
 	}
@@ -278,7 +335,14 @@ test('a click opens the combat window at once (maximized, loading) and the answe
 		assert.equal(useUiStore.getState().combatMinimized, false, 'a minimized window opens for a click');
 		assert.equal(api().startFight(3), false, 'one click at a time');
 		// the server opens the fight: the loading state is over
-		api().applyFightReply(reply(view({ eventNo: 0, fight: { n: 7, type: 'thistleBoar', level: 4, lucky: false, monsterHp: 100, monsterMaxHp: 100, stunLeft: 0, timeLeftSec: null, x: 1, y: 2 } })));
+		api().applyFightReply(
+			reply(
+				view({
+					eventNo: 0,
+					fight: { n: 7, type: 'thistleBoar', level: 4, lucky: false, monsterHp: 100, monsterMaxHp: 100, stunLeft: 0, timeLeftSec: null, x: 1, y: 2 },
+				}),
+			),
+		);
 		assert.equal(api().combat.pending, null);
 		assert.ok(api().combat.fight);
 		await flush();
@@ -345,7 +409,7 @@ const run = (seconds: number) => {
 };
 const max = () => api().combat.maxHp || 101;
 
-test('HP fills between answers only outside fights (in one the server\'s picture is the only one)', () => {
+test("HP fills between answers only outside fights (in one the server's picture is the only one)", () => {
 	freshGame();
 	store.setState({ playerHp: 50 });
 	run(10);
@@ -438,7 +502,10 @@ test('Intelligence and magic gear raise the mana pool and its refill; changing g
 test('a rebirth refills mana to the pool of the starter kit it leaves', () => {
 	freshGame();
 	growTo(REBIRTH.minTiles);
-	store.setState((s) => ({ tiles: patchTile(s.tiles, CASTLE_X, CASTLE_Y, { level: REBIRTH.minCastleLevel }), bag: [{ item: plainItem('apprentice_tome') }, ...emptyBag().slice(1)] }));
+	store.setState((s) => ({
+		tiles: patchTile(s.tiles, CASTLE_X, CASTLE_Y, { level: REBIRTH.minCastleLevel }),
+		bag: [{ item: plainItem('apprentice_tome') }, ...emptyBag().slice(1)],
+	}));
 	api().equipItem(0);
 	store.setState({ playerMp: 1 });
 	assert.equal(api().rebirth(), true);
@@ -449,7 +516,15 @@ test('a rebirth refills mana to the pool of the starter kit it leaves', () => {
 
 test('flee leaves the open fight at once, asks the server to retreat (auto-battle off) and shows no result', async () => {
 	syncedGame();
-	api().applyFightReply(reply(view({ eventNo: 0, autoBattle: true, fight: { n: 7, type: 'thistleBoar', level: 4, lucky: false, monsterHp: 60, monsterMaxHp: 100, stunLeft: 0, timeLeftSec: null, x: 1, y: 2 } })));
+	api().applyFightReply(
+		reply(
+			view({
+				eventNo: 0,
+				autoBattle: true,
+				fight: { n: 7, type: 'thistleBoar', level: 4, lucky: false, monsterHp: 60, monsterMaxHp: 100, stunLeft: 0, timeLeftSec: null, x: 1, y: 2 },
+			}),
+		),
+	);
 	assert.ok(api().combat.fight);
 	const calls = record();
 	try {
@@ -524,13 +599,28 @@ test('a click during a fight asks to join the battle queue (the same request), a
 test('a resting hero with a queue is remembered: the minimized icon shows the rest and the queue until the next fight starts', () => {
 	freshGame();
 	api().applyFightReply(reply(view({ eventNo: 0 })));
-	const queue = [{ n: 2, type: 'thistleBoar' as const, level: 3 }, { n: 3, type: 'thistleBoar' as const, level: 3 }];
+	const queue = [
+		{ n: 2, type: 'thistleBoar' as const, level: 3 },
+		{ n: 3, type: 'thistleBoar' as const, level: 3 },
+	];
 	api().applyFightReply(reply(view({ eventNo: 0, queue, resting: true, restSec: 42, autoBattle: false })));
 	assert.equal(api().combat.resting, true);
 	assert.equal(api().combat.restSec, 42);
-	assert.deepEqual(api().combat.queue.map((q) => q.n), [2, 3]);
+	assert.deepEqual(
+		api().combat.queue.map((q) => q.n),
+		[2, 3],
+	);
 	// the next fight starts: no longer resting
-	api().applyFightReply(reply(view({ eventNo: 0, queue: [queue[1]], resting: false, fight: { n: 2, type: 'thistleBoar', level: 3, lucky: false, monsterHp: 40, monsterMaxHp: 150, stunLeft: 0, timeLeftSec: null, x: 1, y: 2 } })));
+	api().applyFightReply(
+		reply(
+			view({
+				eventNo: 0,
+				queue: [queue[1]],
+				resting: false,
+				fight: { n: 2, type: 'thistleBoar', level: 3, lucky: false, monsterHp: 40, monsterMaxHp: 150, stunLeft: 0, timeLeftSec: null, x: 1, y: 2 },
+			}),
+		),
+	);
 	assert.equal(api().combat.resting, false);
 	assert.equal(api().combat.restSec, 0);
 });

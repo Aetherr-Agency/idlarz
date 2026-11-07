@@ -21,12 +21,42 @@ export const project = (gx: number, gy: number) => ({
 
 // The props of the pasture (same lists as sprites_farm.py): x, y (and the long side of a trough)
 const TROUGHS: [number, number, 'x' | 'y'][] = [
-	[-3.3, 1.4, 'x'], [8, -1.5, 'y'], [-6, -7, 'x'], [4, 10.5, 'x'], [13.5, 11.5, 'x'], [-7, -1, 'y'], [1, -10, 'x'],
+	[-3.3, 1.4, 'x'],
+	[8, -1.5, 'y'],
+	[-6, -7, 'x'],
+	[4, 10.5, 'x'],
+	[13.5, 11.5, 'x'],
+	[-7, -1, 'y'],
+	[1, -10, 'x'],
 ];
-const TANKS: [number, number][] = [[-9, 9], [11.5, 2.5], [6, 13], [-1, -4]];
-const HAY: [number, number][] = [[-6, 7], [10, 2], [2, -6], [-5, -3.5], [-11, -1], [14.5, 13], [-3, -11]];
-const BARRELS: [number, number][] = [[11.6, 5.6], [12.4, 6.5], [11.5, 7], [-3.4, 9.2], [-4.1, 9.9]];
-const CRATES: [number, number][] = [[1.8, 12.4], [2.7, 12.9], [12, 14.2], [-4.8, 12.4]];
+const TANKS: [number, number][] = [
+	[-9, 9],
+	[11.5, 2.5],
+	[6, 13],
+	[-1, -4],
+];
+const HAY: [number, number][] = [
+	[-6, 7],
+	[10, 2],
+	[2, -6],
+	[-5, -3.5],
+	[-11, -1],
+	[14.5, 13],
+	[-3, -11],
+];
+const BARRELS: [number, number][] = [
+	[11.6, 5.6],
+	[12.4, 6.5],
+	[11.5, 7],
+	[-3.4, 9.2],
+	[-4.1, 9.9],
+];
+const CRATES: [number, number][] = [
+	[1.8, 12.4],
+	[2.7, 12.9],
+	[12, 14.2],
+	[-4.8, 12.4],
+];
 const BARN = { x: 8.5, y: 8.5 };
 const COOP = { x: -1, y: 11 };
 const POND = { x: -12, y: -4 };

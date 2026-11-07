@@ -10,7 +10,9 @@ import { applyOp, needsNoFight, receiveInto, sellContextOf, type InventoryOp } f
 import { sealedRng } from '@/lib/offline/seal';
 import { UNCLAIMED_SEC, bankContext, lookAtMap, mapLoader, publicTickets, withLedger, type ServiceDeps, type StepOutcome } from '@/lib/offline/service';
 import { advanceBank, secondsToNext, takeChestAt, type TicketBank } from '@/lib/offline/tickets';
-import type { ChestReward, FightReply, Inventory, InventoryReply, SyncResult } from '@/lib/offline/types';
+import type { ChestReward, FightReply, Inventory, InventoryReply, RebirthReply, SyncResult } from '@/lib/offline/types';
+import { rebirthInventory } from '@/lib/offline/inventory';
+import { judgeRebirth } from '@/lib/cloudSave/serverRebirth';
 
 // The server's side of play while the player is here: spawns, chests and fights. The server mints the tickets from its own clock, puts
 // the monsters on the map, rolls the contents from a secret and runs every fight (see fight.ts). Each call is one compare-and-swap on the
@@ -56,7 +58,11 @@ const onlineStep = async <T>(deps: ServiceDeps, userId: string, key: string | nu
 		const env: CombatEnv = { secret: deps.secret, userId, stored, nowSec };
 		const out = await body({ ledger: { ...ledger, bank }, stored, bank, nowSec, env, place });
 		// a poll (no key) keeps the record of the last keyed request: its answer may still have to be replayed for a retry
-		return { ledger: { ...out.ledger, anchorAt: nowMs, ...(key ? { lastKey: key, lastResult: out.value } : {}) }, result: { claimFirst: false, value: out.value }, skipWrite: !key };
+		return {
+			ledger: { ...out.ledger, anchorAt: nowMs, ...(key ? { lastKey: key, lastResult: out.value } : {}) },
+			result: { claimFirst: false, value: out.value },
+			skipWrite: !key,
+		};
 	});
 	if (done.kind === 'no_save') return done;
 	return done.result.claimFirst ? { kind: 'claim_first' } : { kind: 'ok', value: withInventory(done.result.value, done.ledger.inv, invVer) };
@@ -80,46 +86,90 @@ export const syncTickets = (deps: ServiceDeps, userId: string, nowMs: number, si
 			const { ledger, view } = withCombat(ctx, since);
 			return {
 				ledger,
-				value: { tickets: publicTickets(ledger.bank, ledger.ordChest), serverNowSec: ctx.nowSec, gemsTotal: ledger.gems, nextInSec: secondsToNext(ledger.bank, bankContext(ctx.stored)), combat: view },
+				value: {
+					tickets: publicTickets(ledger.bank, ledger.ordChest),
+					serverNowSec: ctx.nowSec,
+					gemsTotal: ledger.gems,
+					nextInSec: secondsToNext(ledger.bank, bankContext(ctx.stored)),
+					combat: view,
+				},
 			};
 		},
-		invVer
+		invVer,
 	);
 
 /**
  * Opens the waiting chest that stands on tile (x, y); a tile without one gives `no_ticket`. The reward is sealed on the number of
  * chests opened this run, so reloading or retrying cannot roll it again.
  */
-export const redeemChest = (deps: ServiceDeps, userId: string, key: string, spot: { x: number; y: number }, nowMs: number, invVer?: number): Promise<Online<ChestReward>> =>
-	onlineStep(deps, userId, key, nowMs, ({ ledger, stored, bank, nowSec }): { ledger: Ledger; value: ChestReward } => {
-		const taken = takeChestAt(bank, spot.x, spot.y);
-		if (!taken) {
-			return { ledger: { ...ledger, bank }, value: { ok: false, reason: 'no_ticket', tickets: publicTickets(bank, ledger.ordChest), serverNowSec: nowSec, gemsTotal: ledger.gems } };
-		}
-		const { luck, goldFind } = stored.summary.derived;
-		const ordChest = ledger.ordChest + 1;
-		const rng = sealedRng(deps.secret, userId, ledger.runId, 'chest', ordChest);
-		const rolled = rollChestLoot({ rates: stored.summary.rates, luck, goldFind, bag: ledger.inv!.bag, castleLevel: stored.summary.castleLevel, autoSellUpTo: ledger.inv!.autoSellUpTo }, rng);
-		// an XP chest pays like every other XP the player earns: with the XP bonus (kills and the passive XP already do)
-		const loot = rolled.kind === 'xp' ? { ...rolled, xp: Math.floor(rolled.xp * (1 + stored.summary.xpGainPct / 100)) } : rolled;
-		const gems = rollGemFind(luck, rng);
+export const redeemChest = (
+	deps: ServiceDeps,
+	userId: string,
+	key: string,
+	spot: { x: number; y: number },
+	nowMs: number,
+	invVer?: number,
+): Promise<Online<ChestReward>> =>
+	onlineStep(
+		deps,
+		userId,
+		key,
+		nowMs,
+		({ ledger, stored, bank, nowSec }): { ledger: Ledger; value: ChestReward } => {
+			const taken = takeChestAt(bank, spot.x, spot.y);
+			if (!taken) {
+				return {
+					ledger: { ...ledger, bank },
+					value: { ok: false, reason: 'no_ticket', tickets: publicTickets(bank, ledger.ordChest), serverNowSec: nowSec, gemsTotal: ledger.gems },
+				};
+			}
+			const { luck, goldFind } = stored.summary.derived;
+			const ordChest = ledger.ordChest + 1;
+			const rng = sealedRng(deps.secret, userId, ledger.runId, 'chest', ordChest);
+			const rolled = rollChestLoot(
+				{ rates: stored.summary.rates, luck, goldFind, bag: ledger.inv!.bag, castleLevel: stored.summary.castleLevel, autoSellUpTo: ledger.inv!.autoSellUpTo },
+				rng,
+			);
+			// an XP chest pays like every other XP the player earns: with the XP bonus (kills and the passive XP already do)
+			const loot = rolled.kind === 'xp' ? { ...rolled, xp: Math.floor(rolled.xp * (1 + stored.summary.xpGainPct / 100)) } : rolled;
+			const gems = rollGemFind(luck, rng);
 
-		const granted: Partial<GrantTotals> = { gems };
-		if (loot.kind === 'gold' || loot.kind === 'boost') granted.gold = loot.gold;
-		else if (loot.kind === 'bundle') for (const item of loot.items) granted[item.resource] = (granted[item.resource] ?? 0) + item.amount;
-		else if (loot.kind === 'xp') granted.xp = loot.xp;
-		// an item goes into the server's bag (or is sold by the auto-sell filter); the gold of the ones that did not fit is the player's too
-		let inv = ledger.inv!;
-		let received: { convertedGold: number; autoSold: { count: number; gold: number } } | undefined;
-		if (loot.kind === 'item') {
-			const result = receiveInto(inv, [loot.drop], sellContextOf(stored.core));
-			inv = result.inv;
-			received = { convertedGold: result.received.convertedGold, autoSold: result.received.autoSold };
-			granted.gold = (granted.gold ?? 0) + received.convertedGold + received.autoSold.gold;
-		}
-		const next: Ledger = { ...ledger, bank: taken.bank, ordChest, inv, gems: Math.min(GEMS_CAP, ledger.gems + gems), granted: addTotals(ledger.granted, granted) };
-		return { ledger: next, value: { ok: true, loot, gems, gemsTotal: next.gems, tickets: publicTickets(taken.bank, ordChest), serverNowSec: nowSec, ...(received ? { received } : {}) } };
-	}, invVer);
+			const granted: Partial<GrantTotals> = { gems };
+			if (loot.kind === 'gold' || loot.kind === 'boost') granted.gold = loot.gold;
+			else if (loot.kind === 'bundle') for (const item of loot.items) granted[item.resource] = (granted[item.resource] ?? 0) + item.amount;
+			else if (loot.kind === 'xp') granted.xp = loot.xp;
+			// an item goes into the server's bag (or is sold by the auto-sell filter); the gold of the ones that did not fit is the player's too
+			let inv = ledger.inv!;
+			let received: { convertedGold: number; autoSold: { count: number; gold: number } } | undefined;
+			if (loot.kind === 'item') {
+				const result = receiveInto(inv, [loot.drop], sellContextOf(stored.core));
+				inv = result.inv;
+				received = { convertedGold: result.received.convertedGold, autoSold: result.received.autoSold };
+				granted.gold = (granted.gold ?? 0) + received.convertedGold + received.autoSold.gold;
+			}
+			const next: Ledger = {
+				...ledger,
+				bank: taken.bank,
+				ordChest,
+				inv,
+				gems: Math.min(GEMS_CAP, ledger.gems + gems),
+				granted: addTotals(ledger.granted, granted),
+			};
+			return {
+				ledger: next,
+				value: {
+					ok: true,
+					loot,
+					gems,
+					gemsTotal: next.gems,
+					tickets: publicTickets(taken.bank, ordChest),
+					serverNowSec: nowSec,
+					...(received ? { received } : {}),
+				},
+			};
+		},
+		invVer,
+	);
 
 /**
  * One of the player's own changes to what they carry (equip, move, sell, buy ...): applied to the ledger's inventory by the same pure functions
@@ -138,6 +188,26 @@ export const inventoryStep = (deps: ServiceDeps, userId: string, key: string, op
 		return { ledger: next, value: { ok: true, gold: result.gold, count: result.count, inv: result.inv, serverNowSec: ctx.nowSec } };
 	});
 
+/**
+ * The server runs the rebirth (IDL-102): from the last STORED save it checks the requirements, computes the Embers and wipes the bag, the gear
+ * and the pity to the starter kit (Pack Rat kept), all in one ledger write, BEFORE the browser starts over and uploads the new run. A modified
+ * client can no longer sell the old gear in the seconds before the rebirth save lands, and the save that follows is capped at exactly the
+ * Embers the server computed here (`settleEmbers`). Idempotent twice over: the same key replays the same answer, and a second call for the same
+ * rebirth (another key) neither wipes again nor pays again, it answers with what the first one recorded in `inv.rebirth`.
+ * The browser uploads its save first, so the stored save the server judges is the one the player is looking at.
+ */
+export const rebirthStep = (deps: ServiceDeps, userId: string, key: string, nowMs: number): Promise<Online<RebirthReply>> =>
+	onlineStep(deps, userId, key, nowMs, (ctx): { ledger: Ledger; value: RebirthReply } => {
+		const inv = ctx.ledger.inv!;
+		const judged = judgeRebirth(ctx.stored.summary, ctx.stored.core.merchantUpgrades as Record<string, number> | undefined);
+		// already run for this very rebirth: the record is the answer (the wipe and the gain happen once)
+		if (judged.ok && inv.rebirth?.to === judged.to)
+			return { ledger: ctx.ledger, value: { ok: true, to: inv.rebirth.to, gain: inv.rebirth.gain, inv, serverNowSec: ctx.nowSec } };
+		if (!judged.ok) return { ledger: ctx.ledger, value: { ok: false, reason: judged.reason, to: 0, gain: 0, inv, serverNowSec: ctx.nowSec } };
+		const wiped: Inventory = { ...rebirthInventory(inv, ctx.stored.core.merchantUpgrades), rebirth: { to: judged.to, gain: judged.gain } };
+		return { ledger: { ...ctx.ledger, inv: wiped }, value: { ok: true, to: judged.to, gain: judged.gain, inv: wiped, serverNowSec: ctx.nowSec } };
+	});
+
 export type FightRequest =
 	| { action: 'sync'; since?: number }
 	| { action: 'use'; command: CombatCommand; since?: number }
@@ -150,29 +220,61 @@ export type FightRequest =
  * `auto` flips auto-battle or auto-use, both applied at the server's clock after the fight is brought up to date; `dismiss` takes a
  * monster off the map with no reward (and ends the fight against it).
  */
-export const fightStep = (deps: ServiceDeps, userId: string, key: string | null, request: FightRequest, nowMs: number, invVer?: number): Promise<Online<FightReply>> =>
-	onlineStep(deps, userId, key, nowMs, (ctx): Promise<{ ledger: Ledger; value: FightReply }> | { ledger: Ledger; value: FightReply } => {
-		const reply = (ledger: Ledger, view: FightReply['combat'], accepted: boolean, queued?: QueueResult): { ledger: Ledger; value: FightReply } => ({
-			ledger,
-			value: { combat: view, tickets: publicTickets(ledger.bank, ledger.ordChest), serverNowSec: ctx.nowSec, gemsTotal: ledger.gems, accepted, ...(queued ? { queued } : {}) },
-		});
-		if (request.action === 'dismiss') {
-			const ran = runCombat(ctx.ledger, ctx.env, { ack: request.since });
-			const dismissed = dismissTicket(ran.ledger, ctx.env, request.n);
-			const view = combatView(dismissed.ledger, ctx.env, request.since ?? dismissed.ledger.combat?.eventNo ?? 0, ran.behind, secondsToNext(dismissed.ledger.bank, bankContext(ctx.stored)));
-			return reply(dismissed.ledger, view, dismissed.ok);
-		}
-		const ask = request.action === 'use' ? { commands: [request.command] } : request.action === 'auto' ? { autoBattle: request.autoBattle, autoUse: request.autoUse } : {};
-		const before = ctx.ledger.combat?.eventNo ?? 0;
-		const { ledger, view, queued } = withCombat(ctx, request.since, ask);
-		// a hotkey is "accepted" when it did something (an event was added after the fight was brought up to date); a click on a monster, when it
-		// opened a fight against that monster (an automatic engage does not count: it is another monster or was there before)
-		const done = (event: { no: number; kind: string; n?: number }) =>
-			event.no > before &&
-			(request.action === 'use' && request.command.kind === 'fight'
-				? event.kind === 'engage' && event.n === request.command.n
-				: event.kind === 'potion' || event.kind === 'heal' || event.kind === 'stun' || event.kind === 'resist');
-		// a click (or the × of the panel) that joined or left the queue is accepted too
-		const accepted = request.action !== 'use' || queued === 'queued' || queued === 'removed' || (ledger.combat?.log.some(done) ?? false);
-		return reply(ledger, view, accepted, queued);
-	}, invVer);
+export const fightStep = (
+	deps: ServiceDeps,
+	userId: string,
+	key: string | null,
+	request: FightRequest,
+	nowMs: number,
+	invVer?: number,
+): Promise<Online<FightReply>> =>
+	onlineStep(
+		deps,
+		userId,
+		key,
+		nowMs,
+		(ctx): Promise<{ ledger: Ledger; value: FightReply }> | { ledger: Ledger; value: FightReply } => {
+			const reply = (ledger: Ledger, view: FightReply['combat'], accepted: boolean, queued?: QueueResult): { ledger: Ledger; value: FightReply } => ({
+				ledger,
+				value: {
+					combat: view,
+					tickets: publicTickets(ledger.bank, ledger.ordChest),
+					serverNowSec: ctx.nowSec,
+					gemsTotal: ledger.gems,
+					accepted,
+					...(queued ? { queued } : {}),
+				},
+			});
+			if (request.action === 'dismiss') {
+				const ran = runCombat(ctx.ledger, ctx.env, { ack: request.since });
+				const dismissed = dismissTicket(ran.ledger, ctx.env, request.n);
+				const view = combatView(
+					dismissed.ledger,
+					ctx.env,
+					request.since ?? dismissed.ledger.combat?.eventNo ?? 0,
+					ran.behind,
+					secondsToNext(dismissed.ledger.bank, bankContext(ctx.stored)),
+				);
+				return reply(dismissed.ledger, view, dismissed.ok);
+			}
+			const ask =
+				request.action === 'use'
+					? { commands: [request.command] }
+					: request.action === 'auto'
+						? { autoBattle: request.autoBattle, autoUse: request.autoUse }
+						: {};
+			const before = ctx.ledger.combat?.eventNo ?? 0;
+			const { ledger, view, queued } = withCombat(ctx, request.since, ask);
+			// a hotkey is "accepted" when it did something (an event was added after the fight was brought up to date); a click on a monster, when it
+			// opened a fight against that monster (an automatic engage does not count: it is another monster or was there before)
+			const done = (event: { no: number; kind: string; n?: number }) =>
+				event.no > before &&
+				(request.action === 'use' && request.command.kind === 'fight'
+					? event.kind === 'engage' && event.n === request.command.n
+					: event.kind === 'potion' || event.kind === 'heal' || event.kind === 'stun' || event.kind === 'resist');
+			// a click (or the × of the panel) that joined or left the queue is accepted too
+			const accepted = request.action !== 'use' || queued === 'queued' || queued === 'removed' || (ledger.combat?.log.some(done) ?? false);
+			return reply(ledger, view, accepted, queued);
+		},
+		invVer,
+	);

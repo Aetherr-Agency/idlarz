@@ -29,7 +29,7 @@ export const ensureSeasonReset = async (
 	deps: Pick<ServiceDeps, 'ledgers' | 'saves'>,
 	lastReset: number | null,
 	userId: string,
-	nowMs: number
+	nowMs: number,
 ): Promise<{ lastReset: number | null; reset: boolean }> => {
 	if (lastReset === null) return { lastReset, reset: false };
 	const ledger = await deps.ledgers.load(userId);

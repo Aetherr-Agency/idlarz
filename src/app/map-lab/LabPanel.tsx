@@ -36,8 +36,7 @@ const PRESETS: { id: LabPreset; label: string }[] = [
 
 const WIP_BIOMES = [...new Set(WIP_MONSTERS.map((m) => m.biomes[0] as string))];
 
-const btn =
-	'px-2 py-1 rounded border border-white/15 bg-white/5 hover:bg-white/15 text-xs text-left disabled:opacity-40 disabled:hover:bg-white/5';
+const btn = 'px-2 py-1 rounded border border-white/15 bg-white/5 hover:bg-white/15 text-xs text-left disabled:opacity-40 disabled:hover:bg-white/5';
 const active = 'border-amber-300 bg-amber-300/20';
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => (
@@ -54,7 +53,7 @@ const LabPanel: React.FC = () => {
 	const [open, setOpen] = useState(true);
 	const [count, setCount] = useState(5);
 	const [wipId, setWipId] = useState(WIP_MONSTERS[0].id);
-		const [message, setMessage] = useState('');
+	const [message, setMessage] = useState('');
 	const fileRef = useRef<HTMLInputElement>(null);
 	const castleLevel = castleLevelOf(lab.tiles);
 	const tool = TOOLS.find((t) => t.id === lab.tool);
@@ -77,7 +76,8 @@ const LabPanel: React.FC = () => {
 	return (
 		<aside
 			className='fixed left-3 top-3 z-50 w-64 max-h-[calc(100vh-1.5rem)] overflow-y-auto rounded-lg border border-white/15 bg-black/80 p-3 text-white backdrop-blur space-y-3'
-			onContextMenu={(e) => e.stopPropagation()}>
+			onContextMenu={(e) => e.stopPropagation()}
+		>
 			<header className='flex items-center justify-between'>
 				<h2 className='text-sm font-bold'>Map lab</h2>
 				<button className={btn} onClick={() => setOpen(!open)} aria-expanded={open}>
@@ -127,27 +127,32 @@ const LabPanel: React.FC = () => {
 					</Section>
 
 					<Section title='Spawn'>
-							<select value={wipId} onChange={(e) => setWipId(e.target.value)} className='w-full rounded bg-white/10 px-1 py-1 text-xs'>
-									{WIP_BIOMES.map((biome) => (
-										<optgroup key={biome} label={BIOMES[biome]?.label ?? biome}>
-											{WIP_MONSTERS.filter((m) => m.biomes[0] === biome).map((m) => (
-												<option key={m.id} value={m.id} className='text-black'>
-													{m.grade === 'boss' ? '☠ ' : ''}
-													{m.label}
-												</option>
-											))}
-										</optgroup>
+						<select value={wipId} onChange={(e) => setWipId(e.target.value)} className='w-full rounded bg-white/10 px-1 py-1 text-xs'>
+							{WIP_BIOMES.map((biome) => (
+								<optgroup key={biome} label={BIOMES[biome]?.label ?? biome}>
+									{WIP_MONSTERS.filter((m) => m.biomes[0] === biome).map((m) => (
+										<option key={m.id} value={m.id} className='text-black'>
+											{m.grade === 'boss' ? '☠ ' : ''}
+											{m.label}
+										</option>
 									))}
-								</select>
-							<div className='flex gap-1'>
-								<button className={`${btn} flex-1`} title='Place WIP monsters (art only) on their own biome' onClick={() => lab.spawnWip(wipId, count)}>
-									Spawn WIP
-								</button>
-								<button className={`${btn} flex items-center gap-1`} title='Combat preview: the game&apos;s combat window with this monster, facing left' aria-label='Combat preview' onClick={() => lab.setCombatPreview(wipId)}>
-									<PixelIcon name='item_iron_sword' alt='' scale={0.5} />
-									Fight
-								</button>
-							</div>
+								</optgroup>
+							))}
+						</select>
+						<div className='flex gap-1'>
+							<button className={`${btn} flex-1`} title='Place WIP monsters (art only) on their own biome' onClick={() => lab.spawnWip(wipId, count)}>
+								Spawn WIP
+							</button>
+							<button
+								className={`${btn} flex items-center gap-1`}
+								title="Combat preview: the game's combat window with this monster, facing left"
+								aria-label='Combat preview'
+								onClick={() => lab.setCombatPreview(wipId)}
+							>
+								<PixelIcon name='item_iron_sword' alt='' scale={0.5} />
+								Fight
+							</button>
+						</div>
 						<label className='flex items-center gap-2 text-xs'>
 							Count
 							<input
@@ -209,12 +214,7 @@ const LabPanel: React.FC = () => {
 					<Section title='World'>
 						<label className='flex items-center gap-2 text-xs'>
 							Seed
-							<input
-								type='number'
-								value={lab.seed}
-								onChange={(e) => lab.setSeed(Number(e.target.value))}
-								className='w-24 rounded bg-white/10 px-1 py-0.5'
-							/>
+							<input type='number' value={lab.seed} onChange={(e) => lab.setSeed(Number(e.target.value))} className='w-24 rounded bg-white/10 px-1 py-0.5' />
 						</label>
 						<div className='grid grid-cols-2 gap-1'>
 							{PRESETS.map((p) => (

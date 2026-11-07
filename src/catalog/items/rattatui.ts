@@ -9,7 +9,7 @@ const rattatui = (
 	slot: NonNullable<ItemDef['slot']>,
 	stats: ItemStats,
 	description: string,
-	weaponType?: ItemDef['weaponType']
+	weaponType?: ItemDef['weaponType'],
 ): ItemDef =>
 	gear(`rattatui_${suffix}`, `Rattatui ${name}`, slot, 'epic', stats, {
 		tier: 4,

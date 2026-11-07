@@ -91,8 +91,21 @@ const devBlocksWorld = (): World => {
 
 /** Seeds of the comparison map: (kind, x, y) in tiles from the castle. Nearest seed (with a little noise) wins; no forbidden pair touches (docs/12 section 9). */
 const DEV_MAP_SEEDS: [string, number, number][] = [
-	['tundra', -30, -17], ['hills', -12, -19], ['blight', 10, -18], ['battlefield', 28, -16], ['plains', 2, -5], ['plains', -30, -3], ['forest', -16, -1],
-	['fields', 14, 1], ['orchard', 28, 3], ['jungle', -16, 16], ['lake', -31, 16], ['swamp', 33, 18], ['hills', 6, 18], ['plains', 18, 19], ['forest', -4, 9],
+	['tundra', -30, -17],
+	['hills', -12, -19],
+	['blight', 10, -18],
+	['battlefield', 28, -16],
+	['plains', 2, -5],
+	['plains', -30, -3],
+	['forest', -16, -1],
+	['fields', 14, 1],
+	['orchard', 28, 3],
+	['jungle', -16, 16],
+	['lake', -31, 16],
+	['swamp', 33, 18],
+	['hills', 6, 18],
+	['plains', 18, 19],
+	['forest', -4, 9],
 ];
 
 /** One island with every biome, the dev-only ones beside the live ones, to compare the art direction. A beach rings the lake. */
@@ -100,7 +113,7 @@ const devMapWorld = (): World => {
 	const base = createInitialWorld(seededRandom(1));
 	const rx = 37;
 	const ry = 24;
-	const noise = (x: number, y: number, k: number) => (Math.imul(x * 73856093 ^ y * 19349663 ^ k * 83492791, 2654435761) >>> 0) / 4294967296;
+	const noise = (x: number, y: number, k: number) => (Math.imul((x * 73856093) ^ (y * 19349663) ^ (k * 83492791), 2654435761) >>> 0) / 4294967296;
 	const kind = (x: number, y: number): string | null => {
 		if ((x / rx) ** 2 + (y / ry) ** 2 + (noise(x, y, 9) - 0.5) * 0.08 > 1) return null;
 		let best = '';
@@ -115,17 +128,23 @@ const devMapWorld = (): World => {
 		return best;
 	};
 	const kinds = new Map<string, string>();
-	for (let y = -ry; y <= ry; y++) for (let x = -rx; x <= rx; x++) {
-		const k = kind(x, y);
-		if (k) kinds.set(`${x},${y}`, k);
-	}
+	for (let y = -ry; y <= ry; y++)
+		for (let x = -rx; x <= rx; x++) {
+			const k = kind(x, y);
+			if (k) kinds.set(`${x},${y}`, k);
+		}
 	const changes: { x: number; y: number; tile: { biome: string; isOwned: true } }[] = [];
 	for (const [key, k] of kinds) {
 		const [x, y] = key.split(',').map(Number);
 		if (Math.max(Math.abs(x), Math.abs(y)) <= 1) continue; // the castle and its start ring stay
 		let biome = k;
 		if (['plains', 'forest'].includes(k))
-			for (let dy = -2; dy <= 2 && biome === k; dy++) for (let dx = -2; dx <= 2; dx++) if (kinds.get(`${x + dx},${y + dy}`) === 'lake') { biome = 'coast'; break; }
+			for (let dy = -2; dy <= 2 && biome === k; dy++)
+				for (let dx = -2; dx <= 2; dx++)
+					if (kinds.get(`${x + dx},${y + dy}`) === 'lake') {
+						biome = 'coast';
+						break;
+					}
 		changes.push({ x: CASTLE_X + x, y: CASTLE_Y + y, tile: { biome, isOwned: true } });
 	}
 	return setTiles(base, changes);
@@ -347,12 +366,14 @@ export const useLabStore = create<LabState>((set, get) => {
 			const castleLevel = castleLevelOf(tiles);
 			// the monster's own biome (its art folder), clear of the castle ward, buildings, chests and other monsters
 			const eligible = ownedEntries(tiles).filter(
-				({ x, y, tile }) =>
-					tile.biome === entry.biomes[0] && !tile.building && !tile.hasChest && !taken.has(`${x},${y}`) && !isInWard(x, y, castleLevel)
+				({ x, y, tile }) => tile.biome === entry.biomes[0] && !tile.building && !tile.hasChest && !taken.has(`${x},${y}`) && !isInWard(x, y, castleLevel),
 			);
 			for (let i = 0; i < count && eligible.length; i++) {
 				const { x, y } = eligible.splice(Math.floor(random() * eligible.length), 1)[0];
-				monsters = [...monsters, { id: nextId, type: (id in MONSTERS ? id : 'thistleBoar') as MonsterType, level: monsterLevel, spawnLevel: monsterLevel, x, y, ageSec: 0, art: id }];
+				monsters = [
+					...monsters,
+					{ id: nextId, type: (id in MONSTERS ? id : 'thistleBoar') as MonsterType, level: monsterLevel, spawnLevel: monsterLevel, x, y, ageSec: 0, art: id },
+				];
 				nextId += 1;
 			}
 			set({ monsters, nextId });

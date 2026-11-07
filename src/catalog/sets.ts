@@ -22,7 +22,7 @@ export const SET_DEFS: SetDef[] = [
 	{
 		id: 'obsidian',
 		label: 'Obsidian Set',
-		theme: 'The prospector\'s set: it pays the kingdom (income, XP, kill rewards, away time) and keeps its wearer alive, without raw offence.',
+		theme: "The prospector's set: it pays the kingdom (income, XP, kill rewards, away time) and keeps its wearer alive, without raw offence.",
 		bonuses: {
 			2: { incomePct: 6, maxHp: 20 },
 			4: { xpPct: 10, goldFind: 10, armor: 6 },
@@ -34,7 +34,7 @@ export const SET_DEFS: SetDef[] = [
 	{
 		id: 'rattatui',
 		label: 'Rattatui Set',
-		theme: 'The Rat King\'s court: the combat set. Percent damage and health, crits and leech, with a little loot on the side.',
+		theme: "The Rat King's court: the combat set. Percent damage and health, crits and leech, with a little loot on the side.",
 		bonuses: {
 			2: { maxHp: 25, armor: 3 },
 			4: { damagePct: 8, critChance: 4 },

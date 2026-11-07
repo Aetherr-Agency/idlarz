@@ -33,8 +33,7 @@ const DismissBody: React.FC<{ id: number }> = ({ id }) => {
 					Remove the <span className='text-[#f0d27a]'>{label}</span> from the map?
 				</p>
 				<p className='text-[#a89878] mb-3'>
-					It disappears for good and you get no loot or XP for it. Use it when a monster is too strong and the map is full, so a
-					new one can appear.
+					It disappears for good and you get no loot or XP for it. Use it when a monster is too strong and the map is full, so a new one can appear.
 				</p>
 				<div className='flex justify-between'>
 					<button className='px-btn' onClick={done}>
@@ -48,7 +47,8 @@ const DismissBody: React.FC<{ id: number }> = ({ id }) => {
 								showToast(`${MONSTERS[monster.type].label} dismissed`);
 							}
 							done();
-						}}>
+						}}
+					>
 						Dismiss
 					</button>
 				</div>

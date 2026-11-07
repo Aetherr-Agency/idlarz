@@ -21,12 +21,7 @@ interface TerrainLayerProps {
 const chunkHasLand = (world: World, cx: number, cy: number): boolean => {
 	const b = ownedBounds(world);
 	if (!b) return false;
-	return (
-		b.maxX + 1 >= cx * CHUNK_TILES &&
-		b.minX - 1 < (cx + 1) * CHUNK_TILES &&
-		b.maxY + 1 >= cy * CHUNK_TILES &&
-		b.minY - 1 < (cy + 1) * CHUNK_TILES
-	);
+	return b.maxX + 1 >= cx * CHUNK_TILES && b.minX - 1 < (cx + 1) * CHUNK_TILES && b.maxY + 1 >= cy * CHUNK_TILES && b.minY - 1 < (cy + 1) * CHUNK_TILES;
 };
 
 interface ChunkProps {

@@ -14,16 +14,7 @@ import type { GameState, Resources } from '@/types/game';
 
 type Applied = Pick<
 	GameState,
-	| 'tiles'
-	| 'resources'
-	| 'resourceRates'
-	| 'level'
-	| 'previousLevel'
-	| 'characterStats'
-	| 'castleUpgrade'
-	| 'monsters'
-	| 'playerHp'
-	| 'playerMp'
+	'tiles' | 'resources' | 'resourceRates' | 'level' | 'previousLevel' | 'characterStats' | 'castleUpgrade' | 'monsters' | 'playerHp' | 'playerMp'
 >;
 
 export type OfflineStateIn = Applied &
@@ -53,7 +44,11 @@ export interface OfflineReport {
 /** An absence at least this long heals the hero completely. */
 const FULL_HEAL_AFTER_SEC = 600;
 
-export const applyOfflineGrant = (state: OfflineStateIn, grant: OfflineGrant, limits: LimitContext = {}): { patch: Partial<GameState>; summary: OfflineSummary } => {
+export const applyOfflineGrant = (
+	state: OfflineStateIn,
+	grant: OfflineGrant,
+	limits: LimitContext = {},
+): { patch: Partial<GameState>; summary: OfflineSummary } => {
 	const resources: Resources = { ...state.resources };
 	(Object.keys(grant.resources) as (keyof Resources)[]).forEach((key) => {
 		const cap = key === 'xp' ? XP_CAP : RESOURCE_CAP;
@@ -72,8 +67,20 @@ export const applyOfflineGrant = (state: OfflineStateIn, grant: OfflineGrant, li
 		} else {
 			const castle = getTile(tiles, CASTLE_X, CASTLE_Y);
 			if (castle && castle.biome === 'castle') {
-				tiles = setTile(tiles, CASTLE_X, CASTLE_Y, { ...castle, level: castleUpgrade.toLevel, upgradeCost: CASTLE_UPGRADE.upgradeCosts[castleUpgrade.toLevel - 1] ?? undefined });
-				resourceRates = calculateResourceRates(tiles, state.characterStats, state.farmLevels, state.prestige, state.farmUpgrades, state.merchantUpgrades, gearIncomePct(state.equipment));
+				tiles = setTile(tiles, CASTLE_X, CASTLE_Y, {
+					...castle,
+					level: castleUpgrade.toLevel,
+					upgradeCost: CASTLE_UPGRADE.upgradeCosts[castleUpgrade.toLevel - 1] ?? undefined,
+				});
+				resourceRates = calculateResourceRates(
+					tiles,
+					state.characterStats,
+					state.farmLevels,
+					state.prestige,
+					state.farmUpgrades,
+					state.merchantUpgrades,
+					gearIncomePct(state.equipment),
+				);
 				castleReached = castleUpgrade.toLevel;
 			}
 			castleUpgrade = null;
@@ -85,10 +92,16 @@ export const applyOfflineGrant = (state: OfflineStateIn, grant: OfflineGrant, li
 
 	const { level, progress } = calculateLevel(resources.xp);
 	const levelsGained = Math.max(0, level - state.level.level);
-	const characterStats = levelsGained > 0 ? { ...state.characterStats, availablePoints: state.characterStats.availablePoints + totalStatPoints(level) - totalStatPoints(state.level.level) } : state.characterStats;
+	const characterStats =
+		levelsGained > 0
+			? { ...state.characterStats, availablePoints: state.characterStats.availablePoints + totalStatPoints(level) - totalStatPoints(state.level.level) }
+			: state.characterStats;
 	const healed = grant.gapSec >= FULL_HEAL_AFTER_SEC;
 	// the merchant's clocks count play time: the absence counts for them too
-	const merchant = state.merchantRefresh && state.playSeconds !== undefined ? afterAbsence(state.merchantStock ?? null, state.merchantRefresh, state.playSeconds, grant.elapsedSec, limits) : null;
+	const merchant =
+		state.merchantRefresh && state.playSeconds !== undefined
+			? afterAbsence(state.merchantStock ?? null, state.merchantRefresh, state.playSeconds, grant.elapsedSec, limits)
+			: null;
 
 	return {
 		patch: {

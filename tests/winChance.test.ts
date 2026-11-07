@@ -51,7 +51,10 @@ test('potions and regeneration make a fight easier to survive, a monster that ca
 	const bare = estimateWin(profile, profile.maxHp, 'thistleBoar', 9);
 	const potions = estimateWin(profile, profile.maxHp, 'thistleBoar', 9, [{ healHp: 90, count: 5 }]);
 	assert.ok(potions.chance >= bare.chance && potions.surviveSec > bare.surviveSec);
-	assert.ok(estimateWin(profile, profile.maxHp, 'thistleBoar', 9, [{ healHp: 90, count: 5 }]).chance > 0.6, 'five greater potions carry the starter kit past a level 9 rat');
+	assert.ok(
+		estimateWin(profile, profile.maxHp, 'thistleBoar', 9, [{ healHp: 90, count: 5 }]).chance > 0.6,
+		'five greater potions carry the starter kit past a level 9 rat',
+	);
 	assert.equal(estimateWin(profile, profile.maxHp, 'bossGreatAuroch', 15).chance, 0, 'the starter kit cannot kill the King inside his clock');
 	const weak = estimateWin({ ...profile, hit: 1 }, profile.maxHp, 'thistleBoar', 9);
 	assert.ok(weak.chance < 0.05, 'one damage a swing against a level 9 rat is hopeless');
@@ -60,7 +63,14 @@ test('potions and regeneration make a fight easier to survive, a monster that ca
 });
 
 test('auto-battle skips the monster it expects to lose to and fights the one it expects to beat; a click fights anyway', () => {
-	const base = { equipment: STARTER_EQUIPMENT, monsters: [{ type: 'thistleBoar' as const, level: 9 }, { type: 'thistleBoar' as const, level: 1 }], seed: 'gate' };
+	const base = {
+		equipment: STARTER_EQUIPMENT,
+		monsters: [
+			{ type: 'thistleBoar' as const, level: 9 },
+			{ type: 'thistleBoar' as const, level: 1 },
+		],
+		seed: 'gate',
+	};
 	const s = simSetup(base);
 	const started = runCombat(s.ledger, s.env(s.start)).ledger.combat!;
 	assert.equal(started.fight?.level, 1, 'the level 9 rat is beyond the starter kit: the level 1 rat is the one engaged');
@@ -71,7 +81,11 @@ test('auto-battle skips the monster it expects to lose to and fights the one it 
 
 	const view = combatView(runCombat(only.ledger, only.env(only.start)).ledger, only.env(only.start), 0, false, null);
 	assert.equal(view.autoNote, 'no_winnable', 'the window can say why auto-battle waits');
-	assert.equal(combatView(started.fight ? runCombat(s.ledger, s.env(s.start)).ledger : s.ledger, s.env(s.start), 0, false, null).autoNote, null, 'a fight is open: nothing to explain');
+	assert.equal(
+		combatView(started.fight ? runCombat(s.ledger, s.env(s.start)).ledger : s.ledger, s.env(s.start), 0, false, null).autoNote,
+		null,
+		'a fight is open: nothing to explain',
+	);
 
 	const clicked = runCombat(only.ledger, only.env(only.start), { commands: [{ kind: 'fight', n: 1 }] }).ledger.combat!;
 	assert.equal(clicked.fight?.level, 9, 'a click on the monster fights it whatever the odds');
@@ -82,7 +96,12 @@ test('a stronger character is let loose on what a weaker one is kept away from',
 	const strong = estimate(fullSet('obsidian', 'obsidian_maul'), { type: 'thistleBoar', level: 9 });
 	assert.ok(weak < COMBAT.auto.minWinChance && strong >= COMBAT.auto.minWinChance);
 	// Strength is gear-independent damage: the same starter kit with 25 spare points crosses the line it could not cross before
-	const trained = simSetup({ equipment: STARTER_EQUIPMENT, character: spentCharacter({ strength: 25, vitality: 25 }), monsters: [{ type: 'thistleBoar', level: 9 }], seed: 'x' });
+	const trained = simSetup({
+		equipment: STARTER_EQUIPMENT,
+		character: spentCharacter({ strength: 25, vitality: 25 }),
+		monsters: [{ type: 'thistleBoar', level: 9 }],
+		seed: 'x',
+	});
 	const profile = playerProfile(trained.stored.core);
 	assert.ok(estimateWin(profile, profile.maxHp, 'thistleBoar', 9).chance > weak);
 });

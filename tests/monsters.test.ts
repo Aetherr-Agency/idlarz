@@ -41,7 +41,7 @@ const STEP = LIMITS.monsterGrowthIntervalSec;
 test('levelAtAge: +1 level per growth interval, up to the growth limit above the spawn level', () => {
 	assert.deepEqual(
 		[0, STEP - 1, STEP, 3 * STEP, 10 * STEP, 99 * STEP].map((age) => levelAtAge(4, age)),
-		[4, 4, 5, 7, 14, 14]
+		[4, 4, 5, 7, 14, 14],
 	);
 	assert.equal(levelAtAge(8, 1e9), 18, 'a level 8 rat tops out at 18');
 	assert.equal(maxLevelOf(4), 14);
@@ -180,8 +180,14 @@ test('the Rat King is a boss; rats are not', () => {
 // ---- stats follow the level ------------------------------------------------------------------------------------------------
 
 test('rat stats: level 1 is 100 HP, level 9 is the old tier 5 (506 HP); HP, attack, armor and reward all rise with the level', () => {
-	assert.deepEqual([1, 3, 5, 7, 9].map((l) => monsterStats('thistleBoar', l).maxHp), [100, 150, 225, 338, 506]);
-	assert.deepEqual([1, 3, 5, 7, 9].map((l) => monsterStats('thistleBoar', l).attack), [4, 5, 6, 8, 10]);
+	assert.deepEqual(
+		[1, 3, 5, 7, 9].map((l) => monsterStats('thistleBoar', l).maxHp),
+		[100, 150, 225, 338, 506],
+	);
+	assert.deepEqual(
+		[1, 3, 5, 7, 9].map((l) => monsterStats('thistleBoar', l).attack),
+		[4, 5, 6, 8, 10],
+	);
 	for (let l = 2; l <= 20; l++) {
 		const a = monsterStats('thistleBoar', l - 1);
 		const b = monsterStats('thistleBoar', l);

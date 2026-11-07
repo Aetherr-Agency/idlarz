@@ -1,11 +1,4 @@
-import React, {
-	useRef,
-	useEffect,
-	useState,
-	useCallback,
-	useMemo,
-	JSX,
-} from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo, JSX } from 'react';
 import { CASTLE_FORTRESS, CASTLE_RANGE, TILE_SIZE } from '@/config/gameConfig';
 import { castleLevelOf, castleRangeRadius } from '@/lib/castleWard';
 import { visibleTileRange } from '@/lib/mapView';
@@ -55,9 +48,9 @@ const Grid: React.FC = () => {
 		canAffordBundle(
 			state.resources,
 			tileCostAsResources(
-				calculateTileCost(economyTiles(state.tiles, state.freeTiles), effectiveTileDiscount(state.characterStats, state.prestige, state.merchantUpgrades))
-			)
-		)
+				calculateTileCost(economyTiles(state.tiles, state.freeTiles), effectiveTileDiscount(state.characterStats, state.prestige, state.merchantUpgrades)),
+			),
+		),
 	);
 	const gridRef = useRef<HTMLDivElement>(null);
 	const { x: viewX, y: viewY, zoom, w: windowW, h: windowH } = view();
@@ -87,10 +80,13 @@ const Grid: React.FC = () => {
 		view.getState().reclamp();
 	}, [tiles.bounds, view]);
 
-	const pan = useCallback((dx: number, dy: number) => {
-		const v = view.getState();
-		v.setPosition({ x: v.x + dx, y: v.y + dy });
-	}, [view]);
+	const pan = useCallback(
+		(dx: number, dy: number) => {
+			const v = view.getState();
+			v.setPosition({ x: v.x + dx, y: v.y + dy });
+		},
+		[view],
+	);
 
 	// Wheel zoom around the cursor. Native listener: React's onWheel is passive and cannot stop the page zooming.
 	useEffect(() => {
@@ -139,7 +135,7 @@ const Grid: React.FC = () => {
 			setLastMousePos({ x: pos.clientX, y: pos.clientY });
 			velocityRef.current = { x: 0, y: 0 };
 		},
-		[drag, view]
+		[drag, view],
 	);
 
 	const handleMouseMove = useCallback(
@@ -172,7 +168,7 @@ const Grid: React.FC = () => {
 			setLastMousePos({ x: pos.clientX, y: pos.clientY });
 			setLastUpdateTime(currentTime);
 		},
-		[isDragging, lastMousePos, lastUpdateTime, pan, drag, view]
+		[isDragging, lastMousePos, lastUpdateTime, pan, drag, view],
 	);
 
 	const handleMouseUp = useCallback(() => {
@@ -241,7 +237,7 @@ const Grid: React.FC = () => {
 						level={tile?.level}
 						building={tile?.building}
 						canAfford={canAffordNext}
-					/>
+					/>,
 				);
 			}
 		}
@@ -259,25 +255,26 @@ const Grid: React.FC = () => {
 			onMouseLeave={handleMouseUp}
 			onTouchStart={handleMouseDown}
 			onTouchMove={handleMouseMove}
-			onTouchEnd={handleMouseUp}>
+			onTouchEnd={handleMouseUp}
+		>
 			{/* Fog of war: drifting mist behind the map; far-away tiles are transparent so it shows through */}
 			<div className='fog-layer fog-a' />
-			<div
-				className='fog-layer fog-b'
-				style={{ backgroundPosition: `${viewX * 0.35}px ${viewY * 0.35}px` }}
-			/>
+			<div className='fog-layer fog-b' style={{ backgroundPosition: `${viewX * 0.35}px ${viewY * 0.35}px` }} />
 			{/* The world: a zero-size origin, everything inside is placed in world px (negative ones too) */}
 			<div
 				className='absolute'
-				style={{
-					left: 0,
-					top: 0,
-					width: 0,
-					height: 0,
-					transform: `translate(${viewX}px, ${viewY}px) scale(${zoom})`,
-					transformOrigin: '0 0',
-					'--map-zoom': zoom,
-				} as React.CSSProperties}>
+				style={
+					{
+						left: 0,
+						top: 0,
+						width: 0,
+						height: 0,
+						transform: `translate(${viewX}px, ${viewY}px) scale(${zoom})`,
+						transformOrigin: '0 0',
+						'--map-zoom': zoom,
+					} as React.CSSProperties
+				}
+			>
 				<TerrainLayer minX={seen.minX} maxX={seen.maxX} minY={seen.minY} maxY={seen.maxY} />
 				<WaterLayer minX={seen.minX} maxX={seen.maxX} minY={seen.minY} maxY={seen.maxY} />
 				<MapTipLayerContext.Provider value={tipLayer}>{visibleTiles}</MapTipLayerContext.Provider>

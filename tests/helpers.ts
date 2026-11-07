@@ -24,7 +24,12 @@ export const rebirthReadyGame = () => {
 	useGameStore.getState().resetGame();
 	growTo(400);
 	const grown = useGameStore.getState();
-	useGameStore.setState({ tiles: patchTile(grown.tiles, CASTLE_X, CASTLE_Y, { level: 6 }), playSeconds: 1000, characterStats: { ...grown.characterStats, availablePoints: totalStatPoints(calculateLevel(grown.resources.xp).level) }, resources: { ...grown.resources, gold: 100, wood: 0, stone: 0, coal: 0, food: 0, hide: 0 } } as never);
+	useGameStore.setState({
+		tiles: patchTile(grown.tiles, CASTLE_X, CASTLE_Y, { level: 6 }),
+		playSeconds: 1000,
+		characterStats: { ...grown.characterStats, availablePoints: totalStatPoints(calculateLevel(grown.resources.xp).level) },
+		resources: { ...grown.resources, gold: 100, wood: 0, stone: 0, coal: 0, food: 0, hide: 0 },
+	} as never);
 	return structuredClone(pickPersisted(useGameStore.getState()));
 };
 
@@ -37,7 +42,10 @@ export const store = useGameStore;
 /** Shows a fight as open (the server's picture of one: what the store keeps in `combat.fight`). */
 export const openFight = (patch: Partial<NonNullable<ReturnType<typeof useGameStore.getState>['combat']['fight']>> = {}) =>
 	useGameStore.setState((s) => ({
-		combat: { ...s.combat, fight: { n: 1, type: 'thistleBoar', level: 1, lucky: false, monsterHp: 10, monsterMaxHp: 10, stunLeft: 0, timeLeftSec: null, x: 0, y: 0, ...patch } },
+		combat: {
+			...s.combat,
+			fight: { n: 1, type: 'thistleBoar', level: 1, lucky: false, monsterHp: 10, monsterMaxHp: 10, stunLeft: 0, timeLeftSec: null, x: 0, y: 0, ...patch },
+		},
 	}));
 export const closeFight = () => useGameStore.setState((s) => ({ combat: { ...s.combat, fight: null } }));
 export const api = () => useGameStore.getState();
@@ -46,12 +54,10 @@ export const api = () => useGameStore.getState();
 export const rowsOf = (tiles: World): Tile[][] => worldToRows(tiles, 0, 0, LEGACY_GRID_SIZE, LEGACY_GRID_SIZE);
 
 /** Every tile with its position, in the old row-major order, owned or not. */
-export const gridCells = (tiles: World = api().tiles) =>
-	rowsOf(tiles).flatMap((row, y) => row.map((t, x) => ({ t, x, y })));
+export const gridCells = (tiles: World = api().tiles) => rowsOf(tiles).flatMap((row, y) => row.map((t, x) => ({ t, x, y })));
 
 /** Merges `patch` into the tile at (x, y) of the game. */
-export const patchTileAt = (x: number, y: number, patch: Partial<Tile>) =>
-	useGameStore.setState((s) => ({ tiles: patchTile(s.tiles, x, y, patch) }));
+export const patchTileAt = (x: number, y: number, patch: Partial<Tile>) => useGameStore.setState((s) => ({ tiles: patchTile(s.tiles, x, y, patch) }));
 
 /**
  * The pre-ring start most economy tests were written for: the castle alone, one free tile. (A real new game owns the
@@ -81,8 +87,7 @@ export const freshGame = (extra: Partial<Resources> = {}) => {
 	return api();
 };
 
-export const setResources = (r: Partial<Resources>) =>
-	useGameStore.setState((s) => ({ resources: { ...s.resources, ...r } }));
+export const setResources = (r: Partial<Resources>) => useGameStore.setState((s) => ({ resources: { ...s.resources, ...r } }));
 
 /** The tile that is bought next by growTo: the unexplored neighbour of the land closest to the castle (ties: first row, then column). */
 const nextFrontier = (tiles: World): [number, number] | null => {

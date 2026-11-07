@@ -23,7 +23,8 @@ const DAGGER: Equipment = { ...STARTER_EQUIPMENT, mainHand: plainItem('steel_dag
 const MAUL: Equipment = { ...STARTER_EQUIPMENT, mainHand: plainItem('obsidian_maul') };
 const STRONG = fullSet('rattatui');
 
-const setup = (over: Partial<SimSetup> = {}) => simSetup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'thistleBoar', level: 1 }], seed: 'engine', ...over });
+const setup = (over: Partial<SimSetup> = {}) =>
+	simSetup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'thistleBoar', level: 1 }], seed: 'engine', ...over });
 
 /** Runs the clock forward `seconds` seconds, one request per `stepSec`, and returns the ledger and every event seen. */
 const advance = (s: ReturnType<typeof setup>, from: Ledger, seconds: number, stepSec = 1, ask: Parameters<typeof runCombat>[2] = {}) => {
@@ -91,7 +92,14 @@ test('one request simulates at most the catch-up limit of fighting, then says it
 // ---------------------------------------------------------------------------------------------------- engaging
 
 test('one monster at a time: a fight ends before the next begins, and every win is paid once', () => {
-	const s = setup({ equipment: STRONG, monsters: [{ type: 'thistleBoar', level: 1 }, { type: 'thistleBoar', level: 2 }, { type: 'thistleBoar', level: 3 }] });
+	const s = setup({
+		equipment: STRONG,
+		monsters: [
+			{ type: 'thistleBoar', level: 1 },
+			{ type: 'thistleBoar', level: 2 },
+			{ type: 'thistleBoar', level: 3 },
+		],
+	});
 	const first = runCombat(s.ledger, s.env(s.start)).ledger;
 	const { ledger, events } = advance(s, first, 60);
 	const order = [...first.combat!.log, ...events].filter((e) => ['engage', 'won', 'defeated', 'timeout', 'retreat'].includes(e.kind)).map((e) => e.kind);
@@ -107,7 +115,13 @@ test('one monster at a time: a fight ends before the next begins, and every win 
 });
 
 test('the weakest monster is fought first, so a rat that cannot be beaten never blocks the easy ones', () => {
-	const s = setup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'thistleBoar', level: 9 }, { type: 'thistleBoar', level: 1 }] });
+	const s = setup({
+		equipment: STARTER_EQUIPMENT,
+		monsters: [
+			{ type: 'thistleBoar', level: 9 },
+			{ type: 'thistleBoar', level: 1 },
+		],
+	});
 	const first = runCombat(s.ledger, s.env(s.start)).ledger;
 	assert.equal(first.combat!.fight?.level, 1);
 	assert.equal(first.combat!.fight?.n, 2, 'the level 1 rat (ticket 2) goes first');
@@ -127,7 +141,13 @@ test('a monster that beat you is left alone for a while, the others are not, and
 });
 
 test('after a knockout HP is a share of max and no fight starts until it is back above the resume line', () => {
-	const s = setup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'thistleBoar', level: 9 }, { type: 'thistleBoar', level: 9 }] });
+	const s = setup({
+		equipment: STARTER_EQUIPMENT,
+		monsters: [
+			{ type: 'thistleBoar', level: 9 },
+			{ type: 'thistleBoar', level: 9 },
+		],
+	});
 	const first = runCombat(s.ledger, s.env(s.start)).ledger;
 	const { ledger, events } = advance(s, first, 100);
 	const defeat = kinds(events, 'defeated')[0];
@@ -170,7 +190,13 @@ test('auto-battle is locked until the first rebirth: asking for it changes nothi
 });
 
 test('a click starts a fight with auto-battle off, even below the resume HP, and the next monster is not chained on', () => {
-	const s = setup({ equipment: STRONG, monsters: [{ type: 'thistleBoar', level: 1 }, { type: 'thistleBoar', level: 1 }] });
+	const s = setup({
+		equipment: STRONG,
+		monsters: [
+			{ type: 'thistleBoar', level: 1 },
+			{ type: 'thistleBoar', level: 1 },
+		],
+	});
 	const off = runCombat(s.ledger, s.env(s.start), { autoBattle: false }).ledger;
 	assert.equal(off.combat!.fight, null, 'nothing is engaged by itself');
 	const [first, second] = off.bank.rats;
@@ -186,17 +212,30 @@ test('a click starts a fight with auto-battle off, even below the resume HP, and
 	assert.ok(kinds(events, 'won', 'defeated')[0], 'the fight was decided');
 	assert.equal(kinds(events, 'engage').length, 0, 'no second engage');
 	assert.equal(ledger.combat!.fight, null);
-	assert.ok(ledger.bank.rats.some((rat) => rat.n === first.n), 'the other rat is still there');
+	assert.ok(
+		ledger.bank.rats.some((rat) => rat.n === first.n),
+		'the other rat is still there',
+	);
 });
 
 test('a click is refused for a monster that is not there, during a fight, at 0 HP, and is ignored when the server is behind', () => {
-	const s = setup({ equipment: STRONG, monsters: [{ type: 'thistleBoar', level: 1 }, { type: 'thistleBoar', level: 1 }] });
+	const s = setup({
+		equipment: STRONG,
+		monsters: [
+			{ type: 'thistleBoar', level: 1 },
+			{ type: 'thistleBoar', level: 1 },
+		],
+	});
 	const off = runCombat(s.ledger, s.env(s.start), { autoBattle: false }).ledger;
 	const click = (ledger: Ledger, n: number, at = s.start + 1) => runCombat(ledger, s.env(at), { commands: [{ kind: 'fight', n }] }).ledger;
 
 	assert.equal(click(off, 99).combat!.fight, null, 'no such ticket');
 	assert.equal(click(off, 0).combat!.fight, null);
-	assert.equal(click({ ...off, combat: { ...off.combat!, hp: 0 } }, off.bank.rats[0].n, s.start).combat!.fight, null, 'no HP (at the same clock: resting would give some back)');
+	assert.equal(
+		click({ ...off, combat: { ...off.combat!, hp: 0 } }, off.bank.rats[0].n, s.start).combat!.fight,
+		null,
+		'no HP (at the same clock: resting would give some back)',
+	);
 
 	const fighting = click(off, off.bank.rats[0].n);
 	assert.equal(fighting.combat!.fight?.n, off.bank.rats[0].n);
@@ -212,7 +251,13 @@ test('a click is refused for a monster that is not there, during a fight, at 0 H
 });
 
 test('the King can be clicked too, with auto-battle off', () => {
-	const s = setup({ equipment: STRONG, monsters: [{ type: 'thistleBoar', level: 1 }, { type: 'bossGreatAuroch', level: 15 }] });
+	const s = setup({
+		equipment: STRONG,
+		monsters: [
+			{ type: 'thistleBoar', level: 1 },
+			{ type: 'bossGreatAuroch', level: 15 },
+		],
+	});
 	const off = runCombat(s.ledger, s.env(s.start), { autoBattle: false }).ledger;
 	const king = off.bank.king!;
 	const clicked = runCombat(off, s.env(s.start + 1), { commands: [{ kind: 'fight', n: king.n }] }).ledger;
@@ -220,7 +265,13 @@ test('the King can be clicked too, with auto-battle off', () => {
 });
 
 test('a King is fought only when no other monster is ready, and a King that ran out the clock waits out the boss cooldown', () => {
-	const s = setup({ equipment: STRONG, monsters: [{ type: 'thistleBoar', level: 1 }, { type: 'bossGreatAuroch', level: 15 }] });
+	const s = setup({
+		equipment: STRONG,
+		monsters: [
+			{ type: 'thistleBoar', level: 1 },
+			{ type: 'bossGreatAuroch', level: 15 },
+		],
+	});
 	const first = runCombat(s.ledger, s.env(s.start)).ledger;
 	assert.equal(first.combat!.fight?.type, 'thistleBoar');
 	const weak = setup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'bossGreatAuroch', level: 15 }], seed: 'king' });
@@ -282,7 +333,10 @@ test('skills: Heal needs its level, mana and a cooldown; Stun needs a fight and 
 
 	const stunned = runCombat(hiStart, hi.env(hi.start + 1), { commands: [{ kind: 'skill', id: 'stun' }] }).ledger;
 	const log = stunned.combat!.log;
-	assert.ok(log.some((e) => e.kind === 'stun' || e.kind === 'resist'), 'a King may resist (20 %), but the cast went through');
+	assert.ok(
+		log.some((e) => e.kind === 'stun' || e.kind === 'resist'),
+		'a King may resist (20 %), but the cast went through',
+	);
 	assert.equal(stunned.combat!.cd.stun, SKILLS.stun.cooldownSec);
 
 	const none = setup({ equipment: STARTER_EQUIPMENT, level: 30, monsters: [] });
@@ -303,7 +357,15 @@ test('auto-use drinks below its HP line and only when switched on', () => {
 // ---------------------------------------------------------------------------------------------------- the log
 
 test('a result is never lost to the cosmetic swings: a win stays in the log until the browser acknowledges it', () => {
-	const s = setup({ equipment: STRONG, monsters: [{ type: 'thistleBoar', level: 1 }, { type: 'thistleBoar', level: 1 }, { type: 'thistleBoar', level: 1 }, { type: 'thistleBoar', level: 1 }] });
+	const s = setup({
+		equipment: STRONG,
+		monsters: [
+			{ type: 'thistleBoar', level: 1 },
+			{ type: 'thistleBoar', level: 1 },
+			{ type: 'thistleBoar', level: 1 },
+			{ type: 'thistleBoar', level: 1 },
+		],
+	});
 	const first = runCombat(s.ledger, s.env(s.start)).ledger;
 	const later = runCombat(first, s.env(s.start + 100)).ledger; // one long gap: dozens of swings, four wins
 	const log = later.combat!.log;
@@ -316,7 +378,12 @@ test('a result is never lost to the cosmetic swings: a win stays in the log unti
 
 test('stronger attributes win fights a weak build loses (the profile is read from the saved character)', () => {
 	const weak = setup({ equipment: DAGGER, monsters: [{ type: 'thistleBoar', level: 9 }], seed: 'attrs' });
-	const strong = setup({ equipment: DAGGER, character: spentCharacter({ strength: 25, vitality: 25 }), monsters: [{ type: 'thistleBoar', level: 9 }], seed: 'attrs' });
+	const strong = setup({
+		equipment: DAGGER,
+		character: spentCharacter({ strength: 25, vitality: 25 }),
+		monsters: [{ type: 'thistleBoar', level: 9 }],
+		seed: 'attrs',
+	});
 	const run = (s: ReturnType<typeof setup>) => advance(s, runCombat(s.ledger, s.env(s.start), { autoUse: false }).ledger, 120).events;
 	assert.ok(kinds(run(strong), 'won').length >= 1);
 	assert.equal(kinds(run(weak), 'won').length, 0);
@@ -332,10 +399,17 @@ test("a win puts the drops into the ledger's inventory and grants the gold of wh
 	const out = advance(s, first, 240);
 	const wins = [...first.combat!.log, ...out.events].filter((e) => e.kind === 'won' && e.reward);
 	assert.ok(wins.length >= 6, 'the rats were beaten');
-	assert.ok(wins.every((w) => (w.reward!.stored?.length ?? 0) === 0), 'nothing fitted');
+	assert.ok(
+		wins.every((w) => (w.reward!.stored?.length ?? 0) === 0),
+		'nothing fitted',
+	);
 	const converted = wins.reduce((sum, w) => sum + (w.reward!.convertedGold ?? 0), 0);
 	assert.ok(converted > 0, 'what did not fit became gold');
-	assert.equal(out.ledger.granted.gold, wins.reduce((sum, w) => sum + w.reward!.gold + (w.reward!.convertedGold ?? 0) + (w.reward!.autoSold?.gold ?? 0), 0), 'all of it is granted');
+	assert.equal(
+		out.ledger.granted.gold,
+		wins.reduce((sum, w) => sum + w.reward!.gold + (w.reward!.convertedGold ?? 0) + (w.reward!.autoSold?.gold ?? 0), 0),
+		'all of it is granted',
+	);
 	assert.deepEqual(out.ledger.inv!.bag, full.inv.bag);
 
 	// an empty bag: the drops are stored, the version moves
@@ -353,6 +427,13 @@ test('the auto-sell filter of the ledger sells matching gear on the spot', () =>
 	const out = advance(s, first, 240);
 	const wins = [...first.combat!.log, ...out.events].filter((e) => e.kind === 'won' && e.reward);
 	assert.ok(wins.length >= 6);
-	assert.equal(out.ledger.inv!.bag.some((slot) => slot && 'item' in slot), false, 'no gear was kept');
-	assert.ok(wins.some((w) => (w.reward!.autoSold?.count ?? 0) > 0), 'some of it was sold');
+	assert.equal(
+		out.ledger.inv!.bag.some((slot) => slot && 'item' in slot),
+		false,
+		'no gear was kept',
+	);
+	assert.ok(
+		wins.some((w) => (w.reward!.autoSold?.count ?? 0) > 0),
+		'some of it was sold',
+	);
 });

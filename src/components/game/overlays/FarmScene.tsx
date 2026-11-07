@@ -81,9 +81,9 @@ const FarmScene: React.FC<FarmSceneProps> = ({ farmLevels, highlightId, celebrat
 					key: `${animal.id}-${i}`,
 					animal,
 					first: i === 0,
-				}))
+				})),
 			),
-		[farmLevels]
+		[farmLevels],
 	);
 
 	const place = (el: HTMLDivElement, a: Agent) => {
@@ -230,9 +230,7 @@ const FarmScene: React.FC<FarmSceneProps> = ({ farmLevels, highlightId, celebrat
 	return (
 		<div ref={stageRef} className='farm-stage' onPointerDown={onPointerDown}>
 			<div className='farm-cloud' />
-			<div
-				className='farm-pen'
-				style={{ width: PEN.w * zoom, height: PEN.h * zoom, '--z': zoom } as React.CSSProperties}>
+			<div className='farm-pen' style={{ width: PEN.w * zoom, height: PEN.h * zoom, '--z': zoom } as React.CSSProperties}>
 				<PixelIcon name='farm_back' scale={zoom} alt='Farm pen' className='farm-layer' />
 
 				{instances.map((inst) => {
@@ -246,7 +244,8 @@ const FarmScene: React.FC<FarmSceneProps> = ({ farmLevels, highlightId, celebrat
 							}}
 							className='farm-animal'
 							data-selected={highlightId === a.id}
-							data-celebrate={celebrate === a.id}>
+							data-celebrate={celebrate === a.id}
+						>
 							<span className='farm-shadow' />
 							<span className='farm-sprite'>
 								<PixelIcon name={ANIMAL_PIXEL_ICONS[a.id]} scale={zoom} alt={a.name} />

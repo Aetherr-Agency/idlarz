@@ -10,7 +10,8 @@ const OrganizeButton: React.FC<{ onNotice?: (message: string) => void }> = ({ on
 			title='Merge stacks and sort the bag: potions first, then gear by slot, rarity and level'
 			onClick={() => {
 				if (!organizeBag()) onNotice?.('Finish the fight first');
-			}}>
+			}}
+		>
 			Organize
 		</button>
 	);

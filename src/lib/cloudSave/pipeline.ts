@@ -79,14 +79,26 @@ export interface SaveRepo {
 }
 
 export type SaveOutcome =
-	| { kind: 'ok'; rev: number; serverSavedAt: number; flags: SaveFlag[]; /** The authoritative gem balance (the ledger's), when there is one */ gems?: number; /** The XP the server kept, only when the save held more than it could have earned (the browser takes the lower number) */ xp?: number; /** The Embers and rebirths the server kept, only when the save held more than a rebirth could have paid (the browser takes them) */ prestige?: PrestigeState; /** Set when the server paid this save from the last trusted economy instead of the claimed one (IDL-167); the flags say why */ economy?: 'trusted' }
+	| {
+			kind: 'ok';
+			rev: number;
+			serverSavedAt: number;
+			flags: SaveFlag[];
+			/** The authoritative gem balance (the ledger's), when there is one */ gems?: number;
+			/** The XP the server kept, only when the save held more than it could have earned (the browser takes the lower number) */ xp?: number;
+			/** The Embers and rebirths the server kept, only when the save held more than a rebirth could have paid (the browser takes them) */ prestige?: PrestigeState;
+			/** Set when the server paid this save from the last trusted economy instead of the claimed one (IDL-167); the flags say why */ economy?: 'trusted';
+	  }
 	| { kind: 'conflict'; rev: number; serverSavedAt: number }
 	/** Enforcement is on and the save raised a flag that refuses it: nothing was stored (the account keeps its last accepted save) */
 	| { kind: 'rejected'; flags: SaveFlag[] }
 	| { kind: 'invalid'; reason: string }
 	| { kind: 'too_soon'; retryAfterMs: number };
 
-const hashWorld = (land: unknown, extra: unknown): string => createHash('sha256').update(JSON.stringify([land, extra])).digest('hex');
+const hashWorld = (land: unknown, extra: unknown): string =>
+	createHash('sha256')
+		.update(JSON.stringify([land, extra]))
+		.digest('hex');
 
 /** Splits a canonical save body into the small part and the map. */
 export const splitBody = (body: SaveBody, tiles: number): { core: SaveBody; world: WorldPart } => {
@@ -135,11 +147,6 @@ export const acceptSave = async (
 
 	const previous: Snapshot | null = current ? { summary: current.summary, serverSavedAt: current.serverSavedAt } : null;
 
-	// Embers and rebirths are the browser's until the server runs the rebirth itself (IDL-102): a save that holds more than the previous one
-	// could have paid is clamped to what it explains (before anything is derived from it) and flagged `ember_jump` (IDL-166)
-	const emberVerdict = settleEmbers(previous, { rebirths: state.prestige.rebirths, legacyEarned: state.prestige.legacyEarned, playSeconds: state.playSeconds });
-	if (emberVerdict.clamped) state = { ...state, prestige: clampPrestige(state.prestige, emberVerdict) };
-
 	// The ledger knows what the server itself granted since the last save (income while away, chest and kill rewards), so a save may
 	// contain that on top of its income, and it holds the real gem balance: whatever the save claims is checked against it, then replaced.
 	let ledger: Ledger | null = null;
@@ -152,6 +159,15 @@ export const acceptSave = async (
 			ledgerUsable = false;
 		}
 	}
+	// Embers and rebirths: a rebirth the server ran itself (`POST /api/rebirth`, recorded in the ledger's inventory) pays exactly the Embers it
+	// computed (IDL-102). One that did not go through it is bounded by what the previous save's castle and territory could have paid (IDL-166).
+	// Either way a save that holds more is clamped before anything is derived from it, and flagged `ember_jump`.
+	const emberVerdict = settleEmbers(
+		previous,
+		{ rebirths: state.prestige.rebirths, legacyEarned: state.prestige.legacyEarned, playSeconds: state.playSeconds },
+		ledger?.inv?.rebirth ?? null,
+	);
+	if (emberVerdict.clamped) state = { ...state, prestige: clampPrestige(state.prestige, emberVerdict) };
 	const gemsClaimed = state.gems;
 	// The bag, the worn gear, the loot pity and the auto-sell filter are the ledger's: the stored copy carries the server's, whatever the upload
 	// held. A New Game (the same run's play time going back) starts them again from the new game's own; a ledger without them yet is seeded
@@ -159,7 +175,9 @@ export const acceptSave = async (
 	const newGame = !!(current && state.prestige.rebirths === current.summary.rebirths && state.playSeconds < current.summary.playSeconds - 1);
 	// A rebirth wipes the gear and the bag: the server's inventory starts again from the starter kit, whatever the upload carried
 	const rebirthed = !!(current && !newGame && state.prestige.rebirths > current.summary.rebirths);
-	const inventory = ledger?.inv && rebirthed ? rebirthInventory(ledger.inv, state.merchantUpgrades) : ledger?.inv ?? null;
+	// ... unless the server already did it when it ran the rebirth (`/api/rebirth`): the wipe happens once, and what was picked up since stays
+	const serverWiped = ledger?.inv?.rebirth?.to === state.prestige.rebirths;
+	const inventory = ledger?.inv && rebirthed && !serverWiped ? rebirthInventory(ledger.inv, state.merchantUpgrades) : (ledger?.inv ?? null);
 	if (inventory && !newGame) state = stampInventory(state, inventory);
 	let summary = summarize(state);
 	const grants = ledger ? subtractTotals(ledger.granted, ledger.grantedSeen) : undefined;
@@ -169,7 +187,12 @@ export const acceptSave = async (
 	const claimed = summary;
 	const xpVerdict = settleXp(previous, claimed, nowMs, grants);
 	if (xpVerdict.clamped) {
-		state = { ...state, resources: { ...state.resources, xp: xpVerdict.xp }, level: calculateLevel(xpVerdict.xp), characterStats: reconcileCharacter(state.characterStats, xpVerdict.xp) };
+		state = {
+			...state,
+			resources: { ...state.resources, xp: xpVerdict.xp },
+			level: calculateLevel(xpVerdict.xp),
+			characterStats: reconcileCharacter(state.characterStats, xpVerdict.xp),
+		};
 		summary = summarize(state);
 	}
 	summary.derived.xpBase = xpVerdict.base;
@@ -190,7 +213,11 @@ export const acceptSave = async (
 	const trusted = flags.includes('castle_jump') || worth.exceeds;
 	if (trusted) {
 		const baseline = sameRunAs(previous?.summary ?? null, summary) ? current : null;
-		if (worth.exceeds && baseline) state = { ...state, merchantUpgrades: restoreMerchantLevels(state.merchantUpgrades, baseline.core.merchantUpgrades as Record<string, number> | undefined) };
+		if (worth.exceeds && baseline)
+			state = {
+				...state,
+				merchantUpgrades: restoreMerchantLevels(state.merchantUpgrades, baseline.core.merchantUpgrades as Record<string, number> | undefined),
+			};
 		const restored = summarize(state);
 		restored.derived.xpBase = summary.derived.xpBase;
 		summary = trustedEconomy(baseline?.summary ?? null, restored, worth.ratio);
@@ -256,21 +283,61 @@ export const acceptSave = async (
 			} else if (!current) {
 				// the first save of an account whose game was reset (a New Game, or a season reset): the timers start now, not at the reset,
 				// so the time since the reset is neither "played" spawn time nor an absence; the bag and gear come from this save
-				await ledgers.commit(userId, ledger.ver, { ...ledger, ver: ledger.ver + 1, anchorAt: nowMs, bank: emptyBank(nowMs / 1000), ordChest: 0, ordKill: 0, grantedSeen: ledger.granted, lastKey: null, lastResult: null, combat: null, inv: inventoryFromCore(split.core) });
+				await ledgers.commit(userId, ledger.ver, {
+					...ledger,
+					ver: ledger.ver + 1,
+					anchorAt: nowMs,
+					bank: emptyBank(nowMs / 1000),
+					ordChest: 0,
+					ordKill: 0,
+					grantedSeen: ledger.granted,
+					lastKey: null,
+					lastResult: null,
+					combat: null,
+					inv: inventoryFromCore(split.core),
+				});
 			} else if (newRun) {
 				// a rebirth or a new game: the map and its monsters start over, so do the tickets, and rolls start again from ordinal 1 in a new run
 				// (the player's combat starts over too: HP and mana come from the new game, no fight is open)
 				// (a rebirth wipes gear and bag, see `rebirthed`; a New Game takes the new game's own)
 				const inv = newGame || !ledger.inv ? inventoryFromCore(split.core) : (inventory ?? ledger.inv);
-				const next: Ledger = { ...ledger, ver: ledger.ver + 1, runId: ledger.runId + 1, rebirths: summary.rebirths, anchorAt: nowMs, bank: emptyBank(nowMs / 1000), ordChest: 0, ordKill: 0, grantedSeen: ledger.granted, lastKey: null, lastResult: null, combat: null, inv };
+				const next: Ledger = {
+					...ledger,
+					ver: ledger.ver + 1,
+					runId: ledger.runId + 1,
+					rebirths: summary.rebirths,
+					anchorAt: nowMs,
+					bank: emptyBank(nowMs / 1000),
+					ordChest: 0,
+					ordKill: 0,
+					grantedSeen: ledger.granted,
+					lastKey: null,
+					lastResult: null,
+					combat: null,
+					inv,
+				};
 				await ledgers.commit(userId, ledger.ver, next);
 			} else if ((grants && Object.values(grants).some((amount) => amount > 0)) || !ledger.inv) {
 				// the save knows what was granted so far; a ledger from before the inventory moved here takes this save's
-				await ledgers.commit(userId, ledger.ver, { ...ledger, ver: ledger.ver + 1, grantedSeen: ledger.granted, inv: ledger.inv ?? inventoryFromCore(split.core) });
+				await ledgers.commit(userId, ledger.ver, {
+					...ledger,
+					ver: ledger.ver + 1,
+					grantedSeen: ledger.granted,
+					inv: ledger.inv ?? inventoryFromCore(split.core),
+				});
 			}
 		} catch {
 			// the save is stored; the next one brings the ledger up to date
 		}
 	}
-	return { kind: 'ok', rev: save.rev, serverSavedAt: nowMs, flags, gems: ledgerUsable ? gems : undefined, xp: xpVerdict.clamped ? xpVerdict.xp : undefined, prestige: emberVerdict.clamped ? state.prestige : undefined, economy: trusted ? 'trusted' : undefined };
+	return {
+		kind: 'ok',
+		rev: save.rev,
+		serverSavedAt: nowMs,
+		flags,
+		gems: ledgerUsable ? gems : undefined,
+		xp: xpVerdict.clamped ? xpVerdict.xp : undefined,
+		prestige: emberVerdict.clamped ? state.prestige : undefined,
+		economy: trusted ? 'trusted' : undefined,
+	};
 };

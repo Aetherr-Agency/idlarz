@@ -35,8 +35,7 @@ const DEFAULT_ZOOM = 1;
  * simulated world, so both can run the same map components.
  */
 export const createViewStore = (getTiles: () => World) => {
-	const clampNow = (pos: Point, zoom: number, w: number, h: number): Point =>
-		clampPosition(pos, zoom, { w, h }, ownedBounds(getTiles()));
+	const clampNow = (pos: Point, zoom: number, w: number, h: number): Point => clampPosition(pos, zoom, { w, h }, ownedBounds(getTiles()));
 
 	return create<ViewState>((set, get) => ({
 		x: 0,

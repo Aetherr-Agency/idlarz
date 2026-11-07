@@ -68,7 +68,8 @@ const ContextMenu: React.FC = () => {
 			style={{ left: pos?.left ?? menu.x, top: pos?.top ?? menu.y, visibility: pos ? 'visible' : 'hidden' }}
 			role='menu'
 			aria-label={menu.title ?? 'Menu'}
-			onContextMenu={(e) => e.preventDefault()}>
+			onContextMenu={(e) => e.preventDefault()}
+		>
 			{menu.title && <div className='ctx-title'>{menu.title}</div>}
 			{menu.items.map((item) => (
 				<React.Fragment key={item.id}>
@@ -84,7 +85,8 @@ const ContextMenu: React.FC = () => {
 							audioManager.playSound('click');
 							close();
 							item.onSelect();
-						}}>
+						}}
+					>
 						{item.checked !== undefined && <span className='ctx-check' data-on={item.checked} aria-hidden />}
 						<span>{item.label}</span>
 						{(item.liveHint?.() ?? item.hint) && <span className='ctx-hint'>{item.liveHint?.() ?? item.hint}</span>}
@@ -92,7 +94,7 @@ const ContextMenu: React.FC = () => {
 				</React.Fragment>
 			))}
 		</div>,
-		document.body
+		document.body,
 	);
 };
 

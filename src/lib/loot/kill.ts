@@ -50,16 +50,19 @@ export const killIncome = (monster: Pick<Monster, 'type' | 'level'>, ctx: KillCo
 	};
 };
 
-export const rollKillLoot = (
-	monster: Pick<Monster, 'type' | 'level'>,
-	ctx: KillContext,
-	rng: Rng
-): KillLoot => {
+export const rollKillLoot = (monster: Pick<Monster, 'type' | 'level'>, ctx: KillContext, rng: Rng): KillLoot => {
 	const { gold, xp, hide } = killIncome(monster, ctx);
 
 	const result = generateLoot(
-		{ sourceId: monsterDef(monster.type).lootSourceId, level: monster.level, owned: ctx.owned, pity: ctx.pity, luck: ctx.luck, extraGearRolls: ctx.lucky ? LUCK.luckyRat.extraGearRolls : 0 },
-		rng
+		{
+			sourceId: monsterDef(monster.type).lootSourceId,
+			level: monster.level,
+			owned: ctx.owned,
+			pity: ctx.pity,
+			luck: ctx.luck,
+			extraGearRolls: ctx.lucky ? LUCK.luckyRat.extraGearRolls : 0,
+		},
+		rng,
 	);
 	if (result.warnings.length) console.warn('[loot]', ...result.warnings);
 	return { gold, xp, hide, items: result.drops, pity: result.pity };

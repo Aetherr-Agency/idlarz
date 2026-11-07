@@ -93,12 +93,16 @@
 	height: 56px;
 	background: #1c120a;
 	border: 2px solid #0a0605;
-	box-shadow: 0 0 0 2px #5a3f1c, inset 0 0 0 2px #2a1a0c;
+	box-shadow:
+		0 0 0 2px #5a3f1c,
+		inset 0 0 0 2px #2a1a0c;
 	cursor: pointer;
 }
 
 .combat-icon[data-fighting='true'] {
-	box-shadow: 0 0 0 2px #c0392b, inset 0 0 0 2px #2a1a0c;
+	box-shadow:
+		0 0 0 2px #c0392b,
+		inset 0 0 0 2px #2a1a0c;
 }
 
 .combat-icon[data-slain='true'] .monster-art {
@@ -250,7 +254,9 @@
 	height: 7px;
 	z-index: 2; /* the grey sprite is its own layer (filter); the cross goes over it */
 	background: #d8261c;
-	box-shadow: 0 0 0 2px #0a0605, inset 0 2px 0 rgba(255, 255, 255, 0.35);
+	box-shadow:
+		0 0 0 2px #0a0605,
+		inset 0 2px 0 rgba(255, 255, 255, 0.35);
 }
 
 .fight-dead::before {

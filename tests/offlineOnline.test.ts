@@ -55,7 +55,8 @@ const game = (): PersistedGame => {
 };
 const T0 = 1_800_000_000_000;
 const MIN = 60_000;
-const save = (m: ReturnType<typeof memory>, id: string, state: PersistedGame, baseRev: number, at: number) => acceptSave(m.saves, id, 'Zoë', encodeSave(state), baseRev, at, false, m.ledgerRepo);
+const save = (m: ReturnType<typeof memory>, id: string, state: PersistedGame, baseRev: number, at: number) =>
+	acceptSave(m.saves, id, 'Zoë', encodeSave(state), baseRev, at, false, m.ledgerRepo);
 
 const ok = <T>(out: Online<T>): T => {
 	assert.equal(out.kind, 'ok', JSON.stringify(out));
@@ -221,7 +222,10 @@ test('dismissing a monster spends its ticket without a reward', async () => {
 	const out = ok(await fightStep(m.deps, 'u1', 'dismiss-key-02', { action: 'dismiss', n }, now + 1000));
 	assert.equal(out.accepted, true);
 	assert.equal(m.ledgers.get('u1')!.granted.gold, 0);
-	assert.equal(m.ledgers.get('u1')!.bank.rats.some((r) => r.n === n), false);
+	assert.equal(
+		m.ledgers.get('u1')!.bank.rats.some((r) => r.n === n),
+		false,
+	);
 });
 
 test('after a long absence every online call asks for the claim first, and the claim lets play go on', async () => {

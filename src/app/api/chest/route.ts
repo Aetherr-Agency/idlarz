@@ -11,8 +11,10 @@ export async function POST(request: Request) {
 		(body) => {
 			const { key, x, y, invVer } = body as { key?: unknown; x?: unknown; y?: unknown; invVer?: unknown };
 			const tile = (v: unknown): v is number => typeof v === 'number' && Number.isInteger(v) && Math.abs(v) <= COORD_LIMIT;
-			return typeof key === 'string' && KEY.test(key) && tile(x) && tile(y) ? { key, x, y, invVer: Number.isInteger(invVer) && (invVer as number) >= 0 ? (invVer as number) : undefined } : null;
+			return typeof key === 'string' && KEY.test(key) && tile(x) && tile(y)
+				? { key, x, y, invVer: Number.isInteger(invVer) && (invVer as number) >= 0 ? (invVer as number) : undefined }
+				: null;
 		},
-		(deps, userId, body, nowMs) => redeemChest(deps, userId, body.key, { x: body.x, y: body.y }, nowMs, body.invVer)
+		(deps, userId, body, nowMs) => redeemChest(deps, userId, body.key, { x: body.x, y: body.y }, nowMs, body.invVer),
 	);
 }

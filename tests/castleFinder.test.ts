@@ -51,13 +51,19 @@ for (const [name, dx, dy, ok] of DIRECTIONS) {
 			assert.ok(a.x >= ARROW_MARGIN - 1e-6 && a.x <= W - ARROW_MARGIN + 1e-6, `x ${a.x}`);
 			assert.ok(a.y >= INSETS.top + ARROW_MARGIN - 1e-6 && a.y <= H - ARROW_MARGIN + 1e-6, `y ${a.y} stays under the header`);
 			// on the border of the shrunk screen, or slid along it out of the minimap box
-			const onBorder = Math.abs(a.x - ARROW_MARGIN) < 1 || Math.abs(a.x - (W - ARROW_MARGIN)) < 1 || Math.abs(a.y - (INSETS.top + ARROW_MARGIN)) < 1 || Math.abs(a.y - (H - ARROW_MARGIN)) < 1 || a.y <= H - 300 - ARROW_MARGIN + 1 || a.x <= W - 200 - ARROW_MARGIN + 1;
+			const onBorder =
+				Math.abs(a.x - ARROW_MARGIN) < 1 ||
+				Math.abs(a.x - (W - ARROW_MARGIN)) < 1 ||
+				Math.abs(a.y - (INSETS.top + ARROW_MARGIN)) < 1 ||
+				Math.abs(a.y - (H - ARROW_MARGIN)) < 1 ||
+				a.y <= H - 300 - ARROW_MARGIN + 1 ||
+				a.x <= W - 200 - ARROW_MARGIN + 1;
 			assert.ok(onBorder, `${a.x},${a.y}`);
 			// never in the box of the minimap
 			assert.ok(!(a.x > W - 200 - ARROW_MARGIN + 1e-6 && a.y > H - 300 - ARROW_MARGIN + 1e-6), `${a.x},${a.y} is in the minimap box`);
 			// the distance is the real one, in tiles
 			const expected = Math.round(Math.hypot(dx * 120, dy * 90));
-			assert.ok(Math.abs(a.tiles - expected) <= 2,`${a.tiles} tiles, expected about ${expected}`);
+			assert.ok(Math.abs(a.tiles - expected) <= 2, `${a.tiles} tiles, expected about ${expected}`);
 		});
 	}
 }
@@ -79,7 +85,12 @@ test('a tiny window does not break the maths', () => {
 test('centerOnCastle brings the castle back from anywhere the view can be dragged', () => {
 	const api = useViewStore;
 	api.getState().setSize(W, H);
-	for (const [x, y] of [[-100000, 0], [100000, 50000], [0, -90000], [30000, 30000]]) {
+	for (const [x, y] of [
+		[-100000, 0],
+		[100000, 50000],
+		[0, -90000],
+		[30000, 30000],
+	]) {
 		api.getState().setPosition({ x, y });
 		api.getState().centerOnCastle();
 		const s = api.getState();

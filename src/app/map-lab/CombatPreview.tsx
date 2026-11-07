@@ -38,7 +38,15 @@ const CombatPreview: React.FC = () => {
 			const nid = Date.now();
 			const roll = Math.random();
 			const crit = roll > 0.9 ? 'super' : roll > 0.65 ? 'crit' : 'none'; // the lab shows all three looks of a hit
-			setNumbers((prev) => [...prev.slice(-4), { id: nid, text: hitNumberText(Math.round(40 + Math.random() * 60) * (crit === 'none' ? 1 : crit === 'crit' ? 2 : 5), crit), kind: crit === 'none' ? 'dmg' : crit, x: 20 + Math.random() * 60 }]);
+			setNumbers((prev) => [
+				...prev.slice(-4),
+				{
+					id: nid,
+					text: hitNumberText(Math.round(40 + Math.random() * 60) * (crit === 'none' ? 1 : crit === 'crit' ? 2 : 5), crit),
+					kind: crit === 'none' ? 'dmg' : crit,
+					x: 20 + Math.random() * 60,
+				},
+			]);
 			setTimeout(() => setNumbers((prev) => prev.filter((n) => n.id !== nid)), 900);
 		}, 1600);
 		return () => clearInterval(timer);
@@ -46,7 +54,18 @@ const CombatPreview: React.FC = () => {
 
 	const type: MonsterType = (entry.id in MONSTERS ? entry.id : 'thistleBoar') as MonsterType;
 	const stats = monsterStats(type, level);
-	const fight: FightView = { n: 1, type, level, lucky: false, monsterHp: stats.maxHp * 0.65, monsterMaxHp: stats.maxHp, stunLeft: 0, timeLeftSec: entry.grade === 'boss' ? 42 : null, x: 0, y: 0 };
+	const fight: FightView = {
+		n: 1,
+		type,
+		level,
+		lucky: false,
+		monsterHp: stats.maxHp * 0.65,
+		monsterMaxHp: stats.maxHp,
+		stunLeft: 0,
+		timeLeftSec: entry.grade === 'boss' ? 42 : null,
+		x: 0,
+		y: 0,
+	};
 
 	return (
 		<div className='flex flex-col items-end gap-1'>

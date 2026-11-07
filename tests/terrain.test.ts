@@ -25,12 +25,27 @@ import parity from './fixtures/terrain-parity.json';
 
 /** Builds a tile grid from rows of letters (the parity fixture's names); '.' is not owned. */
 const NAMES: Record<string, { biome: BiomeType; building?: string; level?: number }> = {
-	T: { biome: 'tundra' }, H: { biome: 'hills' }, P: { biome: 'plains' }, S: { biome: 'swamp' }, F: { biome: 'forest' },
-	B: { biome: 'coast' }, L: { biome: 'lake' }, C: { biome: 'castle' }, W: { biome: 'castle', level: 7 },
-	J: { biome: 'jungle' }, D: { biome: 'fields' }, O: { biome: 'orchard' }, X: { biome: 'blight' }, V: { biome: 'battlefield' },
+	T: { biome: 'tundra' },
+	H: { biome: 'hills' },
+	P: { biome: 'plains' },
+	S: { biome: 'swamp' },
+	F: { biome: 'forest' },
+	B: { biome: 'coast' },
+	L: { biome: 'lake' },
+	C: { biome: 'castle' },
+	W: { biome: 'castle', level: 7 },
+	J: { biome: 'jungle' },
+	D: { biome: 'fields' },
+	O: { biome: 'orchard' },
+	X: { biome: 'blight' },
+	V: { biome: 'battlefield' },
 	// a lowercase letter is a building on that biome's tile
-	t: { biome: 'tundra', building: 'farm' }, s: { biome: 'swamp', building: 'farm' }, f: { biome: 'forest', building: 'farm' },
-	p: { biome: 'plains', building: 'farm' }, b: { biome: 'coast', building: 'farm' }, l: { biome: 'lake', building: 'farm' },
+	t: { biome: 'tundra', building: 'farm' },
+	s: { biome: 'swamp', building: 'farm' },
+	f: { biome: 'forest', building: 'farm' },
+	p: { biome: 'plains', building: 'farm' },
+	b: { biome: 'coast', building: 'farm' },
+	l: { biome: 'lake', building: 'farm' },
 };
 const grid = (rows: string[]): Tile[][] =>
 	rows.map((row) => [...row].map((c) => (c in NAMES ? { ...NAMES[c], isOwned: true } : { biome: 'empty' as BiomeType, isOwned: false })));
@@ -41,18 +56,26 @@ test('hash32 matches the Python generator', () => {
 
 test('tile depth, dual-cell layers and sprite placement match the Python logic on the canned map', () => {
 	const g = buildGroundGrid(grid(parity.layout));
-	assert.deepEqual(g.map((row, y) => row.map((_, x) => depth(g, x, y))), parity.depth);
+	assert.deepEqual(
+		g.map((row, y) => row.map((_, x) => depth(g, x, y))),
+		parity.depth,
+	);
 	const cells = [];
 	for (let cy = 0; cy <= g.length; cy++)
-		for (let cx = 0; cx <= g[0].length; cx++)
-			cells.push([cx, cy, cellLayers(g, cx, cy).map((l) => [l.style, l.mask, l.variant])]);
+		for (let cx = 0; cx <= g[0].length; cx++) cells.push([cx, cy, cellLayers(g, cx, cy).map((l) => [l.style, l.mask, l.variant])]);
 	assert.deepEqual(cells, parity.cells);
 	const tiles = grid(parity.layout);
-	assert.deepEqual(allSprites(g, undefined, builtSet(tiles)).map((s) => [s.id, s.x, s.bottom]), parity.sprites);
-	assert.deepEqual(allPads(tiles).map((p) => [p.id, p.x, p.bottom - 48]), parity.pads);
+	assert.deepEqual(
+		allSprites(g, undefined, builtSet(tiles)).map((s) => [s.id, s.x, s.bottom]),
+		parity.sprites,
+	);
+	assert.deepEqual(
+		allPads(tiles).map((p) => [p.id, p.x, p.bottom - 48]),
+		parity.pads,
+	);
 });
 
-test('yard rule: the fortress is cobbled; unowned and empty are no ground; a building keeps its tile\'s ground', () => {
+test("yard rule: the fortress is cobbled; unowned and empty are no ground; a building keeps its tile's ground", () => {
 	assert.equal(groundOf({ biome: 'castle', isOwned: true, level: 7 }), 'yard');
 	assert.equal(groundOf({ biome: 'castle', isOwned: true, level: 6 }), 'castle');
 	assert.equal(groundOf({ biome: 'forest', isOwned: true, building: 'farm' }), 'forest');
@@ -64,33 +87,67 @@ test('yard rule: the fortress is cobbled; unowned and empty are no ground; a bui
 
 test('unowned tiles next to owned land become mist, the rest stay void', () => {
 	const g = buildGroundGrid(grid(['....', '.FF.', '....']));
-	assert.deepEqual(g.map((r) => r.map((v) => v ?? '.')), [
-		['.', 'mist', 'mist', '.'],
-		['mist', 'forest', 'forest', 'mist'],
-		['.', 'mist', 'mist', '.'],
-	]);
+	assert.deepEqual(
+		g.map((r) => r.map((v) => v ?? '.')),
+		[
+			['.', 'mist', 'mist', '.'],
+			['mist', 'forest', 'forest', 'mist'],
+			['.', 'mist', 'mist', '.'],
+		],
+	);
 });
 
 test('layers: a lone ground fills, a differing corner adds a rank-masked shape', () => {
 	const g = buildGroundGrid(grid(['FFF', 'FFF', 'FFF']));
-	assert.deepEqual(cellLayers(g, 1, 1).map((l) => [l.style, l.mask]), [['forest', 15], ['forest_d1', 15]]);
+	assert.deepEqual(
+		cellLayers(g, 1, 1).map((l) => [l.style, l.mask]),
+		[
+			['forest', 15],
+			['forest_d1', 15],
+		],
+	);
 	// forest beside plains: the lower-ranked plains extends under the whole cell, forest only covers its own corners
 	const g2 = buildGroundGrid(grid(['PF', 'PF']));
-	assert.deepEqual(cellLayers(g2, 1, 1).map((l) => [l.style, l.mask]), [['plains', 15], ['forest', 10]]);
+	assert.deepEqual(
+		cellLayers(g2, 1, 1).map((l) => [l.style, l.mask]),
+		[
+			['plains', 15],
+			['forest', 10],
+		],
+	);
 	const g3 = buildGroundGrid(grid(['PF', 'PP']));
-	assert.deepEqual(cellLayers(g3, 1, 1).map((l) => [l.style, l.mask]), [['plains', 15], ['forest', 2]]);
+	assert.deepEqual(
+		cellLayers(g3, 1, 1).map((l) => [l.style, l.mask]),
+		[
+			['plains', 15],
+			['forest', 2],
+		],
+	);
 });
 
-test('a building keeps its own biome ground (whatever grows around it) and gets that biome\'s pad; a biome with no pad gets the plains one', () => {
+test("a building keeps its own biome ground (whatever grows around it) and gets that biome's pad; a biome with no pad gets the plains one", () => {
 	const g1 = buildGroundGrid(grid(['FFF', 'FtF', 'FFF']));
 	assert.equal(g1[1][1], 'tundra');
 	const g2 = buildGroundGrid(grid(['LLL', 'LbL', 'LLL']));
 	assert.equal(g2[1][1], 'coast');
-	assert.deepEqual(allPads(grid(['FFF', 'FtF', 'FFF'])).map((p) => p.id.replace(/_\d$/, '')), ['pad_tundra']);
-	assert.deepEqual(allPads(grid(['FsF', 'FFF', 'FlF'])).map((p) => p.id.replace(/_\d$/, '')), ['pad_swamp', 'pad_plains'], 'a lake has no pad of its own');
+	assert.deepEqual(
+		allPads(grid(['FFF', 'FtF', 'FFF'])).map((p) => p.id.replace(/_\d$/, '')),
+		['pad_tundra'],
+	);
+	assert.deepEqual(
+		allPads(grid(['FsF', 'FFF', 'FlF'])).map((p) => p.id.replace(/_\d$/, '')),
+		['pad_swamp', 'pad_plains'],
+		'a lake has no pad of its own',
+	);
 	const tiles = grid(['TTT', 'TtT', 'TTT']);
-	assert.deepEqual(allPads(tiles).map((p) => p.id.replace(/_\d$/, '')), ['pad_tundra']);
-	assert.equal(allSprites(buildGroundGrid(tiles), undefined, builtSet(tiles)).filter((s) => s.x >= 48 && s.x < 96 && s.bottom > 48 && s.bottom <= 96).length, 0);
+	assert.deepEqual(
+		allPads(tiles).map((p) => p.id.replace(/_\d$/, '')),
+		['pad_tundra'],
+	);
+	assert.equal(
+		allSprites(buildGroundGrid(tiles), undefined, builtSet(tiles)).filter((s) => s.x >= 48 && s.x < 96 && s.bottom > 48 && s.bottom <= 96).length,
+		0,
+	);
 });
 
 test('lake outranks every land biome and yard / castle outrank the lake (square kerb on the shore)', () => {
@@ -98,7 +155,13 @@ test('lake outranks every land biome and yard / castle outrank the lake (square 
 	assert.ok(RANK.indexOf('yard') > RANK.indexOf('lake'));
 	assert.ok(RANK.indexOf('castle') > RANK.indexOf('yard'));
 	const g = buildGroundGrid(grid(['LL', 'LW']));
-	assert.deepEqual(cellLayers(g, 1, 1).map((l) => [l.style, l.mask]), [['lake', 15], ['yard', 8]]);
+	assert.deepEqual(
+		cellLayers(g, 1, 1).map((l) => [l.style, l.mask]),
+		[
+			['lake', 15],
+			['yard', 8],
+		],
+	);
 });
 
 test('depth counts rings of the same ground and is 0 for flat grounds and edges', () => {
@@ -117,8 +180,7 @@ test('sprites: deterministic, never on grounds without props, and every sprite i
 	assert.deepEqual(allSprites(g), allSprites(g));
 	for (const s of allSprites(g)) assert.ok(ATLAS.sprites[s.id], `unknown sprite ${s.id}`);
 	for (let y = 0; y < g.length; y++)
-		for (let x = 0; x < g[0].length; x++)
-			if (['yard', 'castle'].includes(g[y][x] as string)) assert.deepEqual(tileSprites(g, x, y), []);
+		for (let x = 0; x < g[0].length; x++) if (['yard', 'castle'].includes(g[y][x] as string)) assert.deepEqual(tileSprites(g, x, y), []);
 });
 
 test('props stay in bounds: density is sparse, trees and rocks are never drawn on neighbouring grounds', () => {
@@ -175,7 +237,6 @@ test('decor: flowers on plains, mushrooms in forests, logs and mossy stones on s
 	assert.equal(withBuilding.filter((s) => s.x >= CELL && s.x < 2 * CELL && s.bottom > CELL && s.bottom <= 2 * CELL).length, 0);
 });
 
-
 test('the terrain key ignores chest toggles and changes when ground changes', () => {
 	const a = grid(['FF', 'FP']);
 	const key = terrainKey(a);
@@ -195,8 +256,14 @@ test('the terrain key ignores chest toggles and changes when ground changes', ()
 test('manifest: every style has an atlas entry and every prop references a sprite', () => {
 	for (const [ground, table] of Object.entries(ATLAS.props)) {
 		assert.ok(RANK.includes(ground as (typeof RANK)[number]), ground);
-		assert.equal(table.edge.reduce((s, v) => s + v, 0), 1000);
-		assert.equal(table.deep.reduce((s, v) => s + v, 0), 1000);
+		assert.equal(
+			table.edge.reduce((s, v) => s + v, 0),
+			1000,
+		);
+		assert.equal(
+			table.deep.reduce((s, v) => s + v, 0),
+			1000,
+		);
 		for (const [id] of table.opts) assert.ok(ATLAS.sprites[id], id);
 	}
 	for (const r of RANK) {
@@ -213,8 +280,14 @@ test('landmarks match the Python logic on the canned landmark map', () => {
 	const g = buildGroundGrid(tiles);
 	const built = builtSet(tiles);
 	const anchors = landmarkAnchors(g, (x, y) => built.has(`${x},${y}`), 0, 0, g[0].length - 1, g.length - 1);
-	assert.deepEqual(anchors.map((a) => [a.x, a.y, a.ground]), parity.landmarks.anchors);
-	assert.deepEqual(allSprites(g, undefined, built).map((s) => [s.id, s.x, s.bottom]), parity.landmarks.sprites);
+	assert.deepEqual(
+		anchors.map((a) => [a.x, a.y, a.ground]),
+		parity.landmarks.anchors,
+	);
+	assert.deepEqual(
+		allSprites(g, undefined, built).map((s) => [s.id, s.x, s.bottom]),
+		parity.landmarks.sprites,
+	);
 	assert.equal(anchors.length, 7, 'one landmark per biome block');
 	for (const a of anchors) assert.ok(ATLAS.sprites[`lm_${a.ground}`], `lm_${a.ground} is in the atlas`);
 });
@@ -239,9 +312,19 @@ test('landmarks: props, decor and docks stay off the landmark area; the rest of 
 	const g = buildGroundGrid(grid(['.'.repeat(24), ...Array.from({ length: 20 }, () => '.' + 'F'.repeat(22) + '.'), '.'.repeat(24)]));
 	const anchors = landmarkAnchors(g, undefined, 0, 0, 23, 21);
 	const sprites = allSprites(g);
-	assert.ok(sprites.some((s) => s.id.startsWith('lm_')), 'the landmark is drawn');
+	assert.ok(
+		sprites.some((s) => s.id.startsWith('lm_')),
+		'the landmark is drawn',
+	);
 	for (const a of anchors) {
-		const inside = sprites.filter((s) => !s.id.startsWith('lm_') && s.bottom > a.y * CELL + 24 && s.bottom <= (a.y + LANDMARK_SPAN) * CELL && s.x >= a.x * CELL && s.x < (a.x + LANDMARK_SPAN) * CELL - 24); // a neighbour's tree may overhang the edge a little
+		const inside = sprites.filter(
+			(s) =>
+				!s.id.startsWith('lm_') &&
+				s.bottom > a.y * CELL + 24 &&
+				s.bottom <= (a.y + LANDMARK_SPAN) * CELL &&
+				s.x >= a.x * CELL &&
+				s.x < (a.x + LANDMARK_SPAN) * CELL - 24,
+		); // a neighbour's tree may overhang the edge a little
 		assert.equal(inside.length, 0, 'no prop starts inside the landmark window');
 	}
 	assert.ok(sprites.length > anchors.length + 20, 'the forest around it still has its trees');

@@ -51,7 +51,15 @@ const run = (o: Setup = {}) => {
 	return { breakdown, attrs: attrsOf(c) };
 };
 const expected = (resource: string, o: Setup, attrs: Record<Attr, number>) =>
-	oracle.multiplier({ resource, castleLevel: o.castle ?? 1, attrs, earned: o.earned ?? 0, foreman: o.foreman ?? 0, gearPct: o.gearPct ?? 0, plainsCount: o.plains });
+	oracle.multiplier({
+		resource,
+		castleLevel: o.castle ?? 1,
+		attrs,
+		earned: o.earned ?? 0,
+		foreman: o.foreman ?? 0,
+		gearPct: o.gearPct ?? 0,
+		plainsCount: o.plains,
+	});
 
 test('strict environment: with no modifiers every resource pays exactly the pinned 1000 base (castle level 1 aside)', () => {
 	// castle level 1 still gives +20 %, and a fresh character's 5 points give their (full-value) stat bonus: that is the lowest bracket
@@ -91,7 +99,13 @@ test('all buckets together: castle x Embers x Foreman x gear x attributes over a
 			for (const foreman of [0, 5, 10])
 				for (const gearPct of [0, 26, 60])
 					for (const stat of [5, 20, 50]) {
-						const o: Setup = { castle, earned, foreman, gearPct, attrs: { strength: stat, dexterity: stat, intelligence: stat, vitality: stat, charisma: stat } };
+						const o: Setup = {
+							castle,
+							earned,
+							foreman,
+							gearPct,
+							attrs: { strength: stat, dexterity: stat, intelligence: stat, vitality: stat, charisma: stat },
+						};
 						const { breakdown, attrs } = run(o);
 						for (const key of KEYS) {
 							near(breakdown[key].total, PINNED_BASE * expected(key, o, attrs), `${key} for ${JSON.stringify(o)}`);
@@ -131,7 +145,19 @@ test('plains: +5 % per owned plains tile, on meat only', () => {
 	near(breakdown.meat.plainsMod, 0.6, 'plains bonus on meat');
 	for (const key of KEYS) assert.equal(breakdown[key].plainsMod, 0, `${key} has no plains bonus`);
 	// meat has no pinned base (it comes from the farm alone), but its modifier is still the full bracket
-	near(breakdown.meat.modifier + 1, oracle.multiplier({ resource: 'meat', castleLevel: 1, attrs: { strength: 5, dexterity: 5, intelligence: 5, vitality: 5, charisma: 5 }, earned: 0, foreman: 0, gearPct: 0, plainsCount: 12 }), 'meat modifier');
+	near(
+		breakdown.meat.modifier + 1,
+		oracle.multiplier({
+			resource: 'meat',
+			castleLevel: 1,
+			attrs: { strength: 5, dexterity: 5, intelligence: 5, vitality: 5, charisma: 5 },
+			earned: 0,
+			foreman: 0,
+			gearPct: 0,
+			plainsCount: 12,
+		}),
+		'meat modifier',
+	);
 });
 
 test('flat-base independence: doubling the pinned base doubles every total exactly (no hidden flat term)', () => {
@@ -179,7 +205,7 @@ test('tile cost: extra resources start at their tile counts, and the discount ta
 	// the config table agrees with the oracle's copy of it
 	assert.deepEqual(
 		TILE_RESOURCE_COST.map((r) => [r.from, r.resource, r.share]),
-		oracle.tileResourceCost
+		oracle.tileResourceCost,
 	);
 	for (const pct of [0, 2.5, 10, 25, 45]) {
 		const cost = calculateTileCost(100, pct);
@@ -201,7 +227,7 @@ test('building price factor: 0.4, 0.6, 0.8, 1, then three growth stages; cost = 
 	assert.deepEqual(BUILDING_COST.starter, [0.4, 0.6, 0.8, 1]);
 });
 
-test('MISMATCH 1: building cost takes no Charisma and no Bulk Discount, though Bulk says "tile and building cost"', () => {
+test('MISMATCH 1: building cost takes no Charisma and no Bulk Discount, so Bulk says "tile cost" (IDL-169)', () => {
 	// calculateBuildingCost(tiles, prestige) has no stats or merchant argument, so only Thrift can ever lower the price.
 	assert.equal(calculateBuildingCost.length, 2, 'signature: (tiles, prestige?) only');
 	const tiles = worldWithTiles(10, 'plains', 'farm');
@@ -218,7 +244,11 @@ test('Ember gain: 3 x (castle - 5) x (sqrt(tiles / 10) + 0.02 x tiles over the r
 		for (const tiles of [399, 400, 450, 500, 600, 1000, 3000])
 			for (const rebirths of [0, 1, 5])
 				for (const tithe of [0, 3, 10]) {
-					assert.equal(emberGain(castle, tiles, { tithe }, rebirths), oracle.emberGain(castle, tiles, rebirths, tithe), `castle ${castle}, ${tiles} tiles, rebirth ${rebirths}, Tithe ${tithe}`);
+					assert.equal(
+						emberGain(castle, tiles, { tithe }, rebirths),
+						oracle.emberGain(castle, tiles, rebirths, tithe),
+						`castle ${castle}, ${tiles} tiles, rebirth ${rebirths}, Tithe ${tithe}`,
+					);
 				}
 	// pinned values the plan quotes (castle 6 / 400 tiles = 18, 6 / 500 = 27, 8 / 500 = 81, 10 / 600 = 176)
 	assert.equal(emberGain(6, 400), 18);
@@ -256,8 +286,14 @@ test('Ember shop: level N+1 costs ceil(base x 1.4^N), every upgrade stops at lev
 		}
 		assert.equal(emberSpent({ [id]: 10 }), total, `${id}: ladder total`);
 	}
-	assert.deepEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((l) => emberUpgradeCost('thrift', l)), [2, 3, 4, 6, 8, 11, 16, 22, 30, 42]);
-	assert.deepEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((l) => emberUpgradeCost('steward', l)), [3, 5, 6, 9, 12, 17, 23, 32, 45, 62]);
+	assert.deepEqual(
+		[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((l) => emberUpgradeCost('thrift', l)),
+		[2, 3, 4, 6, 8, 11, 16, 22, 30, 42],
+	);
+	assert.deepEqual(
+		[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((l) => emberUpgradeCost('steward', l)),
+		[3, 5, 6, 9, 12, 17, 23, 32, 45, 62],
+	);
 	assert.equal(REBIRTH.discountCapPercent, 45);
 });
 
@@ -266,7 +302,17 @@ test('Ember shop: level N+1 costs ceil(base x 1.4^N), every upgrade stops at lev
 
 const rates = (gold: number): Resources => ({ ...zeroResources(), gold, xp: gold / 4 });
 const offline = (over: Partial<Parameters<typeof computeOfflineGrant>[0]> = {}) =>
-	computeOfflineGrant({ rates: rates(100), ratesAfterCastle: null, castleUpgrade: null, xpGainPct: 0, gapSec: 3600, capSec: 8 * 3600, efficiency: 0.5, minGapSec: 300, ...over });
+	computeOfflineGrant({
+		rates: rates(100),
+		ratesAfterCastle: null,
+		castleUpgrade: null,
+		xpGainPct: 0,
+		gapSec: 3600,
+		capSec: 8 * 3600,
+		efficiency: 0.5,
+		minGapSec: 300,
+		...over,
+	});
 
 test('offline: pays efficiency x rate x min(gap, cap); nothing under the minimum gap; xp includes the xp bonus', () => {
 	assert.equal(offline({ gapSec: 299 }), null);

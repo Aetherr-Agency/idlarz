@@ -127,7 +127,7 @@ export const advanceBank = (
 	dtSec: number,
 	ctx: BankContext,
 	rollFor: (kind: TicketKind, n: number) => Rng,
-	options: { realDtSec?: number } = {}
+	options: { realDtSec?: number } = {},
 ): { bank: TicketBank; minted: Minted } => {
 	const next: TicketBank = { ...bank, chests: [...bank.chests], rats: [...bank.rats] };
 	const minted: Minted = { chests: [], rats: [], king: null };

@@ -166,7 +166,8 @@ export function drawChunk(canvas: HTMLCanvasElement, assets: TerrainAssets, worl
 		}
 	}
 
-	for (const s of [...chunkPads(world, cx, cy), ...chunkSprites(world, cx, cy)]) {      // foundation pads first, then sprites bottom edge first
+	for (const s of [...chunkPads(world, cx, cy), ...chunkSprites(world, cx, cy)]) {
+		// foundation pads first, then sprites bottom edge first
 		const [sx, sy, sw, sh] = ATLAS.sprites[s.id];
 		ctx.drawImage(assets.props, sx, sy, sw, sh, s.x, s.bottom - sh, sw, sh);
 	}

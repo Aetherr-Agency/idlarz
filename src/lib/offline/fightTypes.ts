@@ -82,7 +82,17 @@ export interface FightEvent {
 	 * What a kill paid (`won`). The server has already put the drops where they go: `stored` is what went into the bag, `convertedGold` what
 	 * the ones that did not fit were worth and `autoSold` what the auto-sell filter sold; the gold the player gets is `gold` plus those two.
 	 */
-	reward?: { gold: number; xp: number; hide?: number; items: Drop[]; stored?: Drop[]; convertedGold?: number; autoSold?: { count: number; gold: number }; pity: Record<string, number>; lucky: boolean };
+	reward?: {
+		gold: number;
+		xp: number;
+		hide?: number;
+		items: Drop[];
+		stored?: Drop[];
+		convertedGold?: number;
+		autoSold?: { count: number; gold: number };
+		pity: Record<string, number>;
+		lucky: boolean;
+	};
 }
 
 /** The server's record of a player's combat: vitals, cooldowns, the open fight and the switches. Lives in the ledger. */

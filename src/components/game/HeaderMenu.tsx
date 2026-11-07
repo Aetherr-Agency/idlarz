@@ -61,7 +61,8 @@ export const PlayerCard: React.FC = () => {
 					event.preventDefault();
 					toggleWindow('character');
 				}
-			}}>
+			}}
+		>
 			<span className='pixel-avatar'>
 				<CharacterPortrait variant='bust' scale={0.85} />
 				<span className='pixel-avatar-orb'>
@@ -81,7 +82,11 @@ export const PlayerCard: React.FC = () => {
 				</div>
 				{(attention.stats || attention.farm) && (
 					<div className='pt-1 mt-1 border-t px-rule space-y-1 text-xs text-[#f0d27a]'>
-						{attention.stats && <div>{availablePoints} unspent stat point{availablePoints === 1 ? '' : 's'}</div>}
+						{attention.stats && (
+							<div>
+								{availablePoints} unspent stat point{availablePoints === 1 ? '' : 's'}
+							</div>
+						)}
 						{attention.farm && <div>A farm purchase is affordable</div>}
 					</div>
 				)}
@@ -121,7 +126,8 @@ export const WindowButtons: React.FC = () => {
 							event.preventDefault();
 							toggleWindow(id);
 						}
-					}}>
+					}}
+				>
 					<PixelIcon name={icon} alt='' scale={0.6} />
 					<NotifyDot show={!!dots[id]} label='An animal or upgrade is affordable' />
 				</div>
@@ -143,7 +149,7 @@ export const HeaderButtons: React.FC = () => {
 	// recomputed when the map, a castle upgrade or the merchant changes, not on every income tick
 	const status = useMemo(
 		() => rebirthStatus({ tiles, freeTiles, castleUpgrade, merchantUpgrades, prestige }),
-		[tiles, freeTiles, castleUpgrade, merchantUpgrades, prestige]
+		[tiles, freeTiles, castleUpgrade, merchantUpgrades, prestige],
 	);
 	const reached = status.requirements.every((r) => r.met);
 	// a minute-resolution text above an hour, so the chip re-renders once a second only in the last hour
@@ -165,7 +171,8 @@ export const HeaderButtons: React.FC = () => {
 							event.preventDefault();
 							centerOnCastle();
 						}
-					}}>
+					}}
+				>
 					<PixelIcon name='castle_1' alt='' scale={0.45} />
 					<span>{castleTimer}</span>
 				</div>
@@ -184,7 +191,8 @@ export const HeaderButtons: React.FC = () => {
 							event.preventDefault();
 							toggleRebirth();
 						}
-					}}>
+					}}
+				>
 					<PixelIcon name='menu_legacy' alt='' scale={0.6} />
 				</div>
 				<HeaderTip align='end' width={240}>
@@ -228,7 +236,8 @@ export const HeaderButtons: React.FC = () => {
 					if (ui.contextMenu) return ui.closeContextMenu();
 					const box = event.currentTarget.getBoundingClientRect();
 					openMenuAt(box.right - 4, box.bottom + 4, 'Menu', [], true);
-				}}>
+				}}
+			>
 				<PixelIcon name='menu_settings' alt='' scale={0.6} />
 			</div>
 		</div>
