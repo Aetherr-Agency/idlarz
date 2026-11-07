@@ -852,6 +852,15 @@ const createGameSlice = (
 		},
 
 		// The server kept less XP than the game held (see cloudSave/xpModel.ts): XP, the level it gives and the attribute points follow
+		applyServerPrestige: (prestige: PrestigeState) => {
+			const state = get();
+			if (prestige.legacyEarned > state.prestige.legacyEarned || prestige.rebirths > state.prestige.rebirths) return; // only ever takes the lower numbers
+			set({
+				prestige,
+				resourceRates: calculateResourceRates(state.tiles, state.characterStats, state.farmLevels, prestige, state.farmUpgrades, state.merchantUpgrades, gearIncomePct(state.equipment)),
+			});
+		},
+
 		applyServerXp: (xp: number) => {
 			const state = get();
 			if (!Number.isFinite(xp) || xp < 0 || xp >= state.resources.xp) return;

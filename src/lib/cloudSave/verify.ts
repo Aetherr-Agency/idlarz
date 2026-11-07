@@ -45,10 +45,11 @@ export type SaveFlag =
 	| 'xp_jump'
 	| 'gems_increase'
 	| 'prestige_regress'
-	| 'castle_jump';
+	| 'castle_jump'
+	| 'ember_jump';
 
 /** Flags that make an account ineligible for rankings for good. Going back in time is a player choice (older save), not a cheat. */
-export const POISON_FLAGS: ReadonlySet<SaveFlag> = new Set<SaveFlag>(['baseline_rich', 'networth_exceeds', 'playtime_fast', 'gold_jump', 'xp_jump', 'gems_increase', 'prestige_regress', 'castle_jump']);
+export const POISON_FLAGS: ReadonlySet<SaveFlag> = new Set<SaveFlag>(['baseline_rich', 'networth_exceeds', 'playtime_fast', 'gold_jump', 'xp_jump', 'gems_increase', 'prestige_regress', 'castle_jump', 'ember_jump']);
 
 /**
  * `grants`: what the server itself handed out since the previous save (income while away, chest and kill rewards): a save may

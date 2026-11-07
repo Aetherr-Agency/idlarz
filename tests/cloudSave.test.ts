@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { api, growTo, store } from './helpers';
+import { api, growTo, rebirthReadyGame, store } from './helpers';
 import { pickPersisted, type PersistedGame } from '../src/lib/sanitizeSave';
 import { decodeSave, encodeSave, sealWire } from '../src/lib/saveFormat';
 import {
@@ -402,7 +402,7 @@ const rebirthed = (state: PersistedGame, rebirths: number, legacyEarned: number)
 
 test('a rebirth is recorded from the save before it: the run that ended, once, with the Embers it paid', async () => {
 	const { repo, rebirths } = memoryRepo();
-	const run = game();
+	const run = rebirthReadyGame();
 	await accept(repo, 'u1', run, 0, T0);
 	const before = summarize(run);
 	const next = rebirthed(run, 1, 4);

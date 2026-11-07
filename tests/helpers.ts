@@ -7,7 +7,7 @@
 
 import { useGameStore } from '../src/stores/gameStore';
 import { INITIAL_RESOURCES, CASTLE_X, CASTLE_Y } from '../src/config/gameConfig';
-import { calculateResourceRates } from '../src/utils/gameUtils';
+import { calculateLevel, calculateResourceRates, totalStatPoints } from '../src/utils/gameUtils';
 import { RING } from '../src/utils/biomeRules';
 import { pickPersisted } from '../src/lib/sanitizeSave';
 import { packBody, unpackBody } from '../src/lib/saveFormat';
@@ -18,6 +18,15 @@ import type { Resources, Tile } from '../src/types/game';
 export const LEGACY_GRID_SIZE = 50;
 
 export { tileAt, worldFromRows } from '../src/utils/world';
+
+/** A game that could really rebirth (castle level 6, 400 tiles), for tests of what a save that rebirths does: the server bounds the Embers a rebirth may claim by the previous save (IDL-166). */
+export const rebirthReadyGame = () => {
+	useGameStore.getState().resetGame();
+	growTo(400);
+	const grown = useGameStore.getState();
+	useGameStore.setState({ tiles: patchTile(grown.tiles, CASTLE_X, CASTLE_Y, { level: 6 }), playSeconds: 1000, characterStats: { ...grown.characterStats, availablePoints: totalStatPoints(calculateLevel(grown.resources.xp).level) }, resources: { ...grown.resources, gold: 100, wood: 0, stone: 0, coal: 0, food: 0, hide: 0 } } as never);
+	return structuredClone(pickPersisted(useGameStore.getState()));
+};
 
 useGameStore.persist.setOptions({
 	storage: { getItem: () => null, setItem: () => undefined, removeItem: () => undefined },

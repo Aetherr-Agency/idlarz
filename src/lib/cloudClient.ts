@@ -1,4 +1,5 @@
 import type { CloudInfo, CloudLink } from '@/lib/startPlan';
+import type { PrestigeState } from '@/types/game';
 import { shouldKeepalive } from '@/lib/syncPolicy';
 import { scoped } from '@/lib/storageScope';
 
@@ -30,8 +31,15 @@ export const newGameCloud = async (): Promise<boolean> => {
 	}
 };
 
+const readPrestige = (raw: unknown): PrestigeState | undefined => {
+	const p = raw as Partial<PrestigeState> | null | undefined;
+	if (!p || typeof p !== 'object') return undefined;
+	const ok = [p.rebirths, p.legacyPoints, p.legacyEarned].every((n) => typeof n === 'number' && Number.isFinite(n) && n >= 0);
+	return ok && p.upgrades && typeof p.upgrades === 'object' ? (p as PrestigeState) : undefined;
+};
+
 export type PushResult =
-	| { status: 'ok'; rev: number; /** Set when the server kept less XP than the save held: the one it can explain */ xp?: number }
+	| { status: 'ok'; rev: number; /** Set when the server kept less XP than the save held: the one it can explain */ xp?: number; /** Set when the server kept fewer Embers or rebirths than the save held: the ones a rebirth could have paid */ prestige?: PrestigeState }
 	| { status: 'conflict'; rev: number }
 	| { status: 'signed_out' } // the session is gone (expired, or logged out in another tab): retrying cannot help
 	| { status: 'retry' } // too soon, outage, no network: try again later, nothing is wrong with the save
@@ -48,8 +56,8 @@ export const pushCloud = async (text: string, baseRev: number, keepalive = false
 			// browsers refuse a keepalive body above 64 KiB (the fetch throws): a big save goes out as a normal request
 			keepalive: keepalive && shouldKeepalive(body),
 		});
-		const reply = (await response.json().catch(() => ({}))) as { rev?: number; xp?: number; error?: string };
-		if (response.ok && typeof reply.rev === 'number') return { status: 'ok', rev: reply.rev, xp: typeof reply.xp === 'number' && Number.isFinite(reply.xp) ? reply.xp : undefined };
+		const reply = (await response.json().catch(() => ({}))) as { rev?: number; xp?: number; prestige?: unknown; error?: string };
+		if (response.ok && typeof reply.rev === 'number') return { status: 'ok', rev: reply.rev, xp: typeof reply.xp === 'number' && Number.isFinite(reply.xp) ? reply.xp : undefined, prestige: readPrestige(reply.prestige) };
 		if (response.status === 409) return { status: 'conflict', rev: reply.rev ?? 0 };
 		if (response.status === 401) return { status: 'signed_out' };
 		if (response.status === 422 || response.status === 400) return { status: 'rejected', message: reply.error ?? 'The save was refused.' };

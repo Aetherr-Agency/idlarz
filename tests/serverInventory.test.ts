@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { api, growTo, store } from './helpers';
+import { api, growTo, rebirthReadyGame, store } from './helpers';
 import { pickPersisted, type PersistedGame } from '../src/lib/sanitizeSave';
 import { encodeSave } from '../src/lib/saveFormat';
 import { acceptSave, type SaveRepo, type StatsRow, type StoredSave, type WorldPart } from '../src/lib/cloudSave/pipeline';
@@ -141,7 +141,7 @@ test('the summary is worked out from the ledger\'s gear: a set claimed in an upl
 });
 
 test('a New Game starts the ledger\'s inventory again from the new game; a rebirth wipes it to the starter kit', async () => {
-	const state = game();
+	const state = rebirthReadyGame();
 	const p = await player(state);
 	const worn = { ...p.inv().equipment, head: plainItem('steel_helm') };
 	p.m.ledgers.set(p.id, { ...p.m.ledgers.get(p.id)!, inv: { ...p.inv(), equipment: worn, ver: 5 } });

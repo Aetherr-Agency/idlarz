@@ -7,7 +7,9 @@ import { SAVE_SCHEMA, decodeSave, packBody, sealWire, type SaveBody } from '@/li
 import { checkNetWorth } from './netWorth';
 import { summarize, type SaveSummary } from './summary';
 import { settleXp } from './xpModel';
+import { clampPrestige, settleEmbers } from './emberModel';
 import { rebirthRecordOf, type RebirthRecord } from './rebirthHistory';
+import type { PrestigeState } from '@/types/game';
 import { calculateLevel, reconcileCharacter } from '@/utils/gameUtils';
 import { POISON_FLAGS, VERIFY, verifyTransition, type SaveFlag, type Snapshot } from './verify';
 
@@ -76,7 +78,7 @@ export interface SaveRepo {
 }
 
 export type SaveOutcome =
-	| { kind: 'ok'; rev: number; serverSavedAt: number; flags: SaveFlag[]; /** The authoritative gem balance (the ledger's), when there is one */ gems?: number; /** The XP the server kept, only when the save held more than it could have earned (the browser takes the lower number) */ xp?: number }
+	| { kind: 'ok'; rev: number; serverSavedAt: number; flags: SaveFlag[]; /** The authoritative gem balance (the ledger's), when there is one */ gems?: number; /** The XP the server kept, only when the save held more than it could have earned (the browser takes the lower number) */ xp?: number; /** The Embers and rebirths the server kept, only when the save held more than a rebirth could have paid (the browser takes them) */ prestige?: PrestigeState }
 	| { kind: 'conflict'; rev: number; serverSavedAt: number }
 	| { kind: 'invalid'; reason: string }
 	| { kind: 'too_soon'; retryAfterMs: number };
@@ -128,6 +130,11 @@ export const acceptSave = async (
 
 	const previous: Snapshot | null = current ? { summary: current.summary, serverSavedAt: current.serverSavedAt } : null;
 
+	// Embers and rebirths are the browser's until the server runs the rebirth itself (IDL-102): a save that holds more than the previous one
+	// could have paid is clamped to what it explains (before anything is derived from it) and flagged `ember_jump` (IDL-166)
+	const emberVerdict = settleEmbers(previous, { rebirths: state.prestige.rebirths, legacyEarned: state.prestige.legacyEarned, playSeconds: state.playSeconds });
+	if (emberVerdict.clamped) state = { ...state, prestige: clampPrestige(state.prestige, emberVerdict) };
+
 	// The ledger knows what the server itself granted since the last save (income while away, chest and kill rewards), so a save may
 	// contain that on top of its income, and it holds the real gem balance: whatever the save claims is checked against it, then replaced.
 	let ledger: Ledger | null = null;
@@ -163,6 +170,7 @@ export const acceptSave = async (
 	summary.derived.xpBase = xpVerdict.base;
 	const flags = verifyTransition(previous, claimed, nowMs, grants); // judged as the player sent it (the XP check flags a clamp)
 	if (ledger && gemsClaimed > ledger.gems) flags.push('gems_increase');
+	if (emberVerdict.clamped) flags.push('ember_jump');
 	const worth = checkNetWorth(state, summary, ledger?.granted);
 	if (worth.exceeds) flags.push('networth_exceeds');
 	const newRun = !!(ledger && current && (summary.rebirths > current.summary.rebirths || flags.includes('playtime_regress')));
@@ -242,5 +250,5 @@ export const acceptSave = async (
 			// the save is stored; the next one brings the ledger up to date
 		}
 	}
-	return { kind: 'ok', rev: save.rev, serverSavedAt: nowMs, flags, gems: ledgerUsable ? gems : undefined, xp: xpVerdict.clamped ? xpVerdict.xp : undefined };
+	return { kind: 'ok', rev: save.rev, serverSavedAt: nowMs, flags, gems: ledgerUsable ? gems : undefined, xp: xpVerdict.clamped ? xpVerdict.xp : undefined, prestige: emberVerdict.clamped ? state.prestige : undefined };
 };
