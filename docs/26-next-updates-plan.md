@@ -18,7 +18,7 @@ Rule for every step: **no gameplay change, the sim and the generated docs stay i
 | A2 | **Split `gameStore.ts` into slices** (`economy`, `map`, `character`, `inventory`, `combat`, `merchant`, `farm`, `rebirth`) composed in `stores/gameStore.ts`; keep the public `useGameStore` and the action names. | M | Zustand slices; each slice file under about 250 lines with its own helpers. The tests import the store, so they are the safety net. |
 | A3 | **Split `gameConfig.ts` by domain** (`config/castle.ts`, `rebirth.ts`, `merchant.ts`, `farm.ts`, `biomes.ts`, `economy.ts`) and re-export from `gameConfig.ts` until imports are moved. | M | Pure moves. |
 | A4 | **Split `fight.ts`.** `runCombat` is one 300-line closure. Pull out `profile`, `targets` (pickTarget, queue), `steps` (swings, skills, potions) and the view; keep the closure only as the orchestrator. | M | `tests/fightEngine.test.ts` and `battleQueue.test.ts` pin it. |
-| A5 | **Rename the rat leftovers.** `bank.rats`, `TicketKind 'rat'`, `LUCK.luckyRat`, `ratsMinted`, `luckyRatChance`, `monster_rat` icons: say `monsters` / `normal`. The ledger bank is stored JSON, so rename with a reader that accepts both names (`upgradeBank`) and write the new one. | M | Needs the "additive ledger columns first" rule of [14](14-server-audit-and-data-plan.md). |
+| A5 | **Rename the rat leftovers.** `bank.rats`, `TicketKind 'rat'`, `LUCK.luckyRat`, `ratsMinted`, `luckyRatChance`, `monster_rat` icons: say `monsters` / `normal` / golden monster (the golden variant itself stays, see the section below). The ledger bank is stored JSON, so rename with a reader that accepts both names (`upgradeBank`) and write the new one. | M | Needs the "additive ledger columns first" rule of [14](14-server-audit-and-data-plan.md). |
 | A6 | **Component hygiene.** `Tile.tsx` (the tile, the monster, the menu, the tooltip) into `Tile`, `TileMonster`, `TileMenu`; `Tutorial.tsx` (400 lines of prose with numbers) onto the guided-tutorial data format of [21](21-classes-avatars-achievements-offline-report.md) section 7 when that is built, until then split per section. | M | |
 | A7 | **Tests and generated docs.** One folder per area (`tests/combat`, `tests/economy`, `tests/saves`, ...), a shared builder for ledgers/monsters (`tests/builders.ts`), `npm run docs:gen` in CI with a "no diff" check so the generated tables cannot rot (item catalog, fight-sim, monster ladder, loot-sim). | S-M | The catalog doc test already shows the pattern. |
 | A8 | **Make the pacing guard blocking** once A2-A4 land (the sim job in CI fails a PR that moves the first rebirth by more than ±15 %). | S | The job exists and is informational. |
@@ -53,6 +53,16 @@ Hills, coast and lake have art or are missing it (hills has none). Enable a biom
 ## Phase E · The rebirth world (as in the ROADMAP release order)
 
 Only after A-C: server-run rebirth (`/api/rebirth`, closes the short window in which a modified client can sell old gear), the "New chapter" release ([21](21-classes-avatars-achievements-offline-report.md): classes, avatars, reserved names, the one-time reset, tutorial), then biomes (12), buildings (18), rankings (15), crafting (17). Crafting needs Phase B/C: it consumes the item grades and the new materials.
+
+## Golden monsters stay (keep and extend)
+
+The rats had a **golden ("lucky") variant** and we keep that for every monster: the server decides it when the monster appears (`luckyRatChance` in `lib/luck.ts`, `LUCK.luckyRat`: 2 % plus Luck, at most 10 %), the map draws it gold-tinted (`.tile-monster[data-lucky]` in `Monsters.css`) and a kill pays x3 gold and XP plus one extra gear roll (`rollKillLoot`). It still works for the new roster. What is missing, to do with the monster phases:
+
+- **Rename** `luckyRat` / `luckyRatChance` to golden/lucky *monster* (part of A5); the ledger ticket field `lucky` stays.
+- **Show it everywhere**: the gold tint also in the fight window (`CombatPanel`), the "Next" strip of the queue and the glossary; a small sparkle on the tile so it is seen from far away; the badge star already exists.
+- **Per-monster golden art** later: a hand-picked gold palette per monster instead of one sepia filter (the art sheets are single images, so this is a palette swap in the pipeline).
+- **Tune per biome**: the chance and the multiplier follow the monster ladder (a golden tundra monster is worth more than a golden plains one; the x3 reward is capped by the reward caps of [20](20-monster-families-and-rewards.md)); decide whether bosses may be golden (today they never are).
+- **Drops**: a golden monster rolls from the next grade's pool (C1) once pools exist, so finding one is an event.
 
 ## Small things to do on the way
 
