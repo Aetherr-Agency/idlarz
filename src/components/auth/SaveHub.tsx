@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { PLAYER_CLASSES, DEFAULT_PLAYER_CLASS } from '@/config/playerClasses';
 import { archiveForNewGame, resetSave, type SavePeek } from '@/lib/saveStorage';
+import { newGameCloud } from '@/lib/cloudClient';
 import type { CloudInfo } from '@/lib/startPlan';
 import { countOwnedTiles } from '@/utils/gameUtils';
 import PixelModal from '@/components/game/PixelModal';
@@ -72,6 +73,11 @@ const SaveHub: React.FC<Props> = ({ mode, local, cloud, onEnter, onNewGame, onLo
 	const wipe = async () => {
 		if (!archiveForNewGame()) {
 			setProblem('The browser would not keep a copy of your current game, so it was not replaced. Export it from the save tools (Ctrl x5 in the game) first.');
+			return;
+		}
+		// the account's game is replaced on the server first (nothing of the old one may be paid or kept); if that fails nothing was changed
+		if (!(await newGameCloud())) {
+			setProblem('Your account could not be reset right now, so nothing was changed. Try again in a moment.');
 			return;
 		}
 		await resetSave();

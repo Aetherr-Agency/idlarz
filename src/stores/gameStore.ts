@@ -255,7 +255,10 @@ const createGameSlice = (
 		if (!inv || invOpsInFlight > 0) return;
 		const state = get();
 		if (state.invVer !== null && inv.ver <= state.invVer) return;
+		const packrat = inv.packrat ?? 0;
 		set({
+			// the server's Pack Rat level comes with its bag: the two are always consistent in a save
+			...(packrat > (state.merchantUpgrades.packrat ?? 0) ? { merchantUpgrades: { ...state.merchantUpgrades, packrat } } : {}),
 			bag: inv.bag,
 			equipment: inv.equipment,
 			lootPity: inv.lootPity,

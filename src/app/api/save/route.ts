@@ -5,6 +5,8 @@ import { isNonProduction } from '@/lib/cloudSave/environment';
 import { fail, json, loadProfile, readBody, unavailable } from '@/lib/authRoute';
 import { requirePlayer } from '@/lib/playerRoute';
 import { supabaseLedgerRepo } from '@/lib/offline/supabaseLedger';
+import { startNewGame } from '@/lib/offline/service';
+import { ensureSeasonReset, readLastReset } from '@/lib/offline/season';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,10 +18,31 @@ export async function GET() {
 	try {
 		const player = await requirePlayer();
 		if (!player.userId) return player.response;
-		const stored = await supabaseSaveRepo(createSupabaseAdmin()).load(player.userId, { world: true });
-		if (!stored) return json({ empty: true });
+		const admin = createSupabaseAdmin();
+		// a season reset this player has not been through yet happens now, before anything of the old game is handed out
+		let lastReset: number | null = null;
+		try {
+			lastReset = (await ensureSeasonReset({ ledgers: supabaseLedgerRepo(admin), saves: supabaseSaveRepo(admin) }, await readLastReset(admin), player.userId, Date.now())).lastReset;
+		} catch {
+			// the marker could not be read: the login goes on, the next one looks again
+		}
+		const stored = await supabaseSaveRepo(admin).load(player.userId, { world: true });
+		if (!stored) return json({ empty: true, lastReset });
 		const { level, tilesOwned, playSeconds, gold } = stored.summary;
-		return json({ rev: stored.rev, serverSavedAt: stored.serverSavedAt, text: storedToText(stored), summary: { level, tilesOwned, playSeconds, gold } });
+		return json({ rev: stored.rev, serverSavedAt: stored.serverSavedAt, text: storedToText(stored), summary: { level, tilesOwned, playSeconds, gold }, lastReset });
+	} catch {
+		return unavailable();
+	}
+}
+
+/** New Game: the account's cloud game is replaced (the old save is kept pinned in the history), so nothing of it is paid or kept. Gems stay. */
+export async function DELETE() {
+	try {
+		const player = await requirePlayer();
+		if (!player.userId) return player.response;
+		const admin = createSupabaseAdmin();
+		await startNewGame({ ledgers: supabaseLedgerRepo(admin), saves: supabaseSaveRepo(admin) }, player.userId, Date.now());
+		return json({ ok: true });
 	} catch {
 		return unavailable();
 	}

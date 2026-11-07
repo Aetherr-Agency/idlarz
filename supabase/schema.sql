@@ -238,3 +238,12 @@ begin
     revoke execute on function public.rls_auto_enable() from anon, authenticated, public;
   end if;
 end $$;
+
+-- ---- season_reset (migration season_reset): per-player reset time and the global last reset --------------------------------
+alter table public.player_ledger add column if not exists reset_at timestamptz;  -- when this player's game was last reset (null = never recorded)
+create table if not exists public.app_settings (
+  key text primary key, value jsonb not null, updated_at timestamptz not null default now()
+);
+alter table public.app_settings enable row level security;
+revoke all on table public.app_settings from anon, authenticated, public;
+grant select, insert, update, delete on public.app_settings to service_role;

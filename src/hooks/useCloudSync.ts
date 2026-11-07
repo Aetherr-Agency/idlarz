@@ -50,7 +50,8 @@ export const useCloudSync = (userId: string, active: boolean) => {
 					useUiStore.getState().showToast('Your account has a newer save from another browser. Reload to choose.');
 					return 'stop';
 				case 'rejected':
-					useUiStore.getState().showToast('Cloud save paused: the server refused this save.');
+					useUiStore.getState().showToast(`Cloud save paused: the server refused this save (${result.message}).`);
+					console.warn('Cloud save refused:', result.message);
 					return 'stop';
 				case 'signed_out':
 					useUiStore.getState().showToast('Cloud save paused: you are signed out. Reload to log in again.');

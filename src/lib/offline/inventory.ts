@@ -33,6 +33,20 @@ type Core = Record<string, unknown>;
 /** The bag size a save entitles its owner to (the base plus the Pack Rat bonus the save holds). */
 const bagSizeFor = (merchantUpgrades: unknown): number => limitOf('bagSize', { merchantUpgrades: isRecord(merchantUpgrades) ? (merchantUpgrades as MerchantUpgrades) : undefined });
 
+/** The Pack Rat level a save holds (0 when none). */
+const packratOf = (merchantUpgrades: unknown): number => {
+	const level = isRecord(merchantUpgrades) ? merchantUpgrades.packrat : 0;
+	return typeof level === 'number' && Number.isFinite(level) && level > 0 ? Math.floor(level) : 0;
+};
+
+/**
+ * The Pack Rat level the server holds for the player rides with their bag (`Inventory.packrat`): it only ever goes up, a rebirth keeps it, a New Game
+ * starts it again. The bag is as big as THIS level entitles it to, whatever level an upload (a stale or another browser's save) claims, and the
+ * browser takes the level from the server together with the bag, so a bag and the upgrade that sizes it can never disagree.
+ */
+const packratFor = (inv: Pick<Inventory, 'packrat'> | null, merchantUpgrades: unknown): number => Math.max(inv?.packrat ?? 0, packratOf(merchantUpgrades));
+const sizeAt = (packrat: number): number => bagSizeFor(packrat > 0 ? { packrat } : {});
+
 /** A bag brought to `size` slots: it only ever grows (Pack Rat), never loses an item. */
 const padBag = (bag: BagSlot[], size: number): BagSlot[] => (bag.length >= size ? bag : [...bag, ...Array.from({ length: size - bag.length }, () => null)]);
 
@@ -41,9 +55,11 @@ export const inventoryFromCore = (core: Core): Inventory => {
 	const bag = Array.isArray(core.bag) ? (core.bag as BagSlot[]) : starterBag();
 	const lootPity: Record<string, number> = {};
 	if (isRecord(core.lootPity)) for (const [id, misses] of Object.entries(core.lootPity)) if (typeof misses === 'number' && Number.isFinite(misses)) lootPity[id] = misses;
+	const packrat = packratOf(core.merchantUpgrades);
 	return {
 		ver: 1,
-		bag: padBag(bag, bagSizeFor(core.merchantUpgrades)),
+		packrat,
+		bag: padBag(bag, sizeAt(packrat)),
 		equipment: isRecord(core.equipment) ? (core.equipment as Equipment) : {},
 		lootPity,
 		autoSellUpTo: typeof core.autoSellUpTo === 'string' ? core.autoSellUpTo : null,
@@ -51,26 +67,31 @@ export const inventoryFromCore = (core: Core): Inventory => {
 };
 
 /** The inventory a rebirth leaves: the starter kit (see `rebirthKit`); only the auto-sell filter, a setting, carries over. A newer `ver`, so the browser takes it. */
-export const rebirthInventory = (before: Inventory, merchantUpgrades: unknown): Inventory => ({
-	ver: before.ver + 1,
-	...rebirthKit(isRecord(merchantUpgrades) ? (merchantUpgrades as Record<string, number>) : undefined),
-	autoSellUpTo: before.autoSellUpTo,
-});
+export const rebirthInventory = (before: Inventory, merchantUpgrades: unknown): Inventory => {
+	const packrat = packratFor(before, merchantUpgrades);
+	return { ver: before.ver + 1, packrat, ...rebirthKit(packrat > 0 ? { packrat } : undefined), autoSellUpTo: before.autoSellUpTo };
+};
 
 /** The inventory with a bag as big as the save's Pack Rat level entitles it to (a bigger bag shows as a new version). */
 export const fitInventory = (inv: Inventory, core: Core): Inventory => {
-	const size = bagSizeFor(core.merchantUpgrades);
-	return inv.bag.length >= size ? inv : { ...inv, bag: padBag(inv.bag, size), ver: inv.ver + 1 };
+	const packrat = packratFor(inv, core.merchantUpgrades);
+	const size = sizeAt(packrat);
+	return inv.bag.length >= size && (inv.packrat ?? 0) === packrat ? inv : { ...inv, packrat, bag: padBag(inv.bag, size), ver: inv.ver + 1 };
 };
 
 /** A save with the server's bag, gear, pity and auto-sell filter in place of the ones it carried. */
-export const stampInventory = <T extends Pick<PersistedGame, 'bag' | 'equipment' | 'lootPity' | 'autoSellUpTo' | 'merchantUpgrades'>>(state: T, inv: Inventory): T => ({
-	...state,
-	bag: padBag(inv.bag, bagSizeFor(state.merchantUpgrades)),
-	equipment: inv.equipment,
-	lootPity: inv.lootPity,
-	autoSellUpTo: inv.autoSellUpTo,
-});
+export const stampInventory = <T extends Pick<PersistedGame, 'bag' | 'equipment' | 'lootPity' | 'autoSellUpTo' | 'merchantUpgrades'>>(state: T, inv: Inventory): T => {
+	const packrat = packratFor(inv, state.merchantUpgrades);
+	return {
+		...state,
+		// the server's Pack Rat level wins over a lower one in the upload (the bag is sized by it)
+		merchantUpgrades: packrat > packratOf(state.merchantUpgrades) ? { ...state.merchantUpgrades, packrat } : state.merchantUpgrades,
+		bag: padBag(inv.bag, sizeAt(packrat)),
+		equipment: inv.equipment,
+		lootPity: inv.lootPity,
+		autoSellUpTo: inv.autoSellUpTo,
+	};
+};
 
 /** The core of a stored save as the engine should see it: the ledger's inventory in place of the one the save was uploaded with. */
 export const coreWithInventory = (core: Core, inv: Inventory | null): Core =>

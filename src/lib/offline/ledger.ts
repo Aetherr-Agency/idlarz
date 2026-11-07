@@ -49,6 +49,8 @@ export interface Ledger {
 	grantedSeen: GrantTotals;
 	/** The authoritative gem balance: whatever a save says, the server's number wins */
 	gems: number;
+	/** Epoch ms: when this player's game was last reset (a New Game, a season reset) or the ledger was created. Older than the global last reset (or null) = due a reset at the next login. */
+	resetAt: number | null;
 	/** The idempotency key and result of the last claim or redemption: a repeated request (a lost response) gets the same answer */
 	lastKey: string | null;
 	lastResult: unknown;
@@ -63,6 +65,7 @@ export const newLedger = (nowMs: number, rebirths = 0): Ledger => ({
 	runId: 1,
 	rebirths,
 	anchorAt: nowMs,
+	resetAt: nowMs,
 	bank: emptyBank(nowMs / 1000),
 	ordChest: 0,
 	ordKill: 0,
@@ -73,6 +76,18 @@ export const newLedger = (nowMs: number, rebirths = 0): Ledger => ({
 	lastResult: null,
 	combat: null,
 	inv: null,
+});
+
+/**
+ * The ledger of a player who starts over (a New Game, or a season reset): everything back to a new game's values (anchor and spawn timers
+ * at `nowMs`, nothing granted, no bag, no fight) except the gems, and the next run id so sealed rolls never repeat. `ver` is the old one:
+ * the caller's compare-and-swap writes it one higher.
+ */
+export const resetLedger = (old: Ledger | null, nowMs: number): Ledger => ({
+	...newLedger(nowMs, 0),
+	ver: old?.ver ?? 0,
+	runId: (old?.runId ?? 0) + 1,
+	gems: old?.gems ?? STARTING_GEMS,
 });
 
 /** Storage of the ledger: Supabase in the app, a Map in tests. */

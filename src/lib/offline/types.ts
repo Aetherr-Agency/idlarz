@@ -9,6 +9,8 @@ import type { BagSlot, Equipment, EquipmentSlot, ItemInstance } from '@/types/ga
  */
 export interface Inventory {
 	ver: number;
+	/** The Pack Rat level the server holds: it sizes the bag, and the browser takes it with the bag (absent in rows from before it was kept) */
+	packrat?: number;
 	bag: BagSlot[];
 	equipment: Equipment;
 	lootPity: Record<string, number>;

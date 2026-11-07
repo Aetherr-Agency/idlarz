@@ -1,8 +1,8 @@
-import type { SaveRepo, StoredSave } from '@/lib/cloudSave/pipeline';
+import { PINNED_KEEP, type SaveRepo, type StoredSave } from '@/lib/cloudSave/pipeline';
 import { POISON_FLAGS } from '@/lib/cloudSave/verify';
 import { computeOfflineGrant } from '@/lib/offline/grant';
 import type { ClaimResult, PublicTickets } from '@/lib/offline/types';
-import { addTotals, seedLedger, type Ledger, type LedgerRepo } from '@/lib/offline/ledger';
+import { addTotals, resetLedger, seedLedger, type Ledger, type LedgerRepo } from '@/lib/offline/ledger';
 import { restThrough } from '@/lib/offline/fight';
 import { coreWithInventory, fitInventory, inventoryFromCore } from '@/lib/offline/inventory';
 import { isChestPlaced, isPlaced, needsLook, placeTickets, siteKey, worldFromPart } from '@/lib/offline/placement';
@@ -63,6 +63,29 @@ export const lookAtMap = async (
 	if (!needsLook(bank, siteKey(stored.summary))) return bank;
 	const map = await loadMap();
 	return map ? placeTickets(bank, map.world, map.key, map.rebirths, rollFor) : bank;
+};
+
+/**
+ * A New Game: the account's game is replaced on the server too, so nothing of the old one is paid or kept. The save being replaced is
+ * pinned in the history first (recoverable), then the save, its map, the leaderboard row and the rebirth log are deleted and the ledger
+ * starts over (timers at now, nothing granted, no bag, no fight) with the gems kept. With no save left, the next claim pays nothing.
+ */
+export const startNewGame = async (deps: Pick<ServiceDeps, 'ledgers' | 'saves'>, userId: string, nowMs: number): Promise<void> => {
+	const { saves, ledgers } = deps;
+	try {
+		const old = await saves.load(userId, { world: true });
+		if (old?.world) await saves.pin(userId, old, PINNED_KEEP);
+	} catch {
+		// an unreadable old save must not keep the player from starting over
+	}
+	await saves.remove?.(userId);
+	for (let attempt = 0; attempt < CAS_TRIES; attempt++) {
+		const existing = await ledgers.load(userId);
+		if (!existing) return; // the first save of the new game creates it
+		const next: Ledger = { ...resetLedger(existing, nowMs), ver: existing.ver + 1 };
+		if (await ledgers.commit(userId, existing.ver, next)) return;
+	}
+	throw new Error('the ledger is busy');
 };
 
 export type ClaimOutcome = { kind: 'no_save' } | { kind: 'ok'; result: ClaimResult };
