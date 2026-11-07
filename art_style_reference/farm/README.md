@@ -16,13 +16,12 @@ A far-future update: the farm gets **crops, not only animals**. The idea so far 
 |---|---|
 | `3W_gVP.png` | "Farming Crops 1": a corn growth cycle (seed, sprout, three stages, cob) plus a bag, grains, broccoli, wheat and a tomato |
 | `crops-preview-animated.gif` | a large grid of about 40 **crops in tilled earth** (pumpkin, cabbage, corn, tomatoes, berries, vines on trellises, peppers...), animated |
-| `Free-Pixel-Art-Plants-for-Farm.webp` | a top-down farm scene with fruit trees, vines, rows of plants, and a cobble path |
 | `Top-Down-Farm-with-Animals-Pixel-Art-Asset-Pack5-720x480.webp` | a top-down farm kit: windmill, barns, animals, bushes, trees, a pond |
 | `images.jpg` | a top-down pen with cows, pigs, a wooden fence and two crop plots with a cobble path |
 | `Rhcseh.png` | a cosy farm screenshot (chickens, house, crop beds) as a mood reference |
 
 ## Notes for whoever picks this up later
 
-- The licence of every file here is unknown (root README); treat all as reference.
+- The files here are licensed to the owner for free use in the game (root [Licence](../README.md#licence)), so they can be cut directly when the farm update starts. Until then they stay reference only because the farm update is not scheduled, not because of licensing.
 - Start with a design doc (grid size, stages, timers on the server clock, where the harvest goes), then the art.
 - Check the current farm items and server rules first: [docs/02](../../docs/02-mechanics.md) farm section and [docs/11](../../docs/11-server-authority.md).

@@ -30,7 +30,7 @@
 
 ## 3. What agents should do with it later
 
-1. **Avatars (P2.4)**: pick 8 faces from `2r0s3O.jpg` that read clearly at 40x40 and cover the working list (knight, druid, scout, scholar, miner, farmer, bard, alchemist); **recreate** them in the style of `scripts/pixel/sprites_characters.py` (big friendly heads, readable eyes, one signature prop) with the shared bust frame and level badge. A direct cut needs a cleared licence and our palette; the references are a different art direction (more realistic faces), so a redraw will usually be needed to sit next to the class heroes.
+1. **Avatars (P2.4)**: pick 8 faces from `2r0s3O.jpg` that read clearly at 40x40 and cover the working list (knight, druid, scout, scholar, miner, farmer, bard, alchemist); **recreate** them in the style of `scripts/pixel/sprites_characters.py` (big friendly heads, readable eyes, one signature prop) with the shared bust frame and level badge. A direct cut is licensed (root README, Licence) but needs our palette; the references are a different art direction (more realistic faces), so a redraw will usually be needed to sit next to the class heroes.
 2. Unlockable avatars follow the same recipe later, from the other portrait sheets; tie each to an achievement in `catalog/achievements.ts`.
 3. **Battle backgrounds**: treat them as layout and mood references (a backdrop band and a darker floor, a vignette). Draw our own at the fight modal's size, in the map's palette; do not use the references directly (different resolution and a heavy gradient look).
 4. **Skill icons**: do not implement skills from these. If skills are added later, copy the **framing idea** (a coloured square, a glyph, a bright rim) into one consistent family.
