@@ -52,7 +52,7 @@ Goal: every item we will ship exists as **data with an icon**, behind a switch, 
 
 ## Phase D · Monsters for the rest of the world (M, per biome)
 
-Hills, coast and lake have art or are missing it (hills has none). Enable a biome's roster the way the plains one was: stats in `BIOME_TIER`, entries in `MONSTERS`, the ladder table, the loot pool of C1. The water biomes need **shoreline spawns** (a land tile next to water) first. Then the reward caps of [20](20-monster-families-and-rewards.md), generic spawn weights per monster, and the glossary of [22](22-glossary-and-mastery.md).
+Hills, coast and lake have art or are missing it (hills has none). Enable a biome's roster the way the plains one was: stats in `BIOME_TIER`, entries in `MONSTERS`, the ladder table, the loot pool of C1. **Decided 2026-11-07 (IDL-58, build task IDL-201): monsters may spawn on lake and coast tiles themselves, so no shoreline rule is needed (IDL-57 superseded); ladder: coast easy (levels 2-12), hills between forest and swamp (6-16), lake between swamp and tundra (10-19).** Then the reward caps of [20](20-monster-families-and-rewards.md), generic spawn weights per monster, and the glossary of [22](22-glossary-and-mastery.md).
 
 ## Phase E · The rebirth world (as in the ROADMAP release order)
 
