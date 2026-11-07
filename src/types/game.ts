@@ -347,7 +347,7 @@ export interface GameState {
 	buyResource: (resource: keyof Resources, amount: number) => boolean;
 	clickForGold: (input: ClickInput) => number;
 	resetGame: () => void;
-	rebirth: () => boolean;
+	rebirth: (serverGain?: number) => boolean;
 	buyEmberUpgrade: (id: EmberUpgradeId) => boolean;
 	upgradeCastle: () => boolean;
 	purchaseAnimal: (animalId: string, count?: number | 'max') => number; // animals bought

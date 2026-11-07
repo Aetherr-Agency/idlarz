@@ -214,8 +214,8 @@ const main = async () => {
 			['Ember shop', 'client', 'conservation: unspent + spent = earned (**REJECTED** if not)'],
 			[
 				'Rebirth Ember gain',
-				'client',
-				'bounded by the castle and territory of the previous save, one rebirth per save (**CLAMPED**, flag `ember_jump`, IDL-166)',
+				'server (`POST /api/rebirth`, IDL-102), the browser as a fallback',
+				'the route judges the stored save and records the gain: the rebirth save is capped at exactly it; without the route, bounded by the castle and territory of the previous save, one rebirth per save (**CLAMPED**, flag `ember_jump`, IDL-166)',
 			],
 			['Click gold', 'client (rate-limited in the browser)', 'none: no click endpoint'],
 			['Sell resources', 'client', '`gold_jump` (stock held + income + grants; refused once enforcement is on, IDL-112) / net worth'],
