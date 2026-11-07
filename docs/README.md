@@ -21,16 +21,17 @@ These documents describe the game **as the code behaves**. Numbers are traceable
 | [16-landing-and-play-route.md](16-landing-and-play-route.md) | *Draft.* Landing page, auth-protected `/play`, account and avatar polish |
 | [17-crafting.md](17-crafting.md) | *Draft.* Luck/Intelligence crafting with a persistent crafting level |
 | [18-biome-buildings-and-material-tiers.md](18-biome-buildings-and-material-tiers.md) | *Draft.* Three buildings per biome, upgrade timers, material tiers T0-T4, shorter castle timers |
-| [19-first-build-steps.md](19-first-build-steps.md) | *Spec.* Step A shorter castle timers (with the in-progress-upgrade trap), Step B resource-key registry |
+| [19-first-build-steps.md](19-first-build-steps.md) | *Built.* Castle timers halved, resource-key registry; what is left (the castle costs, the old tables) |
 | [20-monster-families-and-rewards.md](20-monster-families-and-rewards.md) | *Draft.* Monster families per biome, capped absolute rewards scaled by level, goods and tiered drops, spawn pressure |
 | [21-classes-avatars-achievements-offline-report.md](21-classes-avatars-achievements-offline-report.md) | *Draft.* Class bonuses, separate avatars, achievements and glossary sketches, offline report bar |
 | [22-glossary-and-mastery.md](22-glossary-and-mastery.md) | *Draft.* Unknown monsters, glossary tabs, kill-count reveals, monster and resource mastery |
 | [23-reset-players-cli.md](23-reset-players-cli.md) | Operator CLI `npm run reset-players`: season restart that wipes progress but keeps names, classes and gems |
-| [24-battle-queue.md](24-battle-queue.md) | *Draft.* A server-owned queue: keep clicking monsters during a fight and they are fought one after the other |
+| [24-battle-queue.md](24-battle-queue.md) | *Built.* The server-owned battle queue: how it works and what is left |
 | [25-idle-game-research.md](25-idle-game-research.md) | *Research note.* Idle-game formulas, big numbers and offline progress compared with this game; ranked improvements |
+| [26-next-updates-plan.md](26-next-updates-plan.md) | *Proposal.* The order of the next updates: readable core, item assets, loot pools and variety, the rest of the monsters, then the rebirth world |
 | [RELEASE-PLAN.md](RELEASE-PLAN.md) | *Proposal.* Phases P0-P13 in release order, triage of the roadmap's bug and balance tables, landing v1 to v2, asset plan, decisions needed |
 | [ROADMAP.md](ROADMAP.md) | Open work: known issues, balance backlog, the building rework, server migration, planned features |
-| [generated/](generated/) | Auto-generated: `balance-tables.md`, `sim-milestones.md`, `item-catalog.md`, `loot-sim.md`, `fight-sim.md` |
+| [generated/](generated/) | Auto-generated: `balance-tables.md`, `sim-milestones.md`, `item-catalog.md`, `loot-sim.md`, `fight-sim.md`, `monster-ladder.md` |
 
 ## Commands
 
@@ -45,6 +46,7 @@ npm run sim -- --legacy hardcore          # approximate the pre-rebalance game
 npm run sim -- --set=SCALING_CONFIG.growthLate=1.25 castleCostScale=...   # try a tweak without editing files
 npm run catalog-report        # the two sets, their items, affixes, loot sources -> docs/generated/item-catalog.md (tests/catalogDoc.test.ts keeps it current)
 npm run fight-sim -- --md     # fight balance tables -> docs/generated/fight-sim.md (without --md it only prints)
+npm run monster-ladder -- --md # which gear tier beats which monster at which level -> docs/generated/monster-ladder.md
 npm run loot-sim -- --md      # seeded loot simulation -> docs/generated/loot-sim.md (without --md it only prints)
 npm run perf                  # timings of the map at 5k / 50k / 250k tiles
 npm run lint
