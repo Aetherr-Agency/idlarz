@@ -7,7 +7,6 @@
 | File | Contents | Notes |
 |---|---|---|
 | `f33ile.jpg` (3079x2053, dark background) | **21 medieval and gothic buildings** in a 3/4 view on a small grass base: smithy, forge with fire, forest hut between pines, castles with red or grey spires, graveyard plots, churches and chapels, timber houses, a golden-roofed manor, a mossy leaf-roof hut, a library, a candy-roof cottage, a stone tower with a glass dome, a barn-like workshop, stone cottages | the main **detail and mood** reference: stonework, timber framing, roof shingles, small props at the door (barrels, cauldrons, anvils), warm window light |
-| `Screenshot 2026-10-29 0341562.png` (1200x800) | a **watermarked sample** ("SAMPLE - EMBER SPROUT") of a building kit: two timber-framed houses with blue and green roofs, a tree, bushes, props and furniture | **reference only, never ship** (watermark); useful for roof tiling, window glow, stone base and how a kit splits into pieces |
 
 ## What we want from them
 
@@ -35,7 +34,7 @@ Biome rules: Idols are statues, totems and shrines (small footprint, monument lo
 
 1. Before drawing a building, read the biome's three entries in [docs/18](../../docs/18-biome-buildings-and-material-tiers.md) section 3 and pick the archetype row above.
 2. Draw it in `scripts/pixel/sprites_buildings.py` style (procedural, the shared body kits and materials), 56x68 canvas, and add it to the build manifest; the 16 old sprites stay as **placeholders** until each building's real sprite is registered (RELEASE-PLAN P6.3, P6.9).
-3. Do not cut from these sheets (grass base, different density, a watermark on one). Use them for proportions, roof and window treatment, and the amount of small props.
+3. Cutting from `f33ile.jpg` is licensed (see the [Licence](../README.md#licence)) but rarely useful: the cells carry a grass base and another pixel density. Use them for proportions, roof and window treatment, and the amount of small props; cut a cell only if you remove the base and it fits the 56x68 canvas.
 4. Check each building next to its biome's ground at 1x in the map before approving.
 
 ## Provenance of anything cut from here

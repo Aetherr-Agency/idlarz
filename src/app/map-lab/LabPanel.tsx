@@ -18,8 +18,8 @@ const TOOLS: { id: LabTool; label: string; hint: string }[] = [
 	{ id: 'erase', label: 'Erase', hint: 'Hold and drag to remove land (the castle stays)' },
 	{ id: 'chest', label: 'Chest', hint: 'Hold and drag to place chests' },
 	{ id: 'unchest', label: 'Unchest', hint: 'Hold and drag to remove chests' },
-	{ id: 'rat', label: 'Rat', hint: 'Click a tile to place a rat (again to remove)' },
-	{ id: 'ratKing', label: 'Rat King', hint: 'Click a tile to place the boss' },
+	{ id: 'monster', label: 'Monster', hint: 'Click a tile to place a Thistle Boar (again to remove)' },
+	{ id: 'boss', label: 'Boss', hint: 'Click a tile to place the Great Auroch' },
 	{ id: 'dismiss', label: 'Dismiss', hint: 'Click a monster to remove it' },
 ];
 
@@ -159,11 +159,11 @@ const LabPanel: React.FC = () => {
 							<button className={btn} onClick={() => lab.spawnChests(count)}>
 								Chests
 							</button>
-							<button className={btn} onClick={() => lab.spawnMonsters('rat', count)}>
-								Rats
+							<button className={btn} onClick={() => lab.spawnMonsters('thistleBoar', count)}>
+								Boars
 							</button>
-							<button className={btn} onClick={() => lab.spawnMonsters('ratKing', 1)}>
-								Rat King
+							<button className={btn} onClick={() => lab.spawnMonsters('bossGreatAuroch', 1)}>
+								Auroch
 							</button>
 							<button className={btn} onClick={lab.clearChests}>
 								Clear chests

@@ -1,7 +1,7 @@
 // Loot configuration: which sources give what. Pure data; the pipeline in src/lib/loot reads it and nothing here is
 // code. All numbers are STARTING POINTS to be tuned with `npm run loot-sim` (docs/10-loot-system.md).
 //
-//   source (rat, ratKing, chest) --lootProfileId--> profile --generalPoolId / bonusTables--> pools --> item definitions
+//   source (monster, boss, chest) --lootProfileId--> profile --generalPoolId / bonusTables--> pools --> item definitions
 //
 // Rarity, item level, drop quantity and eligibility are separate: the profile says how many rolls and which rarity weights,
 // the source says what level it is, the pools say which items may appear, and the items say which levels they exist at.
@@ -16,7 +16,7 @@ export interface PoolDef {
 	excludeIds?: string[];
 	/** Per-item weight in this pool when it should differ from the item's `poolWeight` (potions drop differently per source) */
 	weights?: Record<string, number>;
-	/** Per-item minimum source item level in this pool (the greater potion only drops from older rats, but freely from chests) */
+	/** Per-item minimum source item level in this pool (the greater potion only drops from older monsters, but freely from chests) */
 	minLevels?: Record<string, number>;
 	/** Per-item quantity of a consumable drop (default 1) */
 	quantities?: Record<string, number>;
@@ -58,7 +58,7 @@ export interface BonusTable {
 	rolls?: RollsDef;
 	/** `rolled`: the item's rarity is rolled from the profile's weights (bases). `fixed`: as the item defines it (named items, consumables). */
 	mode: 'rolled' | 'fixed';
-	/** Take every item in the pool once, with its quantity (the Rat King's potions) */
+	/** Take every item in the pool once, with its quantity (a boss's potions) */
 	takeAll?: boolean;
 	/** Prefer pool items the player does not own yet while any remain (the King's set pieces) */
 	preferMissing?: boolean;
@@ -161,10 +161,10 @@ export const LOOT_PROFILES: Record<string, LootProfile> = {
 	},
 };
 
-/** Keyed by the `DropSource` (a monster type, `chest` or the merchant's `merchant` shelf). A monster's drops are at its own level (rats 1-20, the Rat King 15-35). */
+/** Keyed by the `DropSource` (a monster type, `chest` or the merchant's `merchant` shelf). A monster's drops are at its own level (monsters 1-30, bosses 15-45). */
 export const LOOT_SOURCES: Record<string, LootSource> = {
-	rat: { id: 'rat', lootProfileId: 'normal_monster', levels: { min: 1, max: 20 } },
-	ratKing: { id: 'ratKing', lootProfileId: 'boss', levels: { min: 15, max: 35 } },
+	monster: { id: 'monster', lootProfileId: 'normal_monster', levels: { min: 1, max: 30 } },
+	boss: { id: 'boss', lootProfileId: 'boss', levels: { min: 15, max: 45 } },
 	chest: { id: 'chest', lootProfileId: 'basic_chest', level: { base: 4, perCastleLevel: 3 } },
 	merchant: { id: 'merchant', lootProfileId: 'merchant_stock', level: { base: 4, perCastleLevel: 3 } },
 };

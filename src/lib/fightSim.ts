@@ -2,6 +2,7 @@ import { INITIAL_CHARACTER_STATS } from '@/config/gameConfig';
 import { ITEM_CATALOG, familyPieces } from '@/catalog';
 import type { StoredSave } from '@/lib/cloudSave/pipeline';
 import { COMBAT } from '@/config/combatConfig';
+import { isBoss } from '@/lib/monsters';
 import { runCombat, type CombatEnv } from '@/lib/offline/fight';
 import { freshCombat, type FightEvent } from '@/lib/offline/fightTypes';
 import { newLedger } from '@/lib/offline/ledger';
@@ -86,9 +87,9 @@ export const simSetup = ({ equipment = {}, character = freshCharacter(), potions
 	const stored = { core, summary: { derived: { luck: 0, goldFind: 0 }, rates: { gold: 1, xp: 1 }, xpGainPct: 0 } } as unknown as StoredSave;
 	const base = newLedger(START * 1000, COMBAT.auto.minRebirths);
 	let n = 0;
-	const ticket = (m: SimSetup['monsters'][number]) => ({ n: ++n, at: START, lucky: m.lucky ?? false, x: 2 + n, y: 3, spawnLevel: m.level });
-	const rats = monsters.filter((m) => m.type === 'rat').map(ticket);
-	const kingDef = monsters.find((m) => m.type === 'ratKing');
+	const ticket = (m: SimSetup['monsters'][number]) => ({ n: ++n, at: START, lucky: m.lucky ?? false, x: 2 + n, y: 3, spawnLevel: m.level, type: m.type });
+	const rats = monsters.filter((m) => !isBoss(m.type)).map(ticket);
+	const kingDef = monsters.find((m) => isBoss(m.type));
 	// the sim lets the engine pick the monsters one after the other, so auto-battle is on (a new player starts with it off)
 	const vitals = savedVitals(core);
 	const combat = { ...freshCombat(START, vitals.hp, vitals.mp), autoBattle: true };

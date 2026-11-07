@@ -8,15 +8,25 @@
  * The header shows one boxed group per tier, left to right. A new tier is one entry here plus its resources' `tier`.
  * currency: gold, gems and Embers. t0: the base materials the land produces. t1: the farm products.
  */
-export type ResourceTier = 'currency' | 't0' | 't1';
+export type ResourceTier = 'currency' | 't0' | 't1' | 't2' | 't3' | 't4';
 
 export const RESOURCE_TIERS: readonly { id: ResourceTier; label: string }[] = [
 	{ id: 'currency', label: 'Currency' },
 	{ id: 't0', label: 'Base materials' },
-	{ id: 't1', label: 'T1 materials' },
+	{ id: 't1', label: 'Farm products' },
+	// planned (docs/18): nothing sits in these yet, and the header skips a tier without resources
+	{ id: 't2', label: 'Biome goods' },
+	{ id: 't3', label: 'Extracts' },
+	{ id: 't4', label: 'Relics' },
 ];
 
 export interface ResourceDef {
+	/** Lives in the save's `resources` object and in the ledger totals (gold ... xp). Gems and Embers have their own balance and are not stored here. */
+	stored?: true;
+	/** Added after the first saves: a save without it is still valid and reads 0 (every new resource starts this way) */
+	optionalInSave?: true;
+	/** Comes from the farm (meat, eggs, milk, hide) */
+	farm?: true;
 	/** Header group; left out for things the header never lists (xp) */
 	tier?: ResourceTier;
 	/** Fallback glyph while a pixel icon is missing (the pixel art itself is registered in config/pixelIcons.ts) */
@@ -33,6 +43,7 @@ export interface ResourceDef {
 
 export const RESOURCES = {
 	gold: {
+		stored: true,
 		tier: 'currency',
 		emoji: '💰',
 		label: 'Gold',
@@ -46,6 +57,7 @@ export const RESOURCES = {
 	// level keeps the early total sell value where it was (wood .75, stone .9, coal 1.1, food .4; they were .5 / .5 / 1 / .75).
 	// Buying costs MERCHANT_BUY_MULTIPLIER x the price. Meat and the farm products are priced against what their animals cost.
 	wood: {
+		stored: true,
 		tier: 't0',
 		emoji: '🪓',
 		label: 'Wood',
@@ -56,6 +68,7 @@ export const RESOURCES = {
 		merchant: { price: 0.75, description: 'A basic construction material, available in forests.', pitch: 'Common but always in demand.' },
 	},
 	stone: {
+		stored: true,
 		tier: 't0',
 		emoji: '🧱',
 		label: 'Stone',
@@ -66,6 +79,7 @@ export const RESOURCES = {
 		merchant: { price: 0.9, description: 'Durable and versatile building material from quarries.', pitch: 'Premium quality building material.' },
 	},
 	coal: {
+		stored: true,
 		tier: 't0',
 		emoji: '⚫',
 		label: 'Coal',
@@ -76,6 +90,7 @@ export const RESOURCES = {
 		merchant: { price: 1.1, description: 'Valuable fuel source used for advanced applications.', pitch: 'Highly sought after for its energy properties.' },
 	},
 	food: {
+		stored: true,
 		tier: 't0',
 		emoji: '🌾',
 		label: 'Food',
@@ -86,6 +101,8 @@ export const RESOURCES = {
 		merchant: { price: 0.4, description: 'Sustains population and enables growth.', pitch: 'Plentiful but essential for survival.' },
 	},
 	meat: {
+		stored: true,
+		farm: true,
 		tier: 't0',
 		emoji: '🥩',
 		label: 'Meat',
@@ -97,6 +114,9 @@ export const RESOURCES = {
 	},
 	// farm products sell for more than the meat they come with
 	eggs: {
+		stored: true,
+		optionalInSave: true,
+		farm: true,
 		tier: 't1',
 		emoji: '🥚',
 		label: 'Eggs',
@@ -107,6 +127,9 @@ export const RESOURCES = {
 		merchant: { price: 2, description: 'Fresh from the coop.', pitch: 'Bakers pay well for fresh eggs.' },
 	},
 	milk: {
+		stored: true,
+		optionalInSave: true,
+		farm: true,
 		tier: 't1',
 		emoji: '🥛',
 		label: 'Milk',
@@ -117,16 +140,20 @@ export const RESOURCES = {
 		merchant: { price: 3, description: 'Creamy and cold from the dairy.', pitch: 'A town favourite at breakfast.' },
 	},
 	hide: {
+		stored: true,
+		optionalInSave: true,
+		farm: true,
 		tier: 't1',
 		emoji: '🟫',
 		label: 'Hide',
 		description: 'A farm product from deer and pigs.',
 		usedFor: 'Tannery upgrades and the price of big territories; sell the rest to the merchant.',
-		source: 'Deer and pigs on the farm, and the rats you beat. Cannot be bought.',
+		source: 'Deer and pigs on the farm, and the monsters you beat. Cannot be bought.',
 		color: '#c89868',
 		merchant: { price: 2, description: 'Tanned leather from the farm.', pitch: 'Craftsmen always need good leather.' },
 	},
 	xp: {
+		stored: true,
 		emoji: '✨',
 		label: 'XP',
 		description: 'Experience: fills the level bar next to your name.',

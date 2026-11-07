@@ -89,7 +89,7 @@ export const renderItemCatalog = (): string => {
 	out();
 	for (const source of Object.values(LOOT_SOURCES)) {
 		const profile = LOOT_PROFILES[source.lootProfileId];
-		const sourceLevels = source.levels ? (source.id === 'rat' ? [1, 5, 9, 20] : [source.levels.min, source.levels.max]) : [source.level ? resolveSourceLevel(source.level, 1) : 1];
+		const sourceLevels = source.levels ? (source.id === 'monster' ? [1, 5, 9, 20] : [source.levels.min, source.levels.max]) : [source.level ? resolveSourceLevel(source.level, 1) : 1];
 		for (const sourceLevel of sourceLevels) {
 			const level = sourceLevel + profile.itemLevel.offset;
 			const weights = Object.entries(profile.rarityWeights).filter(([r, w]) => w > 0 && level >= (profile.rarityLevelGate?.[r] ?? 1));

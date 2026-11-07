@@ -23,6 +23,7 @@ import {
 	totalStatPoints,
 	emberSpent,
 	emberUpgradeCost,
+	emberIncomeBonus,
 } from '../src/utils/gameUtils';
 import { sanitizeSave } from '../src/lib/sanitizeSave';
 import { patchTile } from '../src/utils/world';
@@ -116,7 +117,7 @@ test('rebirth grants points by the formula, resets the run and keeps the identit
 	assert.equal(s.playSeconds, 12345);
 	// every resource's modifier now includes the Embers income bonus
 	const base = 1 + CASTLE_UPGRADE.baseResourceMultiplier + 0.025 * 10; // castle 1 + int/cha gold
-	assert.ok(Math.abs(1 + s.resourceRates.modifiers.gold - base * (1 + REBIRTH.incomePerPoint * expected)) < 1e-9);
+	assert.ok(Math.abs(1 + s.resourceRates.modifiers.gold - base * (1 + emberIncomeBonus(expected))) < 1e-9);
 	// and the game can be played on
 	api().tick(1000);
 	assert.ok(api().resources.gold > INITIAL_RESOURCES.gold);
@@ -271,4 +272,18 @@ test('Gems in saves: a save without them gets the starting purse, a saved balanc
 	const kept = sanitizeSave({ ...raw, gems: 42 });
 	assert.ok(kept.ok && kept.state.gems === 42);
 	for (const bad of [-1, 1.5, NaN, '1000', 1e12]) assert.equal(sanitizeSave({ ...raw, gems: bad }).ok, false, `gems ${String(bad)}`);
+});
+
+test('the Ember income bonus flattens: the first rebirth is worth far less than the old +6 % per Ember, and more Embers always help', () => {
+	assert.equal(emberIncomeBonus(0), 0);
+	const first = emberIncomeBonus(22);
+	assert.ok(first > 0.5 && first < 0.8, `a first rebirth gives about +64 %, got ${first}`);
+	let last = 0;
+	for (const earned of [1, 5, 22, 47, 76, 170, 500, 5000]) {
+		const bonus = emberIncomeBonus(earned);
+		assert.ok(bonus > last, 'more Embers earned never pay less');
+		last = bonus;
+	}
+	assert.ok(emberIncomeBonus(170) < 0.06 * 170 / 3, 'far below the old linear bonus late');
+	assert.ok(emberIncomeBonus(170) - emberIncomeBonus(147) < emberIncomeBonus(22) - emberIncomeBonus(0), 'a late stretch of 23 Embers adds less than the first 22');
 });

@@ -46,7 +46,7 @@ export const COMBAT = {
 	potionCooldownSec: 8, // shared cooldown between potions inside a fight
 	victoryToastSec: 15, // how long the result of a fight (the dead monster and its loot) stays in the combat window (hover pauses it)
 	spawn: {
-		firstSec: 120, // first rat this long after the game starts (lib/offline/tickets.ts counts it on the server)
+		firstSec: 120, // first monster this long after the game starts (lib/offline/tickets.ts counts it on the server)
 		intervalSec: 900, // then one per this long (chests: 600 s)
 		bossIntervalSec: 10800, // a boss (one at a time) appears this long after the last one left, or after the start
 		dangerStep: 8, // a monster that appears this many tiles (Chebyshev) further from the castle spawns one level higher: the frontier is more dangerous than the home land
@@ -86,14 +86,17 @@ export interface MonsterSpawnRule {
 	minRebirths?: number;
 }
 
-/** Land a rat or the King may stand on: no water (lake, coast) and never the castle. */
-const LAND_BIOMES: readonly BiomeType[] = ['plains', 'forest', 'hills', 'swamp', 'tundra'];
+/**
+ * The biomes that have a monster roster today (art in public/pixel/enemies, see catalog/monsters.ts). Hills has no art yet, water has no
+ * shoreline spawns: nothing stands there until they do.
+ */
+type MonsterBiome = 'plains' | 'forest' | 'swamp' | 'tundra';
 
 /**
  * A kind of monster. The numbers are for `refLevel`; other levels follow `scaling`: `exp` multiplies by the `*PerLevel` factors for
  * every level away from `refLevel`, `gear` follows the item level curve (`levelScale`), so a boss keeps pace with the gear that drops
  * at his level. Armor is additive per level. `spawnWindow` says at which levels a new one appears: it starts at `base`, rises
- * `perCastleLevel` per castle level above 1 and spans `spread` levels, never above `cap` (a rat's `cap` is the highest level it
+ * `perCastleLevel` per castle level above 1 and spans `spread` levels, never above `cap` (a monster's `cap` is the highest level it
  * can spawn at; it then grows up to `limitOf('monsterGrowthLevels')` more).
  */
 export interface MonsterDef {
@@ -128,54 +131,132 @@ export interface MonsterDef {
 	taunts?: readonly string[];
 }
 
-export const MONSTERS = {
-	rat: {
+/**
+ * The roster. Three normal monsters and one boss per biome, each biome a step up from the one before (docs/ROADMAP.md, enemy rework):
+ * the stats below come from `BIOME_TIER` and a per-monster `build` (tanky, quick, hard-hitting), so the whole ladder is retuned in one place.
+ * The first plains monster and the plains boss carry the numbers of the old rat and Rat King, so fights.md and the sims keep their meaning.
+ */
+type Tier = {
+	hp: number;
+	attack: number;
+	armor: number;
+	rewardSec: number;
+	/** The levels a new monster appears at (see `MonsterDef.spawnWindow`): a later biome starts higher and ends higher */
+	window: MonsterDef['spawnWindow'];
+	/** Bosses: the level the numbers are for, the time limit, the HP and the level window */
+	boss: { hp: number; attack: number; armor: number; refLevel: number; timeLimitSec: number; window: MonsterDef['spawnWindow']; crit: number; stunResist: number };
+};
+
+const BIOME_TIER = {
+	plains: {
+		hp: 100, attack: 4, armor: 0, rewardSec: 90,
+		window: { base: 1, perCastleLevel: 1, spread: 2, cap: 10 }, // castle 1: level 1-3, castle 8 and up: level 8-10
+		boss: { hp: 1000, attack: 11, armor: 15, refLevel: 15, timeLimitSec: 75, window: { base: 15, perCastleLevel: 0.8, spread: 3, cap: 25 }, crit: 8, stunResist: 20 },
+	},
+	forest: {
+		hp: 160, attack: 6, armor: 1, rewardSec: 110,
+		window: { base: 4, perCastleLevel: 1, spread: 2, cap: 14 },
+		boss: { hp: 1900, attack: 16, armor: 24, refLevel: 20, timeLimitSec: 80, window: { base: 20, perCastleLevel: 0.8, spread: 3, cap: 30 }, crit: 9, stunResist: 25 },
+	},
+	swamp: {
+		hp: 220, attack: 7, armor: 2, rewardSec: 135,
+		window: { base: 8, perCastleLevel: 1, spread: 2, cap: 18 },
+		boss: { hp: 2800, attack: 21, armor: 32, refLevel: 25, timeLimitSec: 85, window: { base: 25, perCastleLevel: 0.8, spread: 3, cap: 35 }, crit: 10, stunResist: 30 },
+	},
+	// the hardest land: its monsters start where the swamp's end, and its boss is out of reach of the best gear there is today
+	tundra: {
+		hp: 300, attack: 8, armor: 3, rewardSec: 190,
+		window: { base: 12, perCastleLevel: 0.5, spread: 2, cap: 20 },
+		boss: { hp: 7000, attack: 36, armor: 58, refLevel: 30, timeLimitSec: 90, window: { base: 30, perCastleLevel: 0.8, spread: 3, cap: 40 }, crit: 13, stunResist: 45 },
+	},
+} as const satisfies Record<MonsterBiome, Tier>;
+
+/** How a normal monster fights, relative to its biome's tier */
+const BUILD = {
+	even: { hp: 1, attack: 1, speed: 0.5 }, // a bite every 2 s
+	tough: { hp: 1.3, attack: 0.8, speed: 0.4 },
+	fierce: { hp: 0.8, attack: 1.25, speed: 0.6 },
+	// a real challenge: it needs gear collected first (more of it is coming); +6 armor on top of the biome's
+	elite: { hp: 2, attack: 1.5, speed: 0.45, armor: 8 },
+} as const;
+
+const normal = (biome: keyof typeof BIOME_TIER, label: string, build: keyof typeof BUILD): MonsterDef => {
+	const tier = BIOME_TIER[biome];
+	const b = BUILD[build];
+	return {
 		grade: 'normal',
-		label: 'Rat',
-		hp: 100,
-		attack: 4,
-		armor: 0,
+		label,
+		hp: Math.round(tier.hp * b.hp),
+		attack: Math.round(tier.attack * b.attack * 10) / 10,
+		armor: tier.armor + ('armor' in b ? b.armor : 0),
 		critChance: 0,
 		critMult: 1.5,
 		stunResist: 0,
-		attackSpeed: 0.5, // one bite every 2 s
-		spawn: { biomes: LAND_BIOMES, minCastleDistance: 2, maxCastleDistance: 9 },
-		rewardSec: 90,
+		attackSpeed: b.speed,
+		spawn: { biomes: [biome], minCastleDistance: 2, maxCastleDistance: 9 },
+		rewardSec: tier.rewardSec,
 		refLevel: 1,
 		scaling: 'exp',
-		hpPerLevel: Math.sqrt(1.5), // the old 1.5 per tier (a tier was two levels), so a level 9 rat is the old tier 5: 506 HP
+		hpPerLevel: Math.sqrt(1.5), // the old 1.5 per tier (a tier was two levels), so a level 9 plains monster has 506 HP
 		attackPerLevel: Math.sqrt(1.25), // the old 1.25 per tier
 		rewardPerLevel: 1.17,
 		armorPerLevel: 0.5,
-		spawnWindow: { base: 1, perCastleLevel: 1, spread: 2, cap: 10 }, // castle 1: level 1-3, castle 8 and up: level 8-10
-		lootSourceId: 'rat',
-	},
-	ratKing: {
+		spawnWindow: tier.window,
+		lootSourceId: 'monster',
+	};
+};
+
+/** A boss always has a clock and taunts (the type says so, so a caller need not check) */
+const boss = (biome: keyof typeof BIOME_TIER, label: string, taunts: readonly string[]): MonsterDef & { timeLimitSec: number; taunts: readonly string[] } => {
+	const b = BIOME_TIER[biome].boss;
+	return {
 		grade: 'boss',
-		label: 'Rat King',
-		hp: 1000, // behind 15 armor (about a quarter of every hit is lost) and a 75 s clock: the best gear wins comfortably, obsidian with seconds to spare, steel not; see docs/generated/fight-sim.md
-		attack: 11,
-		armor: 15,
-		critChance: 8,
+		label,
+		hp: b.hp, // behind armor (about a quarter of every hit is lost) and a clock: see docs/generated/fight-sim.md
+		attack: b.attack,
+		armor: b.armor,
+		critChance: b.crit,
 		critMult: 1.5,
-		stunResist: 20,
+		stunResist: b.stunResist,
+		attackSpeed: 1 / 3, // one hit every 3 s; armor decides how many hits you survive, potions fill the gap
+		spawn: { biomes: [biome], minCastleDistance: 2, maxCastleDistance: 9 },
 		rewardSec: 3600,
-		refLevel: 15,
+		refLevel: b.refLevel,
 		scaling: 'gear',
 		hpPerLevel: 1,
 		attackPerLevel: 1,
 		rewardPerLevel: 1.03,
 		armorPerLevel: 0.5,
-		spawnWindow: { base: 15, perCastleLevel: 0.8, spread: 3, cap: 25 }, // castle 1: level 15-18, castle 10: level 22-25
-		lootSourceId: 'ratKing',
-		timeLimitSec: 75,
-		taunts: [
-			"Squeak! Is that all you've got?",
-			"Haha, come back when you're stronger!",
-			'The King is not impressed.',
-			'Run along, little knight!',
-		],
-		attackSpeed: 1 / 3, // one hit every 3 s; armor decides how many hits you survive, potions fill the gap
-		spawn: { biomes: LAND_BIOMES, minCastleDistance: 2, maxCastleDistance: 9 },
-	},
+		spawnWindow: b.window,
+		lootSourceId: 'boss',
+		timeLimitSec: b.timeLimitSec,
+		taunts,
+	};
+};
+
+/** What a ticket or a monster without a (valid) type becomes: tickets written when the game had rats and a Rat King carry no type. */
+export const FALLBACK_MONSTER = 'thistleBoar' as const;
+export const FALLBACK_BOSS = 'bossGreatAuroch' as const;
+
+export const MONSTERS = {
+	// plains
+	thistleBoar: normal('plains', 'Thistle Boar', 'even'),
+	burrowBadger: normal('plains', 'Burrow Badger', 'tough'),
+	dustStrider: normal('plains', 'Dust Strider', 'fierce'),
+	bossGreatAuroch: boss('plains', 'The Great Auroch', ['The Auroch stamps the ground.', 'Come back when you are stronger!', 'The herd is not impressed.']),
+	// forest
+	mossbackWolf: normal('forest', 'Mossback Wolf', 'fierce'),
+	brambleImp: normal('forest', 'Bramble Imp', 'even'),
+	rotcapStag: normal('forest', 'Rotcap Stag', 'tough'),
+	bossElderStag: boss('forest', 'The Elder Stag', ['The Elder Stag lowers its antlers.', 'The forest remembers every trespasser.']),
+	// swamp
+	garbageOgre: normal('swamp', 'Garbage Ogre', 'tough'),
+	dumpback: normal('swamp', 'Dumpback', 'even'),
+	rotHeron: normal('swamp', 'Rot Heron', 'fierce'),
+	bossMireMatriarch: boss('swamp', 'The Mire Matriarch', ['The Matriarch gurgles with laughter.', 'The mire swallows the proud.']),
+	// tundra
+	frostHare: normal('tundra', 'Frost Hare', 'fierce'),
+	icetuskCalf: normal('tundra', 'Icetusk Calf', 'tough'),
+	rimeWraith: normal('tundra', 'Rime Wraith', 'elite'),
+	bossWinterWyrm: boss('tundra', 'The Winter Wyrm', ['The Wyrm exhales a cold breath.', 'Winter outlasts everyone.']),
 } as const satisfies Record<string, MonsterDef>;

@@ -39,6 +39,8 @@ interface PublicMonster {
 	x: number;
 	y: number;
 	spawnLevel: number;
+	/** Which monster it is (left out by older servers: a rat or the Rat King) */
+	type?: import('@/types/game').MonsterType;
 }
 
 export interface PublicChest {
@@ -116,5 +118,7 @@ export interface FightReply {
 	gemsTotal: number;
 	/** False when an asked-for action was refused (cooldown, mana, no potion left, no such monster) */
 	accepted: boolean;
+	/** A click on a monster while a fight was open: it joined the queue, left it, or the queue was full */
+	queued?: import('@/lib/offline/fightTypes').QueueResult;
 	inv?: Inventory;
 }

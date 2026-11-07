@@ -155,7 +155,7 @@ test('a claim made before the ledger exists seeds it from the save: the gems sta
 	assert.equal(ledger.combat, null, 'combat is seeded by the first fight request, not here');
 	// a stored save written before monsters moved to the server still lists them: they become tickets with no tile yet (the server places them)
 	const stored = (await m.saves.load('u1'))!;
-	const legacy = { ...stored, core: { ...stored.core, monsters: [{ id: 1, type: 'rat', ageSec: 100 }, { id: 2, type: 'rat', ageSec: 50 }], nextMonsterId: 3 } };
+	const legacy = { ...stored, core: { ...stored.core, monsters: [{ id: 1, type: 'thistleBoar', ageSec: 100 }, { id: 2, type: 'thistleBoar', ageSec: 50 }], nextMonsterId: 3 } };
 	const seeded = seedLedger(legacy, T0);
 	assert.equal(seeded.bank.rats.length, 2);
 	assert.deepEqual(seeded.bank.rats.map((r) => r.n), [1, 2]);

@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build
+
+  # Pacing report: the real store driven by the bot (scripts/sim.ts). Informational for now (it never fails the PR); make it blocking
+  # once the castle timers and the Ember curve are settled (docs/ROADMAP.md, balancing pass). --no-write keeps docs/generated untouched.
+  pacing:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Sim (hardcore, 30 days) and rebirth ratios
+        run: |
+          npx tsx scripts/sim.ts --no-write --maxdays=30 hardcore | tee -a "$GITHUB_STEP_SUMMARY"
+          npx tsx scripts/sim.ts --no-write --maxdays=60 hardcore-rebirth6 | tee -a "$GITHUB_STEP_SUMMARY"

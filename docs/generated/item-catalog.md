@@ -120,13 +120,13 @@ Gear is authored at the start of its item level window; bases roll their rarity,
 
 Rarity chances are the profile weights normalised over the rarities that pass their item level gate; level is the item level at the source (the monster level; castle level 1 for chests).
 
-- **rat level 1** (profile `normal_monster`, item level 1): 27 bases eligible; Common 76.1%, Uncommon 23.9%
-- **rat level 5** (profile `normal_monster`, item level 5): 44 bases eligible; Common 70.7%, Uncommon 22.2%, Rare 7.1%
-- **rat level 9** (profile `normal_monster`, item level 9): 61 bases eligible; Common 70.0%, Uncommon 22.0%, Rare 7.0%, Epic 1.0%
-- **rat level 20** (profile `normal_monster`, item level 20): 61 bases eligible; Common 69.9%, Uncommon 22.0%, Rare 7.0%, Epic 1.0%, Legendary 0.2%
+- **monster level 1** (profile `normal_monster`, item level 1): 27 bases eligible; Common 76.1%, Uncommon 23.9%
+- **monster level 5** (profile `normal_monster`, item level 5): 44 bases eligible; Common 70.7%, Uncommon 22.2%, Rare 7.1%
+- **monster level 9** (profile `normal_monster`, item level 9): 61 bases eligible; Common 70.0%, Uncommon 22.0%, Rare 7.0%, Epic 1.0%
+- **monster level 20** (profile `normal_monster`, item level 20): 61 bases eligible; Common 69.9%, Uncommon 22.0%, Rare 7.0%, Epic 1.0%, Legendary 0.2%
   - bonus `rat_potion` from pool `potions_rat`, chance 0.25
-- **ratKing level 15** (profile `boss`, item level 15): 61 bases eligible; Common 20.0%, Uncommon 30.0%, Rare 30.0%, Epic 15.0%, Legendary 5.0%
-- **ratKing level 35** (profile `boss`, item level 35): 34 bases eligible; Common 20.0%, Uncommon 30.0%, Rare 30.0%, Epic 15.0%, Legendary 5.0%
+- **boss level 15** (profile `boss`, item level 15): 61 bases eligible; Common 20.0%, Uncommon 30.0%, Rare 30.0%, Epic 15.0%, Legendary 5.0%
+- **boss level 45** (profile `boss`, item level 45): 34 bases eligible; Common 20.0%, Uncommon 30.0%, Rare 30.0%, Epic 15.0%, Legendary 5.0%
   - bonus `king_set` from pool `rattatui_set`
   - bonus `king_legendary` from pool `legendary_weapons`, chance 0.05
   - bonus `king_potions` from pool `potions_king`
@@ -154,7 +154,7 @@ Pools: `general_equipment`, `rattatui_set`, `legendary_weapons`, `potions_rat`, 
 | `meat` | Meat | 1 | Every animal on the farm (boosted by Feed Trough and the plains bonus). |
 | `eggs` | Eggs | 2 | Chickens on the farm. Cannot be bought. |
 | `milk` | Milk | 3 | Cows on the farm. Cannot be bought. |
-| `hide` | Hide | 2 | Deer and pigs on the farm, and the rats you beat. Cannot be bought. |
+| `hide` | Hide | 2 | Deer and pigs on the farm, and the monsters you beat. Cannot be bought. |
 | `xp` | XP |  | The castle, buying tiles and your stats. |
 | `gems` | Gems |  | Your starting purse; more ways to earn them are coming. |
 | `embers` | Embers |  | Rebirthing from castle level 6: the higher your castle and land, the more you get. |

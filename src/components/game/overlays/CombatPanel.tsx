@@ -4,7 +4,7 @@ import { COMBAT } from '@/config/combatConfig';
 import { SKILLS, SKILL_IDS, skillDescription } from '@/catalog/skills';
 import { MONSTER_CATALOG, monsterArtUrl } from '@/catalog/monsters';
 import { monsterArtSize } from '@/config/monsterArtSize';
-import { monsterDef, monsterStats } from '@/lib/monsters';
+import { isBoss, monsterDef, monsterStats } from '@/lib/monsters';
 import type { Cooldowns, FightView } from '@/lib/offline/fightTypes';
 import type { BagSlot, CombatNotice, MonsterType } from '@/types/game';
 import MonsterArt from '../MonsterArt';
@@ -131,11 +131,11 @@ const FightResult: React.FC<{ notice: CombatNotice }> = ({ notice }) => {
 	);
 };
 
-/** On the fight stage a roster picture is drawn this many times its map size, so it fits the compact window (the rats' sheets are drawn at scale 4 / 3) */
+/** On the fight stage a roster picture is drawn this many times its map size, so it fits the compact window  */
 const STAGE_ART_FACTOR = 2.6;
 
 export interface CombatPanelProps {
-	/** The monster the window is about; `art` (a roster id, map lab / future monsters) draws its still picture instead of the rat sheet */
+	/** The monster the window is about; `art` (a roster id, the map lab) draws another roster monster's picture instead of its own */
 	monster: { type: MonsterType; level: number; art?: string };
 	/** Draw the monster mirrored, so it faces left toward the hero */
 	flip?: boolean;
@@ -161,6 +161,10 @@ export interface CombatPanelProps {
 	numbers: FloatNumber[];
 	hitTick: number;
 	shake: boolean;
+	/** The monsters waiting for their turn (the battle queue) and a way to take one out; both left out in the lab */
+	queue?: { n: number; type: MonsterType; level: number }[];
+	queueMax?: number;
+	onUnqueue?: (n: number) => void;
 	onFlee: () => void;
 	onCloseResult: () => void;
 	onMinimize: () => void;
@@ -177,7 +181,7 @@ export interface CombatPanelProps {
 const CombatPanel: React.FC<CombatPanelProps> = (p) => {
 	const { monster, flip, fight, over, player, cd } = p;
 	const def = monsterDef(monster.type);
-	const wip = monster.art ? MONSTER_CATALOG.find((m) => m.id === monster.art) : undefined;
+	const wip = MONSTER_CATALOG.find((m) => m.id === (monster.art ?? monster.type));
 	const label = wip?.label ?? def.label;
 	const boss = wip ? wip.grade === 'boss' : def.grade === 'boss';
 	const traits = monsterStats(monster.type, monster.level);
@@ -240,7 +244,7 @@ const CombatPanel: React.FC<CombatPanelProps> = (p) => {
 		</>
 	);
 
-	// the monster's picture on the stage: the rat sheets at their usual scale, a roster picture sized from the map size
+	// the monster's picture on the stage, sized from its map size
 	const art = wip ? (
 		// eslint-disable-next-line @next/next/no-img-element
 		<img
@@ -250,7 +254,7 @@ const CombatPanel: React.FC<CombatPanelProps> = (p) => {
 			style={{ width: monsterArtSize(wip.id, wip.grade) * STAGE_ART_FACTOR, height: monsterArtSize(wip.id, wip.grade) * STAGE_ART_FACTOR, objectFit: 'contain', imageRendering: 'pixelated' }}
 		/>
 	) : (
-		<MonsterArt type={monster.type} scale={monster.type === 'ratKing' ? 3 : 4} />
+		<MonsterArt type={monster.type} scale={isBoss(monster.type) ? 1.5 : 2} />
 	);
 
 	return (
@@ -306,6 +310,23 @@ const CombatPanel: React.FC<CombatPanelProps> = (p) => {
 				<Bar value={p.monsterHp} max={p.monsterMaxHp} kind='monster' label={label} snapKey={p.snapKey} />
 				<Bar value={player.hp} max={player.maxHp} kind='player' label='You' snapKey={p.snapKey} />
 				<Bar value={player.mp} max={player.maxMp} kind='mana' label='Mana' snapKey={p.snapKey} />
+				{p.queue && p.queue.length > 0 && (
+					<div className='fight-queue' aria-label='Battle queue'>
+						<span className='fight-queue-title'>
+							Next ({p.queue.length}/{p.queueMax ?? p.queue.length})
+						</span>
+						{p.queue.map((q, i) => (
+							<span key={q.n} className='fight-queue-item' data-boss={monsterDef(q.type).grade === 'boss'} title={`${monsterDef(q.type).label}, level ${q.level}`}>
+								<b>{i + 1}</b> {monsterDef(q.type).label} <i>Lv {formatCompact(q.level)}</i>
+								{p.onUnqueue && (
+									<button className='fight-queue-x' onClick={() => p.onUnqueue!(q.n)} aria-label={`Take ${monsterDef(q.type).label} out of the queue`} title='Take it out of the queue'>
+										x
+									</button>
+								)}
+							</span>
+						))}
+					</div>
+				)}
 				{controls(!!over)}
 			</div>
 		</section>

@@ -4,9 +4,9 @@ import type { BiomeType } from '@/types/game';
 /**
  * The monster roster: who lives in which biome and where their art is. Names and prompts: docs/monster-art-prompts.md.
  *
- * This is a roster, not a balance sheet. It carries no stats, rewards or loot. A monster only spawns when `enabled` is true, and then
- * it needs an entry in `MONSTERS` (config/combatConfig.ts) under the same id, which is where stats, spawn window and loot go. Today
- * only the rats are enabled; everything else is art that is ready and waiting for the monster rework (docs/20). On-map size of the art: `config/monsterArtSize.ts` (tuned in /map-lab, used by `MonsterSprite` for real game monsters too).
+ * This is a roster, not a balance sheet. It carries no stats, rewards or loot. A monster spawns when it has an entry in `MONSTERS`
+ * (config/combatConfig.ts) under the same id (`enabled` follows that), which is where stats, spawn window and loot go. The rats are gone:
+ * plains, forest, swamp and tundra have their three monsters and a boss; the rest is art waiting for its turn (docs/20). On-map size of the art: `config/monsterArtSize.ts` (tuned in /map-lab, used by `MonsterSprite` for real game monsters too).
  */
 
 /** Biomes planned in docs/12 that are not in `BIOMES` yet (unlocked by rebirth). */
@@ -14,7 +14,7 @@ export type PlannedBiome = 'jungle' | 'fields' | 'orchard' | 'blight' | 'battlef
 export type CatalogBiome = BiomeType | PlannedBiome;
 
 export interface MonsterCatalogEntry {
-	/** Same key as in `MONSTERS` once the monster is enabled (camelCase, like `ratKing`) */
+	/** Same key as in `MONSTERS` once the monster is enabled (camelCase, like `bossGreatAuroch`) */
 	id: string;
 	label: string;
 	grade: 'normal' | 'boss';
@@ -26,20 +26,16 @@ export interface MonsterCatalogEntry {
 	art: boolean;
 }
 
-/** `public/pixel/enemies/<biome>/<kebab-id>.png`; bosses are `boss-<name>`. Rats still use the generated sheets (`MONSTER_SHEETS`). */
+/** `public/pixel/enemies/<biome>/<kebab-id>.png`; bosses are `boss-<name>`. */
 export const monsterArtUrl = (entry: Pick<MonsterCatalogEntry, 'id' | 'biomes'>): string => {
 	const kebab = entry.id.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`);
 	return `/pixel/enemies/${entry.biomes[0]}/${kebab}.png`;
 };
 
-const normal = (id: string, label: string, biome: CatalogBiome, art: boolean): MonsterCatalogEntry => ({ id, label, grade: 'normal', biomes: [biome], enabled: false, art });
-const boss = (id: string, label: string, biome: CatalogBiome, art: boolean): MonsterCatalogEntry => ({ id, label, grade: 'boss', biomes: [biome], enabled: false, art });
+const normal = (id: string, label: string, biome: CatalogBiome, art: boolean): MonsterCatalogEntry => ({ id, label, grade: 'normal', biomes: [biome], enabled: id in MONSTERS, art });
+const boss = (id: string, label: string, biome: CatalogBiome, art: boolean): MonsterCatalogEntry => ({ id, label, grade: 'boss', biomes: [biome], enabled: id in MONSTERS, art });
 
 export const MONSTER_CATALOG: readonly MonsterCatalogEntry[] = [
-	// The two that spawn today: rats stand on every land biome (the rule itself lives in MONSTERS)
-	{ id: 'rat', label: 'Rat', grade: 'normal', biomes: MONSTERS.rat.spawn.biomes, enabled: true, art: false },
-	{ id: 'ratKing', label: 'Rat King', grade: 'boss', biomes: MONSTERS.ratKing.spawn.biomes, enabled: true, art: false },
-
 	normal('thistleBoar', 'Thistle Boar', 'plains', true),
 	normal('burrowBadger', 'Burrow Badger', 'plains', true),
 	normal('dustStrider', 'Dust Strider', 'plains', true),

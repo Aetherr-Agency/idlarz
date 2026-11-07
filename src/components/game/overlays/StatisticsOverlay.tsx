@@ -6,10 +6,9 @@ import LevelDetails from '../LevelDetails';
 import CollapsibleSection from '../CollapsibleSection';
 import ResourceIcon from '../ResourceIcon';
 import { gearIncomePct } from '@/lib/gearEconomy';
-import { calculateResourceBreakdown, countOwnedTiles, getStatDescriptionGroups, type ResourceBreakdownEntry } from '@/utils/gameUtils';
+import { calculateResourceBreakdown, countOwnedTiles, emberIncomeBonus, getStatDescriptionGroups, type ResourceBreakdownEntry } from '@/utils/gameUtils';
 import { formatNumber, formatPercent, formatRate, formatCompact } from '@/utils/formatters';
 import audioManager from '@/utils/audioManager';
-import { REBIRTH } from '@/config/gameConfig';
 import { useUiStore, type CharacterTab } from '@/stores/uiStore';
 import RebirthsPanel from './RebirthsPanel';
 
@@ -169,7 +168,7 @@ const StatisticsOverlay: React.FC = () => {
 							<Line label='Tiles' value={formatCompact(countOwnedTiles(tiles))} valueClass='text-blue-400' />
 							<Line
 								label='Rebirths'
-								value={`${formatNumber(prestige.rebirths)} (+${formatPercent(prestige.legacyEarned * REBIRTH.incomePerPoint * 100)})`}
+								value={`${formatNumber(prestige.rebirths)} (+${formatPercent(emberIncomeBonus(prestige.legacyEarned) * 100)})`}
 								valueClass='text-purple-300'
 							/>
 						</div>
@@ -213,7 +212,7 @@ const StatisticsOverlay: React.FC = () => {
 						<Line label='Chest rate (Luck)' value={`+${pct(fx.chestRateBonus, 1)}`} valueClass='text-purple-400' />
 						<Line label='Rare drop odds (Luck)' value={`+${pct(fx.rarityLuckBonus, 1)}`} valueClass='text-purple-400' />
 						<Line label='Gem find in chests' value={pct(fx.gemChance, 1)} valueClass='text-cyan-300' />
-						<Line label='Lucky rat chance' value={pct(fx.luckyRatChance, 1)} valueClass='text-yellow-300' />
+						<Line label='Lucky monster chance' value={pct(fx.luckyRatChance, 1)} valueClass='text-yellow-300' />
 						<Line label='Gold find' value={pct(fx.goldFind, 1)} valueClass='text-yellow-400' />
 						<Line label='Mana regen' value={`${formatCompact(fx.manaRegen, 2)}/s`} valueClass='text-blue-400' />
 						<Line label='Spell power' value={pct(fx.spellPower, 1)} valueClass='text-purple-300' />

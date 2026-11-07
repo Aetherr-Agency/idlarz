@@ -5,6 +5,7 @@ import {
 	CharacterStats,
 	Resources, // Added Resources import
 } from '@/types/game';
+import { FARM_KEYS, amounts, type FarmKey } from '@/catalog/resourceKeys';
 import { RESOURCES, type MerchantResourceKey, type ResourceKey } from '@/catalog/resources';
 import { shopItems } from '@/catalog/loot';
 import { BIOME_COLORS } from '@/config/biomePalette';
@@ -177,18 +178,7 @@ export const HEADER_DISPLAYED_RESOURCES_INFO = fromResources(
 ) as { [K in Exclude<ResourceKey, 'gems' | 'embers'>]: { icon: string; label: string; description: string; usedFor: string; source: string } };
 
 // The castle's own per-second output (single source of truth: BIOMES.castle reads from it).
-export const CASTLE_BASE_RATES = {
-	gold: 0.1,
-	wood: 0.05,
-	stone: 0.1,
-	coal: 0,
-	food: 0.05,
-	meat: 0,
-	eggs: 0,
-	milk: 0,
-	hide: 0,
-	xp: 0.5,
-};
+export const CASTLE_BASE_RATES = amounts({ gold: 0.1, wood: 0.05, stone: 0.1, food: 0.05, xp: 0.5 });
 
 export const BIOMES: Record<string, BiomeInfo> = {
 	empty: {
@@ -307,32 +297,11 @@ forest: {
 	},
 } as const;
 
-export const INITIAL_RESOURCES = {
-	gold: 125,
-	wood: 0,
-	stone: 0,
-	coal: 0,
-	food: 0,
-	meat: 0,
-	eggs: 0,
-	milk: 0,
-	hide: 0,
-	xp: 0,
-};
+export const INITIAL_RESOURCES = amounts({ gold: 125 });
 
 // Base resource generation (per second) - slightly increased for better early game
-export const BASE_GENERATION_RATES = {
-	gold: 0.1, // Increased base gold generation
-	wood: 0,
-	stone: 0,
-	coal: 0,
-	food: 0,
-	meat: 0, // Meat can only be generated through the farm
-	eggs: 0, // so are eggs, milk and hide
-	milk: 0,
-	hide: 0,
-	xp: 0.25, // Base XP generation rate increased
-};
+// Meat, eggs, milk and hide come only from the farm, so they are 0 here
+export const BASE_GENERATION_RATES = amounts({ gold: 0.1, xp: 0.25 });
 
 
 // Castle range: tiles within this many steps of the castle (3x3 at radius 1) will get the castle's range bonus. `radius` is
@@ -358,7 +327,8 @@ export const CASTLE_UPGRADE = {
 	glowFromLevel: 6, // from this level the castle is drawn animated and glowing, stronger with every level
 	xpBonus: 0.5, // Additional flat XP/s for every castle level above 1
 	// Real upgrade time in seconds, indexed by the level being left (1 -> 2 is index 0). Counted by the tick loop.
-	durationsSec: [3600, 14400, 43200, 86400, 172800, 259200, 345600, 432000, 604800],
+	// Halved in the 2026-11 balancing pass (was 1 h, 4 h, 12 h, 24 h, 48 h, 3 d, 4 d, 5 d, 7 d): 30 min, 2 h, 6 h, 12 h, 24 h, 1.5 d, 2 d, 2.5 d, 3.5 d
+	durationsSec: [1800, 7200, 21600, 43200, 86400, 129600, 172800, 216000, 302400],
 	upgradeCosts: [
 		{ gold: 70000, wood: 10000, stone: 10000 },
 		{ gold: 200000, wood: 30000, stone: 30000, coal: 20000 },
@@ -544,7 +514,7 @@ export const MERCHANT_GOODS = {
 } as const;
 
 // Farm products: shown on the farm and at the merchant, not in the header row
-export const FARM_PRODUCT_KEYS = ['eggs', 'milk', 'hide'] as const;
+export const FARM_PRODUCT_KEYS = FARM_KEYS.filter((key): key is Exclude<FarmKey, 'meat'> => key !== 'meat'); // the farm's products without meat (meat is bought with food, the rest only earned)
 
 // Only these can be bought back (as resource packs); farm products are earned on the farm, never bought
 export const MERCHANT_BUYABLE = ['wood', 'stone', 'coal', 'food', 'meat'] as const;
@@ -889,7 +859,11 @@ export const REBIRTH = {
 	gainScale: 3, // Embers = gainScale x (castle level - 5) x (sqrt(tiles / 10) + surplusPerTile x tiles over the requirement), rounded down
 	/** Tiles the next rebirth needs, after `rebirths` of them */
 	tilesNeeded: (rebirths: number) => REBIRTH.minTiles + REBIRTH.tilesPerRebirth * Math.max(0, rebirths),
-	incomePerPoint: 0.06, // +6% of all income per Ember ever earned (spending points never lowers it)
+	// income bonus = incomePerPoint x (Embers ever earned) ^ incomeExponent (spending points never lowers it). It was linear, +6 % per Ember,
+	// which made the first rebirth worth about +130-200 % and every later one snowball. Now about +64 % after 22 Embers, +100 % after 47,
+	// +134 % after 76, +220 % after 170 (balancing pass, measured with the sim; tests/rebirth.test.ts pins the curve)
+	incomePerPoint: 0.1,
+	incomeExponent: 0.6,
 	discountCapPercent: 45, // Charisma + Thrift together can never take more than this off a tile
 	// Embers granted for a rebirth with this castle level and territory
 	gain: (castleLevel: number, tiles: number, rebirths = 0) => {

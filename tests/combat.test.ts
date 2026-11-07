@@ -58,12 +58,12 @@ test('mitigate: armor 2 turns 4 into 4, armor 40 halves 10 to 5, never below 1',
 });
 
 test('rat stats: level 1 100 HP, level 9 506 HP, attack grows per level; the King at level 15 is his config', () => {
-	assert.equal(monsterStats('rat', 1).maxHp, 100);
-	assert.equal(monsterStats('rat', 9).maxHp, 506);
-	assert.ok(monsterStats('rat', 9).attack > monsterStats('rat', 1).attack);
-	assert.equal(monsterStats('ratKing', 15).maxHp, MONSTERS.ratKing.hp);
-	assert.equal(monsterStats('ratKing', 15).attackSpeed, MONSTERS.ratKing.attackSpeed);
-	assert.equal(monsterStats('rat', 1).attackSpeed, 0.5, 'a rat bites every 2 s');
+	assert.equal(monsterStats('thistleBoar', 1).maxHp, 100);
+	assert.equal(monsterStats('thistleBoar', 9).maxHp, 506);
+	assert.ok(monsterStats('thistleBoar', 9).attack > monsterStats('thistleBoar', 1).attack);
+	assert.equal(monsterStats('bossGreatAuroch', 15).maxHp, MONSTERS.bossGreatAuroch.hp);
+	assert.equal(monsterStats('bossGreatAuroch', 15).attackSpeed, MONSTERS.bossGreatAuroch.attackSpeed);
+	assert.equal(monsterStats('thistleBoar', 1).attackSpeed, 0.5, 'a rat bites every 2 s');
 });
 
 test('regen stops at max and ignores bad input', () => {

@@ -43,6 +43,7 @@ const CombatWidget: React.FC = () => {
 	const setAutoBattle = useGameStore((state) => state.setAutoBattle);
 	const setAutoUse = useGameStore((state) => state.setAutoUse);
 	const flee = useGameStore((state) => state.flee);
+	const unqueueMonster = useGameStore((state) => state.unqueueMonster);
 	const clearNotice = useGameStore((state) => state.clearCombatNotice);
 	const minimized = useUiStore((state) => state.combatMinimized);
 	const setPref = useUiStore((state) => state.setPref);
@@ -214,6 +215,9 @@ const CombatWidget: React.FC = () => {
 			numbers={numbers}
 			hitTick={hitTick}
 			shake={shake}
+			queue={combat.queue}
+			queueMax={combat.queueMax}
+			onUnqueue={unqueueMonster}
 			onFlee={flee}
 			onCloseResult={clearNotice}
 			onMinimize={() => setPref('combatMinimized', true)}

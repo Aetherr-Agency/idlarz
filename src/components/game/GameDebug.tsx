@@ -26,7 +26,7 @@ const addResources = (add: Partial<Resources>) => useGameStore.getState().addRes
 const toast = (text: string) => useUiStore.getState().showToast(text);
 
 /** Rolls the loot of a source through the real pipeline at the current castle level, puts it in the bag and logs why it dropped (console.table). */
-const rollLoot = (sourceId: 'rat' | 'ratKing' | 'chest', level?: number) => {
+const rollLoot = (sourceId: 'monster' | 'boss' | 'chest', level?: number) => {
 	const state = useGameStore.getState();
 	const castleLevel = castleLevelOf(state.tiles);
 	const owned = [

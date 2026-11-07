@@ -1,5 +1,7 @@
 import { COMBAT } from '@/config/combatConfig';
 import { EQUIPMENT_LAYOUT, ITEM_CATALOG, RARITIES, SETS, STARTER_BAG_ITEMS, STAT_KEYS, setBonusStats, setCounts, sumStats, weaponDps, type ItemStats, type StatKey, type StatTotals } from '@/catalog';
+import { STARTER_EQUIPMENT } from '@/config/itemCatalog';
+import { limitOf } from '@/lib/limits';
 import { resolveItem } from '@/lib/itemInstance';
 import type { BagSlot, Drop, Equipment, EquipmentSlot, ItemDef, ItemInstance } from '@/types/game';
 
@@ -10,6 +12,17 @@ export const emptyBag = (): BagSlot[] => Array.from({ length: COMBAT.bagSize }, 
 
 export const starterBag = (): BagSlot[] =>
 	STARTER_BAG_ITEMS.reduce((bag, { id, qty }) => addToBag(bag, id, qty).bag, emptyBag());
+
+/**
+ * What a character carries after a rebirth: the starter gear on, the starter bag (as big as Pack Rat makes it), nothing else and no pity.
+ * Gear does not survive a rebirth, so selling a bag full of it for gold across runs is no longer a way to get ahead. The browser applies it
+ * at once and the server stamps the same thing onto the ledger when the rebirth reaches it (lib/cloudSave/pipeline.ts).
+ */
+export const rebirthKit = (merchantUpgrades: Record<string, number> | undefined): { equipment: Equipment; bag: BagSlot[]; lootPity: Record<string, number> } => {
+	const size = limitOf('bagSize', { merchantUpgrades });
+	const bag = starterBag();
+	return { equipment: { ...STARTER_EQUIPMENT }, bag: bag.length >= size ? bag : [...bag, ...Array.from({ length: size - bag.length }, () => null)], lootPity: {} };
+};
 
 /** The gear in a slot, or null (empty slot or a consumable stack). */
 export const gearOf = (slot: BagSlot): ItemInstance | null => (slot && 'item' in slot ? slot.item : null);

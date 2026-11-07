@@ -71,7 +71,7 @@ test('buildOnTile refuses a tile with a chest or a monster and charges exactly t
 	set(a.x, a.y, { hasChest: true });
 	assert.equal(api().buildOnTile(a.x, a.y, 'mine'), false);
 	set(a.x, a.y, { hasChest: false });
-	store.setState({ monsters: [{ id: 1, type: 'rat', level: 1, spawnLevel: 1, x: a.x, y: a.y, ageSec: 0 }] });
+	store.setState({ monsters: [{ id: 1, type: 'thistleBoar', level: 1, spawnLevel: 1, x: a.x, y: a.y, ageSec: 0 }] });
 	assert.equal(api().buildOnTile(a.x, a.y, 'mine'), false);
 	store.setState({ monsters: [] });
 	const price = calculateBuildingCost(api().tiles, api().prestige);

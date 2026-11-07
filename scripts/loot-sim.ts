@@ -29,14 +29,14 @@ interface Scenario {
 }
 
 const SCENARIOS: Scenario[] = [
-	{ label: 'Rat level 1', sourceId: 'rat', level: 1 },
-	{ label: 'Rat level 5', sourceId: 'rat', level: 5 },
-	{ label: 'Rat level 9', sourceId: 'rat', level: 9 },
-	{ label: 'Rat level 15', sourceId: 'rat', level: 15 },
-	{ label: 'Rat level 20', sourceId: 'rat', level: 20 },
-	{ label: 'Rat King level 15', sourceId: 'ratKing', level: 15 },
-	{ label: 'Rat King level 25', sourceId: 'ratKing', level: 25 },
-	{ label: 'Rat King level 35', sourceId: 'ratKing', level: 35 },
+	{ label: 'Rat level 1', sourceId: 'monster', level: 1 },
+	{ label: 'Rat level 5', sourceId: 'monster', level: 5 },
+	{ label: 'Rat level 9', sourceId: 'monster', level: 9 },
+	{ label: 'Rat level 15', sourceId: 'monster', level: 15 },
+	{ label: 'Rat level 20', sourceId: 'monster', level: 20 },
+	{ label: 'Rat King level 15', sourceId: 'boss', level: 15 },
+	{ label: 'Rat King level 25', sourceId: 'boss', level: 25 },
+	{ label: 'Rat King level 35', sourceId: 'boss', level: 35 },
 	{ label: 'Chest, castle 1', sourceId: 'chest', castleLevel: 1 },
 	{ label: 'Chest, castle 5', sourceId: 'chest', castleLevel: 5 },
 	{ label: 'Chest, castle 10', sourceId: 'chest', castleLevel: 10 },
@@ -114,7 +114,7 @@ for (const luck of [0, 10, 30, 60, 100, 200]) {
 		}
 		return { perKill: gear / KILLS, rare: pct(rare, gear) };
 	};
-	const rat = share('rat', 9, undefined);
+	const rat = share('thistleBoar', 9, undefined);
 	const chest = share('chest', undefined, 5);
 	const rng = mulberry32(SEED + 1);
 	let gems = 0;
