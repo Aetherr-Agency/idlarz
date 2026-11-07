@@ -1,6 +1,7 @@
 import { isRecord } from '@/lib/isRecord';
 import { OPTIONAL_KEYS } from '@/catalog/resourceKeys';
 import { PLAYER_CLASSES, DEFAULT_PLAYER_CLASS, type PlayerClassId } from '@/config/playerClasses';
+import { isLiveBiome } from '@/config/biomeStage';
 import {
 	ANIMALS,
 	BIOMES,
@@ -141,7 +142,8 @@ const MAX_PITY = 100000;
 const POINT_TOLERANCE = 5;
 
 const LAND_KEYS = new Set(['x', 'y', 'biome', 'level', 'building', 'chest']);
-const hasBiome = (name: unknown): name is string => typeof name === 'string' && Object.prototype.hasOwnProperty.call(BIOMES, name);
+/** A biome a real save may hold: in the catalog and live (the dev-only biomes of config/biomeStage.ts exist only in the map lab). */
+const hasBiome = (name: unknown): name is string => typeof name === 'string' && Object.prototype.hasOwnProperty.call(BIOMES, name) && isLiveBiome(name);
 
 interface RawLand {
 	x: number;
