@@ -1,3 +1,4 @@
+import { zeroResources } from '@/catalog/resourceKeys';
 import { STARTING_GEMS } from '@/config/gameConfig';
 import type { CombatState } from '@/lib/offline/fightTypes';
 import { inventoryFromCore } from '@/lib/offline/inventory';
@@ -12,7 +13,7 @@ import type { Resources } from '@/types/game';
 /** Everything the server ever granted (income while away, chest and kill rewards): the save checks allow gains up to this much more. */
 export type GrantTotals = Resources & { gems: number };
 
-export const zeroTotals = (): GrantTotals => ({ gold: 0, wood: 0, stone: 0, coal: 0, food: 0, meat: 0, eggs: 0, milk: 0, hide: 0, xp: 0, gems: 0 });
+export const zeroTotals = (): GrantTotals => ({ ...zeroResources(), gems: 0 });
 
 export const addTotals = (a: GrantTotals, b: Partial<GrantTotals>): GrantTotals => {
 	const out = { ...a };

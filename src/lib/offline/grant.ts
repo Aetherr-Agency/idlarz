@@ -1,8 +1,9 @@
+import { STORED_KEYS, zeroResources } from '@/catalog/resourceKeys';
 import type { CastleUpgradeState, Resources } from '@/types/game';
 
 // What an absence pays. Pure: the server computes it from the last accepted save and its own clock; the client only applies the result.
 
-const RESOURCES: (keyof Resources)[] = ['gold', 'wood', 'stone', 'coal', 'food', 'meat', 'eggs', 'milk', 'hide', 'xp'];
+const RESOURCES: readonly (keyof Resources)[] = STORED_KEYS;
 
 /** What the server derived from the last accepted save (never sent by the client). */
 export interface OfflineInput {
@@ -36,7 +37,7 @@ export interface OfflineGrant {
 	castle: { toLevel: number; finished: boolean } | null;
 }
 
-export const zeroGrant = (): Resources => ({ gold: 0, wood: 0, stone: 0, coal: 0, food: 0, meat: 0, eggs: 0, milk: 0, hide: 0, xp: 0 });
+export const zeroGrant = (): Resources => zeroResources();
 
 /**
  * The grant for an absence of `gapSec`, or null when it is shorter than the minimum (nothing to show). Income is piecewise: if the

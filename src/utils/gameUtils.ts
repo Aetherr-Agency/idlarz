@@ -1,3 +1,4 @@
+import { FARM_KEYS, zeroResources } from '@/catalog/resourceKeys';
 import {
 	BIOMES,
 	CASTLE_UPGRADE,
@@ -460,9 +461,6 @@ export interface ResourceBreakdownEntry {
 export type ResourceBreakdown = Record<keyof Resources, ResourceBreakdownEntry>;
 
 const RESOURCE_KEYS = Object.keys(BASE_GENERATION_RATES) as (keyof Resources)[];
-const FARM_KEYS = ['meat', 'eggs', 'milk', 'hide'] as const;
-
-const zeroResources = (): Resources => ({ gold: 0, wood: 0, stone: 0, coal: 0, food: 0, meat: 0, eggs: 0, milk: 0, hide: 0, xp: 0 });
 
 /** What one tile produces per second (before the global modifiers), split into the part that is its own and the bonuses on it. */
 export interface TileOutput {

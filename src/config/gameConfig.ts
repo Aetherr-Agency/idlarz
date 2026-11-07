@@ -5,6 +5,7 @@ import {
 	CharacterStats,
 	Resources, // Added Resources import
 } from '@/types/game';
+import { FARM_KEYS, amounts, type FarmKey } from '@/catalog/resourceKeys';
 import { RESOURCES, type MerchantResourceKey, type ResourceKey } from '@/catalog/resources';
 import { shopItems } from '@/catalog/loot';
 import { BIOME_COLORS } from '@/config/biomePalette';
@@ -177,18 +178,7 @@ export const HEADER_DISPLAYED_RESOURCES_INFO = fromResources(
 ) as { [K in Exclude<ResourceKey, 'gems' | 'embers'>]: { icon: string; label: string; description: string; usedFor: string; source: string } };
 
 // The castle's own per-second output (single source of truth: BIOMES.castle reads from it).
-export const CASTLE_BASE_RATES = {
-	gold: 0.1,
-	wood: 0.05,
-	stone: 0.1,
-	coal: 0,
-	food: 0.05,
-	meat: 0,
-	eggs: 0,
-	milk: 0,
-	hide: 0,
-	xp: 0.5,
-};
+export const CASTLE_BASE_RATES = amounts({ gold: 0.1, wood: 0.05, stone: 0.1, food: 0.05, xp: 0.5 });
 
 export const BIOMES: Record<string, BiomeInfo> = {
 	empty: {
@@ -307,32 +297,11 @@ forest: {
 	},
 } as const;
 
-export const INITIAL_RESOURCES = {
-	gold: 125,
-	wood: 0,
-	stone: 0,
-	coal: 0,
-	food: 0,
-	meat: 0,
-	eggs: 0,
-	milk: 0,
-	hide: 0,
-	xp: 0,
-};
+export const INITIAL_RESOURCES = amounts({ gold: 125 });
 
 // Base resource generation (per second) - slightly increased for better early game
-export const BASE_GENERATION_RATES = {
-	gold: 0.1, // Increased base gold generation
-	wood: 0,
-	stone: 0,
-	coal: 0,
-	food: 0,
-	meat: 0, // Meat can only be generated through the farm
-	eggs: 0, // so are eggs, milk and hide
-	milk: 0,
-	hide: 0,
-	xp: 0.25, // Base XP generation rate increased
-};
+// Meat, eggs, milk and hide come only from the farm, so they are 0 here
+export const BASE_GENERATION_RATES = amounts({ gold: 0.1, xp: 0.25 });
 
 
 // Castle range: tiles within this many steps of the castle (3x3 at radius 1) will get the castle's range bonus. `radius` is
@@ -545,7 +514,7 @@ export const MERCHANT_GOODS = {
 } as const;
 
 // Farm products: shown on the farm and at the merchant, not in the header row
-export const FARM_PRODUCT_KEYS = ['eggs', 'milk', 'hide'] as const;
+export const FARM_PRODUCT_KEYS = FARM_KEYS.filter((key): key is Exclude<FarmKey, 'meat'> => key !== 'meat'); // the farm's products without meat (meat is bought with food, the rest only earned)
 
 // Only these can be bought back (as resource packs); farm products are earned on the farm, never bought
 export const MERCHANT_BUYABLE = ['wood', 'stone', 'coal', 'food', 'meat'] as const;

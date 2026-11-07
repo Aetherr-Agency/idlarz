@@ -269,3 +269,29 @@ test('a fight poll keeps the record of the last keyed request too', async () => 
 	ok(await fightStep(m.deps, 'u1', null, { action: 'sync' }, now + 1000));
 	assert.deepEqual(ok(await redeemChest(m.deps, 'u1', 'chest-key-r11b', spot, now + 2000)), first);
 });
+
+test('a poll that found nothing new does not write the ledger, and the next real change still sees the time that passed', async () => {
+	const { m, now } = await playing(25);
+	ok(await syncTickets(m.deps, 'u1', now)); // settles whatever was due
+	const stored = () => m.ledgers.get('u1')!;
+	const ver = stored().ver;
+	const anchor = stored().anchorAt;
+	ok(await syncTickets(m.deps, 'u1', now + 5_000));
+	ok(await syncTickets(m.deps, 'u1', now + 10_000));
+	assert.equal(stored().ver, ver, 'quiet polls leave the row alone');
+	assert.equal(stored().anchorAt, anchor);
+	// once the stored anchor is two minutes behind, the poll writes again
+	ok(await syncTickets(m.deps, 'u1', now + 130_000));
+	assert.ok(stored().ver > ver, 'the anchor is refreshed after ANCHOR_REFRESH_MS');
+});
+
+test('skipped writes do not lose spawn time: polling often or rarely gives the same tickets', async () => {
+	const often = await playing(1);
+	const rarely = await playing(1);
+	for (let s = 5; s <= 600; s += 5) ok(await syncTickets(often.m.deps, 'u1', often.now + s * 1000));
+	const a = ok(await syncTickets(often.m.deps, 'u1', often.now + 600_000));
+	const b = ok(await syncTickets(rarely.m.deps, 'u1', rarely.now + 600_000));
+	// which tile a ticket gets depends on when the server first looked at the land (as before), but what appeared and when must not
+	const when = (t: typeof a.tickets) => ({ chests: t.chests.map((c) => c.n), rats: t.rats.map((r) => [r.n, r.at]), king: t.king?.n ?? null });
+	assert.deepEqual(when(a.tickets), when(b.tickets));
+});

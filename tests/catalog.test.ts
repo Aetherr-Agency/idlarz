@@ -122,3 +122,18 @@ test('every header resource sits in a tier: the header groups come from the cata
 	assert.deepEqual(resourcesInTier('t0'), ['wood', 'stone', 'coal', 'food', 'meat']);
 	assert.deepEqual(resourcesInTier('t1'), ['eggs', 'milk', 'hide']);
 });
+
+test('the stored resource keys come from the catalog, in the order saves have always had', async () => {
+	const { STORED_KEYS, OPTIONAL_KEYS, FARM_KEYS, zeroResources } = await import('../src/catalog/resourceKeys');
+	const { INITIAL_RESOURCES, BASE_GENERATION_RATES, CASTLE_BASE_RATES, FARM_PRODUCT_KEYS } = await import('../src/config/gameConfig');
+	const { zeroTotals } = await import('../src/lib/offline/ledger');
+	// a snapshot: adding a resource changes this list on purpose, never by accident
+	assert.deepEqual([...STORED_KEYS], ['gold', 'wood', 'stone', 'coal', 'food', 'meat', 'eggs', 'milk', 'hide', 'xp']);
+	assert.deepEqual([...OPTIONAL_KEYS], ['eggs', 'milk', 'hide']);
+	assert.deepEqual([...FARM_KEYS], ['meat', 'eggs', 'milk', 'hide']);
+	assert.deepEqual([...FARM_PRODUCT_KEYS], ['eggs', 'milk', 'hide']);
+	for (const table of [INITIAL_RESOURCES, BASE_GENERATION_RATES, CASTLE_BASE_RATES, zeroResources()]) assert.deepEqual(Object.keys(table), [...STORED_KEYS]);
+	assert.deepEqual(Object.keys(zeroTotals()), [...STORED_KEYS, 'gems']);
+	assert.equal(INITIAL_RESOURCES.gold, 125);
+	assert.equal(BASE_GENERATION_RATES.xp, 0.25);
+});

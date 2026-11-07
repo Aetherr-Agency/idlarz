@@ -1,4 +1,5 @@
 import { BIOMES } from '@/config/gameConfig';
+import type { StoredAmounts } from '@/catalog/resourceKeys';
 import type { PlayerClassId } from '@/config/playerClasses';
 import type { FarmUpgradeId, EmberUpgradeId, MerchantUpgradeId } from '@/config/gameConfig';
 import type { PixelIconName } from '@/config/pixelIcons';
@@ -8,18 +9,8 @@ import type { World } from '@/utils/world';
 
 export type BiomeType = keyof typeof BIOMES;
 
-export interface Resources {
-	gold: number;
-	wood: number;
-	stone: number;
-	coal: number;
-	food: number;
-	meat: number;
-	eggs: number; // farm products: produced by animals, sold to the merchant, spent on farm upgrades
-	milk: number;
-	hide: number;
-	xp: number;
-}
+/** One amount per stored resource; the keys come from the catalog (`stored: true` in catalog/resources.ts, see catalog/resourceKeys.ts) */
+export type Resources = StoredAmounts;
 
 export interface CharacterStats {
 	strength: number;
