@@ -40,7 +40,7 @@ A Glossary overlay (header menu) with tabs: **Monsters, Resources, Biomes, Items
 - `publicTickets` and the fight answers hide the name, `level` and HP for unknown types (they carry only the sprite key); `GET /api/glossary` is **not needed**: the glossary reads the catalogs in the client plus one `stats` object that the existing answers carry only when its version changed (the `invVer` pattern: `statsVer`).
 - `payKill` (`lib/offline/reward.ts`) increments `kills[type]`, applies the monster-mastery bonus, and adds the type to `seen`; the fight engine adds `seen` when a fight opens.
 - Saves: no save field. The glossary and the silhouettes depend only on the ledger, so a local edit cannot reveal anything (it can only change the client's own display).
-- `repairSave`/`sanitizeSave`: nothing to do.
+- `sanitizeSave`: nothing to do.
 
 ## 6. Art and UI
 - **The real sprite in black** (decided): one CSS rule (`filter: brightness(0)`) on the existing monster art, a "?" mark instead of the level badge; a lucky unknown keeps a faint golden outline so it is still worth the walk. No new monster art is needed, which also holds for every future family.

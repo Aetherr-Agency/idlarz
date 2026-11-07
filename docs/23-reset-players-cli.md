@@ -33,9 +33,9 @@ Before a real reset the tool writes `backups/reset-<timestamp>.json` with `playe
 2. Do it while few people are online. A player with the game open must reload: their old save no longer matches the server and is rejected, then they start a new game.
 3. Run with `--yes`.
 
-## Known caveat: local copies in browsers
+## Local copies in browsers
 
-The server side is fully reset, but a browser may still hold its own local save (see "Start flow" in [09](09-cloud-saves.md)). The tool cannot touch browsers. Gems stay the server's ([11](11-server-authority.md)), but other progress in an old local save could be offered back to the player at login. If the restart must be strict, tell players to choose New Game / clear the site's saved data, or ship a client change that discards local saves from before the restart.
+The server side is fully reset, but a browser may still hold its own local save. The tool cannot touch browsers, so the client does it: the reset ships together with a `SAVE_SCHEMA` bump (7 at the time of writing). A local save of any older schema is refused ("from an older season, start a new game"), so it cannot be offered back at login. Gems stay the server's ([11](11-server-authority.md)). After a later restart, bump `SAVE_SCHEMA` again in the same release.
 
 ## Undoing it
 

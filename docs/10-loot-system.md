@@ -55,7 +55,7 @@ Stats are derived at load and never stored, so retuning the curve retunes every 
 
 ## Saves
 
-Gear is saved as instances (since schema 3; the current schema is 6, see [07](07-saves-and-security.md)): equipment `{ slot: { base, level, rarity, quality, affixes: [{ id, roll }] } }`, bag gear `{ item: {...} }`, consumables `{ id, qty }` as before. Schema 2 saves (bare item ids) are converted by `MIGRATIONS[2]` using the frozen table in `src/lib/legacyGear.ts`: each old id becomes the item at its authored level, neutral quality, no affixes and its old rarity, so its stats do not change (`tests/saves.test.ts` checks all 76 gear ids). The old encrypted vault format goes through the same step. New optional fields: `lootPity` (bad-luck counters by `profile:table`) and `autoSellUpTo` (rarity id).
+Gear is saved as instances (the current schema is 7, see [07](07-saves-and-security.md)): equipment `{ slot: { base, level, rarity, quality, affixes: [{ id, roll }] } }`, bag gear `{ item: {...} }`, consumables `{ id, qty }` as before. New optional fields: `lootPity` (bad-luck counters by `profile:table`) and `autoSellUpTo` (rarity id).
 
 ## The merchant's shelf
 

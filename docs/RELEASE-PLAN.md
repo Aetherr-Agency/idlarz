@@ -19,7 +19,7 @@ Legend: **S** half a day, **M** 1-2 days, **L** about a week. 🎨 = needs art. 
 
 ## 1. Integrity rules for every step
 
-1. **Additive saves only**: optional fields, new biome letters, nullable ledger columns; no `SAVE_SCHEMA` bump. A moved rule goes through `repairSave`, never refusal ([07](07-saves-and-security.md)).
+1. **Additive saves only**: optional fields, new biome letters, nullable ledger columns; no `SAVE_SCHEMA` bump. A moved rule that would refuse existing saves needs a reset (`reset-players`) or a conversion written for it ([07](07-saves-and-security.md)).
 2. **SQL before code**: apply a migration on the project first, then deploy the code that reads it ([ROADMAP](ROADMAP.md) deploy-order note). Rehearse each migration on a **Supabase branch** first.
 3. **Run `scripts/check-live-saves.ts`** (new in P0) against the real rows before every release that touches save or ledger rules.
 4. **Dark first, switch later**: server code and data shapes ship before the UI or the content that uses them, behind a constant (`GAME_EPOCH`, an unlock count) so the release moment is a one-line change.
@@ -147,7 +147,7 @@ Goal: more monster kinds with **real stats, rewards and spawn rules** in the exi
 | 3.3 | **Reward model** ([20](20-monster-families-and-rewards.md)): gold and XP `min(rewardSec x income, cap) x levelMult^(level - refLevel)`, goods by family type, caps tuned so rats and King pay the same on day 1; new `scripts/kill-sim.ts` (kill income stays a small share of income) | M |
 | 3.4 | **Spawn tables per distance band and relevance fade** (outgrown families rarer, floor 0.1, never gone); **rats 2-6**; per-band danger offset (closes R7) | M |
 | 3.5 | **Home families**: wolf (forest), bog thing (swamp), frost hare (tundra), each with stats, `refLevel`, drops and a loot pool tag; `fight-sim`, `loot-sim`, `monsterConfig.test.ts` cover them without code changes | M |
-| 3.6 | **Retire the Rattatui set and demote the Rat King** (R8 resolved): the King is a basic monster with the normal reward model and a normal loot source; the 12 Rattatui pieces and their set bonus leave every loot pool and the `ratKing` source, but **their item definitions stay** so existing pieces keep loading, equipping and selling (flag `retired: true` on the base, excluded from `LOOT_POOLS` and drop generators; `repairSave` is not needed because nothing is removed). Update `fightBalance.test.ts`, `fight-sim`, `loot-sim`, `item-catalog` doc, the sim `GEAR_SCHEDULE` and doc 20. Note: the P2 reset wipes every bag anyway, so "keep your items" matters only between this step and P2 if 3.6 ships first | M |
+| 3.6 | **Retire the Rattatui set and demote the Rat King** (R8 resolved): the King is a basic monster with the normal reward model and a normal loot source; the 12 Rattatui pieces and their set bonus leave every loot pool and the `ratKing` source, but **their item definitions stay** so existing pieces keep loading, equipping and selling (flag `retired: true` on the base, excluded from `LOOT_POOLS` and drop generators). Update `fightBalance.test.ts`, `fight-sim`, `loot-sim`, `item-catalog` doc, the sim `GEAR_SCHEDULE` and doc 20. Note: the P2 reset wipes every bag anyway, so "keep your items" matters only between this step and P2 if 3.6 ships first | M |
 
 Clarify ❓ D7: stats, `rewardSec` and caps of the three families (I will propose numbers from the sim, you approve); whether Luck / Gold Find apply after the cap (proposed yes); what the demoted King keeps (HP, boss timer, spawn distance, see D11). Assets: one generic sprite sheet (small); real sprites for wolf, bog thing, frost hare listed in section 6 and swapped in later.
 
@@ -184,7 +184,7 @@ Goal: replace the 16 generic buildings with three per biome on the **seven exist
 | Step | What | Size |
 |---|---|---|
 | 6.1 | Build menu by the tile's biome, one of each type per map, Producers only, +2 % per owned tile of the biome (cap +100 %), relocation for 50 % of the cost | M |
-| 6.2 | Levels 1-5 gated by `min(5, castle level)`, upgrade timers 10 min / 45 min / 3 h / 8 h, **one shared builder queue** with the castle (`castle_jump` becomes `timer_jump`), `netWorth.ts` prices levels, legacy 16 types removed through `repairSave` | L |
+| 6.2 | Levels 1-5 gated by `min(5, castle level)`, upgrade timers 10 min / 45 min / 3 h / 8 h, **one shared builder queue** with the castle (`castle_jump` becomes `timer_jump`), `netWorth.ts` prices levels, legacy 16 types removed with a reset or a conversion | L |
 | 6.3 | 🧱 Existing 16 sprites mapped to the nearest new building; sim `BUILD_ORDER` rewritten (closes B7) | S |
 
 **P6b Extractors and T3 materials (home biomes)**
@@ -208,7 +208,7 @@ Clarify ❓: **D2 and D3 must be answered before 6.6** (the click Idol and the f
 | Step | What | Size |
 |---|---|---|
 | 7.1 | Respec on rebirth (all attribute points back to the pool) and **+20 points per rebirth** (`totalStatPoints(level) + 20 x rebirths`) | M |
-| 7.2 | Server sum check: `reconcileCharacter` uses `rebirths` from the ledger inside `acceptSave`; a save above the maximum is repaired, not refused | S |
+| 7.2 | Server sum check: `reconcileCharacter` uses `rebirths` from the ledger inside `acceptSave`; a save above the maximum is clamped by the server, not refused | S |
 | 7.3 | Rebirth dialog preview (refunded points, +20, what is wiped later) and **sell all for gold** button | S |
 | 7.4 | Sim bot learns to respec (B7); re-measure BL2 and the run-2 ratio | S |
 
