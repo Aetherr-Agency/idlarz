@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { useUiStore } from '@/stores/uiStore';
 import { formatNumber, formatPercent } from '@/utils/formatters';
@@ -8,7 +8,6 @@ import { MerchantGoods, MerchantUpgradeCards } from './MerchantShop';
 import { MerchantResources } from './MerchantResources';
 import { CLICK_LADDER } from '@/config/gameConfig';
 import { cn } from '@/lib/utils';
-import type { MerchantTab } from '@/types/game';
 import ResourceIcon from '../../ResourceIcon';
 
 // Extracted component for tab content placeholders
@@ -42,7 +41,8 @@ const MerchantOverlay: React.FC = () => {
 	const clickLevel = useGameStore((state) => state.clickLevel);
 
 	// State for current merchant tab
-	const [activeTab, setActiveTab] = useState<MerchantTab>('resources');
+	const activeTab = useUiStore((state) => state.merchantTab);
+	const setActiveTab = useUiStore((state) => state.setMerchantTab);
 
 	// Every sale and purchase is announced by the shared toast (top of the screen), so the window never jumps
 	const showToast = useUiStore((state) => state.showToast);

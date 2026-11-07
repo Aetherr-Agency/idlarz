@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import Grid from '@/components/game/Grid';
-import MenuOverlay from '@/components/game/overlays/MenuOverlay';
+import GameWindows from '@/components/game/overlays/GameWindows';
+import { useWindowStore } from '@/stores/windowStore';
 import LevelUpNotification from '@/components/game/overlays/LevelUpNotification';
 import RewardPendingChest from '@/components/game/overlays/RewardPendingChest';
 import LoadingScreen from '@/components/game/overlays/LoadingScreen';
@@ -51,15 +52,17 @@ export default function GameApp({ profile, userId }: GameAppProps) {
 	useEffect(() => loadSettings(), [loadSettings]);
 	const loadPrefs = useUiStore((state) => state.loadPrefs);
 	useEffect(() => loadPrefs(), [loadPrefs]);
+	const loadWindowPositions = useWindowStore((state) => state.loadPositions);
+	useEffect(() => loadWindowPositions(), [loadWindowPositions]);
 	// no browser menu anywhere: the right click belongs to the game (tiles and bag slots add their own entries)
 	useGlobalContextMenu();
 	// Hidden shortcut: Control x5 within 2.5 s opens the save tools (export / import / reset)
 	useCtrlSequence(5, 2500, toggleSaveMenu);
-	const lastChestLoot = useGameStore((state) => state.lastChestLoot);
+	// Chest rewards queue in the ui store (one notice per chest, each with its own timer)
+	const chestNotices = useUiStore((state) => state.chestNotices);
+	const dismissChestNotice = useUiStore((state) => state.dismissChestNotice);
 	// Monotonic clock: changing the system clock must not change game speed
 	const lastTickTime = useRef(performance.now());
-	const [showChestNotification, setShowChestNotification] = useState(false);
-	const shownLootRef = useRef<typeof lastChestLoot>(null);
 
 	// What the absence was worth is claimed before the game starts running and before the first upload (the claim changes the game)
 	const claim = useOfflineClaim(userId, isHydrated && tabStatus === 'owner');
@@ -89,15 +92,6 @@ export default function GameApp({ profile, userId }: GameAppProps) {
 		return () => clearInterval(interval);
 	}, [tick, isHydrated, tabStatus, claim]);
 
-	useEffect(() => {
-		// A new chest result (a fresh object every time one is opened) shows the toast for 3 seconds
-		if (!lastChestLoot || lastChestLoot === shownLootRef.current) return;
-		shownLootRef.current = lastChestLoot;
-		setShowChestNotification(true);
-		const timer = setTimeout(() => setShowChestNotification(false), 3000);
-		return () => clearTimeout(timer);
-	}, [lastChestLoot]);
-
 	return (
 		<main className='h-screen w-screen overflow-hidden relative'>
 			{/* z-50 puts the header above the window backdrop (z-45): resources stay visible and the Menu button toggles */}
@@ -106,7 +100,7 @@ export default function GameApp({ profile, userId }: GameAppProps) {
 			</div>
 			<Grid />
 			<FloatingText />
-			<MenuOverlay />
+			<GameWindows />
 			<ClassPickerDialog />
 			<LevelUpNotification />
 			<RewardPendingChest />
@@ -125,7 +119,9 @@ export default function GameApp({ profile, userId }: GameAppProps) {
 			{tabStatus === 'blocked' && <TabLockOverlay onTakeOver={takeOver} />}
 			{/* one stack for every notice: chest rewards, fight loot, and the short messages (merchant, bag, saves) */}
 			<div className='notice-stack'>
-				<ChestNotification loot={lastChestLoot} show={showChestNotification} onClose={() => setShowChestNotification(false)} />
+				{chestNotices.map((notice) => (
+					<ChestNotification key={notice.id} loot={notice.loot} onClose={() => dismissChestNotice(notice.id)} />
+				))}
 				<Toast />
 			</div>
 		</main>

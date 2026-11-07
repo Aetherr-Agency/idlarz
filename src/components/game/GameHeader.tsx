@@ -25,14 +25,17 @@ const GameHeader: React.FC = () => {
 	return (
 		<div ref={ref} className='pixel-header fixed top-0 left-0 right-0 z-50'>
 			<div className='max-w-[98%] mx-auto px-2 py-0.5'>
-				<div className='flex items-center gap-2'>
-					<div className='pixel-divider-right shrink-0 pr-3'>
+				{/* three columns, the outer two equal: the resources sit in the true middle of the screen on any width */}
+				<div className='grid grid-cols-[minmax(max-content,1fr)_minmax(0,auto)_minmax(max-content,1fr)] items-center gap-2'>
+					<div className='pixel-divider-right justify-self-start pr-3'>
 						<PlayerCard />
 					</div>
-					<div className='flex flex-wrap items-center gap-x-2 gap-y-1 flex-1 min-w-0'>
+					<div className='flex flex-wrap items-center justify-center gap-x-2 gap-y-1 min-w-0'>
 						<ResourceDisplay />
 					</div>
-					<HeaderButtons />
+					<div className='justify-self-end'>
+						<HeaderButtons />
+					</div>
 				</div>
 			</div>
 		</div>

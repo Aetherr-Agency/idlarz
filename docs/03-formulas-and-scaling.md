@@ -133,7 +133,7 @@ item:  sell = floor(rarityValue × valueCurve(level) × qualityValue × affixesV
 goods: shelf = 6 pieces of loot source `merchant` (profile `merchant_stock`: common 60 / uncommon 40, nothing better); item level centre = min(castle-based level, avgWorn + 3), never above avgWorn + 5 (MERCHANT_GOODS)
        price = ceil(sellValue × 5), reshuffle after 1800 s of play time, refresh = 5000 × (k+1) for the k-th paid refresh (k < 10), then 50000 × (k−8) (MERCHANT_GOODS.refresh)
 bonuses: price = ceil(base × growth^level)   Haggler 100 K ×1.9, Bulk Discount 250 K ×2.1, Lucky Charm 150 K ×1.9, Pack Rat 500 K ×3, Foreman 400 K ×1.9, Skinner 300 K ×1.9, Quick Hands / Keen Eye / Deadly Aim / Might 250 K ×1.9, Arcana 250 K ×2, Vampiric Fang / Second Wind 300 K ×2, Ancestral Tithe 600 K ×1.9 (all start again on a rebirth but Pack Rat); Embers of a rebirth = floor(gain × (1 + 0.05 × Tithe))
-click: gold = total gold/s × clickPower    0.5 → 0.9 → 1.3 → 1.8   (750 K, 2.5 M, 10 M)
+click: gold = max(total gold/s × clickPower, floor) × (1 + Click Mastery) × (1 + set bonus)    power 2 → 4 → 8 → 15, floor 2 / 6 / 20 / 60   (750 K, 2.5 M, 10 M); Click Mastery +25 % per Ember level (CLICK_LADDER, clickGold)
 chest: gold = floor(total gold/s × U{600…3600} s × (1 + 0.005 × Luck))      one per 600 s of server time (Luck shortens it), counted with the monsters against min(40, 30 % of the free land)
 building cost: see §11
 ```

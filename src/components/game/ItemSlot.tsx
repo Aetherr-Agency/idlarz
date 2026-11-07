@@ -35,12 +35,21 @@ interface ItemSlotProps {
 	onDrop?: () => void;
 }
 
+/** How long a hover card lingers after the pointer leaves its slot (ms), so it can be reached and its text copied */
+export const TIP_CLOSE_MS = 300;
+
 /**
  * A hover card attached to the edge of its item box (not the cursor, so it stays put while the mouse moves over the box).
  * It measures itself, so a wide one (an item next to the gear it would replace) flips to the left of the box near the right
  * edge and never leaves the screen (see lib/tipPlacement.ts).
  */
-export const FloatingTip: React.FC<{ anchor: Box; children: React.ReactNode }> = ({ anchor, children }) => {
+export const FloatingTip: React.FC<{
+	anchor: Box;
+	children: React.ReactNode;
+	/** Makes the card hoverable (so its text can be selected and copied): the pointer entering/leaving it is reported */
+	onPointerEnter?: () => void;
+	onPointerLeave?: () => void;
+}> = ({ anchor, children, onPointerEnter, onPointerLeave }) => {
 	const ref = useRef<HTMLDivElement>(null);
 	useLayoutEffect(() => {
 		const el = ref.current;
@@ -52,7 +61,12 @@ export const FloatingTip: React.FC<{ anchor: Box; children: React.ReactNode }> =
 		el.style.visibility = 'visible';
 	});
 	return (
-		<div ref={ref} className='fixed z-[100] pointer-events-none' style={{ left: anchor.right + 8, top: anchor.top, visibility: 'hidden' }}>
+		<div
+			ref={ref}
+			className={`fixed z-[100] ${onPointerEnter ? 'pointer-events-auto select-text' : 'pointer-events-none'}`}
+			style={{ left: anchor.right + 8, top: anchor.top, visibility: 'hidden' }}
+			onPointerEnter={onPointerEnter}
+			onPointerLeave={onPointerLeave}>
 			{children}
 		</div>
 	);
@@ -78,6 +92,17 @@ const ItemSlot: React.FC<ItemSlotProps> = ({
 }) => {
 	const [tip, setTip] = useState<Box | null>(null);
 	const [over, setOver] = useState(false);
+	const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const cancelClose = () => {
+		if (closeTimer.current) clearTimeout(closeTimer.current);
+		closeTimer.current = null;
+	};
+	// a short grace period lets the pointer travel from the slot onto the card (to select and copy its text)
+	const scheduleClose = () => {
+		cancelClose();
+		closeTimer.current = setTimeout(() => setTip(null), TIP_CLOSE_MS);
+	};
+	useEffect(() => cancelClose, []);
 	const resolved = item ? resolveItem(item) : null;
 	const def = resolved?.def ?? (itemId ? ITEM_CATALOG[itemId] : undefined);
 	const rarityId = resolved?.instance.rarity ?? def?.rarity;
@@ -124,10 +149,11 @@ const ItemSlot: React.FC<ItemSlotProps> = ({
 				}}
 				onMouseEnter={(e) => {
 					if (!hasTip) return;
+					cancelClose();
 					const { left, top, right, bottom } = e.currentTarget.getBoundingClientRect();
 					setTip({ left, top, right, bottom });
 				}}
-				onMouseLeave={() => setTip(null)}
+				onMouseLeave={scheduleClose}
 				onClick={onClick}
 				onDoubleClick={onDoubleClick}
 				onContextMenu={(e) => {
@@ -148,7 +174,7 @@ const ItemSlot: React.FC<ItemSlotProps> = ({
 			{tip &&
 				hasTip &&
 				createPortal(
-						<FloatingTip anchor={tip}>
+						<FloatingTip anchor={tip} onPointerEnter={cancelClose} onPointerLeave={scheduleClose}>
 							{def ? (
 								<ItemTooltipStack item={item ?? undefined} itemId={itemId ?? undefined} compare={compare} buyPrice={buyPrice} />
 							) : (

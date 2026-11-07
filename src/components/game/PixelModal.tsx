@@ -4,6 +4,9 @@ import { cn } from '@/lib/utils';
 // Open modals, oldest first: Esc closes only the one on top (e.g. the hero picker over the Character window)
 const openModals: symbol[] = [];
 
+/** True while a real modal (a confirmation, settings ...) is open: Esc belongs to it before it belongs to a window */
+export const hasOpenModal = (): boolean => openModals.length > 0;
+
 interface PixelModalProps {
 	title: React.ReactNode;
 	icon?: React.ReactNode;

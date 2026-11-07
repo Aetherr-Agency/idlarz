@@ -1,11 +1,10 @@
 import { create } from 'zustand';
-import { PREF_DEFAULTS, readPref, writePref, type UiPrefKey } from '@/lib/uiPrefs';
+import { PREF_DEFAULTS, readPref, readStringPref, writePref, writeStringPref, type UiPrefKey } from '@/lib/uiPrefs';
+import type { MerchantTab } from '@/types/game';
 import type { OfflineReport } from '@/lib/offline/apply';
 import { connectedCluster } from '@/utils/cluster';
 import { getTile, type World } from '@/utils/world';
-
-/** The tabs of the main menu window (everything the old header buttons opened) */
-export type MenuTab = 'character' | 'stats' | 'merchant' | 'farm';
+import type { ChestLoot } from '@/lib/chests';
 
 export interface ContextMenuItem {
 	id: string;
@@ -33,21 +32,65 @@ interface ContextMenuState {
 }
 
 let toastId = 0;
-let toastTimer: ReturnType<typeof setTimeout> | null = null;
+let chestNoticeId = 0;
+const noticeTimers = new Map<number, ReturnType<typeof setTimeout>>();
 let flashTimer: ReturnType<typeof setTimeout> | null = null;
+
+export type CharacterTab = 'combat' | 'income' | 'rebirths';
+export const CHARACTER_TABS: readonly CharacterTab[] = ['combat', 'income', 'rebirths'];
+
+/** How much one Sell / Buy click moves in the Merchant window: a preset number of units, or all of it */
+export type MerchantAmount = number | 'max';
+export const MERCHANT_PRESETS: readonly MerchantAmount[] = [1_000, 1_000_000, 1_000_000_000, 'max'];
+export const MERCHANT_CUSTOM_MAX = 12;
+const MERCHANT_TABS: readonly MerchantTab[] = ['resources', 'goods', 'upgrades', 'quests', 'gambling'];
+
+/** Stored values are checked on the way in: anything else (an old or edited entry) falls back to the default */
+const readMerchantTab = (): MerchantTab => {
+	const saved = readStringPref('merchantTab');
+	return MERCHANT_TABS.find((tab) => tab === saved) ?? 'resources';
+};
+const readMerchantPreset = (): MerchantAmount => {
+	const saved = readStringPref('merchantPreset');
+	return MERCHANT_PRESETS.find((preset) => String(preset) === saved) ?? 1_000;
+};
+
+/** How long a short message stays up (ms) */
+export const TOAST_MS = 2200;
+/** How long a chest reward notice stays up (ms); the fade in ContextMenu.css (.chest-toast) runs the same time */
+export const CHEST_NOTICE_MS = 3000;
+/** Most notices of one kind on screen at once; opening more drops the oldest */
+export const MAX_NOTICES = 5;
+
+export type ChestNoticeLoot = ChestLoot & { gems?: number };
+export interface ChestNotice {
+	id: number;
+	loot: ChestNoticeLoot;
+}
+export interface ToastMessage {
+	id: number;
+	text: string;
+	/** The same message repeated in a row (a rapid sale) is one line with a counter */
+	count: number;
+}
+
+function schedule(id: number, ms: number, remove: () => void) {
+	const old = noticeTimers.get(id);
+	if (old) clearTimeout(old);
+	noticeTimers.set(
+		id,
+		setTimeout(() => {
+			noticeTimers.delete(id);
+			remove();
+		}, ms)
+	);
+}
 
 /** How long a highlighted area stays tinted (ms) */
 export const HIGHLIGHT_MS = 3000;
 
 // Transient UI flags (never persisted): dialogs that are opened from several places.
 interface UiState {
-	/** The main menu window; menuTab remembers the last tab for the rest of the session */
-	menuOpen: boolean;
-	menuTab: MenuTab;
-	openMenu: (tab?: MenuTab) => void;
-	closeMenu: () => void;
-	toggleMenu: () => void;
-	setMenuTab: (tab: MenuTab) => void;
 	classDialogOpen: boolean;
 	openClassDialog: () => void;
 	closeClassDialog: () => void;
@@ -84,9 +127,14 @@ interface UiState {
 	highlight: { biome: string; cells: ReadonlySet<number> } | null;
 	/** Tints the area of the same biome around tile (x, y): every tile of that biome that touches it, side by side. */
 	flashCluster: (world: World, x: number, y: number) => void;
-	/** A short message at the bottom of the screen */
-	toast: { id: number; text: string } | null;
+	/** Short messages, stacked under the header (a new one never replaces one still showing) */
+	toasts: ToastMessage[];
 	showToast: (text: string) => void;
+	dismissToast: (id: number) => void;
+	/** Chest rewards, stacked: opening chests quickly queues one notice per chest */
+	chestNotices: ChestNotice[];
+	pushChestNotice: (loot: ChestNoticeLoot) => void;
+	dismissChestNotice: (id: number) => void;
 	/** Remembered view options (localStorage, see lib/uiPrefs): the minimap and the dev admin panel */
 	showMinimap: boolean;
 	/** The combat panel is shrunk to its icon (a win or defeat is still announced) */
@@ -99,17 +147,21 @@ interface UiState {
 	farmAnimalsOpen: boolean;
 	farmHudOpen: boolean;
 	farmUpgradesOpen: boolean;
+	/** The Merchant window remembers its tab and the amount you set (also across visits): the typed value is not lost when you switch windows */
+	/** The Character window's lower tab: its combat figures, the income, or the rebirth history */
+	characterTab: CharacterTab;
+	setCharacterTab: (tab: CharacterTab) => void;
+	merchantTab: MerchantTab;
+	setMerchantTab: (tab: MerchantTab) => void;
+	merchantPreset: MerchantAmount;
+	setMerchantPreset: (preset: MerchantAmount) => void;
+	merchantCustom: string;
+	setMerchantCustom: (text: string) => void;
 	setPref: (key: UiPrefKey, value: boolean) => void;
 	loadPrefs: () => void;
 }
 
-export const useUiStore = create<UiState>((set) => ({
-	menuOpen: false,
-	menuTab: 'character',
-	openMenu: (tab) => set((state) => ({ menuOpen: true, menuTab: tab ?? state.menuTab })),
-	closeMenu: () => set({ menuOpen: false }),
-	toggleMenu: () => set((state) => ({ menuOpen: !state.menuOpen })),
-	setMenuTab: (tab) => set({ menuTab: tab }),
+export const useUiStore = create<UiState>((set, get) => ({
 	classDialogOpen: false,
 	openClassDialog: () => set({ classDialogOpen: true }),
 	closeClassDialog: () => set({ classDialogOpen: false }),
@@ -150,11 +202,58 @@ export const useUiStore = create<UiState>((set) => ({
 		set({ highlight: { biome: tile.biome, cells }, contextMenu: null });
 		flashTimer = setTimeout(() => set({ highlight: null }), HIGHLIGHT_MS);
 	},
-	toast: null,
+	toasts: [],
 	showToast: (text) => {
-		if (toastTimer) clearTimeout(toastTimer);
-		set({ toast: { id: ++toastId, text } });
-		toastTimer = setTimeout(() => set({ toast: null }), 2200);
+		const last = get().toasts[get().toasts.length - 1];
+		if (last && last.text === text) {
+			// the same message again: one line with a counter, its time restarted
+			set((state) => ({ toasts: state.toasts.map((t) => (t.id === last.id ? { ...t, count: t.count + 1 } : t)) }));
+			schedule(last.id, TOAST_MS, () => get().dismissToast(last.id));
+			return;
+		}
+		const id = ++toastId;
+		const next = [...get().toasts, { id, text, count: 1 }];
+		const dropped = next.splice(0, Math.max(0, next.length - MAX_NOTICES));
+		dropped.forEach((t) => noticeTimers.delete(t.id));
+		set({ toasts: next });
+		schedule(id, TOAST_MS, () => get().dismissToast(id));
+	},
+	dismissToast: (id) => set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
+	chestNotices: [],
+	pushChestNotice: (loot) => {
+		const id = ++chestNoticeId;
+		const next = [...get().chestNotices, { id, loot }];
+		const dropped = next.splice(0, Math.max(0, next.length - MAX_NOTICES));
+		dropped.forEach((n) => {
+			const timer = noticeTimers.get(-n.id);
+			if (timer) clearTimeout(timer);
+			noticeTimers.delete(-n.id);
+		});
+		set({ chestNotices: next });
+		// negative keys keep chest timers apart from toast timers in the same map
+		schedule(-id, CHEST_NOTICE_MS, () => get().dismissChestNotice(id));
+	},
+	dismissChestNotice: (id) => set((state) => ({ chestNotices: state.chestNotices.filter((n) => n.id !== id) })),
+	characterTab: 'combat',
+	setCharacterTab: (tab) => {
+		writeStringPref('characterTab', tab);
+		set({ characterTab: tab });
+	},
+	merchantTab: 'resources',
+	setMerchantTab: (tab) => {
+		writeStringPref('merchantTab', tab);
+		set({ merchantTab: tab });
+	},
+	merchantPreset: 1_000,
+	setMerchantPreset: (preset) => {
+		writeStringPref('merchantPreset', String(preset));
+		set({ merchantPreset: preset });
+	},
+	merchantCustom: '',
+	setMerchantCustom: (text) => {
+		const clean = text.slice(0, MERCHANT_CUSTOM_MAX);
+		writeStringPref('merchantCustom', clean);
+		set({ merchantCustom: clean });
 	},
 	...PREF_DEFAULTS,
 	setPref: (key, value) => {
@@ -164,6 +263,10 @@ export const useUiStore = create<UiState>((set) => ({
 	// read after mount (the server render has no localStorage): keeps hydration identical
 	loadPrefs: () =>
 		set({
+			characterTab: CHARACTER_TABS.find((tab) => tab === readStringPref('characterTab')) ?? 'combat',
+			merchantTab: readMerchantTab(),
+			merchantPreset: readMerchantPreset(),
+			merchantCustom: (readStringPref('merchantCustom') ?? '').slice(0, MERCHANT_CUSTOM_MAX),
 			showAdmin: readPref('showAdmin'),
 			showMinimap: readPref('showMinimap'),
 			adminCollapsed: readPref('adminCollapsed'),

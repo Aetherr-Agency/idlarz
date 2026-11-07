@@ -6,10 +6,18 @@ import LevelDetails from '../LevelDetails';
 import CollapsibleSection from '../CollapsibleSection';
 import ResourceIcon from '../ResourceIcon';
 import { gearIncomePct } from '@/lib/gearEconomy';
-import { calculateResourceBreakdown, countOwnedTiles, getStatDescription, type ResourceBreakdownEntry } from '@/utils/gameUtils';
+import { calculateResourceBreakdown, countOwnedTiles, getStatDescriptionGroups, type ResourceBreakdownEntry } from '@/utils/gameUtils';
 import { formatNumber, formatPercent, formatRate, formatCompact } from '@/utils/formatters';
 import audioManager from '@/utils/audioManager';
 import { REBIRTH } from '@/config/gameConfig';
+import { useUiStore, type CharacterTab } from '@/stores/uiStore';
+import RebirthsPanel from './RebirthsPanel';
+
+const CHARACTER_TAB_LABELS: { id: CharacterTab; label: string }[] = [
+	{ id: 'combat', label: 'Combat & bonuses' },
+	{ id: 'income', label: 'Income' },
+	{ id: 'rebirths', label: 'Rebirths' },
+];
 
 const BASE_STATS = ['strength', 'dexterity', 'intelligence', 'vitality', 'charisma'] as const;
 
@@ -81,6 +89,9 @@ const StatisticsOverlay: React.FC = () => {
 	const merchantUpgrades = useGameStore((state) => state.merchantUpgrades);
 	const fx = effectiveStats({ characterStats, equipment, prestige, merchantUpgrades });
 
+	const characterTab = useUiStore((state) => state.characterTab);
+	const setCharacterTab = useUiStore((state) => state.setCharacterTab);
+
 	const points = characterStats.availablePoints;
 	const breakdown = useMemo(
 		() => calculateResourceBreakdown(tiles, characterStats, farmLevels, prestige, farmUpgrades, merchantUpgrades, gearIncomePct(equipment)),
@@ -119,16 +130,20 @@ const StatisticsOverlay: React.FC = () => {
 									<div className='group relative flex-1 flex justify-between items-center cursor-help'>
 										<span className='text-[#d8c8a0] capitalize'>{stat}</span>
 										<span className='text-blue-400 font-medium tabular-nums'>{formatCompact(characterStats[stat])}</span>
-										<div className='absolute -bottom-2 left-1/2 -translate-x-1/2 translate-y-full w-max opacity-0 group-hover:opacity-100 pointer-events-none z-50 transition-opacity duration-200'>
+										{/* hoverable (select/copy the text): a top padding bridges the gap, and it lingers a moment after the pointer leaves */}
+										<div className='absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full pt-2 w-max invisible opacity-0 group-hover:visible group-hover:opacity-100 z-50 cursor-text select-text transition-[opacity,visibility] duration-200 delay-300 group-hover:delay-0'>
 											<div className='px-tooltip min-w-[240px]'>
 												<div className='px-tip-title'>{capital(stat)}</div>
-												{getStatDescription(stat)
-													.split('/')
-													.map((bonus, index) => (
-														<div key={index} className='text-xs text-[#a89878]'>
-															{bonus.trim()}
-														</div>
-													))}
+												{getStatDescriptionGroups(stat).map(({ category, lines }) => (
+													<div key={category.id} className='px-tip-group' style={{ '--cat': category.color } as React.CSSProperties}>
+														<div className='px-tip-cat'>{category.label}</div>
+														{lines.map((line) => (
+															<div key={line} className='px-tip-bullet text-xs'>
+																{line}
+															</div>
+														))}
+													</div>
+												))}
 											</div>
 										</div>
 									</div>
@@ -162,6 +177,16 @@ const StatisticsOverlay: React.FC = () => {
 				</div>
 			</div>
 
+			{/* the lower half is three tabs (remembered): combat figures, income, and the rebirth history */}
+			<div className='flex flex-wrap gap-2' role='tablist' aria-label='Character details'>
+				{CHARACTER_TAB_LABELS.map(({ id, label }) => (
+					<button key={id} role='tab' aria-selected={characterTab === id} className='px-tab' data-active={characterTab === id} onClick={() => setCharacterTab(id)}>
+						{label}
+					</button>
+				))}
+			</div>
+
+			{characterTab === 'combat' && (
 			<div className='grid grid-cols-2 gap-x-8 gap-y-4 max-[760px]:grid-cols-1'>
 				<CollapsibleSection id='combat-stats' title='Combat'>
 					<div className='space-y-1 text-xs'>
@@ -207,7 +232,10 @@ const StatisticsOverlay: React.FC = () => {
 					</div>
 				</CollapsibleSection>
 			</div>
+			)}
 
+			{characterTab === 'income' && (
+				<>
 			<CollapsibleSection id='resource-income' title='Resource income'>
 				<div className='text-xs max-w-[560px]'>
 					<div className='grid grid-cols-[1fr_repeat(3,minmax(0,1fr))] gap-x-4 gap-y-1 text-[#a89878] border-b px-rule pb-1 mb-1'>
@@ -263,6 +291,10 @@ const StatisticsOverlay: React.FC = () => {
 					);
 				})}
 			</CollapsibleSection>
+				</>
+			)}
+
+			{characterTab === 'rebirths' && <RebirthsPanel />}
 		</div>
 	);
 };

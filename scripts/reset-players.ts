@@ -12,7 +12,7 @@
  * KEPT:  auth account, profiles (character_name, player_class), player_ledger.gems.
  * RESET: player_saves (and, by cascade, player_worlds + player_stats = the leaderboard row, back after the first new save),
  *        player_ledger except gems (spawn timers, tickets, granted totals, combat, inventory/bag/gear, rebirths; run_id is bumped
- *        so sealed rolls never repeat), save_history only with --purge-history.
+ *        so sealed rolls never repeat), rebirth_history (the season's rebirth log; backed up first), save_history only with --purge-history.
  * A player with the game open must reload: their old save no longer matches and is rejected, then they start a new game.
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -90,7 +90,7 @@ const main = async () => {
 	if (ids.length === 0) return;
 
 	if (backup) {
-		const tables = ['player_saves', 'player_worlds', 'player_stats', 'player_ledger'];
+		const tables = ['player_saves', 'player_worlds', 'player_stats', 'player_ledger', 'rebirth_history'];
 		const dump: Record<string, unknown[]> = {};
 		for (const t of tables) dump[t] = await fetchAll<unknown>(t, '*');
 		mkdirSync(resolve(process.cwd(), 'backups'), { recursive: true });
@@ -132,6 +132,10 @@ const main = async () => {
 		// 2. the save: deleting it cascades to player_worlds and player_stats; the next login starts a new game
 		const saveDelete = await db.from('player_saves').delete().eq('user_id', id);
 		fail(`save ${id}`, saveDelete.error);
+
+		// 3. the rebirth history belongs to the season that ended: the new one counts its rebirths from 1 again (and the history keeps one row per number), so it goes too; the backup above has it
+		const rebirthDelete = await db.from('rebirth_history').delete().eq('user_id', id);
+		fail(`rebirth history ${id}`, rebirthDelete.error);
 
 		if (purgeHistory) {
 			const historyDelete = await db.from('save_history').delete().eq('user_id', id);

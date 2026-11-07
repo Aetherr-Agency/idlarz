@@ -77,7 +77,7 @@ export const EQUIPMENT_LAYOUT: {
 
 export const EQUIPMENT_SLOT_LABEL: Record<EquipmentSlot, string> = {
 	head: 'Head',
-	shoulder: 'Shoulder',
+	shoulder: 'Shoulders',
 	chest: 'Chest',
 	hands: 'Hands',
 	legs: 'Legs',
@@ -87,6 +87,6 @@ export const EQUIPMENT_SLOT_LABEL: Record<EquipmentSlot, string> = {
 	ring1: 'Ring',
 	ring2: 'Ring',
 	charm: 'Charm',
-	mainHand: 'Weapon',
-	offHand: 'Shield',
+	mainHand: 'Main Hand',
+	offHand: 'Off Hand',
 };

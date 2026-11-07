@@ -11,6 +11,7 @@ import {
 	CASTLE_UPGRADE,
 	STARTING_GEMS,
 	CLICK_LADDER,
+	clickGold,
 	DEFAULT_PLAYER_NAME,
 	CASTLE_X,
 	CASTLE_Y,
@@ -331,7 +332,10 @@ const createGameSlice = (
 			// the server has put the item in its bag (the picture comes with the answer); the gold of what it sold or could not fit is ours
 			resources.gold = Math.min(resources.gold + received.convertedGold + received.autoSold.gold, RESOURCE_CAP);
 		}
-		set({ resources, ...(gemsTotal !== undefined ? { gems: gemsTotal } : {}), lastChestLoot: gemsFound > 0 ? { ...loot, gems: gemsFound } : loot });
+		const shown = gemsFound > 0 ? { ...loot, gems: gemsFound } : loot;
+		set({ resources, ...(gemsTotal !== undefined ? { gems: gemsTotal } : {}), lastChestLoot: shown });
+		// one notice per chest, stacked under the header (opening several quickly shows them all)
+		useUiStore.getState().pushChestNotice(shown);
 	};
 
 	/** Puts a chest back on its tile (the server could not be reached, so nothing was opened). */
@@ -755,11 +759,8 @@ const createGameSlice = (
 		clickForGold: (input: ClickInput) => {
 			if (!clickLimiter.take(input)) return 0;
 			const state = get();
-			const power =
-				(CLICK_LADDER[state.clickLevel]?.power ?? CLICK_LADDER[0].power) *
-				(1 + emberEffect(state.prestige, 'mastery')) *
-				(1 + gearEconomy(state.equipment).clickPct / 100);
-			const gold = state.resourceRates.total.gold * power;
+			const multiplier = (1 + emberEffect(state.prestige, 'mastery')) * (1 + gearEconomy(state.equipment).clickPct / 100);
+			const gold = clickGold(state.resourceRates.total.gold, state.clickLevel, multiplier);
 			if (!(gold > 0)) return 0;
 			set({
 				resources: { ...state.resources, gold: state.resources.gold + gold },

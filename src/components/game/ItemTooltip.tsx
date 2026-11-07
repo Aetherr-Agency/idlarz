@@ -5,7 +5,10 @@ import {
 	ITEM_CATALOG,
 	SETS,
 	RARITIES,
+	STAT_CATEGORIES,
+	STAT_CATEGORY,
 	STAT_KEYS,
+	type StatKey,
 	formatStatChange,
 	formatStatDelta,
 	formatStatValue,
@@ -26,6 +29,9 @@ import { RARITY_COLOR } from './itemUi';
 /** A signed change in parentheses, green for a gain and red for a loss: "(+12%)", "(-16)". Nothing when it did not change. */
 const Diff: React.FC<{ delta: number; text: string }> = ({ delta, text }) =>
 	delta ? <span className={delta > 0 ? 'px-diff-up' : 'px-diff-down'}> ({text})</span> : null;
+
+/** The one name of an equipment slot, shown the same on the slot frame, in the item's subtitle and in set piece lists */
+const slotName = (slot: string): string => (slot === 'ring' ? 'Ring' : (EQUIPMENT_SLOT_LABEL as Record<string, string>)[slot] ?? slot);
 
 const signed = (delta: number, digits = 0) => `${delta < 0 ? '-' : '+'}${formatCompact(Math.abs(delta), digits)}`;
 
@@ -71,7 +77,7 @@ const ItemTooltipBody: React.FC<BodyProps> = ({ item, itemId, comparison, wornLa
 	const title = resolved?.name ?? def.name;
 	const sellPrice = item ? sellValueOf(item) : def.sellValue;
 
-	const slotLabel = def.slot === 'ring' ? 'Ring' : def.slot ? EQUIPMENT_SLOT_LABEL[def.slot] : 'Consumable';
+	const slotLabel = def.slot ? slotName(def.slot) : 'Consumable';
 	// With a comparison the set block previews the swap, so the hovered piece already counts as worn
 	const shown: Equipment = comparison ? comparison.after : equipment;
 	const equippedIds = Object.values(shown).map((worn) => worn?.base);
@@ -132,24 +138,26 @@ const ItemTooltipBody: React.FC<BodyProps> = ({ item, itemId, comparison, wornLa
 			{emptySlot && <div className='px-tip-muted text-xs mt-1'>Empty {EQUIPMENT_SLOT_LABEL[comparison!.slot]} slot</div>}
 
 			{def.consumable && <div className='px-tip-bullet px-diff-up'>Restores {formatCompact(def.consumable.healHp)} HP</div>}
-			{rows.length > 0 && (
-				<div className='px-tip-list'>
-					{rows.map((row) => (
-						<StatLine key={row.key} row={row} withDiff={withDiff} />
-					))}
-				</div>
-			)}
+			{/* base stats and affixes, grouped by what they are for: a long list is read by its colored headings */}
+			{STAT_CATEGORIES.map((category) => {
+				const catRows = rows.filter((row) => STAT_CATEGORY[row.key] === category.id);
+				const catAffixes = (resolved?.affixes ?? []).filter((affix) => STAT_CATEGORY[affix.stat as StatKey] === category.id);
+				if (catRows.length === 0 && catAffixes.length === 0) return null;
+				return (
+					<div key={category.id} className='px-tip-group' style={{ '--cat': category.color } as React.CSSProperties}>
+						<div className='px-tip-cat'>{category.label}</div>
+						{catRows.map((row) => (
+							<StatLine key={row.key} row={row} withDiff={withDiff} />
+						))}
+						{catAffixes.map((affix) => (
+							<div key={affix.id} className='px-tip-bullet' style={{ color: '#7aa7ff' }}>
+								{formatStat(affix.stat, affix.value)} <span className='px-tip-muted'>({affix.name})</span>
+							</div>
+						))}
+					</div>
+				);
+			})}
 			{!primary && rows.length === 0 && !def.consumable && <div className='px-tip-muted text-xs'>No stats</div>}
-
-			{resolved && resolved.affixes.length > 0 && (
-				<div className='px-tip-list px-tip-affixes' style={{ color: '#7aa7ff' }}>
-					{resolved.affixes.map((affix) => (
-						<div key={affix.id} className='px-tip-bullet'>
-							{formatStat(affix.stat, affix.value)} <span className='px-tip-muted'>({affix.name})</span>
-						</div>
-					))}
-				</div>
-			)}
 
 			{lost.length > 0 && (
 				<div className='px-tip-lost'>
@@ -206,6 +214,7 @@ const ItemTooltipBody: React.FC<BodyProps> = ({ item, itemId, comparison, wornLa
 					{set.pieces.map((id) => (
 						<div key={id} style={{ color: equippedIds.includes(id) ? '#f0d27a' : '#6a5a48' }}>
 							{ITEM_CATALOG[id].name}
+							{ITEM_CATALOG[id].slot && ` (${slotName(ITEM_CATALOG[id].slot)})`}
 						</div>
 					))}
 					{Object.entries(set.bonuses).map(([count, bonus]) => (

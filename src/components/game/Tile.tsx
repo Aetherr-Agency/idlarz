@@ -29,7 +29,7 @@ import MonsterSprite from './MonsterSprite';
 import { growthSecondsLeft, isBoss, monsterAt, monsterStats } from '@/lib/monsters';
 import { MONSTERS } from '@/config/combatConfig';
 import { MONSTER_CATALOG } from '@/catalog/monsters';
-import CastleUpgradeDialog from './CastleUpgradeDialog';
+import { useWindowStore } from '@/stores/windowStore';
 import { useMapTipLayer } from './MapTipLayer';
 import { useUiStore, type ContextMenuItem } from '@/stores/uiStore';
 import { openMenuAt } from '@/lib/globalMenu';
@@ -94,7 +94,6 @@ const Tile: React.FC<TileProps> = ({
 	});
 	const [monsterId, monsterType, monsterLevel, monsterLucky, monsterArt] = monsterKey ? monsterKey.split(':') : [];
 	const [isShaking, setIsShaking] = useState(false);
-	const [showCastleDialog, setShowCastleDialog] = useState(false);
 	const [showChestTooltip, setShowChestTooltip] = useState(false);
 	const [hovered, setHovered] = useState(false);
 	const tipLayer = useMapTipLayer();
@@ -149,7 +148,7 @@ const Tile: React.FC<TileProps> = ({
 			if (biome === 'castle') {
 				audioManager.playSound('click');
 				if (castleLevel >= CASTLE_UPGRADE.maxLevel) useUiStore.getState().toggleRebirth();
-				else setShowCastleDialog(true);
+				else useWindowStore.getState().openWindow('castle');
 				return;
 			}
 
@@ -355,9 +354,6 @@ const Tile: React.FC<TileProps> = ({
 					tipLayer
 				)}
 
-			{/* Dialogs go to <body>: inside the map they would be scaled and panned together with the tiles */}
-			{showCastleDialog &&
-				createPortal(<CastleUpgradeDialog onClose={() => setShowCastleDialog(false)} />, document.body)}
 		</>
 	);
 };

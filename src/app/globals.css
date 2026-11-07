@@ -295,11 +295,15 @@ body {
 	top: 100%;
 	left: 50%;
 	z-index: 60;
-	margin-top: 8px;
+	/* padding (not margin) so the pointer can cross from the control onto the card without it closing */
+	padding-top: 8px;
 	opacity: 0;
+	visibility: hidden;
 	pointer-events: none;
 	transform: translateX(-50%);
-	transition: opacity 0.12s;
+	/* lingers a moment after the pointer leaves, so its text can be reached and copied */
+	transition: opacity 0.12s 0.3s, visibility 0s 0.42s;
+	user-select: text;
 }
 
 /* lined up with an edge instead of centred, so the card never runs off the screen */
@@ -317,11 +321,9 @@ body {
 .hdr-has-tip:hover > .hdr-tip,
 .hdr-has-tip[data-pinned='true'] > .hdr-tip {
 	opacity: 1;
-}
-
-/* a pinned card can be scrolled and clicked */
-.hdr-has-tip[data-pinned='true'] > .hdr-tip {
+	visibility: visible;
 	pointer-events: auto;
+	transition: opacity 0.12s, visibility 0s;
 }
 
 /* Stepped sprite-sheet player: twinkling resources (gold, gems, crystals) and the map chest. Frame size, count, loop
@@ -729,6 +731,42 @@ body {
 .px-modal-lg {
 	width: 1080px;
 	height: 100%;
+}
+
+/* a game window (PixelWindow): the modal frame, but positioned by the window store and not blocking the screen, so several can be open and dragged */
+.px-window {
+	position: fixed;
+	width: min(var(--win-w, 820px), calc(100vw - 16px));
+	max-width: none;
+	max-height: calc(100vh - var(--header-h, 76px) - 16px);
+	animation: none;
+	box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+
+	&[data-fixed-height='true'] {
+		height: min(var(--win-h, 640px), calc(100vh - var(--header-h, 76px) - 16px));
+	}
+
+	/* the ones behind sit a little dimmer, so the front one reads at a glance */
+	&[data-front='false'] {
+		filter: brightness(0.82);
+	}
+}
+
+/* a small screen has no room for side-by-side windows: each one fills the width under the header, the front one on top */
+.px-window-narrow {
+	left: 8px;
+	top: calc(var(--header-h, 76px) + 8px);
+	width: calc(100vw - 16px);
+}
+
+.px-window-handle {
+	cursor: grab;
+	touch-action: none;
+	user-select: none;
+
+	&:active {
+		cursor: grabbing;
+	}
 }
 
 .px-modal-head {
@@ -1206,6 +1244,27 @@ body {
 	margin-top: 6px;
 	display: grid;
 	gap: 2px;
+}
+
+/* stats grouped by kind (combat, defense, magic, generators): a small colored heading, bullets in the same color */
+.px-tip-group {
+	margin-top: 6px;
+	display: grid;
+	gap: 2px;
+
+	.px-tip-bullet::before {
+		background: var(--cat);
+	}
+}
+
+.px-tip-cat {
+	font-size: 0.72em;
+	font-weight: 700;
+	letter-spacing: 1px;
+	text-transform: uppercase;
+	color: var(--cat);
+	border-bottom: 1px solid color-mix(in srgb, var(--cat) 35%, transparent);
+	padding-bottom: 1px;
 }
 
 .px-tip-bullet {

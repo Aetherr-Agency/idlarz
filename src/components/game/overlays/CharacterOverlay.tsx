@@ -1,6 +1,7 @@
 import React from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { useUiStore } from '@/stores/uiStore';
+import { useWindowStore } from '@/stores/windowStore';
 import { COMBAT } from '@/config/combatConfig';
 import { EQUIPMENT_LAYOUT, EQUIPMENT_SLOT_LABEL } from '@/config/itemCatalog';
 import { MERCHANT_GOODS } from '@/config/gameConfig';
@@ -21,7 +22,7 @@ const ARMOR_SLOTS = EQUIPMENT_LAYOUT.left;
 const JEWELRY_SLOTS = EQUIPMENT_LAYOUT.right;
 
 const CharacterOverlay: React.FC = () => {
-	const setMenuTab = useUiStore((state) => state.setMenuTab);
+	const openWindow = useWindowStore((state) => state.openWindow);
 	const equipment = useGameStore((state) => state.equipment);
 	const characterStats = useGameStore((state) => state.characterStats);
 	const equipItem = useGameStore((state) => state.equipItem);
@@ -148,7 +149,7 @@ const CharacterOverlay: React.FC = () => {
 					<button className='px-btn px-btn-sm' onClick={openClassDialog}>
 						Class
 					</button>
-					<button className='px-btn px-btn-sm' onClick={() => setMenuTab('stats')}>
+					<button className='px-btn px-btn-sm' onClick={() => openWindow('character')}>
 						Character
 					</button>
 				</div>

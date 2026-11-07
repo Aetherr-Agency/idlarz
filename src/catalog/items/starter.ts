@@ -12,7 +12,7 @@ export const WOODEN_ITEMS: ItemDef[] = [
 	gear('hunting_bow', 'Hunting Bow', 'mainHand', 'common', { damage: 6, critChance: 6 }, { tier: 1, weaponType: 'bow', art: true, description: 'Springy yew. Aims for the weak spot.' }),
 	gear('wooden_shield', 'Wooden Shield', 'offHand', 'common', { armor: 2 }, { ...wood, art: false, weaponType: 'shield', icon: 'item_wooden_shield', description: 'Simple defensive gear.' }),
 	gear('leather_cap', 'Leather Cap', 'head', 'common', { armor: 1, maxHp: 2 }, { ...wood, description: 'Boiled leather. Better than nothing on your head.' }),
-	gear('leather_pauldrons', 'Leather Pauldrons', 'shoulder', 'common', { armor: 1, maxHp: 2 }, { ...wood, description: 'Layered hide over the shoulders.' }),
+	gear('leather_pauldrons', 'Leather Shoulderpads', 'shoulder', 'common', { armor: 1, maxHp: 2 }, { ...wood, description: 'Layered hide over the shoulders.' }),
 	gear('leather_vest', 'Leather Vest', 'chest', 'common', { armor: 2, maxHp: 4 }, { ...wood, description: 'Stiff, creaky and surprisingly warm.' }),
 	gear('leather_gloves', 'Leather Gloves', 'hands', 'common', { armor: 1, maxHp: 1 }, { ...wood, description: 'Keeps the splinters out.' }),
 	gear('leather_leggings', 'Leather Leggings', 'legs', 'common', { armor: 2, maxHp: 3 }, { ...wood, description: 'Patched at the knees.' }),

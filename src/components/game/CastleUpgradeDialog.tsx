@@ -7,15 +7,14 @@ import { formatCompact, formatNumber, formatPercent, formatTime } from '@/utils/
 import { castleModifier, castleUpgradeDuration } from '@/utils/gameUtils';
 import { castleAreaBonus, castleLevelOf, castleRangeRadius } from '@/lib/castleWard';
 import audioManager from '@/utils/audioManager';
-import PixelModal from './PixelModal';
+import PixelWindow from './PixelWindow';
+import { useWindowStore } from '@/stores/windowStore';
 import ResourceIcon from './ResourceIcon';
 import CastleSprite from './CastleSprite';
 
-interface CastleUpgradeDialogProps {
-	onClose: () => void;
-}
-
-const CastleUpgradeDialog: FC<CastleUpgradeDialogProps> = ({ onClose }) => {
+/** The castle upgrade window (opened from the castle tile): one of the game's windows, so it can stay open beside the merchant. */
+const CastleUpgradeDialog: FC = () => {
+	const onClose = () => useWindowStore.getState().closeWindow('castle');
 	// Get the castle tile level (which should be the first tile in the grid, at center)
 	const tiles = useGameStore((state) => state.tiles);
 	const resources = useGameStore((state) => state.resources);
@@ -101,10 +100,7 @@ const CastleUpgradeDialog: FC<CastleUpgradeDialogProps> = ({ onClose }) => {
 	);
 
 	return (
-		<PixelModal
-			title={`Castle ${castleLevel}/${CASTLE_UPGRADE.maxLevel}`}
-			size='sm'
-			onClose={onClose}>
+		<PixelWindow id='castle' title={`Castle ${castleLevel}/${CASTLE_UPGRADE.maxLevel}`} width={460}>
 			<div className='flex items-end justify-center gap-6 mb-4 min-h-[88px]'>
 				<div className='flex flex-col items-center gap-1'>
 					<CastleSprite level={castleLevel} variant='inline' />
@@ -199,7 +195,7 @@ const CastleUpgradeDialog: FC<CastleUpgradeDialogProps> = ({ onClose }) => {
 					</div>
 				</>
 			)}
-		</PixelModal>
+		</PixelWindow>
 	);
 };
 
