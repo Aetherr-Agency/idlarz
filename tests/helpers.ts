@@ -6,13 +6,16 @@
 };
 
 import { useGameStore } from '../src/stores/gameStore';
-import { INITIAL_RESOURCES, CASTLE_X, CASTLE_Y, LEGACY_GRID_SIZE } from '../src/config/gameConfig';
+import { INITIAL_RESOURCES, CASTLE_X, CASTLE_Y } from '../src/config/gameConfig';
 import { calculateResourceRates } from '../src/utils/gameUtils';
 import { RING } from '../src/utils/biomeRules';
 import { pickPersisted } from '../src/lib/sanitizeSave';
 import { packBody, unpackBody } from '../src/lib/saveFormat';
 import { hasOwnedNeighbour, isOwnedAt, ownedBounds, ownedCount, patchTile, setTile, worldToRows, type World } from '../src/utils/world';
 import type { Resources, Tile } from '../src/types/game';
+
+/** The first saves stored the map as this square (castle in the middle); only these test adapters still use it. */
+export const LEGACY_GRID_SIZE = 50;
 
 export { tileAt, worldFromRows } from '../src/utils/world';
 

@@ -18,8 +18,6 @@ interface PixelModalProps {
 	className?: string;
 	/** No body padding or scrolling: the content fills the whole window (the farm scene) */
 	flush?: boolean;
-	/** A tab strip (PixelTabs) that replaces the title bar: it is the top row of the frame and the active tab acts as the title */
-	tabs?: React.ReactNode;
 	children: React.ReactNode;
 }
 
@@ -36,7 +34,6 @@ const PixelModal: React.FC<PixelModalProps> = ({
 	hideClose = false,
 	className,
 	flush = false,
-	tabs,
 	children,
 }) => {
 	const id = useRef(Symbol('modal')).current;
@@ -73,26 +70,15 @@ const PixelModal: React.FC<PixelModalProps> = ({
 				className={cn('px-modal', `px-modal-${size}`, className)}
 				role='dialog'
 				aria-modal='true'>
-				{tabs ? (
-					<div className='px-modal-top'>
-						<h2 className='sr-only'>{title}</h2>
-						{tabs}
-						<span className='px-modal-top-fill' />
-						{closeButton}
-					</div>
-				) : (
-					<>
-						{closeButton}
-						<div className='px-modal-head'>
-							<span className='px-title-line' />
-							<h2 className='px-title'>
-								{icon}
-								{title}
-							</h2>
-							<span className='px-title-line rev' />
-						</div>
-					</>
-				)}
+				{closeButton}
+				<div className='px-modal-head'>
+					<span className='px-title-line' />
+					<h2 className='px-title'>
+						{icon}
+						{title}
+					</h2>
+					<span className='px-title-line rev' />
+				</div>
 				<div className={cn('px-modal-body', flush && 'px-modal-body-flush')}>{children}</div>
 			</div>
 		</div>

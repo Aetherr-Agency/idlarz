@@ -126,8 +126,8 @@ const PixelWindow: React.FC<PixelWindowProps> = ({ id, title, icon, width = 820,
 			onPointerDownCapture={() => focusWindow(id)}
 			style={
 				{
-					'--win-w': `${width}px`,
-					...(height ? { '--win-h': `${height}px` } : {}),
+					'--win-w': `${size?.w ?? width}px`,
+					...(fixedHeight ? { '--win-h': `${fixedHeight}px` } : {}),
 					left: narrow ? undefined : pos.x,
 					top: narrow ? undefined : pos.y,
 					zIndex: BASE_Z + rank,
@@ -147,6 +147,7 @@ const PixelWindow: React.FC<PixelWindowProps> = ({ id, title, icon, width = 820,
 				<span className='px-title-line rev' />
 			</div>
 			<div className={cn('px-modal-body', flush && 'px-modal-body-flush')}>{children}</div>
+			{!narrow && <div className='px-resize' onPointerDown={onResizeStart} onPointerMove={onResizeMove} onPointerUp={onResizeEnd} onPointerCancel={onResizeEnd} aria-hidden='true' />}
 		</div>
 	);
 };

@@ -162,8 +162,7 @@ Reference images in this folder: `icons.png` (icon set), `characters.png` (heroe
 - **Modal shell** (`PixelModal.tsx`): bronze 9-slice frame over the cracked-stone tile, ornamented title bar, red pixel
   close button hanging off the corner, Esc/backdrop dismiss, backdrop under the header (z-45). Sizes: `sm` 440
   (confirmations), `md` 760 (pickers), `lg` 1080 x full height (Character, Statistics, Merchant, Farm).
-  **Do not hand-roll modals.** A window with several areas uses `PixelTabs` (`.px-tabbar`: bevelled stone tabs on a bronze baseline, the active one raised and joined to the panel,
-  20px icon + label, arrow keys, label hidden under 760px) through the `tabs` slot: the Menu window holds Character, Stats, Merchant and Farm, only the active tab mounted.
+  **Do not hand-roll modals.** Each area (Character, Statistics, Merchant, Farm) has its own window (`GameWindows`), so no tab strip exists.
 - **Panels/cards** `.px-panel` / `.px-card`; headings `.px-h`; buttons `.px-btn` (+ `-gold/-red/-blue/-gray/-sm`) with
   stepped corners and a 2px bevel; `.px-tab`, `.px-range`, `.px-input`. Palette: parchment `#d8c8a0`, muted `#a89878`,
   gold `#f0d27a`.
