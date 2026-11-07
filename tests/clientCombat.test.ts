@@ -39,8 +39,8 @@ const view = (over: Partial<CombatView> = {}): CombatView => ({
 const reply = (combat: CombatView, over: Partial<FightReply> = {}): FightReply => ({ combat, tickets: { chests: [], rats: [], king: null }, serverNowSec: clock, gemsTotal: 1000, accepted: true, ...over });
 const event = (no: number, kind: FightEvent['kind'], extra: Partial<FightEvent> = {}): FightEvent => ({ no, t: clock, kind, ...extra });
 const won = (no: number, drops: Drop[], over: { gold?: number; xp?: number; lucky?: boolean; level?: number } = {}): FightEvent =>
-	event(no, 'won', { n: 1, type: 'rat', level: over.level ?? 1, reward: { gold: over.gold ?? 50, xp: over.xp ?? 20, items: drops, pity: {}, lucky: over.lucky ?? false } });
-const ratDrops = (level = 1) => generateLoot({ sourceId: 'rat', level }, () => 0).drops;
+	event(no, 'won', { n: 1, type: 'thistleBoar', level: over.level ?? 1, reward: { gold: over.gold ?? 50, xp: over.xp ?? 20, items: drops, pity: {}, lucky: over.lucky ?? false } });
+const ratDrops = (level = 1) => generateLoot({ sourceId: 'monster', level }, () => 0).drops;
 
 /** The player's things as the server would hold them right now: the browser's own copy at the next version. */
 const invOf = (over: Partial<Inventory> = {}): Inventory => ({
@@ -60,7 +60,7 @@ const serverKill = (drops: Drop[], over: { gold?: number; xp?: number; autoSellU
 	const { inv: after, received } = receiveInto(inv, drops, { merchantUpgrades: over.merchantUpgrades });
 	const ev = event(1, 'won', {
 		n: 1,
-		type: 'rat',
+		type: 'thistleBoar',
 		level: 1,
 		reward: { gold: over.gold ?? 50, xp: over.xp ?? 20, items: drops, stored: received.stored, convertedGold: received.convertedGold, autoSold: received.autoSold, pity: {}, lucky: false },
 	});
@@ -79,7 +79,7 @@ const syncedGame = () => {
 test('the first answer only says where the server\'s log stands: nothing in it is applied, the picture is', () => {
 	freshGame();
 	const gold = api().resources.gold;
-	api().applyFightReply(reply(view({ hp: 77, mp: 12, eventNo: 5, events: [won(5, [])], fight: { n: 1, type: 'rat', level: 2, lucky: false, monsterHp: 40, monsterMaxHp: 150, stunLeft: 0, timeLeftSec: null, x: 1, y: 2 } })));
+	api().applyFightReply(reply(view({ hp: 77, mp: 12, eventNo: 5, events: [won(5, [])], fight: { n: 1, type: 'thistleBoar', level: 2, lucky: false, monsterHp: 40, monsterMaxHp: 150, stunLeft: 0, timeLeftSec: null, x: 1, y: 2 } })));
 	assert.equal(api().resources.gold, gold);
 	assert.equal(api().playerHp, 77);
 	assert.equal(api().playerMp, 12);
@@ -180,12 +180,12 @@ test('a potion the server drank leaves the bag because the server\'s inventory s
 
 test('a defeat or a timeout is announced; the King taunts, a rat stays silent; the monster is not touched', () => {
 	syncedGame();
-	api().applyFightReply(reply(view({ eventNo: 1, events: [event(1, 'defeated', { n: 2, type: 'ratKing', level: 15 })] })));
+	api().applyFightReply(reply(view({ eventNo: 1, events: [event(1, 'defeated', { n: 2, type: 'bossGreatAuroch', level: 15 })] })));
 	assert.equal(api().combat.notice?.kind, 'defeated');
-	assert.ok(MONSTERS.ratKing.taunts.includes(api().combat.notice!.taunt as never));
-	api().applyFightReply(reply(view({ eventNo: 2, events: [event(2, 'timeout', { n: 2, type: 'ratKing', level: 15 })] })));
+	assert.ok(MONSTERS.bossGreatAuroch.taunts.includes(api().combat.notice!.taunt as never));
+	api().applyFightReply(reply(view({ eventNo: 2, events: [event(2, 'timeout', { n: 2, type: 'bossGreatAuroch', level: 15 })] })));
 	assert.equal(api().combat.notice?.kind, 'timeout');
-	api().applyFightReply(reply(view({ eventNo: 3, events: [event(3, 'defeated', { n: 1, type: 'rat', level: 3 })] })));
+	api().applyFightReply(reply(view({ eventNo: 3, events: [event(3, 'defeated', { n: 1, type: 'thistleBoar', level: 3 })] })));
 	assert.equal(api().combat.notice?.taunt, null);
 	api().clearCombatNotice();
 	assert.equal(api().combat.notice, null);
@@ -215,7 +215,7 @@ const record = () => {
 
 test('hotkeys, switches and dismissals are requests to the server: a key per press, nothing about damage or HP', async () => {
 	syncedGame();
-	store.setState({ monsters: [{ id: 3, type: 'rat', level: 1, spawnLevel: 1, x: CASTLE_X + 2, y: CASTLE_Y, ageSec: 0, ticket: 3 }] });
+	store.setState({ monsters: [{ id: 3, type: 'thistleBoar', level: 1, spawnLevel: 1, x: CASTLE_X + 2, y: CASTLE_Y, ageSec: 0, ticket: 3 }] });
 	const calls = record();
 	try {
 		assert.equal(api().requestPotion('potion_minor'), true);
@@ -244,8 +244,8 @@ test('a click on a monster asks the server for that monster\'s ticket: no such m
 	syncedGame();
 	store.setState({
 		monsters: [
-			{ id: 3, type: 'rat', level: 1, spawnLevel: 1, x: CASTLE_X + 2, y: CASTLE_Y, ageSec: 0, ticket: 7 },
-			{ id: 4, type: 'rat', level: 1, spawnLevel: 1, x: CASTLE_X + 3, y: CASTLE_Y, ageSec: 0 },
+			{ id: 3, type: 'thistleBoar', level: 1, spawnLevel: 1, x: CASTLE_X + 2, y: CASTLE_Y, ageSec: 0, ticket: 7 },
+			{ id: 4, type: 'thistleBoar', level: 1, spawnLevel: 1, x: CASTLE_X + 3, y: CASTLE_Y, ageSec: 0 },
 		],
 	});
 	const calls = record();
@@ -269,17 +269,17 @@ test('a click on a monster asks the server for that monster\'s ticket: no such m
 
 test('a click opens the combat window at once (maximized, loading) and the answer fills it in; a second click while it waits does nothing', async () => {
 	syncedGame();
-	store.setState({ monsters: [{ id: 3, type: 'rat', level: 4, spawnLevel: 4, x: CASTLE_X + 2, y: CASTLE_Y, ageSec: 0, ticket: 7 }] });
+	store.setState({ monsters: [{ id: 3, type: 'thistleBoar', level: 4, spawnLevel: 4, x: CASTLE_X + 2, y: CASTLE_Y, ageSec: 0, ticket: 7 }] });
 	useUiStore.getState().setPref('combatMinimized', true);
 	const calls = record();
 	try {
 		assert.equal(api().combat.pending, null);
 		assert.equal(api().startFight(3), true);
-		assert.deepEqual(api().combat.pending, { type: 'rat', level: 4 }, 'the window is up before the server has answered');
+		assert.deepEqual(api().combat.pending, { type: 'thistleBoar', level: 4 }, 'the window is up before the server has answered');
 		assert.equal(useUiStore.getState().combatMinimized, false, 'a minimized window opens for a click');
 		assert.equal(api().startFight(3), false, 'one click at a time');
 		// the server opens the fight: the loading state is over
-		api().applyFightReply(reply(view({ eventNo: 0, fight: { n: 7, type: 'rat', level: 4, lucky: false, monsterHp: 100, monsterMaxHp: 100, stunLeft: 0, timeLeftSec: null, x: 1, y: 2 } })));
+		api().applyFightReply(reply(view({ eventNo: 0, fight: { n: 7, type: 'thistleBoar', level: 4, lucky: false, monsterHp: 100, monsterMaxHp: 100, stunLeft: 0, timeLeftSec: null, x: 1, y: 2 } })));
 		assert.equal(api().combat.pending, null);
 		assert.ok(api().combat.fight);
 		await flush();
@@ -292,7 +292,7 @@ test('a click opens the combat window at once (maximized, loading) and the answe
 
 test('a click the server does not take (no fight in the answer) closes the loading window again', async () => {
 	syncedGame();
-	store.setState({ monsters: [{ id: 3, type: 'rat', level: 4, spawnLevel: 4, x: CASTLE_X + 2, y: CASTLE_Y, ageSec: 0, ticket: 7 }] });
+	store.setState({ monsters: [{ id: 3, type: 'thistleBoar', level: 4, spawnLevel: 4, x: CASTLE_X + 2, y: CASTLE_Y, ageSec: 0, ticket: 7 }] });
 	const calls = record();
 	try {
 		assert.equal(api().startFight(3), true);
@@ -310,7 +310,7 @@ test('a won fight stays in the window as a result: the notice carries the monste
 	api().applyFightReply(reply(view({ eventNo: 1, events: [won(1, ratDrops(), { gold: 80, xp: 30 })] })));
 	const notice = api().combat.notice;
 	assert.ok(notice && notice.kind === 'won' && notice.summary);
-	assert.equal(notice.type, 'rat');
+	assert.equal(notice.type, 'thistleBoar');
 	assert.equal(api().combat.fight, null, 'no fight is open, only the result');
 	api().clearCombatNotice();
 	assert.equal(api().combat.notice, null);
@@ -375,7 +375,7 @@ test('cooldowns and the stun count down between answers, and never below 0', () 
 test('tick never moves the monsters: they age on the map and stay where the server put them', () => {
 	freshGame();
 	growTo(6);
-	store.setState({ monsters: [{ id: 3, type: 'rat', level: 1, spawnLevel: 1, x: CASTLE_X + 2, y: CASTLE_Y, ageSec: 0, ticket: 3 }] });
+	store.setState({ monsters: [{ id: 3, type: 'thistleBoar', level: 1, spawnLevel: 1, x: CASTLE_X + 2, y: CASTLE_Y, ageSec: 0, ticket: 3 }] });
 	run(3600);
 	assert.equal(api().monsters.length, 1, 'no local spawning, killing or removing');
 	assert.deepEqual([api().monsters[0].x, api().monsters[0].y], [CASTLE_X + 2, CASTLE_Y]);
@@ -394,7 +394,7 @@ test('rebirth and resetGame clear the monsters and the combat picture; rebirth k
 	freshGame();
 	growTo(REBIRTH.minTiles);
 	store.setState((s) => ({ tiles: patchTile(s.tiles, CASTLE_X, CASTLE_Y, { level: REBIRTH.minCastleLevel }) }));
-	store.setState({ monsters: [{ id: 3, type: 'rat', level: 1, spawnLevel: 1, x: CASTLE_X + 2, y: CASTLE_Y, ageSec: 0, ticket: 3 }] });
+	store.setState({ monsters: [{ id: 3, type: 'thistleBoar', level: 1, spawnLevel: 1, x: CASTLE_X + 2, y: CASTLE_Y, ageSec: 0, ticket: 3 }] });
 	openFight();
 	const gear = { ...api().equipment };
 	assert.equal(api().rebirth(), true);
@@ -450,7 +450,7 @@ test('a rebirth refills mana to the pool of the starter kit it leaves', () => {
 
 test('flee leaves the open fight at once, asks the server to retreat (auto-battle off) and shows no result', async () => {
 	syncedGame();
-	api().applyFightReply(reply(view({ eventNo: 0, autoBattle: true, fight: { n: 7, type: 'rat', level: 4, lucky: false, monsterHp: 60, monsterMaxHp: 100, stunLeft: 0, timeLeftSec: null, x: 1, y: 2 } })));
+	api().applyFightReply(reply(view({ eventNo: 0, autoBattle: true, fight: { n: 7, type: 'thistleBoar', level: 4, lucky: false, monsterHp: 60, monsterMaxHp: 100, stunLeft: 0, timeLeftSec: null, x: 1, y: 2 } })));
 	assert.ok(api().combat.fight);
 	const calls = record();
 	try {
@@ -474,6 +474,6 @@ test('a retreat the server reports clears an older result instead of showing it 
 	syncedGame();
 	api().applyFightReply(reply(view({ eventNo: 1, events: [won(1, ratDrops())] })));
 	assert.equal(api().combat.notice?.kind, 'won');
-	api().applyFightReply(reply(view({ eventNo: 2, events: [event(2, 'retreat', { n: 2, type: 'rat', level: 1 })] })));
+	api().applyFightReply(reply(view({ eventNo: 2, events: [event(2, 'retreat', { n: 2, type: 'thistleBoar', level: 1 })] })));
 	assert.equal(api().combat.notice, null);
 });

@@ -1,7 +1,7 @@
 import type { LimitContext } from '@/lib/limits';
 import { levelAtAge } from '@/lib/monsters';
 import type { PublicTickets } from '@/lib/offline/types';
-import { MONSTERS } from '@/config/combatConfig';
+import { FALLBACK_BOSS, FALLBACK_MONSTER, MONSTERS } from '@/config/combatConfig';
 import type { Monster, MonsterType } from '@/types/game';
 import { getTile, ownedRowMajor, patchTile, type World } from '@/utils/world';
 
@@ -38,8 +38,8 @@ export const reconcileTickets = (
 ): ReconcileResult => {
 	const standing = new Set(state.monsters.map((mon) => mon.ticket));
 	const waiting = [
-		...tickets.rats.map((t) => ({ ...t, type: t.type && t.type in MONSTERS ? t.type : ('rat' as MonsterType), lucky: t.lucky })),
-		...(tickets.king ? [{ ...tickets.king, type: tickets.king.type && tickets.king.type in MONSTERS ? tickets.king.type : ('ratKing' as MonsterType), lucky: false }] : []),
+		...tickets.rats.map((t) => ({ ...t, type: t.type && t.type in MONSTERS ? t.type : (FALLBACK_MONSTER as MonsterType), lucky: t.lucky })),
+		...(tickets.king ? [{ ...tickets.king, type: tickets.king.type && tickets.king.type in MONSTERS ? tickets.king.type : (FALLBACK_BOSS as MonsterType), lucky: false }] : []),
 	].sort((a, b) => a.n - b.n);
 
 	let placedMonsters = 0;

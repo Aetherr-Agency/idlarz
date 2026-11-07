@@ -23,7 +23,7 @@ const DAGGER: Equipment = { ...STARTER_EQUIPMENT, mainHand: plainItem('steel_dag
 const MAUL: Equipment = { ...STARTER_EQUIPMENT, mainHand: plainItem('obsidian_maul') };
 const STRONG = fullSet('rattatui');
 
-const setup = (over: Partial<SimSetup> = {}) => simSetup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'rat', level: 1 }], seed: 'engine', ...over });
+const setup = (over: Partial<SimSetup> = {}) => simSetup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'thistleBoar', level: 1 }], seed: 'engine', ...over });
 
 /** Runs the clock forward `seconds` seconds, one request per `stepSec`, and returns the ledger and every event seen. */
 const advance = (s: ReturnType<typeof setup>, from: Ledger, seconds: number, stepSec = 1, ask: Parameters<typeof runCombat>[2] = {}) => {
@@ -44,23 +44,23 @@ const kinds = (events: FightEvent[], ...wanted: FightEvent['kind'][]) => events.
 // ---------------------------------------------------------------------------------------------------- speed
 
 test('the player swings at the weapon speed and a monster at its own: swings in 10 seconds follow attacks per second', () => {
-	const s = setup({ equipment: DAGGER, monsters: [{ type: 'ratKing', level: 15 }] }); // a King has HP for a long fight
+	const s = setup({ equipment: DAGGER, monsters: [{ type: 'bossGreatAuroch', level: 15 }] }); // a King has HP for a long fight
 	const first = runCombat(s.ledger, s.env(s.start)).ledger;
 	const { events } = advance(s, first, 10);
 	const swings = kinds(events, 'hit', 'crit', 'super').length;
 	const aps = attacksPerSecond(DAGGER);
 	assert.ok(Math.abs(swings - aps * 10) <= 1, `${swings} swings at ${aps}/s`);
 	const bites = kinds(events, 'hurt', 'dodged').length;
-	assert.ok(Math.abs(bites - MONSTERS.ratKing.attackSpeed * 10) <= 1, `${bites} bites at ${MONSTERS.ratKing.attackSpeed}/s`);
+	assert.ok(Math.abs(bites - MONSTERS.bossGreatAuroch.attackSpeed * 10) <= 1, `${bites} bites at ${MONSTERS.bossGreatAuroch.attackSpeed}/s`);
 
-	const slow = setup({ equipment: MAUL, monsters: [{ type: 'ratKing', level: 15 }], seed: 'slow' });
+	const slow = setup({ equipment: MAUL, monsters: [{ type: 'bossGreatAuroch', level: 15 }], seed: 'slow' });
 	const slowEvents = advance(slow, runCombat(slow.ledger, slow.env(slow.start)).ledger, 10).events;
 	assert.ok(kinds(slowEvents, 'hit', 'crit', 'super').length < swings, 'a maul swings less often than a dagger');
 });
 
 test('the engine is deterministic: the same seed gives the same fight, another seed another', () => {
 	const run = (seed: string) => {
-		const s = setup({ equipment: STRONG, monsters: [{ type: 'ratKing', level: 15 }], seed });
+		const s = setup({ equipment: STRONG, monsters: [{ type: 'bossGreatAuroch', level: 15 }], seed });
 		return advance(s, runCombat(s.ledger, s.env(s.start)).ledger, 20).events.map((e) => [e.kind, e.amount]);
 	};
 	assert.deepEqual(run('a'), run('a'));
@@ -68,7 +68,7 @@ test('the engine is deterministic: the same seed gives the same fight, another s
 });
 
 test('a request carries the fight forward to the clock whatever the gap: one long request equals many short ones', () => {
-	const s = setup({ equipment: STRONG, monsters: [{ type: 'rat', level: 3 }] });
+	const s = setup({ equipment: STRONG, monsters: [{ type: 'thistleBoar', level: 3 }] });
 	const first = runCombat(s.ledger, s.env(s.start)).ledger;
 	const many = advance(s, first, 30, 1).ledger.combat!;
 	const one = runCombat(first, s.env(s.start + 30)).ledger.combat!;
@@ -77,7 +77,7 @@ test('a request carries the fight forward to the clock whatever the gap: one lon
 });
 
 test('one request simulates at most the catch-up limit of fighting, then says it is behind', () => {
-	const s = setup({ equipment: STARTER_EQUIPMENT, monsters: Array.from({ length: 20 }, () => ({ type: 'rat' as const, level: 3 })) });
+	const s = setup({ equipment: STARTER_EQUIPMENT, monsters: Array.from({ length: 20 }, () => ({ type: 'thistleBoar' as const, level: 3 })) });
 	const first = runCombat(s.ledger, s.env(s.start)).ledger;
 	const gap = COMBAT.maxCatchUpSec * 3;
 	const out = runCombat(first, s.env(s.start + gap));
@@ -91,7 +91,7 @@ test('one request simulates at most the catch-up limit of fighting, then says it
 // ---------------------------------------------------------------------------------------------------- engaging
 
 test('one monster at a time: a fight ends before the next begins, and every win is paid once', () => {
-	const s = setup({ equipment: STRONG, monsters: [{ type: 'rat', level: 1 }, { type: 'rat', level: 2 }, { type: 'rat', level: 3 }] });
+	const s = setup({ equipment: STRONG, monsters: [{ type: 'thistleBoar', level: 1 }, { type: 'thistleBoar', level: 2 }, { type: 'thistleBoar', level: 3 }] });
 	const first = runCombat(s.ledger, s.env(s.start)).ledger;
 	const { ledger, events } = advance(s, first, 60);
 	const order = [...first.combat!.log, ...events].filter((e) => ['engage', 'won', 'defeated', 'timeout', 'retreat'].includes(e.kind)).map((e) => e.kind);
@@ -107,14 +107,14 @@ test('one monster at a time: a fight ends before the next begins, and every win 
 });
 
 test('the weakest monster is fought first, so a rat that cannot be beaten never blocks the easy ones', () => {
-	const s = setup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'rat', level: 9 }, { type: 'rat', level: 1 }] });
+	const s = setup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'thistleBoar', level: 9 }, { type: 'thistleBoar', level: 1 }] });
 	const first = runCombat(s.ledger, s.env(s.start)).ledger;
 	assert.equal(first.combat!.fight?.level, 1);
 	assert.equal(first.combat!.fight?.n, 2, 'the level 1 rat (ticket 2) goes first');
 });
 
 test('a monster that beat you is left alone for a while, the others are not, and the fight then rests until HP is back', () => {
-	const s = setup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'rat', level: 9 }] });
+	const s = setup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'thistleBoar', level: 9 }] });
 	const first = runCombat(s.ledger, s.env(s.start)).ledger;
 	const { ledger, events } = advance(s, first, 120);
 	assert.ok(kinds(events, 'defeated').length >= 1, 'a starter kit loses to a level 9 rat');
@@ -127,7 +127,7 @@ test('a monster that beat you is left alone for a while, the others are not, and
 });
 
 test('after a knockout HP is a share of max and no fight starts until it is back above the resume line', () => {
-	const s = setup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'rat', level: 9 }, { type: 'rat', level: 9 }] });
+	const s = setup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'thistleBoar', level: 9 }, { type: 'thistleBoar', level: 9 }] });
 	const first = runCombat(s.ledger, s.env(s.start)).ledger;
 	const { ledger, events } = advance(s, first, 100);
 	const defeat = kinds(events, 'defeated')[0];
@@ -142,7 +142,7 @@ test('after a knockout HP is a share of max and no fight starts until it is back
 });
 
 test('auto-battle off: nothing is engaged; on: the next fight starts at once; off again: the open fight is called off and the monster stays', () => {
-	const s = setup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'rat', level: 1 }] });
+	const s = setup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'thistleBoar', level: 1 }] });
 	const off = runCombat(s.ledger, s.env(s.start), { autoBattle: false }).ledger;
 	assert.equal(off.combat!.fight, null);
 	assert.equal(advance(s, off, 30).ledger.combat!.fight, null);
@@ -156,7 +156,7 @@ test('auto-battle off: nothing is engaged; on: the next fight starts at once; of
 });
 
 test('auto-battle is locked until the first rebirth: asking for it changes nothing, and a save that had it on loses it', () => {
-	const s = setup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'rat', level: 1 }] });
+	const s = setup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'thistleBoar', level: 1 }] });
 	const young = { ...s.ledger, rebirths: 0 };
 	const asked = runCombat(young, s.env(s.start), { autoBattle: true }).ledger;
 	assert.equal(asked.combat!.autoBattle, false);
@@ -170,7 +170,7 @@ test('auto-battle is locked until the first rebirth: asking for it changes nothi
 });
 
 test('a click starts a fight with auto-battle off, even below the resume HP, and the next monster is not chained on', () => {
-	const s = setup({ equipment: STRONG, monsters: [{ type: 'rat', level: 1 }, { type: 'rat', level: 1 }] });
+	const s = setup({ equipment: STRONG, monsters: [{ type: 'thistleBoar', level: 1 }, { type: 'thistleBoar', level: 1 }] });
 	const off = runCombat(s.ledger, s.env(s.start), { autoBattle: false }).ledger;
 	assert.equal(off.combat!.fight, null, 'nothing is engaged by itself');
 	const [first, second] = off.bank.rats;
@@ -190,7 +190,7 @@ test('a click starts a fight with auto-battle off, even below the resume HP, and
 });
 
 test('a click is refused for a monster that is not there, during a fight, at 0 HP, and is ignored when the server is behind', () => {
-	const s = setup({ equipment: STRONG, monsters: [{ type: 'rat', level: 1 }, { type: 'rat', level: 1 }] });
+	const s = setup({ equipment: STRONG, monsters: [{ type: 'thistleBoar', level: 1 }, { type: 'thistleBoar', level: 1 }] });
 	const off = runCombat(s.ledger, s.env(s.start), { autoBattle: false }).ledger;
 	const click = (ledger: Ledger, n: number, at = s.start + 1) => runCombat(ledger, s.env(at), { commands: [{ kind: 'fight', n }] }).ledger;
 
@@ -204,7 +204,7 @@ test('a click is refused for a monster that is not there, during a fight, at 0 H
 	assert.equal(again.combat!.fight?.n, off.bank.rats[0].n, 'a second click does not change the fight');
 
 	// a request that is still catching up does not start a fight in the past
-	const busy = setup({ equipment: STARTER_EQUIPMENT, monsters: Array.from({ length: 20 }, () => ({ type: 'rat' as const, level: 3 })) });
+	const busy = setup({ equipment: STARTER_EQUIPMENT, monsters: Array.from({ length: 20 }, () => ({ type: 'thistleBoar' as const, level: 3 })) });
 	const on = runCombat(busy.ledger, busy.env(busy.start)).ledger;
 	const late = runCombat(on, busy.env(busy.start + COMBAT.maxCatchUpSec * 3), { autoBattle: false, commands: [{ kind: 'fight', n: on.bank.rats[5].n }] });
 	assert.equal(late.behind, true);
@@ -212,20 +212,20 @@ test('a click is refused for a monster that is not there, during a fight, at 0 H
 });
 
 test('the King can be clicked too, with auto-battle off', () => {
-	const s = setup({ equipment: STRONG, monsters: [{ type: 'rat', level: 1 }, { type: 'ratKing', level: 15 }] });
+	const s = setup({ equipment: STRONG, monsters: [{ type: 'thistleBoar', level: 1 }, { type: 'bossGreatAuroch', level: 15 }] });
 	const off = runCombat(s.ledger, s.env(s.start), { autoBattle: false }).ledger;
 	const king = off.bank.king!;
 	const clicked = runCombat(off, s.env(s.start + 1), { commands: [{ kind: 'fight', n: king.n }] }).ledger;
-	assert.equal(clicked.combat!.fight?.type, 'ratKing');
+	assert.equal(clicked.combat!.fight?.type, 'bossGreatAuroch');
 });
 
 test('a King is fought only when no other monster is ready, and a King that ran out the clock waits out the boss cooldown', () => {
-	const s = setup({ equipment: STRONG, monsters: [{ type: 'rat', level: 1 }, { type: 'ratKing', level: 15 }] });
+	const s = setup({ equipment: STRONG, monsters: [{ type: 'thistleBoar', level: 1 }, { type: 'bossGreatAuroch', level: 15 }] });
 	const first = runCombat(s.ledger, s.env(s.start)).ledger;
-	assert.equal(first.combat!.fight?.type, 'rat');
-	const weak = setup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'ratKing', level: 15 }], seed: 'king' });
+	assert.equal(first.combat!.fight?.type, 'thistleBoar');
+	const weak = setup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'bossGreatAuroch', level: 15 }], seed: 'king' });
 	const start = runCombat(weak.ledger, weak.env(weak.start)).ledger;
-	const { ledger, events } = advance(weak, start, MONSTERS.ratKing.timeLimitSec + 40, 5);
+	const { ledger, events } = advance(weak, start, MONSTERS.bossGreatAuroch.timeLimitSec + 40, 5);
 	const ended = kinds(events, 'defeated', 'timeout')[0];
 	assert.ok(ended, 'a starter kit cannot beat the King');
 	assert.ok((ledger.combat!.retryAt['1'] ?? 0) >= ended.t + COMBAT.auto.bossRetryCooldownSec - 1);
@@ -235,7 +235,7 @@ test('a King is fought only when no other monster is ready, and a King that ran 
 // ---------------------------------------------------------------------------------------------------- hotkeys and auto-use
 
 test('a potion on a hotkey heals, takes one from the stock, starts the shared cooldown and refuses at full HP, with none left, or too soon', () => {
-	const s = setup({ equipment: STARTER_EQUIPMENT, potions: [{ id: 'potion_minor', qty: 2 }], monsters: [{ type: 'ratKing', level: 15 }] });
+	const s = setup({ equipment: STARTER_EQUIPMENT, potions: [{ id: 'potion_minor', qty: 2 }], monsters: [{ type: 'bossGreatAuroch', level: 15 }] });
 	const ledger = runCombat(s.ledger, s.env(s.start), { autoUse: false }).ledger;
 	const drink = (at: number, l: Ledger) => runCombat(l, s.env(s.start + at), { commands: [{ kind: 'potion', id: 'potion_minor' }] }).ledger;
 	const hurt = { ...ledger, combat: { ...ledger.combat!, hp: 40 } };
@@ -263,7 +263,7 @@ test('the full-HP potion is refused outside a fight too, and a potion the bag do
 });
 
 test('skills: Heal needs its level, mana and a cooldown; Stun needs a fight and level 10 and freezes the monster', () => {
-	const mk = (level: number) => setup({ equipment: STARTER_EQUIPMENT, level, monsters: [{ type: 'ratKing', level: 15 }], seed: `skill-${level}` });
+	const mk = (level: number) => setup({ equipment: STARTER_EQUIPMENT, level, monsters: [{ type: 'bossGreatAuroch', level: 15 }], seed: `skill-${level}` });
 	const low = mk(4);
 	const lowStart = runCombat(low.ledger, low.env(low.start), { autoUse: false }).ledger;
 	const lowHurt = { ...lowStart, combat: { ...lowStart.combat!, hp: 30 } };
@@ -292,7 +292,7 @@ test('skills: Heal needs its level, mana and a cooldown; Stun needs a fight and 
 
 test('auto-use drinks below its HP line and only when switched on', () => {
 	const mk = (autoUse: boolean) => {
-		const s = setup({ equipment: STARTER_EQUIPMENT, potions: [{ id: 'potion_greater', qty: 3 }], monsters: [{ type: 'rat', level: 9 }], seed: 'auto' });
+		const s = setup({ equipment: STARTER_EQUIPMENT, potions: [{ id: 'potion_greater', qty: 3 }], monsters: [{ type: 'thistleBoar', level: 9 }], seed: 'auto' });
 		return advance(s, runCombat(s.ledger, s.env(s.start), { autoUse }).ledger, 40);
 	};
 	assert.ok(kinds(mk(true).events, 'potion').length >= 1);
@@ -303,7 +303,7 @@ test('auto-use drinks below its HP line and only when switched on', () => {
 // ---------------------------------------------------------------------------------------------------- the log
 
 test('a result is never lost to the cosmetic swings: a win stays in the log until the browser acknowledges it', () => {
-	const s = setup({ equipment: STRONG, monsters: [{ type: 'rat', level: 1 }, { type: 'rat', level: 1 }, { type: 'rat', level: 1 }, { type: 'rat', level: 1 }] });
+	const s = setup({ equipment: STRONG, monsters: [{ type: 'thistleBoar', level: 1 }, { type: 'thistleBoar', level: 1 }, { type: 'thistleBoar', level: 1 }, { type: 'thistleBoar', level: 1 }] });
 	const first = runCombat(s.ledger, s.env(s.start)).ledger;
 	const later = runCombat(first, s.env(s.start + 100)).ledger; // one long gap: dozens of swings, four wins
 	const log = later.combat!.log;
@@ -315,8 +315,8 @@ test('a result is never lost to the cosmetic swings: a win stays in the log unti
 });
 
 test('stronger attributes win fights a weak build loses (the profile is read from the saved character)', () => {
-	const weak = setup({ equipment: DAGGER, monsters: [{ type: 'rat', level: 9 }], seed: 'attrs' });
-	const strong = setup({ equipment: DAGGER, character: spentCharacter({ strength: 25, vitality: 25 }), monsters: [{ type: 'rat', level: 9 }], seed: 'attrs' });
+	const weak = setup({ equipment: DAGGER, monsters: [{ type: 'thistleBoar', level: 9 }], seed: 'attrs' });
+	const strong = setup({ equipment: DAGGER, character: spentCharacter({ strength: 25, vitality: 25 }), monsters: [{ type: 'thistleBoar', level: 9 }], seed: 'attrs' });
 	const run = (s: ReturnType<typeof setup>) => advance(s, runCombat(s.ledger, s.env(s.start), { autoUse: false }).ledger, 120).events;
 	assert.ok(kinds(run(strong), 'won').length >= 1);
 	assert.equal(kinds(run(weak), 'won').length, 0);
@@ -326,7 +326,7 @@ test('stronger attributes win fights a weak build loses (the profile is read fro
 
 test("a win puts the drops into the ledger's inventory and grants the gold of what did not fit or was sold, in the same step", () => {
 	// a full bag: what the rats drop cannot be stored, so it is turned into gold on the server
-	const s = setup({ equipment: STRONG, monsters: Array.from({ length: 12 }, () => ({ type: 'rat' as const, level: 3 })) });
+	const s = setup({ equipment: STRONG, monsters: Array.from({ length: 12 }, () => ({ type: 'thistleBoar' as const, level: 3 })) });
 	const full = { ...s.ledger, inv: { ...inventoryFromCore(s.stored.core), bag: emptyBag().map(() => ({ item: plainItem('wooden_sword') })) } };
 	const first = runCombat(full, s.env(s.start)).ledger;
 	const out = advance(s, first, 240);
@@ -339,7 +339,7 @@ test("a win puts the drops into the ledger's inventory and grants the gold of wh
 	assert.deepEqual(out.ledger.inv!.bag, full.inv.bag);
 
 	// an empty bag: the drops are stored, the version moves
-	const empty = setup({ equipment: STRONG, monsters: Array.from({ length: 12 }, () => ({ type: 'rat' as const, level: 3 })), seed: 'empty-bag' });
+	const empty = setup({ equipment: STRONG, monsters: Array.from({ length: 12 }, () => ({ type: 'thistleBoar' as const, level: 3 })), seed: 'empty-bag' });
 	const start = { ...empty.ledger, inv: { ...inventoryFromCore(empty.stored.core), bag: emptyBag() } };
 	const after = advance(empty, runCombat(start, empty.env(empty.start)).ledger, 240).ledger;
 	assert.ok(after.inv!.bag.some(Boolean), 'the drops are in the bag');
@@ -347,7 +347,7 @@ test("a win puts the drops into the ledger's inventory and grants the gold of wh
 });
 
 test('the auto-sell filter of the ledger sells matching gear on the spot', () => {
-	const s = setup({ equipment: STRONG, monsters: Array.from({ length: 12 }, () => ({ type: 'rat' as const, level: 3 })), seed: 'auto-sell' });
+	const s = setup({ equipment: STRONG, monsters: Array.from({ length: 12 }, () => ({ type: 'thistleBoar' as const, level: 3 })), seed: 'auto-sell' });
 	const start = { ...s.ledger, inv: { ...inventoryFromCore(s.stored.core), bag: emptyBag(), autoSellUpTo: 'legendary' } };
 	const first = runCombat(start, s.env(s.start)).ledger;
 	const out = advance(s, first, 240);

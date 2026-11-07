@@ -99,7 +99,7 @@ test('the monsters on the map are the server list, where the server put them', (
 	};
 	const placed = api().applyServerTickets(sync);
 	assert.equal(placed.monsters, 2);
-	assert.deepEqual(api().monsters.map((m) => [m.id, m.type, m.x, m.y, m.level, m.ticket]), [[4, 'rat', CASTLE_X + 3, CASTLE_Y, 2, 4], [9, 'ratKing', CASTLE_X, CASTLE_Y - 4, 16, 9]]);
+	assert.deepEqual(api().monsters.map((m) => [m.id, m.type, m.x, m.y, m.level, m.ticket]), [[4, 'thistleBoar', CASTLE_X + 3, CASTLE_Y, 2, 4], [9, 'bossGreatAuroch', CASTLE_X, CASTLE_Y - 4, 16, 9]]);
 	assert.equal(api().monsters[0].lucky, true);
 	assert.equal(api().gems, 1100);
 	// the next answer lists only the King: the rat is gone from the map
@@ -114,7 +114,7 @@ test('Luck raises the chance of gear from a monster and moves the odds toward ra
 		let gear = 0;
 		let rare = 0;
 		for (let seed = 1; seed <= 4000; seed++) {
-			const result = generateLoot({ sourceId: 'rat', level: 6, luck }, mulberry32(seed));
+			const result = generateLoot({ sourceId: 'monster', level: 6, luck }, mulberry32(seed));
 			for (const drop of result.drops) {
 				if (drop.kind !== 'gear') continue;
 				gear++;
@@ -131,20 +131,20 @@ test('Luck raises the chance of gear from a monster and moves the odds toward ra
 
 test('Luck 0 leaves the loot exactly as it was', () => {
 	for (let seed = 1; seed <= 200; seed++) {
-		assert.deepEqual(generateLoot({ sourceId: 'rat', level: 5 }, mulberry32(seed)), generateLoot({ sourceId: 'rat', level: 5, luck: 0 }, mulberry32(seed)));
+		assert.deepEqual(generateLoot({ sourceId: 'monster', level: 5 }, mulberry32(seed)), generateLoot({ sourceId: 'monster', level: 5, luck: 0 }, mulberry32(seed)));
 	}
 });
 
 test('a lucky monster pays three times the gold and XP and adds a gear roll', () => {
 	const ctx = { goldPerSec: 10, xpPerSec: 2, luck: 0 };
-	const plain = rollKillLoot({ type: 'rat', level: 3 }, ctx, mulberry32(5));
-	const lucky = rollKillLoot({ type: 'rat', level: 3 }, { ...ctx, lucky: true }, mulberry32(5));
+	const plain = rollKillLoot({ type: 'thistleBoar', level: 3 }, ctx, mulberry32(5));
+	const lucky = rollKillLoot({ type: 'thistleBoar', level: 3 }, { ...ctx, lucky: true }, mulberry32(5));
 	assert.equal(lucky.gold, plain.gold * 3);
 	assert.equal(lucky.xp, plain.xp * 3);
 	let more = 0;
 	for (let seed = 1; seed <= 300; seed++) {
-		const a = rollKillLoot({ type: 'rat', level: 3 }, ctx, mulberry32(seed)).items.filter((d) => d.kind === 'gear').length;
-		const b = rollKillLoot({ type: 'rat', level: 3 }, { ...ctx, lucky: true }, mulberry32(seed)).items.filter((d) => d.kind === 'gear').length;
+		const a = rollKillLoot({ type: 'thistleBoar', level: 3 }, ctx, mulberry32(seed)).items.filter((d) => d.kind === 'gear').length;
+		const b = rollKillLoot({ type: 'thistleBoar', level: 3 }, { ...ctx, lucky: true }, mulberry32(seed)).items.filter((d) => d.kind === 'gear').length;
 		assert.ok(b >= a + 1, 'always at least one more piece');
 		more += b - a;
 	}
@@ -159,10 +159,10 @@ test('monsters spawn a level higher for every 8 tiles from the castle, never abo
 	assert.equal(dangerBonus(8), 1);
 	assert.equal(dangerBonus(33), 4);
 	assert.equal(dangerBonus(NaN), 0);
-	const near = rollSpawnLevel('rat', 1, 11, 0);
-	const far = rollSpawnLevel('rat', 1, 11, 24);
-	assert.equal(far, Math.min(MONSTERS.rat.spawnWindow.cap, near + 3), 'the same id rolls the same offset into a window three levels higher');
-	assert.equal(rollSpawnLevel('rat', 10, 11, 10_000), MONSTERS.rat.spawnWindow.cap);
+	const near = rollSpawnLevel('thistleBoar', 1, 11, 0);
+	const far = rollSpawnLevel('thistleBoar', 1, 11, 24);
+	assert.equal(far, Math.min(MONSTERS.thistleBoar.spawnWindow.cap, near + 3), 'the same id rolls the same offset into a window three levels higher');
+	assert.equal(rollSpawnLevel('thistleBoar', 10, 11, 10_000), MONSTERS.thistleBoar.spawnWindow.cap);
 	assert.equal(castleDistance({ x: CASTLE_X + 16, y: CASTLE_Y }), 16);
-	assert.ok(spawnLevelRange('rat', 1).min <= rollSpawnLevel('rat', 1, 5, 16));
+	assert.ok(spawnLevelRange('thistleBoar', 1).min <= rollSpawnLevel('thistleBoar', 1, 5, 16));
 });

@@ -5,7 +5,7 @@ import { CASTLE_X, CASTLE_Y } from '../src/config/gameConfig';
 import { MONSTERS } from '../src/config/combatConfig';
 import { castleDistance } from '../src/lib/monsters';
 import { isChestPlaced, isPlaced, needsLook, placeTickets, siteKey, worldFromPart } from '../src/lib/offline/placement';
-import { emptyBank, type TicketBank } from '../src/lib/offline/tickets';
+import { emptyBank, monsterTypeOf, type TicketBank } from '../src/lib/offline/tickets';
 import { sealedRng } from '../src/lib/offline/seal';
 import { packBody } from '../src/lib/saveFormat';
 import { pickPersisted } from '../src/lib/sanitizeSave';
@@ -34,8 +34,8 @@ test('every ticket gets a tile on land 2 to 9 tiles from the castle, never twice
 	const all = [...out.rats, out.king!];
 	assert.ok(all.every(isPlaced));
 	assert.equal(new Set(all.map((t) => `${t.x},${t.y}`)).size, all.length);
-	const rule = MONSTERS.rat.spawn;
 	for (const t of all) {
+		const rule = MONSTERS[monsterTypeOf(t, 'rat')].spawn;
 		const d = castleDistance({ x: t.x!, y: t.y! });
 		assert.ok(d >= rule.minCastleDistance && d <= rule.maxCastleDistance, `distance ${d}`);
 		const tile = ownedRowMajor(tiles).find((e) => e.x === t.x && e.y === t.y)!.tile;

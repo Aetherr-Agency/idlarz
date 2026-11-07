@@ -1,4 +1,4 @@
-import { COMBAT, MONSTERS } from '@/config/combatConfig';
+import { COMBAT, FALLBACK_BOSS, FALLBACK_MONSTER, MONSTERS } from '@/config/combatConfig';
 import { SPAWN_LIMIT } from '@/config/gameConfig';
 import { chestIntervalSec, luckyRatChance } from '@/lib/luck';
 import type { Rng } from '@/lib/rng';
@@ -38,13 +38,13 @@ export interface MonsterTicket {
 	x?: number;
 	y?: number;
 	spawnLevel?: number;
-	/** Which monster it is, chosen with the tile (placement.ts). Left out in rows from before: a rat is a `rat`, the King a `ratKing` */
+	/** Which monster it is, chosen with the tile (placement.ts). Left out in rows from the days of rats: see `monsterTypeOf` */
 	type?: MonsterType;
 }
 
-/** The monster a ticket stands for: its own `type` when it has a valid one, else the original rat or King of its kind. */
+/** The monster a ticket stands for: its own `type` when it has a valid one, else the plains monster or boss of its kind. */
 export const monsterTypeOf = (ticket: Pick<MonsterTicket, 'type'>, kind: 'rat' | 'king'): MonsterType =>
-	ticket.type && ticket.type in MONSTERS ? ticket.type : kind === 'king' ? 'ratKing' : 'rat';
+	ticket.type && ticket.type in MONSTERS ? ticket.type : kind === 'king' ? FALLBACK_BOSS : FALLBACK_MONSTER;
 
 export interface TicketBank {
 	/** Seconds the timers have run towards the next chest / rat / king (they stop while the map is full) */

@@ -1,33 +1,23 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { MONSTER_SHEETS } from '@/config/pixelIcons';
+import { MONSTER_CATALOG, monsterArtUrl } from '@/catalog/monsters';
+import { monsterArtSize } from '@/config/monsterArtSize';
 import type { MonsterType } from '@/types/game';
 import '@/styles/Monsters.css';
 
-/** A monster's 2-frame idle sheet at an integer scale (frame 1 / frame 2 swap every half second). */
+/** A monster's picture (public/pixel/enemies); `scale` 1 is the size it has on the map, bigger ones are for the fight window. */
 const MonsterArt: React.FC<{ type: MonsterType; scale?: number; label?: string; className?: string }> = ({
 	type,
 	scale = 1,
 	label,
 	className,
 }) => {
-	const { name, w, h } = MONSTER_SHEETS[type];
+	const entry = MONSTER_CATALOG.find((m) => m.id === type);
+	if (!entry) return null;
+	const size = monsterArtSize(entry.id, entry.grade) * scale;
 	return (
-		<span
-			className={cn('monster-art', className)}
-			role={label ? 'img' : undefined}
-			aria-label={label}
-			style={
-				{
-					width: w * scale,
-					height: h * scale,
-					backgroundImage: `url('/pixel/icons/${name}.png')`,
-					backgroundSize: `${w * 2 * scale}px ${h * scale}px`,
-					'--sheet-w': `${w * 2 * scale}px`,
-					'--frame-ms': '520ms',
-				} as React.CSSProperties
-			}
-		/>
+		// eslint-disable-next-line @next/next/no-img-element
+		<img src={monsterArtUrl(entry)} alt={label ?? entry.label} width={size} height={size} className={cn('monster-art', className)} style={{ imageRendering: 'pixelated' }} draggable={false} />
 	);
 };
 

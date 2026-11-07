@@ -168,7 +168,7 @@ test('the server puts every monster on land: 2 to 9 tiles from the castle, never
 	const stored = (await m.saves.load('u1'))!;
 	for (const rat of sync.tickets.rats) {
 		const distance = castleDistance(rat);
-		assert.ok(distance >= MONSTERS.rat.spawn.minCastleDistance && distance <= MONSTERS.rat.spawn.maxCastleDistance, `distance ${distance}`);
+		assert.ok(distance >= MONSTERS.thistleBoar.spawn.minCastleDistance && distance <= MONSTERS.thistleBoar.spawn.maxCastleDistance, `distance ${distance}`);
 		assert.ok(rat.spawnLevel >= 1);
 	}
 	assert.equal(new Set(sync.tickets.rats.map((r) => `${r.x},${r.y}`)).size, sync.tickets.rats.length, 'one monster per tile');
@@ -177,7 +177,10 @@ test('the server puts every monster on land: 2 to 9 tiles from the castle, never
 
 test('with auto-battle on the server fights the monsters one at a time and pays each kill once', async () => {
 	const { m, now } = await playing(25, 'u1', true);
-	// the server walks the fights forward each time it is asked: the starter kit beats the low-level rats of a young castle
+	// the server walks the fights forward each time it is asked: the starter kit beats the low-level plains monsters of a young castle
+	// (the land of this test has forest and swamp too, whose monsters start higher and are meant to be out of reach of the starter kit)
+	const row = m.ledgers.get('u1')!;
+	row.bank.rats = row.bank.rats.map((ticket) => ({ ...ticket, type: 'thistleBoar' as const, spawnLevel: Math.min(ticket.spawnLevel ?? 1, 3) }));
 	let won = 0;
 	let t = now;
 	let since: number | undefined = 0;
@@ -189,7 +192,7 @@ test('with auto-battle on the server fights the monsters one at a time and pays 
 		assert.ok(out.combat.fight === null || out.combat.fight.monsterHp > 0);
 	}
 	const ledger = m.ledgers.get('u1')!;
-	assert.ok(won >= 1, 'at least one rat fell');
+	assert.ok(won >= 1, 'at least one monster fell');
 	assert.equal(ledger.ordKill, won, 'each win rolled one sealed reward');
 	assert.ok(ledger.granted.gold > 0 && ledger.granted.xp > 0);
 });

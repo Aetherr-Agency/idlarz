@@ -106,7 +106,7 @@ export const seedLedger = (source: LedgerSeedSource, nowMs: number): Ledger => {
 	let n = 1;
 	for (const monster of sorted) {
 		const ticket = { n: n++, at: savedSec - Math.max(0, num(monster.ageSec)), lucky: false };
-		if (monster.type === 'ratKing') king = king ?? ticket;
+		if (monster.type === 'ratKing' || (monster.type && monster.type.startsWith('boss'))) king = king ?? ticket;
 		else rats.push(ticket);
 	}
 	// the chests standing on the saved map become numbered tickets; the server finds them a tile at the first look at the map

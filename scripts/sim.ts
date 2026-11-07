@@ -424,7 +424,7 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 	let nextRatAt = 0;
 	let nextKingAt = spawn.bossIntervalSec;
 	let kingRetryAt = 0;
-	let waiting: { type: 'rat' | 'ratKing'; at: number; spawnLevel: number }[] = [];
+	let waiting: { type: 'thistleBoar' | 'bossGreatAuroch'; at: number; spawnLevel: number }[] = [];
 	const resetCombat = () => {
 		nextRatAt = t + spawn.firstSec;
 		nextKingAt = t + spawn.bossIntervalSec;
@@ -437,15 +437,15 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 		if (owned < 5) return;
 		// the spawn timers pause while monsters and chests fill SPAWN_LIMIT.maxFraction of the free tiles
 		const cap = Math.max(cfg.SPAWN_LIMIT.minAllowed, Math.floor(cfg.SPAWN_LIMIT.maxFraction * owned)) - 1;
-		while (t >= nextRatAt && waiting.filter((m) => m.type === 'rat').length < Math.max(1, cap - 1)) {
-			const { min, max } = monsters.spawnLevelRange('rat', castleLevelNow());
-			waiting.push({ type: 'rat', at: nextRatAt, spawnLevel: Math.round((min + max) / 2) });
+		while (t >= nextRatAt && waiting.filter((m) => m.type === 'thistleBoar').length < Math.max(1, cap - 1)) {
+			const { min, max } = monsters.spawnLevelRange('thistleBoar', castleLevelNow());
+			waiting.push({ type: 'thistleBoar', at: nextRatAt, spawnLevel: Math.round((min + max) / 2) });
 			nextRatAt += spawn.intervalSec;
 		}
 		if (t >= nextRatAt) nextRatAt = t + spawn.intervalSec;
-		if (t >= nextKingAt && !waiting.some((m) => m.type === 'ratKing')) {
-			const { min, max } = monsters.spawnLevelRange('ratKing', castleLevelNow());
-			waiting.push({ type: 'ratKing', at: t, spawnLevel: Math.round((min + max) / 2) });
+		if (t >= nextKingAt && !waiting.some((m) => m.type === 'bossGreatAuroch')) {
+			const { min, max } = monsters.spawnLevelRange('bossGreatAuroch', castleLevelNow());
+			waiting.push({ type: 'bossGreatAuroch', at: t, spawnLevel: Math.round((min + max) / 2) });
 		}
 	};
 	/** Fights what is waiting with the gear the schedule says the player has; pays the kill like lib/loot/kill.ts does. */
@@ -468,7 +468,7 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 		for (const m of waiting) {
 			const level = monsters.levelAtAge(m.spawnLevel, t - m.at);
 			let won = false;
-			if (m.type === 'rat') won = level <= gear.maxRat;
+			if (m.type === 'thistleBoar') won = level <= gear.maxRat;
 			else if (t >= kingRetryAt && gear.king > 0) {
 				won = Math.random() < gear.king;
 				if (!won) kingRetryAt = t + combatCfg.COMBAT.auto.bossRetryCooldownSec;
@@ -486,12 +486,12 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 					hide: st.resources.hide + r.hide,
 				},
 			}));
-			if (m.type === 'ratKing') nextKingAt = t + spawn.bossIntervalSec;
+			if (m.type === 'bossGreatAuroch') nextKingAt = t + spawn.bossIntervalSec;
 			milestones[`kills${m.type}`] = (milestones[`kills${m.type}`] ?? 0) + 1;
 		}
 		waiting = left;
 	};
-	const killReward = (type: 'rat' | 'ratKing', level: number, rates: { gold: number; xp: number; hide: number }) =>
+	const killReward = (type: 'thistleBoar' | 'bossGreatAuroch', level: number, rates: { gold: number; xp: number; hide: number }) =>
 		kill.killIncome({ type, level }, { goldPerSec: rates.gold, xpPerSec: rates.xp, hidePerSec: rates.hide, luck: 0, killRewardPct: gearEco.gearEconomy(api().equipment).killRewardPct });
 	if (profile.combat) resetCombat();
 
