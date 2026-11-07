@@ -130,17 +130,17 @@ Resource modifier: +20% at level 1, doubling each level up to level 6, then +320
 
 | Upgrade | Build time | Modifier after | gold | wood | stone | coal | food | meat |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 → 2 | 1h 0m | +40% | 70.00K | 10.00K | 10.00K | — | — | — |
-| 2 → 3 | 4h 0m | +80% | 200.00K | 30.00K | 30.00K | 20.00K | — | — |
-| 3 → 4 | 12h 0m | +160% | 1.00M | 100.00K | 100.00K | 50.00K | 200.00K | 40.00K |
-| 4 → 5 | 1d 0h | +320% | 4.00M | 400.00K | 400.00K | 200.00K | 2.00M | 100.00K |
-| 5 → 6 | 2d 0h | +640% | 8.00M | 2.00M | 2.00M | 1.00M | 4.00M | 500.00K |
-| 6 → 7 | 3d 0h | +960% | 30.00M | 3.00M | 3.00M | 1.60M | 16.00M | 800.00K |
-| 7 → 8 | 4d 0h | +1280% | 48.00M | 4.80M | 4.80M | 2.60M | 25.60M | 1.28M |
-| 8 → 9 | 5d 0h | +1600% | 76.80M | 7.60M | 7.60M | 4.00M | 41.00M | 2.00M |
-| 9 → 10 | 7d 0h | +1920% | 122.80M | 12.20M | 12.20M | 6.60M | 65.60M | 3.20M |
+| 1 → 2 | 30m 0s | +40% | 70.00K | 10.00K | 10.00K | — | — | — |
+| 2 → 3 | 2h 0m | +80% | 200.00K | 30.00K | 30.00K | 20.00K | — | — |
+| 3 → 4 | 6h 0m | +160% | 1.00M | 100.00K | 100.00K | 50.00K | 200.00K | 40.00K |
+| 4 → 5 | 12h 0m | +320% | 4.00M | 400.00K | 400.00K | 200.00K | 2.00M | 100.00K |
+| 5 → 6 | 1d 0h | +640% | 8.00M | 2.00M | 2.00M | 1.00M | 4.00M | 500.00K |
+| 6 → 7 | 1d 12h | +960% | 30.00M | 3.00M | 3.00M | 1.60M | 16.00M | 800.00K |
+| 7 → 8 | 2d 0h | +1280% | 48.00M | 4.80M | 4.80M | 2.60M | 25.60M | 1.28M |
+| 8 → 9 | 2d 12h | +1600% | 76.80M | 7.60M | 7.60M | 4.00M | 41.00M | 2.00M |
+| 9 → 10 | 3d 12h | +1920% | 122.80M | 12.20M | 12.20M | 6.60M | 65.60M | 3.20M |
 
-Total build time to level 10: 22d 17h (to level 6: 3d 17h).
+Total build time to level 10: 11d 8h (to level 6: 1d 20h).
 
 ## 4. Farm animals
 
@@ -281,6 +281,11 @@ Per-second output of one tile before adjacency and modifiers (already multiplied
 | Tundra | gold 0.13, coal 0.455 |
 | Lake | gold 0.065, food 0.325 |
 | Coast | gold 0.13, food 0.26 |
+| Jungle | — |
+| Fields | — |
+| Blossom Orchard | — |
+| Blight | — |
+| Battlefield | — |
 
 Building cost: 500 gold, 250 wood, 150 stone as the base price. Building number n costs base × 1: ×0.4, 2: ×0.6, 3: ×0.8, 4: ×1, 5: ×1.15, 9: ×2.01, 17: ×5.83, 33: ×21.77 (first 4 cheap, then ×1.15 for 12, ×1.09 for 16, ×1.025 after).
 
@@ -332,10 +337,10 @@ A real game rolls its 4 start tiles at random; this table uses one fixed ring (s
 
 | Level | gold per click (x gold/s) | price |
 | --- | --- | --- |
-| 0 | 50% | (start) |
-| 1 | 90% | 750.00K |
-| 2 | 130% | 2.50M |
-| 3 | 180% | 10.00M |
+| 0 | 200% | (start) |
+| 1 | 400% | 750.00K |
+| 2 | 800% | 2.50M |
+| 3 | 1500% | 10.00M |
 
 | Resource | sells for | costs (x2) |
 | --- | --- | --- |
@@ -374,15 +379,15 @@ A real game rolls its 4 start tiles at random; this table uses one fixed ring (s
 
 ## 9. Rebirth and Embers
 
-Rebirth needs castle level ≥ 6 and ≥ 100 tiles. Embers = `floor(3 × (castle − 5) × sqrt(tiles / 10))`; each point earned is +6% income for ever.
+Rebirth needs castle level ≥ 6 and ≥ 400 tiles. Embers = `floor(3 × (castle − 5) × sqrt(tiles / 10))`; all Embers earned together give +10% × earned^0.6 income for ever.
 
 | castle level | 100 tiles | 150 tiles | 200 tiles | 300 tiles | 500 tiles |
 | --- | --- | --- | --- | --- | --- |
-| 6 | 9 | 11 | 13 | 16 | 21 |
-| 7 | 18 | 23 | 26 | 32 | 42 |
-| 8 | 28 | 34 | 40 | 49 | 63 |
-| 9 | 37 | 46 | 53 | 65 | 84 |
-| 10 | 47 | 58 | 67 | 82 | 106 |
+| 6 | 9 | 11 | 13 | 16 | 27 |
+| 7 | 18 | 23 | 26 | 32 | 54 |
+| 8 | 28 | 34 | 40 | 49 | 81 |
+| 9 | 37 | 46 | 53 | 65 | 108 |
+| 10 | 47 | 58 | 67 | 82 | 136 |
 
 Shop (cost in points of the next level, by current level):
 
@@ -390,7 +395,7 @@ Shop (cost in points of the next level, by current level):
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | Thrift | 2% | 10 | 2 | 3 | 4 | 6 | 11 | 42 |
 | Master Builders | 5% | 10 | 3 | 5 | 6 | 9 | 17 | 62 |
-| Click Mastery | 10% | 10 | 2 | 3 | 4 | 6 | 11 | 42 |
+| Click Mastery | 25% | 10 | 2 | 3 | 4 | 6 | 11 | 42 |
 | Provisions | 1500 gold + 400 wood + 400 stone | 10 | 2 | 3 | 4 | 6 | 11 | 42 |
 | Night Watch | 100% | 10 | 2 | 3 | 4 | 6 | 11 | 42 |
 | Steward | 5% | 10 | 3 | 5 | 6 | 9 | 17 | 62 |
