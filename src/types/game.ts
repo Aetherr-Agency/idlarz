@@ -1,4 +1,5 @@
 import { BIOMES } from '@/config/gameConfig';
+import type { MONSTERS } from '@/config/combatConfig';
 import type { StoredAmounts } from '@/catalog/resourceKeys';
 import type { PlayerClassId } from '@/config/playerClasses';
 import type { FarmUpgradeId, EmberUpgradeId, MerchantUpgradeId } from '@/config/gameConfig';
@@ -160,7 +161,8 @@ export type BagSlot = { item: ItemInstance } | { id: string; qty: number } | nul
 /** One thing a kill, chest or shop hands over: a piece of gear, or some of a consumable */
 export type Drop = { kind: 'gear'; item: ItemInstance } | { kind: 'consumable'; id: string; qty: number };
 
-export type MonsterType = 'rat' | 'ratKing';
+/** The ids of `MONSTERS` (config/combatConfig.ts): a new monster is a new entry there, nothing else lists them */
+export type MonsterType = keyof typeof MONSTERS;
 
 export interface Monster {
 	id: number;

@@ -31,8 +31,8 @@ export const UNCLAIMED_SEC = 900;
 export const publicTickets = (bank: TicketBank, opened?: number): PublicTickets => ({
 	chests: bank.chests.filter(isChestPlaced).map(({ n, x, y }) => ({ n, x: x!, y: y! })),
 	...(opened === undefined ? {} : { opened }),
-	rats: bank.rats.filter(isPlaced).map(({ n, at, lucky, x, y, spawnLevel }) => ({ n, at, lucky, x: x!, y: y!, spawnLevel: spawnLevel! })),
-	king: bank.king && isPlaced(bank.king) ? { n: bank.king.n, at: bank.king.at, x: bank.king.x!, y: bank.king.y!, spawnLevel: bank.king.spawnLevel! } : null,
+	rats: bank.rats.filter(isPlaced).map(({ n, at, lucky, x, y, spawnLevel, type }) => ({ n, at, lucky, x: x!, y: y!, spawnLevel: spawnLevel!, ...(type ? { type } : {}) })),
+	king: bank.king && isPlaced(bank.king) ? { n: bank.king.n, at: bank.king.at, x: bank.king.x!, y: bank.king.y!, spawnLevel: bank.king.spawnLevel!, ...(bank.king.type ? { type: bank.king.type } : {}) } : null,
 });
 
 /** Reads the player's map at most once per request, and only when it is asked for. */

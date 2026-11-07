@@ -25,7 +25,8 @@ import type { Inventory } from '@/lib/offline/types';
 import { estimateWin, type PotionStock } from '@/lib/offline/winChance';
 import { payKill } from '@/lib/offline/reward';
 import { sealedRng } from '@/lib/offline/seal';
-import { takeMonster, type MonsterTicket } from '@/lib/offline/tickets';
+import { monsterTypeOf, takeMonster, type MonsterTicket } from '@/lib/offline/tickets';
+import type { MonsterType } from '@/types/game';
 import type { Rng } from '@/lib/rng';
 
 // SERVER ONLY. The fight engine. Combat is a pure function of the player's saved strength, the monster's ticket and a sealed random
@@ -69,15 +70,15 @@ const pickTarget = (
 	combat: CombatState,
 	tSec: number,
 	/** Auto-battle only: whether the player is expected to win against this monster (left out: no check) */
-	winnable?: (type: 'rat' | 'ratKing', level: number) => boolean
-): { ticket: MonsterTicket; type: 'rat' | 'ratKing' } | null => {
+	winnable?: (type: MonsterType, level: number) => boolean
+): { ticket: MonsterTicket; type: MonsterType } | null => {
 	const levelOf = (ticket: MonsterTicket) => levelAtAge(ticket.spawnLevel ?? 1, tSec - ticket.at);
-	const ready = (ticket: MonsterTicket, type: 'rat' | 'ratKing') =>
-		isPlaced(ticket) && tSec >= (combat.retryAt[ticket.n] ?? 0) && (!winnable || winnable(type, levelOf(ticket)));
+	const ready = (ticket: MonsterTicket, kind: 'rat' | 'king') =>
+		isPlaced(ticket) && tSec >= (combat.retryAt[ticket.n] ?? 0) && (!winnable || winnable(monsterTypeOf(ticket, kind), levelOf(ticket)));
 	const rats = ledger.bank.rats.filter((ticket) => ready(ticket, 'rat')).sort((a, b) => (COMBAT.auto.engageOrder === 'weakest' ? levelOf(a) - levelOf(b) : 0) || a.n - b.n);
-	if (rats[0]) return { ticket: rats[0], type: 'rat' };
+	if (rats[0]) return { ticket: rats[0], type: monsterTypeOf(rats[0], 'rat') };
 	const king = ledger.bank.king;
-	if (king && ready(king, 'ratKing')) return { ticket: king, type: 'ratKing' };
+	if (king && ready(king, 'king')) return { ticket: king, type: monsterTypeOf(king, 'king') };
 	return null;
 };
 
@@ -85,7 +86,7 @@ const pickTarget = (
  * Whether auto-battle expects to beat a monster: the estimate (offline/winChance.ts) with the HP it would start with (at least the resume
  * line, so a player who is still resting is not judged on a low HP) and the potions auto-use would drink. A click on a monster skips this.
  */
-const winnableBy = (profile: PlayerProfile, hp: number, potions: PotionStock[]) => (type: 'rat' | 'ratKing', level: number): boolean =>
+const winnableBy = (profile: PlayerProfile, hp: number, potions: PotionStock[]) => (type: MonsterType, level: number): boolean =>
 	estimateWin(profile, Math.max(hp, (profile.maxHp * COMBAT.auto.resumeHpPct) / 100), type, level, potions).chance >= COMBAT.auto.minWinChance;
 
 /** The soonest time a monster that is waiting out its retry cooldown becomes a target again (Infinity: none). */
@@ -188,7 +189,7 @@ export const runCombat = (input: Ledger, env: CombatEnv, ask: { commands?: Comba
 	};
 
 	/** Opens the fight against a monster: the start of both an automatic and a chosen fight. */
-	const start = (t: number, target: { ticket: MonsterTicket; type: 'rat' | 'ratKing' }): boolean => {
+	const start = (t: number, target: { ticket: MonsterTicket; type: MonsterType }): boolean => {
 		const level = levelAtAge(target.ticket.spawnLevel ?? 1, t - target.ticket.at);
 		const stats = monsterStats(target.type, level);
 		const profile: PlayerProfile = profileNow;
@@ -229,8 +230,8 @@ export const runCombat = (input: Ledger, env: CombatEnv, ask: { commands?: Comba
 		if (c.fight || c.hp <= 0) return false;
 		const rat = ledger.bank.rats.find((ticket) => ticket.n === n && isPlaced(ticket));
 		const king = ledger.bank.king && ledger.bank.king.n === n && isPlaced(ledger.bank.king) ? ledger.bank.king : undefined;
-		if (rat) return start(t, { ticket: rat, type: 'rat' });
-		return king ? start(t, { ticket: king, type: 'ratKing' }) : false;
+		if (rat) return start(t, { ticket: rat, type: monsterTypeOf(rat, 'rat') });
+		return king ? start(t, { ticket: king, type: monsterTypeOf(king, 'king') }) : false;
 	};
 
 	const endFight = (t: number, kind: 'defeated' | 'timeout' | 'retreat') => {
