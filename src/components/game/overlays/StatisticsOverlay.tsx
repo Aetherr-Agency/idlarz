@@ -6,10 +6,9 @@ import LevelDetails from '../LevelDetails';
 import CollapsibleSection from '../CollapsibleSection';
 import ResourceIcon from '../ResourceIcon';
 import { gearIncomePct } from '@/lib/gearEconomy';
-import { calculateResourceBreakdown, countOwnedTiles, getStatDescription, type ResourceBreakdownEntry } from '@/utils/gameUtils';
+import { calculateResourceBreakdown, countOwnedTiles, emberIncomeBonus, getStatDescription, type ResourceBreakdownEntry } from '@/utils/gameUtils';
 import { formatNumber, formatPercent, formatRate, formatCompact } from '@/utils/formatters';
 import audioManager from '@/utils/audioManager';
-import { REBIRTH } from '@/config/gameConfig';
 
 const BASE_STATS = ['strength', 'dexterity', 'intelligence', 'vitality', 'charisma'] as const;
 
@@ -154,7 +153,7 @@ const StatisticsOverlay: React.FC = () => {
 							<Line label='Tiles' value={formatCompact(countOwnedTiles(tiles))} valueClass='text-blue-400' />
 							<Line
 								label='Rebirths'
-								value={`${formatNumber(prestige.rebirths)} (+${formatPercent(prestige.legacyEarned * REBIRTH.incomePerPoint * 100)})`}
+								value={`${formatNumber(prestige.rebirths)} (+${formatPercent(emberIncomeBonus(prestige.legacyEarned) * 100)})`}
 								valueClass='text-purple-300'
 							/>
 						</div>

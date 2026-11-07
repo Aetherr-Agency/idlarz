@@ -789,8 +789,10 @@ export const emberSpent = (upgrades: PrestigeState['upgrades']): number => {
 	return spent;
 };
 
-export const emberIncomeMultiplier = (prestige: PrestigeState | undefined): number =>
-	1 + REBIRTH.incomePerPoint * (prestige?.legacyEarned ?? 0);
+/** The income bonus (0.5 = +50 %) that `earned` Embers ever earned give: linear when `incomeExponent` is 1, flatter when it is below 1. */
+export const emberIncomeBonus = (earned: number): number => REBIRTH.incomePerPoint * Math.pow(Math.max(0, earned), REBIRTH.incomeExponent);
+
+export const emberIncomeMultiplier = (prestige: PrestigeState | undefined): number => 1 + emberIncomeBonus(prestige?.legacyEarned ?? 0);
 
 /** Percent off tile cost: Charisma plus Thrift, capped. */
 export const effectiveTileDiscount = (

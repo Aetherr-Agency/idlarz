@@ -3,7 +3,7 @@ import { sortedCostEntries } from '@/catalog';
 import { useUiStore } from '@/stores/uiStore';
 import { useGameStore } from '@/stores/gameStore';
 import { EMBER_UPGRADES, REBIRTH, CASTLE_UPGRADE, type EmberUpgradeId } from '@/config/gameConfig';
-import { castleModifier, economyTiles, emberGain, emberIncomeMultiplier, emberUpgradeCost } from '@/utils/gameUtils';
+import { castleModifier, economyTiles, emberGain, emberIncomeBonus, emberIncomeMultiplier, emberUpgradeCost } from '@/utils/gameUtils';
 import { castleLevelOf } from '@/lib/castleWard';
 import { formatHeaderAmount, formatNumber, formatPercent } from '@/utils/formatters';
 import audioManager from '@/utils/audioManager';
@@ -92,7 +92,7 @@ const RebirthDialog: React.FC = () => {
 				<div className='px-card mb-3 text-sm'>
 					<div className='px-h'>Rebirth now?</div>
 					<p className='text-[#d8c8a0] mb-2'>
-						You gain <b className='text-green-300'>{formatHeaderAmount(gain)}</b> Embers (+{pct(gain * REBIRTH.incomePerPoint)} income
+						You gain <b className='text-green-300'>{formatHeaderAmount(gain)}</b> Embers (+{pct(emberIncomeBonus(prestige.legacyEarned + gain) - emberIncomeBonus(prestige.legacyEarned))} income
 						for ever). The map, resources, castle and farm start again. Your name, hero, level, XP,
 						attributes, Embers and shop upgrades stay.
 					</p>

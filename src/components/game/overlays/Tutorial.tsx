@@ -288,7 +288,7 @@ const Tutorial: React.FC = () => {
 				<p className='text-[#d8c8a0]'>
 					When your castle reaches level {REBIRTH.minCastleLevel} and you own at least {REBIRTH.minTiles} tiles (+{REBIRTH.tilesPerRebirth} for every rebirth done) you can
 					Rebirth from the Rebirth window: the map, resources, castle, farm, gear and bag start again (you keep the starter kit), and you keep your name,
-					hero, level, gems and Embers. Your attribute points are handed back to spend again. Every Ember is worth +{pct(REBIRTH.incomePerPoint)} income for ever and can be spent in
+					hero, level, gems and Embers. Your attribute points are handed back to spend again. Every Ember you earn adds to your income for ever (the more you have, the less each new one adds) and can be spent in
 					the shop ({Object.values(EMBER_UPGRADES).map((u) => u.label).join(', ')}). A higher castle level and more tiles
 					at the moment of rebirth give more Embers, so pushing on to level {CASTLE_UPGRADE.maxLevel} first pays.
 				</p>

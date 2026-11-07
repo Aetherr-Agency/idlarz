@@ -852,7 +852,11 @@ export const REBIRTH = {
 	gainScale: 3, // Embers = gainScale x (castle level - 5) x (sqrt(tiles / 10) + surplusPerTile x tiles over the requirement), rounded down
 	/** Tiles the next rebirth needs, after `rebirths` of them */
 	tilesNeeded: (rebirths: number) => REBIRTH.minTiles + REBIRTH.tilesPerRebirth * Math.max(0, rebirths),
-	incomePerPoint: 0.06, // +6% of all income per Ember ever earned (spending points never lowers it)
+	// income bonus = incomePerPoint x (Embers ever earned) ^ incomeExponent (spending points never lowers it). It was linear, +6 % per Ember,
+	// which made the first rebirth worth about +130-200 % and every later one snowball. Now about +64 % after 22 Embers, +100 % after 47,
+	// +134 % after 76, +220 % after 170 (balancing pass, measured with the sim; tests/rebirth.test.ts pins the curve)
+	incomePerPoint: 0.1,
+	incomeExponent: 0.6,
 	discountCapPercent: 45, // Charisma + Thrift together can never take more than this off a tile
 	// Embers granted for a rebirth with this castle level and territory
 	gain: (castleLevel: number, tiles: number, rebirths = 0) => {

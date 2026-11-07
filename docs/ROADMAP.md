@@ -20,7 +20,7 @@ Requested by the owner as the next thing to work on. Items are ordered so each c
 - The costs of [19](19-first-build-steps.md) (first five x0.75) are separate; decide with the sim whether they still apply, since halving the timers already raises the income the gold part needs (the "needed income" table in [19](19-first-build-steps.md)).
 - Same rules as in 19: clamp `castleUpgrade.remainingSec` of saves that are mid-upgrade to the new maximum (the server's `castle_jump` check too), pin the nine durations in `tests/castle.test.ts`, add the "waiting on resources" diagnostic to `scripts/sim.ts`, and re-read the first-rebirth day (target about day 5-7 may now arrive much earlier; if so, move the gate with the costs, not with the timers).
 
-**BAL2 · Rebirth balance (M)**
+**BAL2 · Rebirth balance (M, ✅ Ember curve done: `incomePerPoint` 0.1 x earned^0.6 instead of 0.06 x earned; respec and gear wipe done too)**
 - Problem: after the first rebirth the Embers give about **+196 % income**, which makes the second run far too easy.
 - Plan: measure the Ember formula (`emberGain`, the shop and the income multipliers) with the sim for rebirths 1-5, then flatten the first-rebirth jump (diminishing returns on the first Embers, or a lower per-Ember rate) so run 2 stays in the 60-70 % band of run 1 ([06](06-pacing-targets.md)) instead of collapsing. Acceptance: `human-rebirth6` / `-rebirth8` ratios per run, written into the sim output.
 - **Respec on rebirth**: the character's attribute points are reset and handed back to spend again ([13](13-rebirth-reset-and-paragon.md), BL2 in the release plan).
