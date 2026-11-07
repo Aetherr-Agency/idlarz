@@ -11,6 +11,7 @@
     "perf": "tsx scripts/perf-world.ts",
     "test": "tsx --test \"tests/**/*.test.ts\"",
     "report": "tsx scripts/balance-report.ts",
+    "reset-players": "tsx scripts/reset-players.ts",
     "fight-sim": "tsx scripts/fight-sim.ts",
     "monster-ladder": "tsx scripts/monster-ladder.ts",
     "catalog-report": "tsx scripts/catalog-report.ts",
