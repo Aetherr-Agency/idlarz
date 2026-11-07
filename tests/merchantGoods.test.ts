@@ -6,7 +6,7 @@ import { ITEM_CATALOG, RARITIES } from '../src/catalog';
 import { averageItemLevel, emptyBag, gearOf } from '../src/lib/inventory';
 import { plainItem, sellValueOf } from '../src/lib/itemInstance';
 import { afterAbsence, generateMerchantStock, refreshCost, secondsToRotation, shelfLevels, shopPriceOf, stockDue } from '../src/lib/merchant';
-import { seeded } from '../src/lib/fightSim';
+import { mulberry32 } from '../src/lib/rng';
 import { sanitizeSave } from '../src/lib/sanitizeSave';
 import { sellPayout } from '../src/utils/gameUtils';
 import { patchTile } from '../src/utils/world';
@@ -14,7 +14,7 @@ import type { Equipment, MerchantStock } from '../src/types/game';
 
 const MAX_HAGGLER = 1 + MERCHANT_UPGRADES.haggler.maxLevel * MERCHANT_UPGRADES.haggler.effectPerLevel;
 // `worn` is the average item level of the player's gear: high by default, so the world (castle) level is what sets the shelf
-const stock = (castle = 1, seed = 1, at = 0, worn = 100) => generateMerchantStock(castle, worn, seed ? seeded(seed) : Math.random, at);
+const stock = (castle = 1, seed = 1, at = 0, worn = 100) => generateMerchantStock(castle, worn, seed ? mulberry32(seed) : Math.random, at);
 const tick = (seconds: number) => {
 	for (let i = 0; i < seconds; i++) api().tick(1000);
 };

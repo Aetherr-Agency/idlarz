@@ -12,6 +12,7 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { getTile, isOwnedAt, ownedBounds, ownedRowMajor, tileAt } from '../src/utils/world';
+import { mulberry32 } from '../src/lib/rng';
 
 // zustand's persist middleware needs *a* storage; the sim replaces it with a no-op one below
 (globalThis as unknown as { localStorage: unknown }).localStorage = {
@@ -161,13 +162,6 @@ const HUMAN_WINDOWS: [number, number][] = [
 let MAX_DAYS = 300;
 const FINE_STEP_DAYS = 45; // 20 s steps for the first weeks, coarser afterwards (keeps long runs fast)
 const FIRST_FINISH_CASTLE = 6; // the first finish line (castle 6 + best click + the rebirth territory) is unchanged by castle levels 7-10
-
-const mulberry32 = (seed: number) => () => {
-	seed = (seed + 0x6d2b79f5) | 0;
-	let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-	t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-	return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-};
 
 function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, seed = 0): Milestones {
 	const { cfg, utils, store, monsters, combatCfg, kill, gearEco, fightSim } = ctx;

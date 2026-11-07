@@ -87,6 +87,7 @@ import { signalNeedClaim, signalSyncNow } from '@/lib/serverSession';
 import { useUiStore } from '@/stores/uiStore';
 import { useRewardPendingStore } from '@/stores/rewardPendingStore';
 import { isAutoSold } from '@/lib/loot';
+import { mulberry32 } from '@/lib/rng';
 import { advanceMonsters, monsterAt, monsterDef } from '@/lib/monsters';
 import { ITEM_CATALOG, RARITIES } from '@/catalog';
 import { STARTER_EQUIPMENT } from '@/config/itemCatalog';
@@ -132,14 +133,6 @@ const BASE_STATS = [
 
 const isPositiveNumber = (n: unknown): n is number =>
 	typeof n === 'number' && Number.isFinite(n) && n > 0;
-
-/** A tiny seeded generator: the server and the first client render must start from the same world. */
-const seededRandom = (seed: number) => () => {
-	seed = (seed + 0x6d2b79f5) | 0;
-	let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
-	t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-	return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-};
 
 /** What the browser knows about combat before the server has said anything: no fight, auto-battle off and auto-use on (the server's own defaults). */
 const initialCombat = (): CombatClientState => ({
@@ -510,7 +503,7 @@ const createGameSlice = (
 	const slice = {
 		// A fixed placeholder world: it is rendered on the server and before the save is read, so it must not be
 		// random (that broke hydration). `merge` below replaces it with a random one for a player without a save.
-		...createInitialData(EMPTY_PRESTIGE, seededRandom(1)),
+		...createInitialData(EMPTY_PRESTIGE, mulberry32(1)),
 
 		resetGame: () => {
 			clickLimiter.reset();
