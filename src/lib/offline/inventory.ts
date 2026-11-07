@@ -1,3 +1,4 @@
+import { isRecord } from '@/lib/isRecord';
 import { ITEM_CATALOG, RARITIES } from '@/catalog';
 import { MERCHANT_SHOP_ITEMS } from '@/config/gameConfig';
 import {
@@ -28,8 +29,6 @@ import type { BagSlot, Drop, Equipment, EquipmentSlot, ItemInstance } from '@/ty
 // lib/inventory.ts the browser uses for its instant preview. Nothing here rolls anything.
 
 type Core = Record<string, unknown>;
-
-const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 
 /** The bag size a save entitles its owner to (the base plus the Pack Rat bonus the save holds). */
 const bagSizeFor = (merchantUpgrades: unknown): number => limitOf('bagSize', { merchantUpgrades: isRecord(merchantUpgrades) ? (merchantUpgrades as MerchantUpgrades) : undefined });

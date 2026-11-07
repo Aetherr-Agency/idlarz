@@ -1,3 +1,4 @@
+import { isRecord } from '@/lib/isRecord';
 import { INITIAL_CHARACTER_STATS } from '@/config/gameConfig';
 import { aggregateStats } from '@/lib/inventory';
 import { attacksPerSecond, critOdds, damagePerHit, dodgeChance, lifeLeechPercent, manaRegenPerSec, maxHp, maxMana, armorOf } from '@/lib/combat';
@@ -13,8 +14,6 @@ import { calculateCombatStats, calculateLevel, merchantCombat } from '@/utils/ga
 type Core = Record<string, unknown>;
 
 const BASE_KEYS = ['strength', 'dexterity', 'intelligence', 'vitality', 'charisma'] as const;
-
-const isRecord = (value: unknown): value is Record<string, unknown> => typeof value === 'object' && value !== null && !Array.isArray(value);
 
 /** The character's stats with every derived number worked out again (a save only holds the attributes). */
 const statsOf = (core: Core): CharacterStats => {

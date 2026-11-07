@@ -1,3 +1,4 @@
+import { isRecord } from '@/lib/isRecord';
 import { BASE_STAT_KEYS, PERSISTED_KEYS, sanitizeSave, type PersistedGame } from '@/lib/sanitizeSave';
 import { MAX_OWNED_TILES, inRange, ownedRowMajor, tileKey, type World } from '@/utils/world';
 
@@ -155,8 +156,6 @@ export const packBody = (state: PersistedGame): SaveBody => {
 	body.extra = extra;
 	return body;
 };
-
-const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
 
 const EXTRA_KEYS = new Set(['level', 'building', 'chest']);
 
