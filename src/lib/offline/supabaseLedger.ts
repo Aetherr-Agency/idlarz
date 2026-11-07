@@ -54,7 +54,7 @@ const fromRow = (row: Row): Ledger => ({
 	gems: row.gems,
 	lastKey: row.last_key,
 	lastResult: row.last_result,
-	combat: row.combat ?? null,
+	combat: row.combat ? { ...row.combat, queue: row.combat.queue ?? [] } : null,
 	inv: row.inv ?? null,
 });
 

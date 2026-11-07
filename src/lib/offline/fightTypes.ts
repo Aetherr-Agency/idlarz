@@ -100,6 +100,8 @@ export interface CombatState {
 	/** Monsters that beat the player (or ran out the clock) by ticket number: not tried again before this (epoch seconds) */
 	retryAt: Record<string, number>;
 	/** Potions drunk this run by id, and how many of those the last accepted save already knew about */
+	/** Ticket numbers of the monsters waiting to be fought after the open fight, in the order clicked (docs/24-battle-queue.md). Rows from before have none: read it as empty. */
+	queue: number[];
 	/** Number of the last event, and the most recent ones */
 	eventNo: number;
 	log: FightEvent[];
@@ -122,12 +124,16 @@ export const freshCombat = (nowSec: number, hp: number, mp: number): CombatState
 	autoUse: true,
 	ord: 0,
 	retryAt: {},
+	queue: [],
 	eventNo: 0,
 	log: [],
 });
 
 /** What the player asks for by hand: a hotkey, or a click on a monster (`n` is its ticket number). */
-export type CombatCommand = { kind: 'potion'; id: string } | { kind: 'skill'; id: SkillId } | { kind: 'fight'; n: number };
+export type CombatCommand = { kind: 'potion'; id: string } | { kind: 'skill'; id: SkillId } | { kind: 'fight'; n: number } | { kind: 'unqueue'; n: number };
+
+/** What a click on a monster did while a fight was open: it joined the queue, left it again (a second click), or was refused. */
+export type QueueResult = 'queued' | 'removed' | 'full' | 'refused';
 
 /** The fight as the browser sees it (the numbers it needs to draw the panel and the map). */
 export interface FightView {
@@ -154,6 +160,10 @@ export interface CombatView {
 	autoUse: boolean;
 	/** Seconds until the soonest monster that beat the player may be tried again (0: none is waiting out) */
 	retrySec: number;
+	/** The monsters waiting for their turn, first to fight first (derived from the tickets: one that is gone is not listed) */
+	queue?: { n: number; type: MonsterType; level: number }[];
+	/** How many the queue can hold */
+	queueMax?: number;
 	/** Server clock (epoch seconds) of this picture */
 	at: number;
 	eventNo: number;

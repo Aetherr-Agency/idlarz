@@ -4,7 +4,7 @@ import { rollChestLoot } from '@/lib/chests';
 import { rollGemFind } from '@/lib/luck';
 import type { Rng } from '@/lib/rng';
 import { combatView, dismissTicket, runCombat, type CombatEnv } from '@/lib/offline/fight';
-import type { CombatCommand } from '@/lib/offline/fightTypes';
+import type { CombatCommand, QueueResult } from '@/lib/offline/fightTypes';
 import { addTotals, type GrantTotals, type Ledger } from '@/lib/offline/ledger';
 import { applyOp, needsNoFight, receiveInto, sellContextOf, type InventoryOp } from '@/lib/offline/inventory';
 import { sealedRng } from '@/lib/offline/seal';
@@ -66,7 +66,7 @@ const onlineStep = async <T>(deps: ServiceDeps, userId: string, key: string | nu
 const withCombat = (ctx: StepContext, since: number | undefined, ask: Parameters<typeof runCombat>[2] = {}) => {
 	const ran = runCombat(ctx.ledger, ctx.env, { ...ask, ack: since });
 	const view = combatView(ran.ledger, ctx.env, since ?? ran.ledger.combat?.eventNo ?? 0, ran.behind, secondsToNext(ran.ledger.bank, bankContext(ctx.stored)));
-	return { ledger: ran.ledger, view };
+	return { ledger: ran.ledger, view, queued: ran.queued };
 };
 
 /** The chests and monsters that have appeared by now, when the next one is due, and the state of the player's combat. */
@@ -152,9 +152,9 @@ export type FightRequest =
  */
 export const fightStep = (deps: ServiceDeps, userId: string, key: string | null, request: FightRequest, nowMs: number, invVer?: number): Promise<Online<FightReply>> =>
 	onlineStep(deps, userId, key, nowMs, (ctx): Promise<{ ledger: Ledger; value: FightReply }> | { ledger: Ledger; value: FightReply } => {
-		const reply = (ledger: Ledger, view: FightReply['combat'], accepted: boolean): { ledger: Ledger; value: FightReply } => ({
+		const reply = (ledger: Ledger, view: FightReply['combat'], accepted: boolean, queued?: QueueResult): { ledger: Ledger; value: FightReply } => ({
 			ledger,
-			value: { combat: view, tickets: publicTickets(ledger.bank, ledger.ordChest), serverNowSec: ctx.nowSec, gemsTotal: ledger.gems, accepted },
+			value: { combat: view, tickets: publicTickets(ledger.bank, ledger.ordChest), serverNowSec: ctx.nowSec, gemsTotal: ledger.gems, accepted, ...(queued ? { queued } : {}) },
 		});
 		if (request.action === 'dismiss') {
 			const ran = runCombat(ctx.ledger, ctx.env, { ack: request.since });
@@ -164,7 +164,7 @@ export const fightStep = (deps: ServiceDeps, userId: string, key: string | null,
 		}
 		const ask = request.action === 'use' ? { commands: [request.command] } : request.action === 'auto' ? { autoBattle: request.autoBattle, autoUse: request.autoUse } : {};
 		const before = ctx.ledger.combat?.eventNo ?? 0;
-		const { ledger, view } = withCombat(ctx, request.since, ask);
+		const { ledger, view, queued } = withCombat(ctx, request.since, ask);
 		// a hotkey is "accepted" when it did something (an event was added after the fight was brought up to date); a click on a monster, when it
 		// opened a fight against that monster (an automatic engage does not count: it is another monster or was there before)
 		const done = (event: { no: number; kind: string; n?: number }) =>
@@ -172,6 +172,7 @@ export const fightStep = (deps: ServiceDeps, userId: string, key: string | null,
 			(request.action === 'use' && request.command.kind === 'fight'
 				? event.kind === 'engage' && event.n === request.command.n
 				: event.kind === 'potion' || event.kind === 'heal' || event.kind === 'stun' || event.kind === 'resist');
-		const accepted = request.action !== 'use' || (ledger.combat?.log.some(done) ?? false);
-		return reply(ledger, view, accepted);
+		// a click (or the × of the panel) that joined or left the queue is accepted too
+		const accepted = request.action !== 'use' || queued === 'queued' || queued === 'removed' || (ledger.combat?.log.some(done) ?? false);
+		return reply(ledger, view, accepted, queued);
 	}, invVer);
