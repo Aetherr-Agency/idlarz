@@ -198,7 +198,7 @@ const CombatWidget: React.FC = () => {
 
 	return (
 		<CombatPanel
-			monster={{ type, level: monsterLevel }}
+			monster={{ type, level: monsterLevel, lucky: !!(fight?.lucky ?? lastFight.current?.fight.lucky ?? over?.summary?.lucky) }}
 			fight={fight}
 			loading={!fight && !notice}
 			over={over}

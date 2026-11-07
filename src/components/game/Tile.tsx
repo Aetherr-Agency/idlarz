@@ -157,7 +157,9 @@ const Tile: React.FC<TileProps> = ({
 		// A monster on this tile: a (real) click asks the server to start the fight against it, auto-battle or not; no chest, no gold
 		if (isOwned && monsterKey) {
 			e.stopPropagation();
-			if (e.nativeEvent.isTrusted && startFight(Number(monsterId))) audioManager.playSound('click');
+			// the click sound is for starting a fight: a click that only joins or leaves the queue is silent (it sounded like a purchase)
+			const lineWasOpen = lineOpen;
+			if (e.nativeEvent.isTrusted && startFight(Number(monsterId)) && !lineWasOpen) audioManager.playSound('click');
 			return;
 		}
 

@@ -161,7 +161,7 @@ export interface CombatView {
 	/** Seconds until the soonest monster that beat the player may be tried again (0: none is waiting out) */
 	retrySec: number;
 	/** The monsters waiting for their turn, first to fight first (derived from the tickets: one that is gone is not listed) */
-	queue?: { n: number; type: MonsterType; level: number }[];
+	queue?: { n: number; type: MonsterType; level: number; lucky?: boolean }[];
 	/** How many the queue can hold */
 	queueMax?: number;
 	/** Server clock (epoch seconds) of this picture */

@@ -51,23 +51,26 @@ test('a click during a fight joins the queue, and the monsters are fought one af
 });
 
 test('a second click on a queued monster takes it out again; the monster in the fight, a missing one and a full queue are refused', () => {
-  const s = setup({ monsters: boars(6), equipment: STARTER_EQUIPMENT }); // a weak kit: the first fight lasts
+  const size = limitOf('battleQueue');
+  const s = setup({ monsters: boars(size + 3), equipment: STARTER_EQUIPMENT }); // a weak kit: the first fight lasts
   let r = at(s, s.ledger, 0.1, fight(1));
   assert.equal(at(s, r.ledger, 0.2, fight(1)).queued, 'refused', 'it is the fight itself');
-  assert.equal(at(s, r.ledger, 0.2, fight(99)).queued, 'refused', 'no such monster');
-  r = at(s, r.ledger, 0.3, fight(2));
-  r = at(s, r.ledger, 0.4, fight(3));
-  r = at(s, r.ledger, 0.5, fight(4));
-  assert.deepEqual(r.ledger.combat!.queue, [2, 3, 4]);
-  assert.equal(at(s, r.ledger, 0.6, fight(5)).queued, 'full', `the queue holds ${limitOf('battleQueue')}`);
+  assert.equal(at(s, r.ledger, 0.2, fight(999)).queued, 'refused', 'no such monster');
+  // fill the line: tickets 2 .. size + 1
+  const line: number[] = [];
+  for (let n = 2; n <= size + 1; n++) {
+    r = at(s, r.ledger, 0.2 + n * 0.01, fight(n));
+    line.push(n);
+  }
+  assert.deepEqual(r.ledger.combat!.queue, line);
+  assert.equal(at(s, r.ledger, 0.6, fight(size + 2)).queued, 'full', `the queue holds ${size}`);
   const toggled = at(s, r.ledger, 0.7, fight(3));
   assert.equal(toggled.queued, 'removed');
-  assert.deepEqual(toggled.ledger.combat!.queue, [2, 4]);
+  assert.deepEqual(toggled.ledger.combat!.queue, line.filter((n) => n !== 3));
   const explicit = at(s, toggled.ledger, 0.8, { commands: [{ kind: 'unqueue', n: 2 }] });
   assert.equal(explicit.queued, 'removed');
-  assert.deepEqual(explicit.ledger.combat!.queue, [4]);
+  assert.deepEqual(explicit.ledger.combat!.queue, line.filter((n) => n !== 3 && n !== 2));
 });
-
 test('a defeat ends the plan: the queue is cleared', () => {
   // the sim numbers the normal monsters first and the boss after them: tickets 1 and 2 are boars, 3 is a level 25 boss that a weak kit cannot beat
   const s = setup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'bossGreatAuroch', level: 25 }, ...boars(2)] });
