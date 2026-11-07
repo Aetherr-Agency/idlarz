@@ -33,6 +33,22 @@ npm run sim -- --set=SCALING_CONFIG.growthLate=1.25   # try a tweak without edit
 
 Rules for a balance change: change one parameter group, run `npm run sim -- --seeds=3`, compare with the committed `sim-milestones.md`, keep the targets above, then `npm run docs:gen` and commit the diff.
 
+## Magnitude targets (decided 2026-11-07, IDL-128)
+
+Measured with the real store (`casual`, trace to day 16; `human-rebirth8`, `hardcore-rebirth6-x10`) and set as the design ceiling every cap decision is checked against. "Income multiplier" is total income at castle 10 relative to run 1 at castle 10, all sources together (Embers, gear, Idols, Monument, Paragon).
+
+| Checkpoint | Gold per second | Income multiplier | Lifetime Embers | Unspent gold |
+| --- | --- | --- | --- | --- |
+| Run 1, castle 10 (day ~13, ~850 tiles) | 2,500 to 5,000 (today ~3,300) | x1 | 0 | <= 4 h of income |
+| Rebirth 5 (run 6 at castle 10) | x3 to x6 of run 1 | **x4** | 150 to 350 | <= 4 h |
+| Rebirth 10 (run 11 at castle 10) | x7 to x15 of run 1 | **x10** | 500 to 1,000 | <= 4 h |
+
+- **Embers per rebirth:** castle 6 about 20 to 30, castle 8 about 50 to 70, castle 10 about 80 to 130 (after the castle term (castle - 5)^1.3, IDL-183).
+- **Stocks:** any non-gold resource at most 24 hours of its production rate at castle 10; above it the sim warns (today food reaches about 15 hours, 235M at day 12). The merchant, autoSell and the Monument are the sinks.
+- **Ember path alone** (`1 + 0.1 x E^0.6`): x4 to x6 at 300 to 600 lifetime Embers; capped gear, Idols and the Monument add about x2.5 on top, which is how x10 at rebirth 10 is reached without Paragon doing the heavy lifting.
+- **Finding to keep in mind:** `human-rebirth8` finishes run 2 in 99 % of run 1's time (castle timers set the pace), while hardcore falls to 48 to 72 %. The run-2 ratio of 60 to 70 % is therefore a hardcore-profile target; humans feel the Ember gain as bigger numbers and a larger map, not as shorter runs.
+- **Sim print:** `npm run sim` prints this table for each profile and warns when a run leaves its band (gold per second, multiplier, Embers per rebirth, stock hours). The existing +-15 % pacing guard (IDL-17) is separate.
+
 ## Caveats
 
 - The `human` is one calibration point, not a measurement of players; the bots still beat it by 2-3x.
