@@ -1,6 +1,6 @@
 # 03 · Formulas & scaling
 
-Constants: [`src/config/gameConfig.ts`](../src/config/gameConfig.ts) · maths: [`src/utils/gameUtils.ts`](../src/utils/gameUtils.ts) · actions: [`src/stores/gameStore.ts`](../src/stores/gameStore.ts) (slices in [`src/stores/game/`](../src/stores/game)). Full tables: [generated/balance-tables.md](generated/balance-tables.md) (`npm run report`); pacing: [generated/sim-milestones.md](generated/sim-milestones.md) (`npm run sim`).
+Constants: [`src/config/gameConfig.ts`](../src/config/gameConfig.ts) (re-exports the domain files next to it: economy, character, castle, biomes, buildings, merchant, farm, rebirth, spawns, resources) · maths: [`src/utils/gameUtils.ts`](../src/utils/gameUtils.ts) · actions: [`src/stores/gameStore.ts`](../src/stores/gameStore.ts) (slices in [`src/stores/game/`](../src/stores/game)). Full tables: [generated/balance-tables.md](generated/balance-tables.md) (`npm run report`); pacing: [generated/sim-milestones.md](generated/sim-milestones.md) (`npm run sim`).
 
 Notation: `n` = tiles owned (castle included), `L` = player level, `C` = castle level.
 
