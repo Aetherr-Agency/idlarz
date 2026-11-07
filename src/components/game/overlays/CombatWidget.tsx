@@ -15,6 +15,7 @@ import NotifyDot from '../NotifyDot';
 import CombatPanel, { drainMs, type FloatNumber } from './CombatPanel';
 import PixelIcon from '../PixelIcon';
 import type { FightView } from '@/lib/offline/fightTypes';
+import type { MonsterType } from '@/types/game';
 
 const typingInField = (target: EventTarget | null): boolean => {
 	const el = target as HTMLElement | null;
@@ -31,6 +32,22 @@ const typingInField = (target: EventTarget | null): boolean => {
  * Auto-battle and Auto-use (it drinks, heals and stuns with fixed rules).
  * The window shrinks to an icon (a click on a monster opens it again).
  */
+/** The queue under the minimized icon: the next monsters in order (the first is the next fight), and how many more wait. */
+const QueueChips: React.FC<{ queue: { n: number; type: MonsterType; level: number }[]; max: number }> = ({ queue, max }) => {
+	if (queue.length === 0) return null;
+	const shown = queue.slice(0, 4);
+	return (
+		<span className='combat-queue-chips' title={`Next in line (${queue.length}/${max}): ${queue.map((q) => monsterDef(q.type).label).join(', ')}`} aria-label={`${queue.length} monsters queued`}>
+			{shown.map((q, i) => (
+				<span key={q.n} className='combat-queue-chip' data-next={i === 0}>
+					<MonsterArt type={q.type} scale={1} />
+				</span>
+			))}
+			{queue.length > shown.length && <span className='combat-queue-more'>+{queue.length - shown.length}</span>}
+		</span>
+	);
+};
+
 const CombatWidget: React.FC = () => {
 	const combat = useGameStore((state) => state.combat);
 	const playerHp = useGameStore((state) => state.playerHp);
@@ -153,6 +170,33 @@ const CombatWidget: React.FC = () => {
 		return () => window.removeEventListener('keydown', onKey);
 	}, [potions, requestPotion, requestSkill]);
 
+	// The hero rests before the queue's next monster (it starts by itself): the queue and the rest stay on screen, as a small icon in either mode
+	if (combat.maxHp > 0 && !fight && !pending && !notice && combat.resting && combat.queue.length > 0) {
+		const next = combat.queue[0];
+		const wait = combat.restSec >= 60 ? `${Math.floor(combat.restSec / 60)} min ${combat.restSec % 60} s` : `${combat.restSec} s`;
+		return (
+			<div className='combat-icon-wrap'>
+				<button
+					className='combat-icon'
+					data-resting='true'
+					onClick={() => useUiStore.getState().showToast(`Resting before the next fight (${monsterDef(next.type).label}), about ${wait}. It starts by itself.`)}
+					title={`Resting before the next fight against the ${monsterDef(next.type).label} (about ${wait})`}
+					aria-label='Resting before the next queued fight'>
+					<span className='combat-icon-art' aria-hidden>
+						<MonsterArt type={next.type} scale={2} />
+					</span>
+					<span className='combat-icon-hp' aria-hidden>
+						<i style={{ width: `${Math.max(0, Math.min(100, (playerHp / combat.maxHp) * 100))}%` }} />
+					</span>
+					<span className='combat-icon-rest' aria-hidden>
+						Rest {combat.restSec}s
+					</span>
+				</button>
+				<QueueChips queue={combat.queue} max={combat.queueMax} />
+			</div>
+		);
+	}
+
 	// nothing to show: the server has not said anything yet, or there is no fight, no click waiting for the server and no result to read
 	if (combat.maxHp <= 0 || (!fight && !pending && !notice)) return null;
 
@@ -167,23 +211,33 @@ const CombatWidget: React.FC = () => {
 	if (minimized && !pending) {
 		// a won fight leaves the monster dead: grey, with a skull over it (the loot dot stays)
 		const slain = !fight && notice?.kind === 'won';
+		const monsterPct = fight && fight.monsterMaxHp > 0 ? Math.max(0, Math.min(100, (fight.monsterHp / fight.monsterMaxHp) * 100)) : null;
 		return (
-			<button
-				className='combat-icon'
-				data-fighting={!!fight}
-				data-slain={slain}
-				onClick={() => setPref('combatMinimized', false)}
-				title={fight ? `Fighting a ${def.label} - click to open` : `The fight against the ${def.label} is over - click to see the result`}
-				aria-label='Open the combat panel'>
-				<span className='combat-icon-art' aria-hidden>
-					<MonsterArt type={type} scale={2} />
-					{slain && <PixelIcon name='skull' scale={0.5} className='combat-icon-skull' />}
-				</span>
-				<span className='combat-icon-hp' aria-hidden>
-					<i style={{ width: `${hpPct}%` }} />
-				</span>
-				<NotifyDot show={!fight && !!notice} label='Fight result waiting' />
-			</button>
+			<div className='combat-icon-wrap'>
+				<button
+					className='combat-icon'
+					data-fighting={!!fight}
+					data-slain={slain}
+					onClick={() => setPref('combatMinimized', false)}
+					title={fight ? `Fighting a ${def.label} (level ${monsterLevel})${combat.queue.length ? `, ${combat.queue.length} waiting` : ''} - click to open` : `The fight against the ${def.label} is over - click to see the result`}
+					aria-label='Open the combat panel'>
+					<span className='combat-icon-art' aria-hidden>
+						<MonsterArt type={type} scale={2} />
+						{slain && <PixelIcon name='skull' scale={0.5} className='combat-icon-skull' />}
+						{fight && <span className='combat-icon-level'>{monsterLevel}</span>}
+					</span>
+					{monsterPct !== null && (
+						<span className='combat-icon-hp combat-icon-hp-monster' aria-hidden>
+							<i style={{ width: `${monsterPct}%` }} />
+						</span>
+					)}
+					<span className='combat-icon-hp' aria-hidden>
+						<i style={{ width: `${hpPct}%` }} />
+					</span>
+					<NotifyDot show={!fight && !!notice} label='Fight result waiting' />
+				</button>
+				<QueueChips queue={combat.queue} max={combat.queueMax} />
+			</div>
 		);
 	}
 

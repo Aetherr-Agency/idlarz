@@ -7,6 +7,8 @@ Clicking another monster while a fight is open adds it to a **server-owned queue
 - **Size:** `LIMITS.battleQueue` = 10, ceiling `HARD_LIMITS.battleQueue` = 16, read through `limitOf('battleQueue')`.
 - **Running it:** when no fight is open the queue's head starts first (it ignores the retry time and the win estimate: the player chose it), but only when HP is at least `COMBAT.auto.resumeHpPct`; below that the hero rests, like auto-battle. Gone or unplaced monsters are skipped. When the queue is empty, auto-battle goes on as before. The queue works before the first rebirth too.
 - **Clearing:** kept after a win; cleared by a defeat, a timeout, Flee, a rebirth or an absence (`restThrough`); a dismissed monster leaves it.
+- **Resting and polling:** while the hero rests before the queue's next monster the view says `resting` and `restSec`, and `nextPollSec` is the time until the HP is back above the resume line (with Auto-battle on or off). Before this the idle wait (up to 10 minutes) applied, so after a fight that left the hero under 80 % HP the next queued monster seemed never to start.
+- **Minimized:** the icon shows the monster's level, its HP bar (red) above the hero's (green) and the queue under it (up to four monster icons, the next one framed, `+N` for the rest); while resting it shows the next monster dimmed with "Rest N s", in either window mode.
 - **Shown:** a gold number on each queued monster (`MonsterSprite`), the "Next (2/3)" strip with a × per entry (`CombatPanel`), the right-click entry "Add ... to the queue" / "Remove from the queue", toasts, a line in the Guide.
 - **Tests:** `tests/battleQueue.test.ts` (engine), `tests/clientCombat.test.ts` (store).
 

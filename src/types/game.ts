@@ -236,6 +236,9 @@ export interface CombatClientState {
 	/** The monsters waiting for their turn, first to fight first (docs/24-battle-queue.md), and how many the queue holds */
 	queue: { n: number; type: MonsterType; level: number; lucky?: boolean }[];
 	queueMax: number;
+	/** No fight is open and the hero rests before the queue's next monster (it starts by itself), and for how many seconds more at the server's answer */
+	resting: boolean;
+	restSec: number;
 }
 
 export interface TileProps {

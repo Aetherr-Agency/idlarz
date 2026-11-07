@@ -137,6 +137,73 @@
 	background: #38a030;
 }
 
+/* the icon with the queue under it: the next monsters in line, and a rest label while the hero recovers before the next fight */
+.combat-icon-wrap {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+}
+
+.combat-icon-hp-monster i {
+	background: #c0392b;
+}
+
+.combat-icon-level {
+	position: absolute;
+	right: 1px;
+	bottom: 0;
+	padding: 0 3px;
+	font-size: 0.65rem;
+	font-weight: 700;
+	color: #f0e6d0;
+	background: rgba(10, 6, 5, 0.8);
+	line-height: 1.1;
+}
+
+.combat-icon[data-resting='true'] .monster-art {
+	filter: grayscale(0.7) brightness(0.7);
+}
+
+.combat-icon-rest {
+	font-size: 0.6rem;
+	font-weight: 700;
+	color: #8ac0ff;
+	text-shadow: 1px 1px 0 #000;
+	line-height: 1;
+}
+
+.combat-queue-chips {
+	display: flex;
+	align-items: center;
+	gap: 3px;
+	padding: 2px 3px;
+	background: rgba(28, 18, 10, 0.9);
+	border: 1px solid #5a3f1c;
+}
+
+.combat-queue-chip {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	overflow: hidden;
+	background: #120a06;
+	border: 1px solid #0a0605;
+}
+
+.combat-queue-chip[data-next='true'] {
+	border-color: #f0d27a;
+}
+
+.combat-queue-more {
+	font-size: 0.65rem;
+	font-weight: 700;
+	color: #f0d27a;
+	text-shadow: 1px 1px 0 #000;
+}
+
 /* the window while the server has not answered yet: the monster waits, a little dimmed */
 .fight-sprite[data-loading='true'] {
 	opacity: 0.6;

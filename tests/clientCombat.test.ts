@@ -520,3 +520,17 @@ test('a click during a fight asks to join the battle queue (the same request), a
 		globalThis.fetch = realFetch;
 	}
 });
+
+test('a resting hero with a queue is remembered: the minimized icon shows the rest and the queue until the next fight starts', () => {
+	freshGame();
+	api().applyFightReply(reply(view({ eventNo: 0 })));
+	const queue = [{ n: 2, type: 'thistleBoar' as const, level: 3 }, { n: 3, type: 'thistleBoar' as const, level: 3 }];
+	api().applyFightReply(reply(view({ eventNo: 0, queue, resting: true, restSec: 42, autoBattle: false })));
+	assert.equal(api().combat.resting, true);
+	assert.equal(api().combat.restSec, 42);
+	assert.deepEqual(api().combat.queue.map((q) => q.n), [2, 3]);
+	// the next fight starts: no longer resting
+	api().applyFightReply(reply(view({ eventNo: 0, queue: [queue[1]], resting: false, fight: { n: 2, type: 'thistleBoar', level: 3, lucky: false, monsterHp: 40, monsterMaxHp: 150, stunLeft: 0, timeLeftSec: null, x: 1, y: 2 } })));
+	assert.equal(api().combat.resting, false);
+	assert.equal(api().combat.restSec, 0);
+});
