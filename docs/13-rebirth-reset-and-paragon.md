@@ -2,7 +2,7 @@
 
 What a rebirth keeps and resets once the character, the crafting skill ([17](17-crafting.md)) and the biomes ([12](12-rebirth-biomes.md)) are the long-term progression, plus the endless level track after level 100.
 
-## 1. Today (read from `rebirth()` in `stores/gameStore.ts` and [11](11-server-authority.md))
+## 1. Today (read from `rebirth()` in `stores/game/rebirthSlice.ts` and [11](11-server-authority.md))
 
 | Kept | Reset |
 |---|---|
