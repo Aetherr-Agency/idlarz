@@ -404,7 +404,7 @@ test('a rebirth is recorded from the save before it: the run that ended, once, w
 	const { repo, rebirths } = memoryRepo();
 	const run = rebirthReadyGame();
 	await accept(repo, 'u1', run, 0, T0);
-	const before = summarize(run);
+	const before = (await repo.load('u1'))!.summary; // the stored summary: this fixture is a huge map after 1000 s, so the server pays it from cut rates (IDL-167)
 	const next = rebirthed(run, 1, 4);
 	assert.equal((await accept(repo, 'u1', next, 1, T0 + MIN_SAVE_INTERVAL_MS + 1000)).kind, 'ok');
 	assert.equal(rebirths.length, 1);

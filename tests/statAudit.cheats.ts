@@ -23,7 +23,7 @@ export interface CheatRow {
 	rateFactor: number;
 }
 
-const memoryRepo = () => {
+export const memoryRepo = () => {
 	const rows = new Map<string, StoredSave>();
 	const repo: SaveRepo = {
 		load: async (id) => (rows.has(id) ? { ...rows.get(id)! } : null),
@@ -86,7 +86,7 @@ export const CHEATS: Cheat[] = [
 	{ id: 'click-level', claim: 'click ladder maxed', mutate: (s) => ({ ...s, clickLevel: 4 }) as never },
 	{ id: 'xp-inflated', claim: '1e12 XP', mutate: (s) => ({ ...s, resources: { ...s.resources, xp: 1e12 }, characterStats: pointsFor(s.characterStats, 1e12) }) },
 	{ id: 'gold-huge', claim: '1e12 gold', mutate: (s) => ({ ...s, resources: { ...s.resources, gold: 1e12 } }) },
-	{ id: 'gold-inside-allowance', claim: '+15,000 gold in 300 s (inside the 10,000 floor + burst allowance)', dtSec: 300, mutate: (s) => ({ ...s, playSeconds: s.playSeconds + 300, resources: { ...s.resources, gold: 100 + 15_000 } }) },
+	{ id: 'gold-inside-allowance', claim: '+1,500 gold in 300 s (inside the 1,000 floor + income allowance)', dtSec: 300, mutate: (s) => ({ ...s, playSeconds: s.playSeconds + 300, resources: { ...s.resources, gold: 100 + 1_500 } }) },
 	{ id: 'gold-over-allowance', claim: '+20,000 gold in 300 s', dtSec: 300, mutate: (s) => ({ ...s, playSeconds: s.playSeconds + 300, resources: { ...s.resources, gold: 100 + 20_000 } }) },
 	{ id: 'resources-huge', claim: '1e15 wood, stone, coal and food', mutate: (s) => ({ ...s, resources: { ...s.resources, wood: 1e15, stone: 1e15, coal: 1e15, food: 1e15 } }) },
 	{ id: 'castle-skip', claim: 'castle level 10 with no upgrade running', mutate: (s) => ({ ...s, tiles: patchTile(s.tiles, CASTLE_X, CASTLE_Y, { level: 10 }) }) },
@@ -132,7 +132,7 @@ export const runCheats = async (): Promise<CheatRow[]> => {
 			continue;
 		}
 		const flags = [...result.flags];
-		const verdict: Verdict = result.xp !== undefined || result.prestige !== undefined ? 'clamped' : flags.length ? 'flagged' : 'silent';
+		const verdict: Verdict = result.xp !== undefined || result.prestige !== undefined || result.economy !== undefined ? 'clamped' : flags.length ? 'flagged' : 'silent';
 		out.push({ id: cheat.id, claim: cheat.claim, verdict, flags, rateFactor: rows.get('u')!.summary.rates.gold / reference });
 	}
 	return out;

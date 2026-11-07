@@ -6,6 +6,7 @@ import { offlineCapSec, offlineEfficiency } from '@/lib/offline/limits';
 import { calculateResourceRates, countBuildings, countOwnedTiles, economyTiles } from '@/utils/gameUtils';
 import { getTile, setTile } from '@/utils/world';
 import type { PersistedGame } from '@/lib/sanitizeSave';
+import { stockValue } from './netWorth';
 import type { CastleUpgradeState, Resources } from '@/types/game';
 
 /**
@@ -52,6 +53,8 @@ export interface SaveDerived {
 	purchased: number;
 	/** The most XP the server has seen this character earn (cloudSave/xpModel.ts): kept from save to save, absent before the first save */
 	xpBase?: number;
+	/** What the stock of sellable resources is worth at the merchant, in gold: the next save may sell it without that being a burst of income (verify.ts). Absent on rows from before. */
+	stockWorth?: number;
 }
 
 export const DEFAULT_DERIVED: SaveDerived = {
@@ -105,6 +108,7 @@ export const summarize = (state: PersistedGame): SaveSummary => {
 			offlineCapSec: offlineCapSec(limits),
 			offlineEfficiency: offlineEfficiency(limits),
 			purchased: economyTiles(state.tiles, state.freeTiles),
+			stockWorth: stockValue(state.resources, state),
 		},
 	};
 };

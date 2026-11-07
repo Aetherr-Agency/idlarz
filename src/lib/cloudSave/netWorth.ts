@@ -1,4 +1,4 @@
-import { BUILDING_COST, CASTLE_UPGRADE, MERCHANT_RESOURCE_PRICES } from '@/config/gameConfig';
+import { BUILDING_COST, CASTLE_UPGRADE, MERCHANT_RESOURCE_PRICES, MERCHANT_UPGRADES, type MerchantUpgradeId } from '@/config/gameConfig';
 import { MAX_OWNED_TILES } from '@/utils/world';
 import {
 	buildingCostFactor,
@@ -7,6 +7,8 @@ import {
 	economyTiles,
 	effectiveTileDiscount,
 	emberEffect,
+	merchantLevel,
+	merchantUpgradeCost,
 	sellPayout,
 } from '@/utils/gameUtils';
 import { castleLevelOf } from '@/lib/castleWard';
@@ -38,6 +40,19 @@ const castleGoldSpent = (level: number): number => {
 	return gold;
 };
 
+/**
+ * Gold the merchant levels cost (IDL-168). Every one starts again on a rebirth, so what the save holds was paid for in this run; Pack Rat is
+ * left out because its bigger bag survives a rebirth (its levels were paid in earlier runs, against other play time).
+ */
+export const merchantGoldSpent = (upgrades: Record<string, number> | undefined): number => {
+	let spent = 0;
+	for (const id of Object.keys(MERCHANT_UPGRADES) as MerchantUpgradeId[]) {
+		if (id === 'packrat') continue;
+		for (let level = 0; level < merchantLevel(upgrades, id); level++) spent += merchantUpgradeCost(id, level);
+	}
+	return spent;
+};
+
 /** Gold the owned land, buildings and castle cost at least (gold part of each price only). */
 export const minimumSpend = (state: PersistedGame): number => {
 	const discount = effectiveTileDiscount(state.characterStats, state.prestige, state.merchantUpgrades);
@@ -50,11 +65,11 @@ export const minimumSpend = (state: PersistedGame): number => {
 	const buildings = countBuildings(state.tiles);
 	for (let k = 0; k < buildings; k++) spent += Math.floor(buildingGold * buildingCostFactor(k) * factorKeep);
 
-	return spent + castleGoldSpent(castleLevelOf(state.tiles));
+	return spent + castleGoldSpent(castleLevelOf(state.tiles)) + merchantGoldSpent(state.merchantUpgrades);
 };
 
 /** Gold the stock of sellable resources is worth at the merchant (with the player's own sell bonuses). */
-const stockValue = (resources: Resources, state: PersistedGame): number => {
+export const stockValue = (resources: Resources, state: PersistedGame): number => {
 	let value = 0;
 	for (const [key, price] of Object.entries(MERCHANT_RESOURCE_PRICES) as [keyof Resources, number][]) {
 		value += sellPayout(price, resources[key], state);
