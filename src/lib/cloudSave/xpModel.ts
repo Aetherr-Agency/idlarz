@@ -30,8 +30,8 @@ export const XP_MODEL = {
 	runEndTiles: 100,
 } as const;
 
-/** Tiles bought so far, as the XP formula counts them (the castle and the purchases): the saved figure, or what the map says for older rows. */
-export const purchasedOf = (s: SaveSummary): number => Math.max(1, s.derived.purchased ?? s.tilesOwned - 8);
+/** Tiles bought so far, as the XP formula counts them (the castle and the purchases): the saved figure. */
+export const purchasedOf = (s: SaveSummary): number => Math.max(1, s.derived.purchased);
 
 /** The XP of buying tiles number `from + 1` ... `to` (the n-th purchase gives `calculateXpGain(n)`), with the player's XP bonus. */
 export const tileXp = (from: number, to: number, xpGainPct: number): number => {

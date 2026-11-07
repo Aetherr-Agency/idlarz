@@ -113,8 +113,6 @@ export const withLedger = async <T>(
 		const stored = await deps.saves.load(userId);
 		if (!stored) return { kind: 'no_save' };
 		const existing = await deps.ledgers.load(userId);
-		// a save from before the ledger existed does not say what stands on the map (chests): wait for the next upload instead of seeding from guesses
-		if (!existing && stored.summary.derived.known !== true) return { kind: 'no_save' };
 		const seeded = existing ?? seedLedger(stored, nowMs);
 		// the bag, the gear and the pity are the ledger's (seeded from the save the first time); the engine sees the save with them in place
 		const base: Ledger = { ...seeded, inv: fitInventory(seeded.inv ?? inventoryFromCore(stored.core), stored.core) };

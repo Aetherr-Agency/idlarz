@@ -25,7 +25,7 @@ interface Row {
 	legacy_earned: number;
 	xp_gain_pct: number;
 	rates: Resources;
-	/** Added by the offline-ledger migration: rows written before it have none until their next save */
+	/** Null until the row's first save under the offline ledger; `DEFAULT_DERIVED` fills it */
 	derived: SaveDerived | null;
 	flags: SaveFlag[];
 	audit_ratio: number;
