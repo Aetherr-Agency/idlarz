@@ -68,7 +68,7 @@ The `merchant` source (level 4 + 3 per castle level above 1, like a chest) runs 
 
 ## Perk families and caps (decided 2026-11-07, IDL-149; sim checks pending)
 
-Legendary perks and set bonuses use the same families. Each family is its own `(1 + sum)` bucket (docs/25 item 12); the gear bucket (sets plus legendary perks) is clamped at the family cap. Tier magnitudes are fixed numbers, they do not scale with item level.
+Legendary perks and set bonuses use the same families. Each percent family is its own `(1 + sum)` bucket (docs/25 item 12); the gear bucket (sets plus legendary perks) is clamped at the family cap. **Offline efficiency (points) and offline cap (hours) are not multipliers: they add to the base value (50 % and 8 h) and the sum is clamped by `HARD_LIMITS` (100 % and 72 h)**, so +8 points on a 50 % base is 58 %. Tier magnitudes are fixed numbers, they do not scale with item level.
 
 | Family | Common | Rare | Top | Gear cap | Combines with |
 | --- | --- | --- | --- | --- | --- |
@@ -76,7 +76,7 @@ Legendary perks and set bonuses use the same families. Each family is its own `(
 | XP | 8 % | 15 % | 25 % | 40 % | Paragon account bucket |
 | Kill reward | 8 % | 15 % | 25 % | 60 % | Luck / Gold Find apply after the monster reward cap |
 | Click gold | 8 % | 15 % | 25 % | 40 % | click Idol |
-| Damage | 4 % | 6 % | 10 % | 45 % | S2 38, S3 40; set plus one legendary hits the cap |
+| Damage | 4 % | 6 % | 10 % | 45 % | S2 38, S3 40 at 14 pieces; the damage legendary is a main-hand weapon, so wearing it costs the 14th set piece (the 12-piece tier, S2 28 and S3 30, plus 10 = 38 and 40), below the cap |
 | Offline efficiency | 8 | 15 | 25 points | HARD_LIMITS 100 % | Steward, Night Watch |
 | Offline cap hours | +2 h | +4 h | +6 h | HARD_LIMITS 72 h | Ember shop |
 | Max HP | 8 % | 15 % | 25 % | 50 % | attributes |

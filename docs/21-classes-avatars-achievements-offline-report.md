@@ -16,7 +16,7 @@ Small account-level features that came out of the landing page and rankings work
 - **Art:** a new portrait set (8 starters, then the unlockables), same pixel style as the class heroes (`scripts/pixel/sprites_characters.py`, `STYLE.md`), one common size plus a selected-frame; add to the asset list of [16](16-landing-and-play-route.md).
 
 ## 3. Server achievements (decided scope for launch, details later)
-- Catalog in code (`catalog/achievements.ts`): `{ id, title, description, condition tag, reward: avatar | title | none }`.
+- Catalog in code (`catalog/achievements.ts`): `{ id, title, description, condition tag, rewards: { gems: number, avatarId?: string, titleId?: string } }`. Every achievement pays gems; an avatar and/or a title are optional (the early tester has both). **Gem credit:** the server adds `rewards.gems` to the authoritative `ledger.gems` balance (recorded in `granted`, capped by `GEMS_CAP`) once per achievement, in the same `insert ... on conflict do nothing` step that unlocks it, so a replay cannot pay twice; the early-tester gems are credited by the reset migration the same way.
 - Table `player_achievements (user_id, achievement_id, unlocked_at)`, additive, written only by the server (service role, `insert ... on conflict do nothing`), read by the owner. Counts, not the list, may appear in rankings.
 - Evaluated **lazily on requests the server already handles** (save, fight win, chest, offline claim) by pure functions of the summary, the ledger and the lifetime counters below, so no cron and no extra calls on the free plan.
 - **Launch set (decided 2026-11-07, owner; IDL-73, IDL-194):** 12 achievements, 600 gems in total, 4 avatars. "Rat King defeated" is replaced by the first boss, The Great Auroch.

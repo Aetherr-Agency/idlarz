@@ -156,7 +156,7 @@ The three planned special sets get a palette from what exists:
 
 ## 6. Legendary perk drafts (IDL-42, IDL-149)
 
-Perks are not wired and are not in the stats. **Roster decided 2026-11-07 (owner, IDL-144/146/149):** one headline family per item (no two legendaries share a family), fixed numbers per tier (a perk does not scale with item level), 11 items, two special-effect handlers at launch. The Rattatui set is deleted (see below), so the 35 % damage anchor is gone; the damage cap of 45 % is now met by S2 (38) or S3 (40) plus one 10 % legendary, which keeps "set or legendary".
+Perks are not wired and are not in the stats. **Roster decided 2026-11-07 (owner, IDL-144/146/149):** one headline family per item (no two legendaries share a family), fixed numbers per tier (a perk does not scale with item level), 11 items, two special-effect handlers at launch. The Rattatui set is deleted (see below), so the 35 % damage anchor is gone; S2 (38) and S3 (40) at 14 pieces sit below the 45 % damage cap; the damage legendary is a main-hand weapon, so wearing it costs the 14th piece and the total stays 38 (S2: 28 at 12 pieces + 10) or 40 (S3: 30 + 10). The cap only binds together with other damage sources.
 
 | Item | Headline perk | Tier | Source |
 | --- | --- | --- | --- |
@@ -176,7 +176,7 @@ Handlers (launch set of two, deterministic from the sealed fight stream):
 - **Burn**: a critical hit sets the monster alight for 3 s; it takes 30 % of that hit per second. A re-crit refreshes, never stacks.
 - **Potion refund**: a drunk potion is not consumed with 15 % chance (rolled from the same sealed stream; never refunds a buff potion that has a cooldown).
 
-Sources and pity (IDL-146): top-tier items come only from bosses and T4 relics (pity as `king_legendary`: 5 % + 1 % per miss, max +10 %); the first legendary is guaranteed from the first boss kill after level 15. Mid and handler items come from the `legendary_weapons` pool through the 1.9 % chest replace roll and the 0.2 % to 1 % monster legendary rarity weight (level gate 12 to 15). Everything wipes at rebirth except the one Vault item (IDL-148). Unique: a second copy of the same id never drops while one is in the bag, gear or Vault.
+Sources and pity (IDL-146), as **two pools** so a roll can never hand out the wrong tier: `legendary_top` (the three top-tier items) is used only by the boss bonus table (pity as `king_legendary`: 5 % + 1 % per miss, max +10 %) and by the relic exchange; the first legendary is guaranteed from the first boss kill after level 15. `legendary_mid` (the eight mid, combat and handler items plus the three classic stat-only legendaries) is used by the chest replace roll (`chest_legendary`, 1.9 %) and by a new `fixed`-mode **monster bonus table** (`monster_legendary`, 0.2 % per kill, item-level gate 15, `placement: 'extra'`). The monster rarity weight of `normal_monster` draws from `general_equipment`, which excludes named items, so it can only produce legendary-rarity bases, never these items; the bonus table is what makes them droppable. Everything wipes at rebirth except the one Vault item (IDL-148). Unique: a second copy of the same id never drops while one is in the bag, gear or Vault.
 
 The eight non-top legendaries can also be crafted late (crafting level 95, 50 War Medals + G9 materials, docs/17 section 7); the three top-tier ones never.
 
