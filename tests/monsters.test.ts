@@ -6,6 +6,7 @@ import {
 	growthSecondsLeft,
 	isBoss,
 	levelAtAge,
+	growthInfo,
 	maxLevelOf,
 	monsterAt,
 	monsterStats,
@@ -212,4 +213,28 @@ test('attack speed is attacks per second, like a weapon: a rat bites every 2 s, 
 	assert.equal(monsterStats('thistleBoar', 1).attackSpeed, 0.5);
 	assert.ok(Math.abs(monsterStats('bossGreatAuroch', 15).attackSpeed - 1 / 3) < 1e-9);
 	assert.equal(monsterStats('thistleBoar', 9).attackSpeed, monsterStats('thistleBoar', 1).attackSpeed, 'it does not change with the level');
+});
+
+test('growthInfo says how far a monster has grown: the top level, the time to the next one and the share of the wait that has passed', () => {
+	const interval = LIMITS.monsterGrowthIntervalSec;
+	const top = maxLevelOf(5);
+	assert.equal(top, 5 + LIMITS.monsterGrowthLevels);
+	// just appeared
+	const fresh = growthInfo({ spawnLevel: 5, level: 5, ageSec: 0 });
+	assert.deepEqual(fresh, { max: top, maxed: false, leftSec: interval, fraction: 0 });
+	// halfway to level 6
+	const half = growthInfo({ spawnLevel: 5, level: 5, ageSec: interval / 2 });
+	assert.equal(half.leftSec, interval / 2);
+	assert.equal(half.fraction, 0.5);
+	// the wait for level 8 is counted from level 7, not from the spawn
+	const later = growthInfo({ spawnLevel: 5, level: 7, ageSec: interval * 2 + interval / 4 });
+	assert.equal(later.leftSec, interval * 0.75);
+	assert.ok(Math.abs(later.fraction - 0.25) < 1e-9);
+	// at the top: maxed, nothing left to wait for
+	assert.deepEqual(growthInfo({ spawnLevel: 5, level: top, ageSec: interval * 100 }), { max: top, maxed: true, leftSec: null, fraction: 1 });
+	// a monster the ticks have aged follows the same numbers
+	let aged: Monster[] = [{ id: 1, type: 'thistleBoar', level: 5, spawnLevel: 5, x: 3, y: 3, ageSec: 0, ticket: 1 }];
+	aged = advanceMonsters(aged, interval * (LIMITS.monsterGrowthLevels + 1));
+	assert.equal(aged[0].level, top);
+	assert.equal(growthInfo(aged[0]).maxed, true);
 });

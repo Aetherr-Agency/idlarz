@@ -52,6 +52,45 @@
 	border-color: #ffd860;
 }
 
+/* Fully grown: a blue frame and a soft glow on the badge (a boss keeps its skull) */
+.tile-monster-tier[data-maxed='true'] {
+	color: #e6f4ff;
+	background: #17346b;
+	border-color: #7cc4ff;
+	box-shadow: inset 1px 1px 0 #5a9be8, inset -1px -1px 0 #0d2150, 0 0 6px 1px rgba(90, 170, 255, 0.85);
+}
+
+/* Still growing: a thin bar under the monster that fills until its next level */
+.tile-monster-grow {
+	position: absolute;
+	left: 8%;
+	right: 8%;
+	bottom: -5px;
+	height: 3px;
+	background: rgba(0, 0, 0, 0.55);
+	border: 1px solid rgba(0, 0, 0, 0.7);
+	overflow: hidden;
+}
+
+.tile-monster-grow::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	background: #6fb4ff;
+	transform-origin: left center;
+	transform: scaleX(var(--grow-from, 0));
+	animation: monster-grow var(--grow-left, 0s) linear forwards;
+}
+
+@keyframes monster-grow {
+	from {
+		transform: scaleX(var(--grow-from, 0));
+	}
+	to {
+		transform: scaleX(1);
+	}
+}
+
 /* a still roster picture (map lab preview): fits the sprite box, only the bob moves */
 .tile-monster-still {
 	width: 100%;
@@ -91,6 +130,9 @@
 @media (prefers-reduced-motion: reduce) {
 	.tile-monster-img,
 	.monster-art {
+		animation: none;
+	}
+	.tile-monster-grow::after {
 		animation: none;
 	}
 }

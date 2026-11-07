@@ -26,7 +26,8 @@ import CastleTimerBadge from './CastleTimerBadge';
 import { BUILDING_PIXEL_ICONS, BUILDING_GLOW } from '@/config/pixelIcons';
 import { TileStatus } from './TileStatus';
 import MonsterSprite from './MonsterSprite';
-import { growthSecondsLeft, isBoss, monsterAt, monsterStats } from '@/lib/monsters';
+import { growthInfo, growthSecondsLeft, isBoss, maxLevelOf, monsterAt, monsterStats } from '@/lib/monsters';
+import { limitOf } from '@/lib/limits';
 import { MONSTERS } from '@/config/combatConfig';
 import { MONSTER_CATALOG } from '@/catalog/monsters';
 import CastleUpgradeDialog from './CastleUpgradeDialog';
@@ -34,6 +35,25 @@ import { useMapTipLayer } from './MapTipLayer';
 import { useUiStore, type ContextMenuItem } from '@/stores/uiStore';
 import { openMenuAt } from '@/lib/globalMenu';
 import '@/styles/ContextMenu.css';
+
+/** The monster on the map with its growth shown: a blue badge at full size, otherwise a thin bar that fills towards the next level (a CSS animation, so no timer runs). */
+const MapMonster: React.FC<{ id: number; type: MonsterType; level: number; max: number; lucky: boolean; art?: string }> = ({ id, type, level, max, lucky, art }) => {
+	const state = useMapSource().game.getState();
+	const monster = art ? undefined : state.monsters.find((m) => m.id === id);
+	const ctx = { merchantUpgrades: state.merchantUpgrades, prestige: state.prestige };
+	const growth = monster ? growthInfo(monster, ctx) : null;
+	return (
+		<MonsterSprite
+			type={type}
+			level={level}
+			lucky={lucky}
+			art={art}
+			maxed={level >= max}
+			growth={growth && !growth.maxed && growth.leftSec !== null ? { leftSec: growth.leftSec, fraction: growth.fraction } : undefined}
+			intervalSec={limitOf('monsterGrowthIntervalSec', ctx)}
+		/>
+	);
+};
 
 /** Hover card of a monster: level, HP, time to its next level, boss traits and the call to fight. Reads the age at render time. */
 const MonsterTip: React.FC<{ id: number; type: MonsterType; level: number; art?: string }> = ({ id, type, level, art }) => {
@@ -60,8 +80,11 @@ const MonsterTip: React.FC<{ id: number; type: MonsterType; level: number; art?:
 				{MONSTERS[type].label} - Lv {formatCompact(level)} - {formatCompact(stats.maxHp)} HP
 			</div>
 			{isBoss(type) && <div className='text-[#ff8a6a] font-bold'>BOSS</div>}
-			{nextLevel !== null && (
-				<div className='px-tip-muted'>Grows stronger in {Math.max(1, Math.ceil(nextLevel / 60))} min</div>
+			{monster && (
+				<div className='px-tip-muted'>
+					Level {formatCompact(level)} of {formatCompact(maxLevelOf(monster.spawnLevel, { merchantUpgrades: state.merchantUpgrades, prestige: state.prestige }))}
+					{nextLevel !== null ? `, grows in ${Math.max(1, Math.ceil(nextLevel / 60))} min` : ' - fully grown'}
+				</div>
 			)}
 			{isBoss(type) && (
 				<div className='px-tip-muted'>
@@ -90,9 +113,9 @@ const Tile: React.FC<TileProps> = ({
 	// string selector: the tile re-renders when its monster appears, changes level or leaves, not on every tick
 	const monsterKey = game((state) => {
 		const m = monsterAt(state.monsters, x, y);
-		return m ? `${m.id}:${m.type}:${m.level}:${m.lucky ? 1 : 0}:${m.art ?? ''}` : '';
+		return m ? `${m.id}:${m.type}:${m.level}:${m.lucky ? 1 : 0}:${maxLevelOf(m.spawnLevel, { merchantUpgrades: state.merchantUpgrades, prestige: state.prestige })}:${m.art ?? ''}` : '';
 	});
-	const [monsterId, monsterType, monsterLevel, monsterLucky, monsterArt] = monsterKey ? monsterKey.split(':') : [];
+	const [monsterId, monsterType, monsterLevel, monsterLucky, monsterMax, monsterArt] = monsterKey ? monsterKey.split(':') : [];
 	const [isShaking, setIsShaking] = useState(false);
 	const [showCastleDialog, setShowCastleDialog] = useState(false);
 	const [showChestTooltip, setShowChestTooltip] = useState(false);
@@ -288,7 +311,7 @@ const Tile: React.FC<TileProps> = ({
 					)}
 
 					{isOwned && monsterKey && (
-						<MonsterSprite type={monsterType as MonsterType} level={Number(monsterLevel)} lucky={monsterLucky === '1'} art={monsterArt || undefined} />
+						<MapMonster id={Number(monsterId)} type={monsterType as MonsterType} level={Number(monsterLevel)} max={Number(monsterMax)} lucky={monsterLucky === '1'} art={monsterArt || undefined} />
 					)}
 
 					{/* Bonus treasure chest on the tile */}
