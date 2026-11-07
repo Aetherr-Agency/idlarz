@@ -60,6 +60,26 @@
 	box-shadow: inset 1px 1px 0 #5a9be8, inset -1px -1px 0 #0d2150, 0 0 6px 1px rgba(90, 170, 255, 0.85);
 }
 
+/* Waiting in the battle queue: the number of the turn, top left of the monster */
+.tile-monster-queue {
+	position: absolute;
+	left: -4px;
+	top: -4px;
+	min-width: 16px;
+	height: 16px;
+	padding: 0 3px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.7rem;
+	font-weight: 700;
+	line-height: 1;
+	color: #1a1204;
+	background: #ffd860;
+	border: 1px solid #5a3c00;
+	box-shadow: inset 1px 1px 0 #fff0b0, inset -1px -1px 0 #b88a20;
+}
+
 /* Still growing: a thin bar under the monster that fills until its next level */
 .tile-monster-grow {
 	position: absolute;

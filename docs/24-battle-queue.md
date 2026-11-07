@@ -1,4 +1,4 @@
-# 24 · Battle queue (design draft, nothing built)
+# 24 · Battle queue (built; design as written below, queue size 3)
 
 The roadmap item BAL5 ([ROADMAP](ROADMAP.md)). Today a click on a monster starts a fight, and **while a fight is open further clicks are refused** (`startFight` in `stores/gameStore.ts` returns false when `combat.fight` is set; `engageTicket` in `lib/offline/fight.ts` returns false the same way). The queue lets the player keep clicking monsters during a fight; the server then fights them one after the other.
 

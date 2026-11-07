@@ -240,7 +240,7 @@ test('hotkeys, switches and dismissals are requests to the server: a key per pre
 	}
 });
 
-test('a click on a monster asks the server for that monster\'s ticket: no such monster, no ticket or a fight already open send nothing', async () => {
+test('a click on a monster asks the server for that monster ticket: no such monster or no ticket send nothing', async () => {
 	syncedGame();
 	store.setState({
 		monsters: [
@@ -253,8 +253,6 @@ test('a click on a monster asks the server for that monster\'s ticket: no such m
 		assert.equal(api().startFight(99), false, 'not on the map');
 		assert.equal(api().startFight(4), false, 'a monster the server has no ticket for');
 		assert.equal(api().startFight(3), true);
-		openFight();
-		assert.equal(api().startFight(3), false, 'a fight is already open');
 		await flush();
 		assert.equal(calls.length, 1);
 		assert.equal(calls[0].path, '/api/fight');
@@ -476,4 +474,48 @@ test('a retreat the server reports clears an older result instead of showing it 
 	assert.equal(api().combat.notice?.kind, 'won');
 	api().applyFightReply(reply(view({ eventNo: 2, events: [event(2, 'retreat', { n: 2, type: 'thistleBoar', level: 1 })] })));
 	assert.equal(api().combat.notice, null);
+});
+
+test('a click during a fight asks to join the battle queue (the same request), and the answer fills the queue and says what happened', async () => {
+	syncedGame();
+	store.setState({
+		monsters: [
+			{ id: 7, type: 'thistleBoar', level: 1, spawnLevel: 1, x: CASTLE_X + 2, y: CASTLE_Y, ageSec: 0, ticket: 7 },
+			{ id: 8, type: 'thistleBoar', level: 2, spawnLevel: 2, x: CASTLE_X + 3, y: CASTLE_Y, ageSec: 0, ticket: 8 },
+		],
+	});
+	openFight({ n: 7 });
+	const calls: { body: Record<string, unknown> }[] = [];
+	// the answers list the monsters that are standing (the map follows the server's tickets)
+	const tickets = { chests: [], rats: [7, 8].map((n) => ({ n, at: clock, lucky: false, x: CASTLE_X + n - 5, y: CASTLE_Y, spawnLevel: n - 6 })), king: null };
+	const answers = [
+		reply(view({ fight: api().combat.fight, queue: [{ n: 8, type: 'thistleBoar', level: 2 }], queueMax: 3 }), { queued: 'queued', tickets }),
+		reply(view({ fight: api().combat.fight, queue: [], queueMax: 3 }), { queued: 'removed', tickets }),
+	];
+	globalThis.fetch = (async (_input: RequestInfo | URL, init?: RequestInit) => {
+		calls.push({ body: JSON.parse(String(init?.body ?? '{}')) });
+		return new Response(JSON.stringify(answers.shift()), { status: 200, headers: { 'Content-Type': 'application/json' } });
+	}) as typeof fetch;
+	try {
+		assert.equal(api().startFight(8), true, 'the click is sent, not refused');
+		assert.equal(api().combat.pending, null, 'no "engaging" screen: a fight is already open');
+		await flush();
+		assert.deepEqual(calls[0].body.command, { kind: 'fight', n: 8 });
+		assert.deepEqual(api().combat.queue, [{ n: 8, type: 'thistleBoar', level: 2 }]);
+		assert.equal(api().combat.queueMax, 3);
+		// a second click on the queued monster takes it out again
+		assert.equal(api().startFight(8), true);
+		await flush();
+		assert.deepEqual(api().combat.queue, []);
+		// the x in the fight window is its own command and shows at once
+		store.setState((s) => ({ combat: { ...s.combat, queue: [{ n: 8, type: 'thistleBoar', level: 2 }] } }));
+		answers.push(reply(view({ fight: api().combat.fight, queue: [] }), { queued: 'removed', tickets }));
+		api().unqueueMonster(8);
+		assert.deepEqual(api().combat.queue, []);
+		await flush();
+		assert.deepEqual(calls[2].body.command, { kind: 'unqueue', n: 8 });
+	} finally {
+		closeFight();
+		globalThis.fetch = realFetch;
+	}
 });

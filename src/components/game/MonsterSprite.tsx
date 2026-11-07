@@ -22,7 +22,9 @@ const MonsterSprite: React.FC<{
 	growth?: { leftSec: number; fraction: number };
 	/** The length of one wait, for the bar */
 	intervalSec?: number;
-}> = ({ type, level, lucky = false, art, maxed = false, growth, intervalSec = 1800 }) => {
+	/** Its place in the battle queue (1 = next), 0 or left out when it is not queued */
+	queued?: number;
+}> = ({ type, level, lucky = false, art, maxed = false, growth, intervalSec = 1800, queued = 0 }) => {
 	const wip = MONSTER_CATALOG.find((m) => m.id === (art ?? type));
 	const size = wip ? monsterArtSize(wip.id, wip.grade) : undefined;
 	const boss = wip ? wip.grade === 'boss' : MONSTERS[type].grade === 'boss';
@@ -33,6 +35,11 @@ const MonsterSprite: React.FC<{
 				<img src={monsterArtUrl(wip)} alt={wip.label} className='tile-monster-img tile-monster-still' draggable={false} />
 			) : (
 				<MonsterArt type={type} label={MONSTERS[type].label} className='tile-monster-img' />
+			)}
+			{queued > 0 && (
+				<span className='tile-monster-queue' title={queued === 1 ? 'Fought next' : `Number ${queued} in the queue`} aria-label={`Queued, number ${queued}`}>
+					{queued}
+				</span>
 			)}
 			{growth && (
 				// the bar restarts with every level (key) and fills over the time that is left

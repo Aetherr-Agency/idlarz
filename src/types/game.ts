@@ -229,6 +229,9 @@ export interface CombatClientState {
 	notice: CombatNotice | null;
 	/** A monster was just clicked and the server has not opened the fight yet: the window is already up, loading (transient) */
 	pending: { type: MonsterType; level: number } | null;
+	/** The monsters waiting for their turn, first to fight first (docs/24-battle-queue.md), and how many the queue holds */
+	queue: { n: number; type: MonsterType; level: number }[];
+	queueMax: number;
 }
 
 export interface TileProps {
@@ -395,6 +398,8 @@ export interface GameState {
 	requestSkill: (id: SkillId) => boolean;
 	/** A click on a monster of the map: asks the server to start the fight against it (false when nothing was asked: no such monster, or a fight is open) */
 	startFight: (id: number) => boolean;
+	/** Takes a queued monster out of the line */
+	unqueueMonster: (n: number) => void;
 	setAutoBattle: (on: boolean) => void;
 	/** Leaves the open fight (no reward, no penalty, the monster stays) and switches auto-battle off, which would start the next fight at once */
 	flee: () => void;

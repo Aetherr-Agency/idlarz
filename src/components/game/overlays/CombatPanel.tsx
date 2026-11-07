@@ -161,6 +161,10 @@ export interface CombatPanelProps {
 	numbers: FloatNumber[];
 	hitTick: number;
 	shake: boolean;
+	/** The monsters waiting for their turn (the battle queue) and a way to take one out; both left out in the lab */
+	queue?: { n: number; type: MonsterType; level: number }[];
+	queueMax?: number;
+	onUnqueue?: (n: number) => void;
 	onFlee: () => void;
 	onCloseResult: () => void;
 	onMinimize: () => void;
@@ -306,6 +310,23 @@ const CombatPanel: React.FC<CombatPanelProps> = (p) => {
 				<Bar value={p.monsterHp} max={p.monsterMaxHp} kind='monster' label={label} snapKey={p.snapKey} />
 				<Bar value={player.hp} max={player.maxHp} kind='player' label='You' snapKey={p.snapKey} />
 				<Bar value={player.mp} max={player.maxMp} kind='mana' label='Mana' snapKey={p.snapKey} />
+				{p.queue && p.queue.length > 0 && (
+					<div className='fight-queue' aria-label='Battle queue'>
+						<span className='fight-queue-title'>
+							Next ({p.queue.length}/{p.queueMax ?? p.queue.length})
+						</span>
+						{p.queue.map((q, i) => (
+							<span key={q.n} className='fight-queue-item' data-boss={monsterDef(q.type).grade === 'boss'} title={`${monsterDef(q.type).label}, level ${q.level}`}>
+								<b>{i + 1}</b> {monsterDef(q.type).label} <i>Lv {formatCompact(q.level)}</i>
+								{p.onUnqueue && (
+									<button className='fight-queue-x' onClick={() => p.onUnqueue!(q.n)} aria-label={`Take ${monsterDef(q.type).label} out of the queue`} title='Take it out of the queue'>
+										x
+									</button>
+								)}
+							</span>
+						))}
+					</div>
+				)}
 				{controls(!!over)}
 			</div>
 		</section>
