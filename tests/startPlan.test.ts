@@ -11,7 +11,12 @@ const localSave = (playSeconds: number): SavePeek => {
 	store.setState({ playSeconds } as never);
 	return { kind: 'ok', state: structuredClone(pickPersisted(api())), savedAt: 1, fromBackup: false };
 };
-const cloudAt = (rev: number, playSeconds: number): CloudInfo => ({ rev, serverSavedAt: 1, text: 'IDLZ2.x', summary: { level: 1, tilesOwned: 10, playSeconds, gold: 1 } });
+const cloudAt = (rev: number, playSeconds: number): CloudInfo => ({
+	rev,
+	serverSavedAt: 1,
+	text: 'IDLZ2.x',
+	summary: { level: 1, tilesOwned: 10, playSeconds, gold: 1 },
+});
 const NONE: SavePeek = { kind: 'none' };
 
 test('nothing anywhere: straight into a new game; nothing in the account: the hub for the local save', () => {

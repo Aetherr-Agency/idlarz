@@ -124,7 +124,9 @@ body {
 	border-radius: 2px;
 	cursor: pointer;
 	user-select: none;
-	transition: background-color 0.15s, border-color 0.15s;
+	transition:
+		background-color 0.15s,
+		border-color 0.15s;
 
 	&:hover {
 		border-color: #7a5224;
@@ -199,7 +201,9 @@ body {
 	padding: 2px;
 	background: rgba(8, 5, 3, 0.78);
 	border: 2px solid #4a3014;
-	box-shadow: inset 0 1px 0 rgba(217, 168, 80, 0.35), 0 1px 0 rgba(0, 0, 0, 0.6);
+	box-shadow:
+		inset 0 1px 0 rgba(217, 168, 80, 0.35),
+		0 1px 0 rgba(0, 0, 0, 0.6);
 	border-radius: 3px; /* no clip-path here: it would clip the tooltips */
 }
 
@@ -259,7 +263,9 @@ body {
 	pointer-events: none;
 	transform: translateX(-50%);
 	/* lingers a moment after the pointer leaves, so its text can be reached and copied */
-	transition: opacity 0.12s 0.3s, visibility 0s 0.42s;
+	transition:
+		opacity 0.12s 0.3s,
+		visibility 0s 0.42s;
 	user-select: text;
 }
 
@@ -280,7 +286,9 @@ body {
 	opacity: 1;
 	visibility: visible;
 	pointer-events: auto;
-	transition: opacity 0.12s, visibility 0s;
+	transition:
+		opacity 0.12s,
+		visibility 0s;
 }
 
 /* Stepped sprite-sheet player: twinkling resources (gold, gems, crystals) and the map chest. Frame size, count, loop
@@ -329,7 +337,11 @@ body {
 	font-size: 15px;
 	color: #ffe27a;
 	white-space: nowrap;
-	text-shadow: 0 1px 0 #3a1708, 1px 0 0 #3a1708, -1px 0 0 #3a1708, 0 -1px 0 #3a1708,
+	text-shadow:
+		0 1px 0 #3a1708,
+		1px 0 0 #3a1708,
+		-1px 0 0 #3a1708,
+		0 -1px 0 #3a1708,
 		0 0 8px rgba(255, 200, 60, 0.55);
 }
 
@@ -367,13 +379,17 @@ body {
 .fog-a {
 	background-image: url('/pixel/bg/fog_a.png');
 	background-size: 144px 144px; /* 48px art at 3x: big chunky pixels */
-	animation: fog-drift-a 90s linear infinite, fog-breathe 9s ease-in-out infinite alternate;
+	animation:
+		fog-drift-a 90s linear infinite,
+		fog-breathe 9s ease-in-out infinite alternate;
 }
 
 .fog-b {
 	background-image: url('/pixel/bg/fog_b.png');
 	background-size: 192px 192px; /* 64px art at 3x */
-	animation: fog-drift-b 140s linear infinite, fog-breathe 13s ease-in-out -5s infinite alternate;
+	animation:
+		fog-drift-b 140s linear infinite,
+		fog-breathe 13s ease-in-out -5s infinite alternate;
 }
 
 @keyframes fog-drift-a {
@@ -669,8 +685,7 @@ body {
 	border: 24px solid transparent;
 	border-image: url('/pixel/ui/frame_modal.png') 12 / 24px round;
 	image-rendering: pixelated;
-	background: linear-gradient(rgba(10, 7, 5, 0.86), rgba(10, 7, 5, 0.86)),
-		url('/pixel/bg/crack.png');
+	background: linear-gradient(rgba(10, 7, 5, 0.86), rgba(10, 7, 5, 0.86)), url('/pixel/bg/crack.png');
 	/* under the frame too: its edge pixels are see-through, and the map showed along the top and right */
 	background-clip: border-box;
 	background-origin: padding-box;
@@ -762,7 +777,9 @@ body {
 	letter-spacing: 1px;
 	text-transform: uppercase;
 	color: var(--px-gold);
-	text-shadow: 0 2px 0 #3a1708, 0 0 12px rgba(255, 190, 70, 0.25);
+	text-shadow:
+		0 2px 0 #3a1708,
+		0 0 12px rgba(255, 190, 70, 0.25);
 }
 
 .px-title-line {
@@ -805,10 +822,25 @@ body {
 	color: #fff;
 	background: #b02e2e;
 	border: 2px solid var(--px-ink);
-	box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.35), inset -2px -2px 0 rgba(0, 0, 0, 0.4);
+	box-shadow:
+		inset 2px 2px 0 rgba(255, 255, 255, 0.35),
+		inset -2px -2px 0 rgba(0, 0, 0, 0.4);
 	text-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
 	cursor: pointer;
-	clip-path: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+	clip-path: polygon(
+		0 3px,
+		3px 3px,
+		3px 0,
+		calc(100% - 3px) 0,
+		calc(100% - 3px) 3px,
+		100% 3px,
+		100% calc(100% - 3px),
+		calc(100% - 3px) calc(100% - 3px),
+		calc(100% - 3px) 100%,
+		3px 100%,
+		3px calc(100% - 3px),
+		0 calc(100% - 3px)
+	);
 
 	&:hover {
 		filter: brightness(1.2);
@@ -845,7 +877,9 @@ body {
 .px-modal-body::-webkit-scrollbar-thumb {
 	background: #8a5f26;
 	border: 2px solid #0a0605;
-	box-shadow: inset 2px 2px 0 #d9a850, inset -2px -2px 0 #4a3014;
+	box-shadow:
+		inset 2px 2px 0 #d9a850,
+		inset -2px -2px 0 #4a3014;
 }
 
 /* --- panels & cards (9-slice bronze inset) --- */
@@ -891,11 +925,26 @@ body {
 	color: #fff;
 	background: #3f8f2e;
 	border: 2px solid var(--px-ink);
-	box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.32), inset -2px -2px 0 rgba(0, 0, 0, 0.42);
+	box-shadow:
+		inset 2px 2px 0 rgba(255, 255, 255, 0.32),
+		inset -2px -2px 0 rgba(0, 0, 0, 0.42);
 	text-shadow: 0 2px 0 rgba(0, 0, 0, 0.45);
 	cursor: pointer;
 	transition: filter 0.1s;
-	clip-path: polygon(0 3px, 3px 3px, 3px 0, calc(100% - 3px) 0, calc(100% - 3px) 3px, 100% 3px, 100% calc(100% - 3px), calc(100% - 3px) calc(100% - 3px), calc(100% - 3px) 100%, 3px 100%, 3px calc(100% - 3px), 0 calc(100% - 3px));
+	clip-path: polygon(
+		0 3px,
+		3px 3px,
+		3px 0,
+		calc(100% - 3px) 0,
+		calc(100% - 3px) 3px,
+		100% 3px,
+		100% calc(100% - 3px),
+		calc(100% - 3px) calc(100% - 3px),
+		calc(100% - 3px) 100%,
+		3px 100%,
+		3px calc(100% - 3px),
+		0 calc(100% - 3px)
+	);
 
 	&:hover:not(:disabled) {
 		filter: brightness(1.18);
@@ -903,7 +952,9 @@ body {
 
 	&:active:not(:disabled) {
 		transform: translateY(2px);
-		box-shadow: inset 2px 2px 0 rgba(0, 0, 0, 0.35), inset -2px -2px 0 rgba(255, 255, 255, 0.18);
+		box-shadow:
+			inset 2px 2px 0 rgba(0, 0, 0, 0.35),
+			inset -2px -2px 0 rgba(255, 255, 255, 0.18);
 	}
 
 	&:disabled {
@@ -959,7 +1010,9 @@ body {
 		color: #fff1c0;
 		background: #6a4414;
 		border-color: #c08a30;
-		box-shadow: inset 2px 2px 0 #a8783a, inset -2px -2px 0 #3a2410;
+		box-shadow:
+			inset 2px 2px 0 #a8783a,
+			inset -2px -2px 0 #3a2410;
 	}
 }
 
@@ -995,7 +1048,9 @@ body {
 		margin-top: -7px;
 		background: #c08a30;
 		border: 2px solid var(--px-ink);
-		box-shadow: inset 2px 2px 0 #f0d27a, inset -2px -2px 0 #6a4414;
+		box-shadow:
+			inset 2px 2px 0 #f0d27a,
+			inset -2px -2px 0 #6a4414;
 	}
 
 	&::-moz-range-thumb {
@@ -1316,7 +1371,9 @@ body {
 	margin: 0 auto;
 	background: url('/pixel/ui/hero_scene.png') 0 0 / 288px 224px no-repeat;
 	image-rendering: pixelated;
-	box-shadow: 0 0 0 2px #080504, 0 0 0 4px #5a3f1c;
+	box-shadow:
+		0 0 0 2px #080504,
+		0 0 0 4px #5a3f1c;
 }
 
 .hero-torch {
@@ -1375,7 +1432,11 @@ body {
 	font-size: 0.8125rem;
 	font-weight: 700;
 	color: #fff;
-	text-shadow: 0 1px 0 #1a0408, 1px 0 0 #1a0408, -1px 0 0 #1a0408, 0 -1px 0 #1a0408;
+	text-shadow:
+		0 1px 0 #1a0408,
+		1px 0 0 #1a0408,
+		-1px 0 0 #1a0408,
+		0 -1px 0 #1a0408;
 	pointer-events: none;
 }
 
@@ -1402,7 +1463,9 @@ body {
 	image-rendering: pixelated;
 	transition: width 0.6s cubic-bezier(0.3, 0.8, 0.3, 1);
 	animation: bar-flow 1.6s steps(8) infinite;
-	box-shadow: 2px 0 0 rgba(212, 255, 150, 0.9), 0 0 8px rgba(130, 255, 90, 0.55);
+	box-shadow:
+		2px 0 0 rgba(212, 255, 150, 0.9),
+		0 0 8px rgba(130, 255, 90, 0.55);
 }
 
 .hero-xp::after {
@@ -1430,7 +1493,11 @@ body {
 	font-weight: 700;
 	letter-spacing: 0.5px;
 	color: #fff;
-	text-shadow: 0 1px 0 #0a1a06, 1px 0 0 #0a1a06, -1px 0 0 #0a1a06, 0 -1px 0 #0a1a06;
+	text-shadow:
+		0 1px 0 #0a1a06,
+		1px 0 0 #0a1a06,
+		-1px 0 0 #0a1a06,
+		0 -1px 0 #0a1a06;
 }
 
 .hero-orb {
@@ -1462,7 +1529,9 @@ body {
 	text-shadow: 0 2px 0 #1a0f06;
 	background: rgba(12, 8, 6, 0.82);
 	border: 2px solid #7a5224;
-	box-shadow: 0 0 0 2px #080504, inset 0 1px 0 rgba(240, 210, 122, 0.35);
+	box-shadow:
+		0 0 0 2px #080504,
+		inset 0 1px 0 rgba(240, 210, 122, 0.35);
 }
 
 .hero-nameplate .px-name {
@@ -1513,7 +1582,11 @@ body {
 	color: #fff;
 	pointer-events: none;
 	--o: calc(1px * var(--s));
-	text-shadow: var(--o) 0 0 #10042c, calc(var(--o) * -1) 0 0 #10042c, 0 var(--o) 0 #10042c, 0 calc(var(--o) * -1) 0 #10042c;
+	text-shadow:
+		var(--o) 0 0 #10042c,
+		calc(var(--o) * -1) 0 0 #10042c,
+		0 var(--o) 0 #10042c,
+		0 calc(var(--o) * -1) 0 #10042c;
 }
 
 .level-orb[data-digits='3'] .level-orb-num {
@@ -1617,7 +1690,9 @@ body {
 	color: #fff1c0;
 	background: #6a4414;
 	border: 1px solid #c08a30;
-	box-shadow: inset 0 1px 0 #a8783a, 0 0 0 1px #080504;
+	box-shadow:
+		inset 0 1px 0 #a8783a,
+		0 0 0 1px #080504;
 }
 
 /* --- Unexplored, buyable land: the dark sea is drawn by TerrainLayer; the tile adds a hover glow and a quiet '?' --- */
@@ -1641,7 +1716,9 @@ body {
 .unknown-mark {
 	image-rendering: pixelated;
 	opacity: 0.8;
-	transition: opacity 0.2s, filter 0.2s;
+	transition:
+		opacity 0.2s,
+		filter 0.2s;
 
 	.tile-unknown:hover & {
 		opacity: 1;
@@ -1748,7 +1825,9 @@ body {
 	inset: 0;
 	border: 3px solid rgba(255, 230, 120, 1);
 	border-radius: 50%;
-	box-shadow: 0 0 6px 1px rgba(255, 200, 70, 0.8), inset 0 0 5px rgba(255, 220, 110, 0.6);
+	box-shadow:
+		0 0 6px 1px rgba(255, 200, 70, 0.8),
+		inset 0 0 5px rgba(255, 220, 110, 0.6);
 	opacity: 0;
 	transform: scale(0.2);
 	animation: chest-ring 2.4s ease-out infinite;
@@ -1831,7 +1910,9 @@ body {
 	height: 48px;
 	scale: var(--grow);
 	background: url('/pixel/icons/castle_6_anim.png') 0 0 / 192px 48px no-repeat;
-	animation: castle-anim 0.9s steps(4) infinite, castle-glow 2.6s ease-in-out infinite alternate;
+	animation:
+		castle-anim 0.9s steps(4) infinite,
+		castle-glow 2.6s ease-in-out infinite alternate;
 }
 
 @keyframes castle-anim {
@@ -1856,10 +1937,14 @@ body {
 
 @keyframes castle-aura {
 	from {
-		box-shadow: 0 0 10px 2px rgba(255, 200, 70, 0.25), inset 0 0 8px rgba(255, 220, 120, 0.2);
+		box-shadow:
+			0 0 10px 2px rgba(255, 200, 70, 0.25),
+			inset 0 0 8px rgba(255, 220, 120, 0.2);
 	}
 	to {
-		box-shadow: 0 0 30px 10px rgba(255, 210, 80, 0.5), inset 0 0 14px rgba(255, 230, 140, 0.4);
+		box-shadow:
+			0 0 30px 10px rgba(255, 210, 80, 0.5),
+			inset 0 0 14px rgba(255, 230, 140, 0.4);
 	}
 }
 
@@ -1953,7 +2038,9 @@ body {
 	border-radius: 50%;
 	pointer-events: none;
 	background: radial-gradient(circle at 35% 30%, #ffe2b0 0 1px, #ff9a2e 2px, #c9600e 100%);
-	box-shadow: 0 0 0 1.5px #1c0e04, 0 0 4px rgba(255, 150, 50, 0.5);
+	box-shadow:
+		0 0 0 1.5px #1c0e04,
+		0 0 4px rgba(255, 150, 50, 0.5);
 	animation: notify-pulse 2.4s ease-in-out infinite;
 }
 

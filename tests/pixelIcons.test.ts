@@ -3,14 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { INITIAL_RESOURCES } from '../src/config/gameConfig';
-import {
-	PIXEL_ICON_SIZES,
-	RESOURCE_PIXEL_ICONS,
-	SHINE_FRAMES,
-	SHINE_SHEETS,
-	pixelIconSrc,
-	type PixelIconName,
-} from '../src/config/pixelIcons';
+import { PIXEL_ICON_SIZES, RESOURCE_PIXEL_ICONS, SHINE_FRAMES, SHINE_SHEETS, pixelIconSrc, type PixelIconName } from '../src/config/pixelIcons';
 
 const PUBLIC = resolve(__dirname, '..', 'public');
 

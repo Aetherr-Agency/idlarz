@@ -54,7 +54,14 @@ const CastleCompass: React.FC = () => {
 
 	return (
 		<div ref={rootRef} className='castle-compass' data-away='0'>
-			<button ref={arrowRef} type='button' className='compass-arrow' onClick={home} title='Your castle is this way: click to go back' aria-label='Go back to the castle'>
+			<button
+				ref={arrowRef}
+				type='button'
+				className='compass-arrow'
+				onClick={home}
+				title='Your castle is this way: click to go back'
+				aria-label='Go back to the castle'
+			>
 				<span ref={turnRef} className='compass-turn' aria-hidden>
 					<svg viewBox='0 0 24 24' width='26' height='26'>
 						<path d='M3 8h10V3l9 9-9 9v-5H3z' fill='#ffd860' stroke='#15091f' strokeWidth='1.6' strokeLinejoin='round' />

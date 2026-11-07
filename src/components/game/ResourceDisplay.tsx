@@ -85,7 +85,8 @@ const ResourceGroup: React.FC<GroupProps> = ({ tier, rows, showNumbers, align, o
 					event.preventDefault();
 					setPinned((p) => !p);
 				}
-			}}>
+			}}
+		>
 			{rows.map((row) => {
 				const isEmbers = row.key === 'embers';
 				return (
@@ -100,7 +101,8 @@ const ResourceGroup: React.FC<GroupProps> = ({ tier, rows, showNumbers, align, o
 										onOpenEmbers();
 									}
 								: undefined
-						}>
+						}
+					>
 						{iconOf(row.key)}
 						{showNumbers && <StableNumber value={formatHeaderAmount(row.amount)} minWidth={AMOUNT_SLOT} className='font-semibold text-[11px] text-[#f1e6c8]' />}
 					</span>
@@ -147,7 +149,7 @@ const ResourceDisplay: React.FC = () => {
 	const toggleRebirth = useUiStore((state) => state.toggleRebirth);
 
 	const amountOf = (key: ResourceKey): number =>
-		key === 'gems' ? gems : key === 'embers' ? embers : (resources as unknown as Record<string, number>)[key] ?? 0;
+		key === 'gems' ? gems : key === 'embers' ? embers : ((resources as unknown as Record<string, number>)[key] ?? 0);
 
 	return (
 		<>

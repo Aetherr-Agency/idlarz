@@ -40,20 +40,12 @@ interface MerchantTabButtonsProps {
 	onTabChange: (tab: MerchantTab) => void;
 }
 
-export const MerchantTabButtons: React.FC<MerchantTabButtonsProps> = ({
-	activeTab,
-	onTabChange,
-}) => {
+export const MerchantTabButtons: React.FC<MerchantTabButtonsProps> = ({ activeTab, onTabChange }) => {
 	return (
 		<div className='px-panel'>
 			<div className='flex flex-col gap-2'>
 				{MERCHANT_TABS.map((tab) => (
-					<button
-						key={tab.id}
-						onClick={() => onTabChange(tab.id)}
-						className='px-tab'
-						data-active={activeTab === tab.id}
-						title={tab.description}>
+					<button key={tab.id} onClick={() => onTabChange(tab.id)} className='px-tab' data-active={activeTab === tab.id} title={tab.description}>
 						<span>{tab.emoji}</span>
 						<span>{tab.label}</span>
 					</button>

@@ -7,8 +7,7 @@ import { getTile, type World } from '@/utils/world';
 export const castleLevelOf = (tiles: World): number => getTile(tiles, CASTLE_X, CASTLE_Y)?.level ?? 1;
 
 export const isInWard = (x: number, y: number, castleLevel: number): boolean =>
-	castleLevel >= CASTLE_FORTRESS.fromLevel &&
-	Math.max(Math.abs(x - CASTLE_X), Math.abs(y - CASTLE_Y)) <= CASTLE_RANGE.radius;
+	castleLevel >= CASTLE_FORTRESS.fromLevel && Math.max(Math.abs(x - CASTLE_X), Math.abs(y - CASTLE_Y)) <= CASTLE_RANGE.radius;
 
 /** How far (tiles, every side) the violet range area reaches: 1 (3x3) up to level 7, then one more tile per level (5x5 at 8, 9x9 at 10). */
 export const castleRangeRadius = (castleLevel: number): number =>

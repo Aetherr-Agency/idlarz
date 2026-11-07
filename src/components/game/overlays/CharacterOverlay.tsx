@@ -83,7 +83,8 @@ const CharacterOverlay: React.FC = () => {
 				data-locked={locked}
 				disabled={locked || skill.fightOnly}
 				onClick={() => requestSkill(id)}
-				title={`${skill.name}: ${skillDescription(skill)} (${detail})`}>
+				title={`${skill.name}: ${skillDescription(skill)} (${detail})`}
+			>
 				<span className='inv-ability-name'>{skill.name}</span>
 				<span className='inv-ability-sub'>{locked ? `Lv ${skill.unlockLevel}` : cd > 0 ? `${cd} s` : `${skill.manaCost} MP`}</span>
 			</button>
@@ -98,7 +99,8 @@ const CharacterOverlay: React.FC = () => {
 
 				<div
 					className='eq-ilvl'
-					title={`The average item level of the ${worn} piece${worn === 1 ? '' : 's'} you wear. The merchant's goods are never more than ${MERCHANT_GOODS.maxAboveAverage} levels above it.`}>
+					title={`The average item level of the ${worn} piece${worn === 1 ? '' : 's'} you wear. The merchant's goods are never more than ${MERCHANT_GOODS.maxAboveAverage} levels above it.`}
+				>
 					<span className='eq-ilvl-label'>ilvl</span>
 					<span className='eq-ilvl-value'>{formatCompact(itemLevel)}</span>
 				</div>
@@ -127,7 +129,10 @@ const CharacterOverlay: React.FC = () => {
 						<span className='inv-readout-label'>Damage</span>
 						<span className='inv-readout-value'>{formatCompact(fx.damage)}</span>
 					</div>
-					<div className='inv-readout' title={`${formatPct(mitigation, 0)} less damage taken (armor has diminishing returns past ${Math.round(COMBAT.armorSoftCap * 100)}% and never gives more than 75%)`}>
+					<div
+						className='inv-readout'
+						title={`${formatPct(mitigation, 0)} less damage taken (armor has diminishing returns past ${Math.round(COMBAT.armorSoftCap * 100)}% and never gives more than 75%)`}
+					>
 						<span className='inv-readout-label'>Armor</span>
 						<span className='inv-readout-value'>{formatCompact(armor)}</span>
 					</div>
@@ -135,11 +140,17 @@ const CharacterOverlay: React.FC = () => {
 						<span className='inv-readout-label'>Max HP</span>
 						<span className='inv-readout-value'>{formatCompact(maxHp(characterStats, equipment))}</span>
 					</div>
-					<div className='inv-readout' title={`Chance that a click crits (x${formatCompact(fx.critMultiplier, 2)}); a crit becomes a super crit (x${formatCompact(fx.superCritMultiplier, 2)}) ${formatPct(fx.superCritChance)} of the time`}>
+					<div
+						className='inv-readout'
+						title={`Chance that a click crits (x${formatCompact(fx.critMultiplier, 2)}); a crit becomes a super crit (x${formatCompact(fx.superCritMultiplier, 2)}) ${formatPct(fx.superCritChance)} of the time`}
+					>
 						<span className='inv-readout-label'>Crit</span>
 						<span className='inv-readout-value'>{formatPct(fx.critChance)}</span>
 					</div>
-					<div className='inv-readout' title={`HP per second: ${COMBAT.regenPerSec} base, ${formatCompact(gear.regen)} from gear and ${formatCompact(fx.hpRegen - COMBAT.regenPerSec - gear.regen)} from the merchant (it also works in fights); ${formatCompact(gear.luck)} Luck from gear`}>
+					<div
+						className='inv-readout'
+						title={`HP per second: ${COMBAT.regenPerSec} base, ${formatCompact(gear.regen)} from gear and ${formatCompact(fx.hpRegen - COMBAT.regenPerSec - gear.regen)} from the merchant (it also works in fights); ${formatCompact(gear.luck)} Luck from gear`}
+					>
 						<span className='inv-readout-label'>Regen</span>
 						<span className='inv-readout-value'>{formatCompact(fx.hpRegen)}/s</span>
 					</div>
@@ -159,9 +170,7 @@ const CharacterOverlay: React.FC = () => {
 			<div className='px-panel flex-1 min-w-[360px] overflow-y-auto relative'>
 				<div className='px-h text-center'>Items Bag</div>
 				<Bag onNotice={setNotice} />
-				<div className='px-tip-muted text-xs text-center mt-3'>
-					Double-click to equip or drink, right-click for more. Drag to rearrange, or press Organize.
-				</div>
+				<div className='px-tip-muted text-xs text-center mt-3'>Double-click to equip or drink, right-click for more. Drag to rearrange, or press Organize.</div>
 			</div>
 		</div>
 	);

@@ -18,7 +18,8 @@ export interface ProfileInput {
 
 type Checked<T> = { ok: true; value: T } | { ok: false; error: string };
 
-const asRecord = (body: unknown): Record<string, unknown> => (body && typeof body === 'object' && !Array.isArray(body) ? (body as Record<string, unknown>) : {});
+const asRecord = (body: unknown): Record<string, unknown> =>
+	body && typeof body === 'object' && !Array.isArray(body) ? (body as Record<string, unknown>) : {};
 
 const checkEmail = (raw: unknown): Checked<string> => {
 	const email = typeof raw === 'string' ? raw.trim().toLowerCase() : '';

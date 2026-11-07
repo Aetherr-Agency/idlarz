@@ -17,16 +17,10 @@ interface PlaceholderTabContentProps {
 	description: string;
 }
 
-const PlaceholderTabContent: React.FC<PlaceholderTabContentProps> = ({
-	title,
-	emoji,
-	description,
-}) => {
+const PlaceholderTabContent: React.FC<PlaceholderTabContentProps> = ({ title, emoji, description }) => {
 	return (
 		<>
-			<h2 className='px-h text-center'>
-				{title}
-			</h2>
+			<h2 className='px-h text-center'>{title}</h2>
 			<div className='flex flex-col items-center justify-center h-[60vh]'>
 				<div className='text-6xl mb-6'>{emoji}</div>
 				<p className='text-[#a89878] text-center'>{description}</p>
@@ -84,9 +78,7 @@ const MerchantOverlay: React.FC = () => {
 			case 'goods':
 				return (
 					<>
-						<h2 className='px-h text-center'>
-							Goods
-						</h2>
+						<h2 className='px-h text-center'>Goods</h2>
 
 						{/* The shuffling shelf and the supplies */}
 						<MerchantGoods onBought={announcePurchase} />
@@ -98,36 +90,32 @@ const MerchantOverlay: React.FC = () => {
 			case 'upgrades':
 				return (
 					<>
-						<h2 className='px-h text-center'>
-							Upgrades
-						</h2>
+						<h2 className='px-h text-center'>Upgrades</h2>
 
 						<div className='grid grid-cols-2 gap-4'>
 							{/* Gold click multiplier upgrade */}
-							<div className={cn('px-card text-white', {
-								'!border-purple-500': clickLevel >= maxClickLevel
-							})}>
+							<div
+								className={cn('px-card text-white', {
+									'!border-purple-500': clickLevel >= maxClickLevel,
+								})}
+							>
 								<h3 className='font-semibold mb-2 flex items-center text-sm'>
-									<span className='mr-2'><ResourceIcon resource='gold' /></span> Click Power
-									{clickLevel >= maxClickLevel && (
-										<span className='ml-2 text-xs uppercase text-purple-500'>
-											(Max level)
-										</span>
-									)}
+									<span className='mr-2'>
+										<ResourceIcon resource='gold' />
+									</span>{' '}
+									Click Power
+									{clickLevel >= maxClickLevel && <span className='ml-2 text-xs uppercase text-purple-500'>(Max level)</span>}
 								</h3>
-								<p className='text-sm text-[#d8c8a0] mb-4'>
-									{getClickMultiplierText()}
-								</p>
+								<p className='text-sm text-[#d8c8a0] mb-4'>{getClickMultiplierText()}</p>
 
 								{nextClick ? (
 									<div className='flex justify-between items-center text-sm mt-2'>
 										<p className='text-yellow-400 font-medium'>
-											<span className='inline-flex items-center gap-1'>{formatNumber(nextClick?.price ?? 0)} <ResourceIcon resource='gold' /></span>
+											<span className='inline-flex items-center gap-1'>
+												{formatNumber(nextClick?.price ?? 0)} <ResourceIcon resource='gold' />
+											</span>
 										</p>
-										<button
-											onClick={handleBuyClickMultiplier}
-											disabled={resources.gold < (nextClick?.price ?? 0)}
-											className='px-btn px-btn-sm'>
+										<button onClick={handleBuyClickMultiplier} disabled={resources.gold < (nextClick?.price ?? 0)} className='px-btn px-btn-sm'>
 											{resources.gold >= (nextClick?.price ?? 0) ? 'Purchase' : 'Get more gold!'}
 										</button>
 									</div>
@@ -151,11 +139,7 @@ const MerchantOverlay: React.FC = () => {
 				);
 			case 'gambling':
 				return (
-					<PlaceholderTabContent
-						title='Gambling'
-						emoji='🎲'
-						description='Coming soon! Test your luck with various games of chance. Win big or lose it all!'
-					/>
+					<PlaceholderTabContent title='Gambling' emoji='🎲' description='Coming soon! Test your luck with various games of chance. Win big or lose it all!' />
 				);
 			default:
 				return null;
@@ -163,21 +147,16 @@ const MerchantOverlay: React.FC = () => {
 	};
 
 	return (
-				<div className='grid grid-cols-5 gap-5'>
-					{/* Merchant Avatar and Navigation */}
-					<div className='col-span-1 flex flex-col gap-4'>
-						{/* Merchant Navigation Tabs */}
-						<MerchantTabButtons
-							activeTab={activeTab}
-							onTabChange={setActiveTab}
-						/>
-					</div>
+		<div className='grid grid-cols-5 gap-5'>
+			{/* Merchant Avatar and Navigation */}
+			<div className='col-span-1 flex flex-col gap-4'>
+				{/* Merchant Navigation Tabs */}
+				<MerchantTabButtons activeTab={activeTab} onTabChange={setActiveTab} />
+			</div>
 
-					{/* Content Area - Changes based on selected tab */}
-					<div className='col-span-4 px-panel flex flex-col'>
-						{renderTabContent()}
-					</div>
-				</div>
+			{/* Content Area - Changes based on selected tab */}
+			<div className='col-span-4 px-panel flex flex-col'>{renderTabContent()}</div>
+		</div>
 	);
 };
 

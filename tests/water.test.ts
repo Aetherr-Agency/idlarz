@@ -1,7 +1,21 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ATLAS, CELL, buildGroundGrid, depth } from '../src/utils/terrain';
-import { BOAT, BUBBLE, RIPPLE_SIZE, buildRipples, buildShimmers, tileBoat, tileBubbles, tileDolphin, tileFalls, tileRipples, type Boat, type Dolphin, type Fall } from '../src/utils/water';
+import {
+	BOAT,
+	BUBBLE,
+	RIPPLE_SIZE,
+	buildRipples,
+	buildShimmers,
+	tileBoat,
+	tileBubbles,
+	tileDolphin,
+	tileFalls,
+	tileRipples,
+	type Boat,
+	type Dolphin,
+	type Fall,
+} from '../src/utils/water';
 import type { BiomeType, Tile } from '../src/types/game';
 
 const NAMES: Record<string, BiomeType> = { P: 'plains', S: 'swamp', L: 'lake', T: 'tundra', H: 'hills' };
@@ -60,7 +74,10 @@ test('swamp ripples sit on pool spots the terrain build found, only on deep swam
 		const spots = ATLAS.water!.swamp![(r.ty % 4) * 4 + (r.tx % 4)];
 		const cx = r.x - r.tx * CELL + (w >> 1);
 		const cy = r.y - r.ty * CELL + (h >> 1);
-		assert.ok(spots.some(([sx, sy]) => sx === cx && sy === cy), `spot ${cx},${cy} is a known pool spot`);
+		assert.ok(
+			spots.some(([sx, sy]) => sx === cx && sy === cy),
+			`spot ${cx},${cy} is a known pool spot`,
+		);
 	}
 	assert.deepEqual(tileRipples(g, 0, 0), [], 'the edge of the swamp stays calm');
 });
@@ -69,8 +86,7 @@ test('the atlas lists pool spots for every 48px block that has one, all inside t
 	const blocks = ATLAS.water!.swamp!;
 	assert.equal(blocks.length, 16);
 	assert.ok(blocks.filter((b) => b.length > 0).length >= 8, 'most blocks have a spot');
-	for (const spots of blocks)
-		for (const [x, y] of spots) assert.ok(x >= 12 && x <= CELL - 12 && y >= 14 && y <= CELL - 14, `spot ${x},${y} in the middle`);
+	for (const spots of blocks) for (const [x, y] of spots) assert.ok(x >= 12 && x <= CELL - 12 && y >= 14 && y <= CELL - 14, `spot ${x},${y} in the middle`);
 });
 
 // ------------------------------------------------------------------ life on the water
@@ -118,7 +134,16 @@ test('boats and dolphins: only on open water of a real lake, spread out, determi
 		const d = tileDolphin(g, x, y);
 		if (b) boats.push(b);
 		if (d) dolphins.push(d);
-		if (b) assert.ok([[0, -1], [1, 0], [0, 1], [-1, 0]].every(([dx, dy]) => g[y + dy][x + dx] === 'lake'), 'lake on all four sides: never at the shore');
+		if (b)
+			assert.ok(
+				[
+					[0, -1],
+					[1, 0],
+					[0, 1],
+					[-1, 0],
+				].every(([dx, dy]) => g[y + dy][x + dx] === 'lake'),
+				'lake on all four sides: never at the shore',
+			);
 		assert.deepEqual(b, tileBoat(g, x, y));
 		assert.ok(!(b && d), 'never both on one tile');
 	});

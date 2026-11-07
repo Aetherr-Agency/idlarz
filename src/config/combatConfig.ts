@@ -144,30 +144,87 @@ type Tier = {
 	/** The levels a new monster appears at (see `MonsterDef.spawnWindow`): a later biome starts higher and ends higher */
 	window: MonsterDef['spawnWindow'];
 	/** Bosses: the level the numbers are for, the time limit, the HP and the level window */
-	boss: { hp: number; attack: number; armor: number; refLevel: number; timeLimitSec: number; window: MonsterDef['spawnWindow']; crit: number; stunResist: number };
+	boss: {
+		hp: number;
+		attack: number;
+		armor: number;
+		refLevel: number;
+		timeLimitSec: number;
+		window: MonsterDef['spawnWindow'];
+		crit: number;
+		stunResist: number;
+	};
 };
 
 const BIOME_TIER = {
 	plains: {
-		hp: 100, attack: 4, armor: 0, rewardSec: 90,
+		hp: 100,
+		attack: 4,
+		armor: 0,
+		rewardSec: 90,
 		window: { base: 1, perCastleLevel: 1, spread: 2, cap: 10 }, // castle 1: level 1-3, castle 8 and up: level 8-10
-		boss: { hp: 1000, attack: 11, armor: 15, refLevel: 15, timeLimitSec: 75, window: { base: 15, perCastleLevel: 0.8, spread: 3, cap: 25 }, crit: 8, stunResist: 20 },
+		boss: {
+			hp: 1000,
+			attack: 11,
+			armor: 15,
+			refLevel: 15,
+			timeLimitSec: 75,
+			window: { base: 15, perCastleLevel: 0.8, spread: 3, cap: 25 },
+			crit: 8,
+			stunResist: 20,
+		},
 	},
 	forest: {
-		hp: 160, attack: 6, armor: 1, rewardSec: 110,
+		hp: 160,
+		attack: 6,
+		armor: 1,
+		rewardSec: 110,
 		window: { base: 4, perCastleLevel: 1, spread: 2, cap: 14 },
-		boss: { hp: 1900, attack: 16, armor: 24, refLevel: 20, timeLimitSec: 80, window: { base: 20, perCastleLevel: 0.8, spread: 3, cap: 30 }, crit: 9, stunResist: 25 },
+		boss: {
+			hp: 1900,
+			attack: 16,
+			armor: 24,
+			refLevel: 20,
+			timeLimitSec: 80,
+			window: { base: 20, perCastleLevel: 0.8, spread: 3, cap: 30 },
+			crit: 9,
+			stunResist: 25,
+		},
 	},
 	swamp: {
-		hp: 220, attack: 7, armor: 2, rewardSec: 135,
+		hp: 220,
+		attack: 7,
+		armor: 2,
+		rewardSec: 135,
 		window: { base: 8, perCastleLevel: 1, spread: 2, cap: 18 },
-		boss: { hp: 2800, attack: 21, armor: 32, refLevel: 25, timeLimitSec: 85, window: { base: 25, perCastleLevel: 0.8, spread: 3, cap: 35 }, crit: 10, stunResist: 30 },
+		boss: {
+			hp: 2800,
+			attack: 21,
+			armor: 32,
+			refLevel: 25,
+			timeLimitSec: 85,
+			window: { base: 25, perCastleLevel: 0.8, spread: 3, cap: 35 },
+			crit: 10,
+			stunResist: 30,
+		},
 	},
 	// the hardest land: its monsters start where the swamp's end, and its boss is out of reach of the best gear there is today
 	tundra: {
-		hp: 300, attack: 8, armor: 3, rewardSec: 190,
+		hp: 300,
+		attack: 8,
+		armor: 3,
+		rewardSec: 190,
 		window: { base: 12, perCastleLevel: 0.5, spread: 2, cap: 20 },
-		boss: { hp: 7000, attack: 36, armor: 58, refLevel: 30, timeLimitSec: 90, window: { base: 30, perCastleLevel: 0.8, spread: 3, cap: 40 }, crit: 13, stunResist: 45 },
+		boss: {
+			hp: 7000,
+			attack: 36,
+			armor: 58,
+			refLevel: 30,
+			timeLimitSec: 90,
+			window: { base: 30, perCastleLevel: 0.8, spread: 3, cap: 40 },
+			crit: 13,
+			stunResist: 45,
+		},
 	},
 } as const satisfies Record<MonsterBiome, Tier>;
 

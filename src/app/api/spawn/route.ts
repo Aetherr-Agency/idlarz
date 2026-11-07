@@ -15,6 +15,6 @@ export async function POST(request: Request) {
 			since: Number.isInteger(body.since) && (body.since as number) >= 0 ? (body.since as number) : undefined,
 			invVer: Number.isInteger(body.invVer) && (body.invVer as number) >= 0 ? (body.invVer as number) : undefined,
 		}),
-		(deps, userId, body, nowMs) => syncTickets(deps, userId, nowMs, body.since, body.invVer)
+		(deps, userId, body, nowMs) => syncTickets(deps, userId, nowMs, body.since, body.invVer),
 	);
 }

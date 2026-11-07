@@ -29,7 +29,11 @@ const snapshot = (b: Before = {}): Snapshot => {
 		legacyEarned: b.legacyEarned ?? 0,
 		xpGainPct: 0,
 		playSeconds: 100_000,
-		derived: { ...DEFAULT_DERIVED, purchased: b.purchased ?? 12, castleUpgrade: b.upgradingTo ? ({ toLevel: b.upgradingTo, remainingSec: 1000 } as never) : null },
+		derived: {
+			...DEFAULT_DERIVED,
+			purchased: b.purchased ?? 12,
+			castleUpgrade: b.upgradingTo ? ({ toLevel: b.upgradingTo, remainingSec: 1000 } as never) : null,
+		},
 	} as unknown as SaveSummary;
 	return { summary, serverSavedAt: 0 };
 };
@@ -71,7 +75,7 @@ test('inside one run the Embers ever earned cannot rise (spending them changes t
 	assert.equal(settleEmbers(before, claim(1, 18)).clamped, false);
 });
 
-test('a lower rebirth count (a New Game, an older save) is not this check\'s business', () => {
+test("a lower rebirth count (a New Game, an older save) is not this check's business", () => {
 	const before = snapshot({ castleLevel: 8, purchased: 500, rebirths: 3, legacyEarned: 120 });
 	assert.deepEqual(settleEmbers(before, claim(0, 0)), { rebirths: 0, legacyEarned: 0, clamped: false });
 });

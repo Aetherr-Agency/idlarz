@@ -69,7 +69,11 @@ export const resolveSourceLevel = (level: SourceLevelDef, castleLevel = 1): numb
 	clampItemLevel(level.base + level.perCastleLevel * (Math.max(1, castleLevel) - 1));
 
 /** Rolls the item level around the source level, inside the profile's bounds. */
-export const rollItemLevel = (sourceLevel: number, def: Pick<ItemLevelDef, 'offset' | 'variance'> & Partial<Pick<ItemLevelDef, 'min' | 'max'>>, rng: Rng): number => {
+export const rollItemLevel = (
+	sourceLevel: number,
+	def: Pick<ItemLevelDef, 'offset' | 'variance'> & Partial<Pick<ItemLevelDef, 'min' | 'max'>>,
+	rng: Rng,
+): number => {
 	const centre = sourceLevel + def.offset;
 	const rolled = def.variance > 0 ? randomInt(rng, centre - def.variance, centre + def.variance) : centre;
 	return Math.min(def.max ?? MAX_ITEM_LEVEL, Math.max(def.min ?? 1, clampItemLevel(rolled)));
@@ -275,4 +279,3 @@ export const generateLoot = (req: LootRequest, rng: Rng, data: LootData = LOOT_D
 	}
 	return { drops, sourceLevel, pity, trace: ctx.trace, warnings };
 };
-

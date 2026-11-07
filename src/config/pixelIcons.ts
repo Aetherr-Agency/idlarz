@@ -204,7 +204,7 @@ const BASE_ICON_SIZES = {
 	biome_lake: [32, 32],
 	biome_coast: [32, 32],
 	// buildings, 3/4 view on a transparent 48x60 canvas anchored at the tile bottom (the foundation is terrain art)
-building_farm: [48, 60],
+	building_farm: [48, 60],
 	building_mine: [48, 60],
 	building_lumbermill: [48, 60],
 	building_market: [48, 60],
@@ -294,7 +294,6 @@ export const EQUIPMENT_PIXEL_ICONS: Record<string, PixelIconName> = {
 	ring2: 'equip_ring',
 };
 
-
 // Farm animal id -> sprite
 export const ANIMAL_PIXEL_ICONS: Record<string, PixelIconName> = {
 	chicken: 'animal_chicken',
@@ -314,8 +313,7 @@ export const BIOME_PIXEL_ICONS: Record<string, PixelIconName | undefined> = {
 	coast: 'biome_coast',
 };
 
-export const castleIconName = (level: number): PixelIconName =>
-	`castle_${Math.max(1, Math.min(6, Math.floor(level)))}` as PixelIconName;
+export const castleIconName = (level: number): PixelIconName => `castle_${Math.max(1, Math.min(6, Math.floor(level)))}` as PixelIconName;
 
 // Building type -> sprite
 export const BUILDING_PIXEL_ICONS: Record<string, PixelIconName> = {

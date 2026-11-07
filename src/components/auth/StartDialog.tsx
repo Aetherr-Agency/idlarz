@@ -31,8 +31,7 @@ const StartDialog: React.FC<Props> = ({ startMode, onSignedIn, onUnavailable }) 
 
 	const needsHero = mode !== 'login';
 	const needsAccount = mode !== 'profile';
-	const ready =
-		(!needsAccount || (email.trim() !== '' && password !== '')) && (!needsHero || (name.trim() !== '' && playerClass !== null));
+	const ready = (!needsAccount || (email.trim() !== '' && password !== '')) && (!needsHero || (name.trim() !== '' && playerClass !== null));
 
 	const settle = (result: AuthResult) => {
 		if (result.status === 'ok') return onSignedIn(result.profile);
@@ -106,7 +105,8 @@ const StartDialog: React.FC<Props> = ({ startMode, onSignedIn, onUnavailable }) 
 											className='class-card'
 											data-selected={selected}
 											style={{ '--accent': info.accent } as React.CSSProperties}
-											onClick={() => setPlayerClass(id)}>
+											onClick={() => setPlayerClass(id)}
+										>
 											<span className='class-card-stage'>
 												<PixelIcon name={info.full} scale={2} alt={`${info.race} ${info.label}`} />
 											</span>
@@ -139,7 +139,8 @@ const StartDialog: React.FC<Props> = ({ startMode, onSignedIn, onUnavailable }) 
 							onClick={() => {
 								setError(null);
 								setMode(mode === 'login' ? 'register' : 'login');
-							}}>
+							}}
+						>
 							{mode === 'login' ? 'New here? Register' : 'Already have an account? Log in'}
 						</button>
 					)}

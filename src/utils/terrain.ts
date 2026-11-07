@@ -91,12 +91,7 @@ const padKind = (tile: Tile): string => ((FOUNDATION_ORDER as readonly string[])
 export function buildGroundGrid(tiles: Tile[][] | undefined): GroundGrid {
 	if (!tiles) return [];
 	const owned = ownedNames(tiles);
-	return owned.map((row, y) =>
-		row.map((g, x) =>
-			g ??
-			(SIDES.some(([dx, dy]) => owned[y + dy]?.[x + dx] != null) ? ('mist' as Ground) : null)
-		)
-	);
+	return owned.map((row, y) => row.map((g, x) => g ?? (SIDES.some(([dx, dy]) => owned[y + dy]?.[x + dx] != null) ? ('mist' as Ground) : null)));
 }
 
 /** Foundation pads (48x48 worked-ground decals) under building tiles; `bottom` is the pad's bottom edge in world px. */
@@ -107,7 +102,7 @@ export function allPads(tiles: Tile[][] | undefined): Placed[] {
 		row.forEach((tile, x) => {
 			if (!isBuilt(tile)) return;
 			out.push({ id: `pad_${padKind(tile)}_${hash32(x, y, 600) % PAD_VARIANTS}`, x: x * CELL, bottom: (y + 1) * CELL });
-		})
+		}),
 	);
 	return out;
 }
@@ -124,7 +119,7 @@ export function terrainKey(tiles: Tile[][] | undefined): string {
 					const c = String.fromCharCode(97 + rankOf(gr));
 					return isBuilt(tiles[y][x]) ? c.toUpperCase() : c;
 				})
-				.join('')
+				.join(''),
 		)
 		.join('/');
 }
@@ -138,7 +133,12 @@ export function depth(g: GroundSrc, x: number, y: number): number {
 	let d = 0;
 	for (let r = 1; r <= (me ? (MAX_DEPTH[me] ?? 0) : 0); r++) {
 		let same = true;
-		for (let dx = -r; dx <= r && same; dx++) for (let dy = -r; dy <= r; dy++) if (at(g, x + dx, y + dy) !== me) { same = false; break; }
+		for (let dx = -r; dx <= r && same; dx++)
+			for (let dy = -r; dy <= r; dy++)
+				if (at(g, x + dx, y + dy) !== me) {
+					same = false;
+					break;
+				}
 		if (same) d = r;
 		else break;
 	}
@@ -213,8 +213,7 @@ const gap2 = (rx0: number, ry0: number, [bx0, by0, bx1, by1]: number[]) => {
 /** Box (tile-local px, may extend outside the tile) keeps `margin` px from every neighbouring tile of another ground. */
 function fits(g: GroundSrc, x: number, y: number, box: number[], margin: number, ground: Ground | null): boolean {
 	for (let dx = -1; dx <= 1; dx++)
-		for (let dy = -1; dy <= 1; dy++)
-			if ((dx || dy) && at(g, x + dx, y + dy) !== ground && gap2(dx * CELL, dy * CELL, box) < margin * margin) return false;
+		for (let dy = -1; dy <= 1; dy++) if ((dx || dy) && at(g, x + dx, y + dy) !== ground && gap2(dx * CELL, dy * CELL, box) < margin * margin) return false;
 	return true;
 }
 
@@ -278,8 +277,7 @@ export function tileSprites(g: GroundSrc, x: number, y: number, m: TerrainAtlas 
 	return out;
 }
 
-const overlaps = (a: number[], b: number[], margin: number) =>
-	a[0] < b[2] + margin && b[0] < a[2] + margin && a[1] < b[3] + margin && b[1] < a[3] + margin;
+const overlaps = (a: number[], b: number[], margin: number) => a[0] < b[2] + margin && b[0] < a[2] + margin && a[1] < b[3] + margin && b[1] < a[3] + margin;
 
 /**
  * Tiny decorations (flowers on plains, fallen trees on swamps): a second hash pass that never moves the props.
@@ -331,8 +329,7 @@ export function dockAt(g: GroundSrc, x: number, y: number, m: TerrainAtlas = ATL
 		if (land.length !== 1 || !LAND.includes(at(g, tx + land[0][0], ty + land[0][1]) as string)) return null;
 		const [dx, dy] = land[0];
 		for (let ox = -1; ox <= 1; ox++)
-			for (let oy = -1; oy <= 1; oy++)
-				if ((ox !== 0 || oy !== 0) && ox * dx + oy * dy <= 0 && at(g, tx + ox, ty + oy) !== 'lake') return null; // water-side diagonals must be water
+			for (let oy = -1; oy <= 1; oy++) if ((ox !== 0 || oy !== 0) && ox * dx + oy * dy <= 0 && at(g, tx + ox, ty + oy) !== 'lake') return null; // water-side diagonals must be water
 		return land[0];
 	};
 

@@ -31,7 +31,7 @@ export const INITIAL_CHARACTER_STATS: CharacterStats = {
 	hp: 0,
 	mp: 0,
 	def: 0,
-luck: 0,
+	luck: 0,
 	critChance: 0,
 	atkSpeedIncrease: 0,
 	xpGainMultiplier: 0,
@@ -161,8 +161,7 @@ export const BIOME_YIELD = { scale: 1.3 };
 
 // Resource presentation (labels, glyphs, tooltips, merchant prices) lives in catalog/resources.ts; these are the old views of it
 const resourceKeys = Object.keys(RESOURCES) as ResourceKey[];
-const fromResources = <V>(keys: readonly string[], pick: (key: ResourceKey) => V) =>
-	Object.fromEntries(keys.map((key) => [key, pick(key as ResourceKey)]));
+const fromResources = <V>(keys: readonly string[], pick: (key: ResourceKey) => V) => Object.fromEntries(keys.map((key) => [key, pick(key as ResourceKey)]));
 
 export const RESOURCE_ICONS = fromResources(resourceKeys, (key) => RESOURCES[key].emoji) as { [K in ResourceKey]: string };
 
@@ -172,7 +171,7 @@ export const HEADER_DISPLAYED_RESOURCES_INFO = fromResources(
 	(key) => {
 		const { emoji, label, description, usedFor, source } = RESOURCES[key];
 		return { icon: emoji, label, description, usedFor, source };
-	}
+	},
 ) as { [K in Exclude<ResourceKey, 'gems' | 'embers'>]: { icon: string; label: string; description: string; usedFor: string; source: string } };
 
 // The castle's own per-second output (single source of truth: BIOMES.castle reads from it).
@@ -195,13 +194,11 @@ export const BIOMES: Record<string, BiomeInfo> = {
 		baseColor: BIOME_COLORS.castle,
 		unique: true,
 		upgradeable: true,
-		resourceGeneration: Object.fromEntries(
-			Object.entries(CASTLE_BASE_RATES).filter(([, rate]) => rate > 0)
-		),
+		resourceGeneration: Object.fromEntries(Object.entries(CASTLE_BASE_RATES).filter(([, rate]) => rate > 0)),
 		resourceIcons: [RESOURCE_ICONS.gold, RESOURCE_ICONS.xp],
 		description: 'Your castle generates resources over time',
 	},
-forest: {
+	forest: {
 		name: 'forest',
 		label: 'Forest',
 		baseColor: BIOME_COLORS.forest,
@@ -301,7 +298,6 @@ export const INITIAL_RESOURCES = amounts({ gold: 125 });
 // Meat, eggs, milk and hide come only from the farm, so they are 0 here
 export const BASE_GENERATION_RATES = amounts({ gold: 0.1, xp: 0.25 });
 
-
 // Castle range: tiles within this many steps of the castle (3x3 at radius 1) will get the castle's range bonus. `radius` is
 // also the ward and the fortress walls. From `growFromLevel` the violet area (not the ward) grows by `growPerLevel` tiles on
 // every side per level: 3x3 up to level 7, then 5x5, 7x7 and 9x9 at level 10.
@@ -344,7 +340,7 @@ export const CASTLE_UPGRADE = {
 // Resource pricing constants (gold per unit)
 export const MERCHANT_RESOURCE_PRICES = fromResources(
 	resourceKeys.filter((key) => 'merchant' in RESOURCES[key]),
-	(key) => (RESOURCES[key] as { merchant: { price: number } }).merchant.price
+	(key) => (RESOURCES[key] as { merchant: { price: number } }).merchant.price,
 ) as { [K in MerchantResourceKey]: number };
 
 // Merchant upgrades: permanent bonuses bought with gold. Level N+1 costs ceil(baseCost x costGrowth^N). Everything except Pack Rat
@@ -633,7 +629,7 @@ export const MERCHANT_RESOURCE_INFO = fromResources(
 	(key) => {
 		const { label, merchant } = RESOURCES[key] as { label: string; merchant: { description: string; pitch: string } };
 		return { label, description: merchant.description, priceDescription: merchant.pitch };
-	}
+	},
 ) as { [K in MerchantResourceKey]: { label: string; description: string; priceDescription: string } };
 
 // Buildings (any explored tile)
@@ -940,7 +936,7 @@ export const AMBIENT_LIFE = {
 		tundra: ['rabbit'],
 		lake: ['fish', 'fish', 'butterfly'],
 		coast: ['butterfly', 'bee', 'crab', 'crab'],
-} as Record<string, readonly AmbientCritterType[]>,
+	} as Record<string, readonly AmbientCritterType[]>,
 	// how far a critter strays, as a share of roamTiles (swimmers and crawlers stay close to where they appear)
 	roamScale: { fish: 0.35, frog: 0.45, crab: 0.5, goat: 0.8, wolf: 1 } as Record<string, number>,
 };

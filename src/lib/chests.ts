@@ -9,7 +9,12 @@ import { isOwnedAt, ownedRowMajor, type World } from '@/utils/world';
 // Treasure chests: where they appear and what is inside. Pure, with an injectable random(), unit-tested in chests.test.ts.
 
 // ----------------------------------------------------------------------------------------------- placement
-const SIDES4: [number, number][] = [[0, -1], [1, 0], [0, 1], [-1, 0]];
+const SIDES4: [number, number][] = [
+	[0, -1],
+	[1, 0],
+	[0, 1],
+	[-1, 0],
+];
 
 /** A tile with a building: the building stands on it, so no chest goes there. */
 const isBuilt = (t: Tile) => !!t.building;
@@ -38,12 +43,7 @@ export function chestSpots(tiles: World, taken: Set<string>, castleLevel: number
 }
 
 /** Where the next chest goes: one of `chestSpots`, picked by weight (null when the land has no room). The server does this (offline/placement.ts). */
-export function pickChestSpot(
-	tiles: World,
-	taken: Set<string>,
-	castleLevel: number,
-	random: () => number = Math.random
-): { x: number; y: number } | null {
+export function pickChestSpot(tiles: World, taken: Set<string>, castleLevel: number, random: () => number = Math.random): { x: number; y: number } | null {
 	const spots = chestSpots(tiles, taken, castleLevel);
 	if (spots.length === 0) return null;
 	let r = random() * spots.reduce((s, p) => s + p.w, 0);
@@ -105,9 +105,7 @@ export function rollChestLoot(ctx: ChestContext, random: () => number = Math.ran
 	const goldLoot = (multiplier: number): ChestLoot => {
 		const minutes = between(random, [CHEST.minMinutes, CHEST.maxMinutes]);
 		const gold = Math.floor(ctx.rates.gold * minutes * 60 * luck * multiplier * (1 + (ctx.goldFind ?? 0) / 100));
-		return multiplier > 1
-			? { kind: 'boost', gold, minutes, goldRate: ctx.rates.gold, multiplier }
-			: { kind: 'gold', gold, minutes, goldRate: ctx.rates.gold };
+		return multiplier > 1 ? { kind: 'boost', gold, minutes, goldRate: ctx.rates.gold, multiplier } : { kind: 'gold', gold, minutes, goldRate: ctx.rates.gold };
 	};
 
 	if (kind === 'boost') return goldLoot(CHEST.boostMultiplier);

@@ -26,18 +26,13 @@ let nextId = 1;
 const between = (rng: () => number, a: number, b: number) => a + rng() * (b - a);
 
 /** Pause before the next critter appears. */
-export const nextSpawnDelay = (rng: () => number = Math.random) =>
-	between(rng, AMBIENT_LIFE.spawnMinMs, AMBIENT_LIFE.spawnMaxMs);
+export const nextSpawnDelay = (rng: () => number = Math.random) => between(rng, AMBIENT_LIFE.spawnMinMs, AMBIENT_LIFE.spawnMaxMs);
 
 /**
  * Picks a random owned tile in view (the castle excluded) and a critter that likes its biome (or its foundation biome).
  * Returns null when nothing in view can host one. Pure apart from the id counter, so it is easy to test.
  */
-export const pickAmbientCritter = (
-	tiles: World,
-	view: Viewport,
-	rng: () => number = Math.random
-): AmbientCritter | null => {
+export const pickAmbientCritter = (tiles: World, view: Viewport, rng: () => number = Math.random): AmbientCritter | null => {
 	const candidates: { x: number; y: number; types: readonly AmbientType[] }[] = [];
 	const bounds = ownedBounds(tiles);
 	if (!bounds) return null;
@@ -53,7 +48,18 @@ export const pickAmbientCritter = (
 			const biome = tile.biome;
 			let types = AMBIENT_LIFE.byBiome[biome];
 			// fish need open water: not on a lake tile that touches the shore
-			if (types && biome === 'lake' && !([[0, -1], [1, 0], [0, 1], [-1, 0]] as const).every(([dx, dy]) => getTile(tiles, x + dx, y + dy)?.biome === 'lake')) {
+			if (
+				types &&
+				biome === 'lake' &&
+				!(
+					[
+						[0, -1],
+						[1, 0],
+						[0, 1],
+						[-1, 0],
+					] as const
+				).every(([dx, dy]) => getTile(tiles, x + dx, y + dy)?.biome === 'lake')
+			) {
 				types = types.filter((t) => t !== 'fish');
 			}
 			if (types?.length) candidates.push({ x, y, types });

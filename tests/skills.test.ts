@@ -23,7 +23,8 @@ test('the two skills: Heal unlocks at level 5, Stun at level 10 with a 10 s stun
 	assert.equal(SKILLS.stun.cooldownSec, 30);
 	assert.equal(SKILLS.stun.fightOnly, true);
 	assert.ok(SKILLS.heal.cooldownSec < SKILLS.stun.cooldownSec);
-	for (const id of SKILL_IDS) assert.ok(SKILLS[id].manaCost > 0 && SKILLS[id].manaCost <= maxMana(character(), {}), `${id} is castable with the starting mana pool`);
+	for (const id of SKILL_IDS)
+		assert.ok(SKILLS[id].manaCost > 0 && SKILLS[id].manaCost <= maxMana(character(), {}), `${id} is castable with the starting mana pool`);
 	assert.ok(skillDescription(SKILLS.stun).includes('10 s'), 'tooltips are built from the numbers');
 	assert.ok(skillDescription(SKILLS.heal).includes('25%'));
 	assert.equal(isSkillId('heal'), true);

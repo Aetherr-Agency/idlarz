@@ -45,7 +45,8 @@ const CollapsibleSection: React.FC<{
 					type='button'
 					onClick={toggle}
 					aria-expanded={open}
-					className={`flex w-full cursor-pointer items-center justify-between gap-3 text-left ${compact ? 'py-1' : 'uppercase'}`}>
+					className={`flex w-full cursor-pointer items-center justify-between gap-3 text-left ${compact ? 'py-1' : 'uppercase'}`}
+				>
 					<span>{title}</span>
 					<span className='flex items-center gap-2'>
 						{summary !== undefined && <span className='normal-case'>{summary}</span>}

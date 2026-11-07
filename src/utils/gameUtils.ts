@@ -33,34 +33,14 @@ import {
 	TILE_RESOURCE_COST,
 	type EmberUpgradeId,
 } from '@/config/gameConfig';
-import {
-	Animal,
-	BiomeType,
-	CharacterStats,
-	GameState,
-	ResourceRates,
-	PrestigeState,
-	Resources,
-	Tile,
-	TileCost,
-} from '@/types/game';
+import { Animal, BiomeType, CharacterStats, GameState, ResourceRates, PrestigeState, Resources, Tile, TileCost } from '@/types/game';
 import { STAT_CATEGORIES, type StatCategory } from '@/catalog/stats';
 import { castleAreaBonus, castleRangeRadius, inCastleRange } from '@/lib/castleWard';
 import type { CombatBonus } from '@/lib/combat';
 import { STAT_RULES } from '@/config/combatConfig';
 import { atkSpeedPercent, magicDamagePercent, physicalDamagePercent, statArmor, statMaxMana } from '@/lib/statBonuses';
 import { RING, generateStartRing } from '@/utils/biomeRules';
-import {
-	EMPTY_WORLD,
-	biomeCount,
-	buildingCount,
-	forEachOwned,
-	getTile,
-	ownedCount,
-	setTiles,
-	type Placed,
-	type World,
-} from '@/utils/world';
+import { EMPTY_WORLD, biomeCount, buildingCount, forEachOwned, getTile, ownedCount, setTiles, type Placed, type World } from '@/utils/world';
 import { isLandmarkTile } from '@/utils/terrain';
 
 /** Number of owned tiles on the map (kept up to date by the world, so this is O(1)). */
@@ -76,9 +56,7 @@ const R = STAT_RULES;
 /** "+2.5% Stone & Coal production per point / +0.2% XP production per point / +0.2% XP gained per point" */
 const resourceEffect = (stat: keyof typeof CHARACTER_STAT_CONFIG.resourceTargets): string => {
 	const cfg = CHARACTER_STAT_CONFIG;
-	const parts = [
-		`+${+(cfg.resourceModifierPerPoint * 100).toFixed(2)}% ${cfg.resourceTargets[stat].map(titleCase).join(' & ')} production per point`,
-	];
+	const parts = [`+${+(cfg.resourceModifierPerPoint * 100).toFixed(2)}% ${cfg.resourceTargets[stat].map(titleCase).join(' & ')} production per point`];
 	if (stat === 'intelligence' || stat === 'charisma') {
 		parts.push(`+${+(cfg.xpModifierPerPoint[stat] * 100).toFixed(2)}% XP production per point`);
 		parts.push(`+${cfg.xpGainPercentPerPoint[stat]}% XP gained per point`);
@@ -91,13 +69,8 @@ const resourceEffect = (stat: keyof typeof CHARACTER_STAT_CONFIG.resourceTargets
  * @param stat The character stat key
  * @returns Description of what the stat does
  */
-export const getStatDescription = (
-	stat: keyof Omit<CharacterStats, 'availablePoints'>
-): string => {
-	const descriptions: Record<
-		keyof Omit<CharacterStats, 'availablePoints'>,
-		string
-	> = {
+export const getStatDescription = (stat: keyof Omit<CharacterStats, 'availablePoints'>): string => {
+	const descriptions: Record<keyof Omit<CharacterStats, 'availablePoints'>, string> = {
 		// Resource, XP and discount effects come from CHARACTER_STAT_CONFIG (the same constants the maths uses)
 		// Every number below is read from STAT_RULES / CHARACTER_STAT_CONFIG: the text cannot drift from the maths. Combat bonuses count points above 5.
 		strength: `${resourceEffect('strength')} / +${R.physicalDamagePerStrength}% damage with physical weapons per point above ${R.base} / +${R.armorPerStrength} DEF per point above ${R.base} / +${R.critDamagePerPoint.strength}% Crit DMG per point above ${R.base}`,
@@ -112,12 +85,9 @@ export const getStatDescription = (
 		mp: 'Mana. Skills like Heal and Stun spend it; it refills over time. Grows with Intelligence and magic gear.',
 		def: 'Defense from your attributes, added to your gear armor: it cuts the damage monsters deal.',
 		luck: 'Influences random events and rare item finds.',
-		critChance:
-			'Percentage chance to land a critical hit for increased damage.',
-		atkSpeedIncrease:
-			'Percentage increase to attack speed. Clicks do not use it yet: it is the base for the speed-based combat.',
-		xpGainMultiplier:
-			'Percentage increase to experience points gained from all sources.',
+		critChance: 'Percentage chance to land a critical hit for increased damage.',
+		atkSpeedIncrease: 'Percentage increase to attack speed. Clicks do not use it yet: it is the base for the speed-based combat.',
+		xpGainMultiplier: 'Percentage increase to experience points gained from all sources.',
 		tileCostDiscount: 'Percentage discount when purchasing new tiles.',
 	};
 
@@ -138,7 +108,7 @@ export const getStatDescriptionGroups = (stat: keyof Omit<CharacterStats, 'avail
 		.split(' / ')
 		.map((line) => line.trim());
 	return STAT_CATEGORIES.map((category) => ({ category, lines: lines.filter((line) => descriptionCategory(line) === category.id) })).filter(
-		(group) => group.lines.length > 0
+		(group) => group.lines.length > 0,
 	);
 };
 
@@ -242,9 +212,7 @@ export const cumulativeXp = (level: number): number => {
 /**
  * Level from total XP: each level needs more than the one before (see `xpToNextLevel`), up to MAX_LEVEL, where the bar is full.
  */
-export const calculateLevel = (
-	xp: number
-): { level: number; progress: number } => {
+export const calculateLevel = (xp: number): { level: number; progress: number } => {
 	let level = 1;
 	let remainingXp = Number.isFinite(xp) ? Math.max(0, Math.min(xp, XP_CAP)) : XP_CAP;
 	let step = xpToNextLevel(level);
@@ -258,12 +226,7 @@ export const calculateLevel = (
 	return { level, progress: step > 0 ? remainingXp / step : 0 };
 };
 
-const countAdjacentSameBiomes = (
-	tiles: GameState['tiles'],
-	x: number,
-	y: number,
-	biome: BiomeType
-): number =>
+const countAdjacentSameBiomes = (tiles: GameState['tiles'], x: number, y: number, biome: BiomeType): number =>
 	(getTile(tiles, x - 1, y)?.biome === biome ? 1 : 0) +
 	(getTile(tiles, x + 1, y)?.biome === biome ? 1 : 0) +
 	(getTile(tiles, x, y - 1)?.biome === biome ? 1 : 0) +
@@ -302,9 +265,7 @@ export const createInitialWorld = (random: () => number = Math.random): World =>
 
 // Resource Management
 // Calculate stat-based resource modifiers
-export const calculateStatResourceModifiers = (
-	stats: CharacterStats
-): Resources => {
+export const calculateStatResourceModifiers = (stats: CharacterStats): Resources => {
 	const modifiers: Resources = {
 		gold: 0,
 		wood: 0,
@@ -340,8 +301,7 @@ export const farmUpgradeLevel = (upgrades: FarmUpgrades | undefined, id: FarmUpg
 	Math.max(0, Math.min(FARM_UPGRADES[id].maxLevel, Math.floor(upgrades?.[id] ?? 0)));
 
 /** Animals of one kind the pen holds (the base cap plus Pen Expansion). A save with more is never trimmed. */
-export const farmCap = (upgrades: FarmUpgrades | undefined): number =>
-	FARM.baseCap + farmUpgradeLevel(upgrades, 'pen') * FARM_PEN.capPerLevel;
+export const farmCap = (upgrades: FarmUpgrades | undefined): number => FARM.baseCap + farmUpgradeLevel(upgrades, 'pen') * FARM_PEN.capPerLevel;
 
 /** Cost of the next level of a farm upgrade, given its current level (one entry per resource). */
 export const farmUpgradeCost = (id: FarmUpgradeId, level: number): Partial<Resources> => {
@@ -371,8 +331,7 @@ export const animalOutput = (animal: Animal, count: number, upgrades?: FarmUpgra
 };
 
 // Meat/s of `level` animals of one kind (every purchase adds one more animal)
-export const calculateAnimalProduction = (animal: Animal, level: number, upgrades?: FarmUpgrades): number =>
-	animalOutput(animal, level, upgrades).meat;
+export const calculateAnimalProduction = (animal: Animal, level: number, upgrades?: FarmUpgrades): number => animalOutput(animal, level, upgrades).meat;
 
 export const calculateFarmOutput = (farmLevels: Record<string, number>, upgrades?: FarmUpgrades): FarmOutput => {
 	const total = emptyOutput();
@@ -407,23 +366,19 @@ export const affordableAnimals = (animal: Animal, owned: number, food: number, c
 export const farmHasPurchase = (
 	resources: Pick<Resources, 'food' | 'wood' | 'stone' | 'coal' | 'meat' | 'eggs' | 'milk' | 'hide' | 'gold'>,
 	farmLevels: Record<string, number>,
-	farmUpgrades: FarmUpgrades | undefined
+	farmUpgrades: FarmUpgrades | undefined,
 ): boolean => {
 	const cap = farmCap(farmUpgrades);
 	if (ANIMALS.some((a) => affordableAnimals(a, farmLevels[a.id] || 0, resources.food, cap, 1) > 0)) return true;
 	return (Object.keys(FARM_UPGRADES) as FarmUpgradeId[]).some((id) => {
 		const level = farmUpgradeLevel(farmUpgrades, id);
 		if (level >= FARM_UPGRADES[id].maxLevel) return false;
-		return Object.entries(farmUpgradeCost(id, level)).every(
-			([resource, price]) => (resources[resource as keyof typeof resources] ?? 0) >= (price ?? 0)
-		);
+		return Object.entries(farmUpgradeCost(id, level)).every(([resource, price]) => (resources[resource as keyof typeof resources] ?? 0) >= (price ?? 0));
 	});
 };
 
 // Calculate combat stats from base stats
-export const calculateCombatStats = (
-	stats: CharacterStats
-): Partial<CharacterStats> => {
+export const calculateCombatStats = (stats: CharacterStats): Partial<CharacterStats> => {
 	return {
 		// the combat ones come from lib/statBonuses.ts (the same functions the fight uses); bonuses count points above 5
 		physicalAtk: physicalDamagePercent(stats),
@@ -435,12 +390,8 @@ export const calculateCombatStats = (
 		critChance: stats.dexterity * 0.25 + stats.charisma * 0.5, // +0.25% per dex, +0.5% per cha
 		atkSpeedIncrease: atkSpeedPercent(stats),
 		xpGainMultiplier:
-			stats.intelligence * CHARACTER_STAT_CONFIG.xpGainPercentPerPoint.intelligence +
-			stats.charisma * CHARACTER_STAT_CONFIG.xpGainPercentPerPoint.charisma,
-		tileCostDiscount: Math.min(
-			stats.charisma * CHARACTER_STAT_CONFIG.tileDiscountPercentPerCharisma,
-			CHARACTER_STAT_CONFIG.tileDiscountCapPercent
-		),
+			stats.intelligence * CHARACTER_STAT_CONFIG.xpGainPercentPerPoint.intelligence + stats.charisma * CHARACTER_STAT_CONFIG.xpGainPercentPerPoint.charisma,
+		tileCostDiscount: Math.min(stats.charisma * CHARACTER_STAT_CONFIG.tileDiscountPercentPerCharisma, CHARACTER_STAT_CONFIG.tileDiscountCapPercent),
 	};
 };
 
@@ -530,7 +481,7 @@ export const calculateResourceBreakdown = (
 	farmUpgrades?: FarmUpgrades,
 	merchantUpgrades?: MerchantUpgrades,
 	/** The worn gear's Income % (set bonuses; `gearIncomePct` in lib/gearEconomy.ts) */
-	gearIncomePct = 0
+	gearIncomePct = 0,
 ): ResourceBreakdown => {
 	const base: Resources = { ...BASE_GENERATION_RATES };
 	const start: Resources = { ...BASE_GENERATION_RATES };
@@ -560,7 +511,7 @@ export const calculateResourceBreakdown = (
 		const b = biomeSlot.get(tile.biome);
 		if (b === undefined) return;
 		const adjacent = countAdjacentSameBiomes(tiles, x, y, tile.biome);
-		const bld = tile.building ? buildingSlot.get(tile.building) ?? 0 : 0;
+		const bld = tile.building ? (buildingSlot.get(tile.building) ?? 0) : 0;
 		groups[(b * 5 + adjacent) * buildingNames.length + bld]++;
 	});
 	for (let b = 0; b < biomeNames.length; b++) {
@@ -671,7 +622,7 @@ export const calculateResourceRates = (
 	prestige?: PrestigeState,
 	farmUpgrades?: FarmUpgrades,
 	merchantUpgrades?: MerchantUpgrades,
-	gearIncomePct = 0
+	gearIncomePct = 0,
 ): ResourceRates => {
 	const breakdown = calculateResourceBreakdown(tiles, characterStats, farmLevels, prestige, farmUpgrades, merchantUpgrades, gearIncomePct);
 	const base = zeroResources();
@@ -689,10 +640,7 @@ export const calculateResourceRates = (
 // Costs
 
 /** Everything buying the next tile costs, given how many tiles are owned and the Charisma discount (percent). */
-export const calculateTileCost = (
-	ownedTiles: number,
-	discountPercent = 0
-): TileCost => {
+export const calculateTileCost = (ownedTiles: number, discountPercent = 0): TileCost => {
 	const keep = 1 - discountPercent / 100;
 	const base = SCALING_CONFIG.costFormula(ownedTiles);
 	const resources: Partial<Resources> = {};
@@ -708,19 +656,11 @@ export const tileCostAsResources = (cost: TileCost): Partial<Resources> => ({
 	gold: cost.gold,
 });
 
-export const canAffordBundle = (
-	resources: Resources,
-	cost: Partial<Resources>
-): boolean =>
-	Object.entries(cost).every(
-		([resource, amount]) => resources[resource as keyof Resources] >= (amount || 0)
-	);
+export const canAffordBundle = (resources: Resources, cost: Partial<Resources>): boolean =>
+	Object.entries(cost).every(([resource, amount]) => resources[resource as keyof Resources] >= (amount || 0));
 
 /** Returns a copy of `resources` with `cost` subtracted (callers check affordability first). */
-export const subtractBundle = (
-	resources: Resources,
-	cost: Partial<Resources>
-): Resources => {
+export const subtractBundle = (resources: Resources, cost: Partial<Resources>): Resources => {
 	const next = { ...resources };
 	Object.entries(cost).forEach(([resource, amount]) => {
 		next[resource as keyof Resources] -= amount || 0;
@@ -743,10 +683,7 @@ export const buildingCostFactor = (built: number): number => {
 };
 
 /** Cost of the next building: base cost x the factor for the number of buildings already built. */
-export const calculateBuildingCost = (
-	tiles: World,
-	prestige?: PrestigeState
-): Partial<Resources> => {
+export const calculateBuildingCost = (tiles: World, prestige?: PrestigeState): Partial<Resources> => {
 	const factor = buildingCostFactor(countBuildings(tiles)) * (1 - emberEffect(prestige, 'thrift'));
 	const cost: Partial<Resources> = {};
 	Object.entries(BUILDING_COST.base).forEach(([resource, amount]) => {
@@ -757,8 +694,7 @@ export const calculateBuildingCost = (
 };
 
 /** An explored tile that can take a building: not water or the castle, and nothing built on it yet. */
-export const canBuildOn = (tile: Tile | undefined): boolean =>
-	!!tile && tile.isOwned && !BUILDING_COST.blockedBiomes.includes(tile.biome) && !tile.building;
+export const canBuildOn = (tile: Tile | undefined): boolean => !!tile && tile.isOwned && !BUILDING_COST.blockedBiomes.includes(tile.biome) && !tile.building;
 
 /** canBuildOn plus the map: a landmark's 6x6 area (a big cosmetic scene on a block of one biome) is kept free of buildings. */
 export const canBuildAt = (world: World, x: number, y: number): boolean => canBuildOn(getTile(world, x, y)) && !isLandmarkTile(world, x, y);
@@ -786,12 +722,10 @@ export const castleUpgradeDuration = (fromLevel: number, prestige?: PrestigeStat
 
 export const EMPTY_PRESTIGE: PrestigeState = { rebirths: 0, legacyPoints: 0, legacyEarned: 0, upgrades: {} };
 
-const emberLevel = (prestige: PrestigeState | undefined, id: EmberUpgradeId): number =>
-	prestige?.upgrades?.[id] ?? 0;
+const emberLevel = (prestige: PrestigeState | undefined, id: EmberUpgradeId): number => prestige?.upgrades?.[id] ?? 0;
 
 /** Effect of a shop upgrade as a fraction (or, for Provisions, as a number of starting bundles). */
-export const emberEffect = (prestige: PrestigeState | undefined, id: EmberUpgradeId): number =>
-	emberLevel(prestige, id) * EMBER_UPGRADES[id].effectPerLevel;
+export const emberEffect = (prestige: PrestigeState | undefined, id: EmberUpgradeId): number => emberLevel(prestige, id) * EMBER_UPGRADES[id].effectPerLevel;
 
 /** Cost in Embers of buying the next level of an upgrade, given its current level. */
 export const emberUpgradeCost = (id: EmberUpgradeId, currentLevel: number): number =>
@@ -815,12 +749,8 @@ export const emberIncomeMultiplier = (prestige: PrestigeState | undefined): numb
 export const effectiveTileDiscount = (
 	stats: Pick<CharacterStats, 'tileCostDiscount'>,
 	prestige: PrestigeState | undefined,
-	merchant?: MerchantUpgrades
-): number =>
-	Math.min(
-		stats.tileCostDiscount + emberEffect(prestige, 'thrift') * 100 + merchantEffect(merchant, 'bulk'),
-		REBIRTH.discountCapPercent
-	);
+	merchant?: MerchantUpgrades,
+): number => Math.min(stats.tileCostDiscount + emberEffect(prestige, 'thrift') * 100 + merchantEffect(merchant, 'bulk'), REBIRTH.discountCapPercent);
 
 // Merchant upgrades
 export type MerchantUpgrades = Partial<Record<string, number>>;
@@ -911,11 +841,9 @@ interface RebirthStatus {
  * Can the player rebirth, and if not what is missing. The header button, the rebirth window and the store's `rebirth`
  * all read this one function, so what the tooltip promises is what the action checks.
  */
-export const rebirthStatus = (
-	state: Pick<GameState, 'tiles' | 'freeTiles' | 'castleUpgrade' | 'merchantUpgrades' | 'prestige'>
-): RebirthStatus => {
+export const rebirthStatus = (state: Pick<GameState, 'tiles' | 'freeTiles' | 'castleUpgrade' | 'merchantUpgrades' | 'prestige'>): RebirthStatus => {
 	const castleTile = getTile(state.tiles, CASTLE_X, CASTLE_Y);
-	const castleLevel = castleTile && castleTile.biome === 'castle' ? castleTile.level ?? 1 : 0; // 0: no castle (lost)
+	const castleLevel = castleTile && castleTile.biome === 'castle' ? (castleTile.level ?? 1) : 0; // 0: no castle (lost)
 	const ownedTiles = economyTiles(state.tiles, state.freeTiles);
 	const tilesNeeded = REBIRTH.tilesNeeded(state.prestige.rebirths);
 	const gain = emberGain(castleLevel, ownedTiles, state.merchantUpgrades, state.prestige.rebirths);

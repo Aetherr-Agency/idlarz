@@ -18,7 +18,7 @@ export const KEY = /^[A-Za-z0-9_-]{8,64}$/;
 export const onlineRoute = async <Body>(
 	request: Request,
 	parse: (body: Record<string, unknown>) => Body | null,
-	run: (deps: ServiceDeps, userId: string, body: Body, nowMs: number) => Promise<Online<unknown>>
+	run: (deps: ServiceDeps, userId: string, body: Body, nowMs: number) => Promise<Online<unknown>>,
 ): Promise<Response> => {
 	try {
 		const player = await requirePlayer();

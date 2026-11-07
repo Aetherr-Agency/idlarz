@@ -66,8 +66,7 @@ test('the farm dot lights for an affordable animal and not before', () => {
 	assert.equal(farmHasPurchase(res({ food: cheapest - 1 }), {}, {}), false);
 });
 
-const maxedUpgrades = () =>
-	Object.fromEntries((Object.keys(FARM_UPGRADES) as FarmUpgradeId[]).map((k) => [k, FARM_UPGRADES[k].maxLevel]));
+const maxedUpgrades = () => Object.fromEntries((Object.keys(FARM_UPGRADES) as FarmUpgradeId[]).map((k) => [k, FARM_UPGRADES[k].maxLevel]));
 
 test('a kind at the pen cap no longer lights the dot', () => {
 	const upgrades = maxedUpgrades(); // nothing left to upgrade, so only animals can light it

@@ -120,8 +120,8 @@
 
 /* lit while its card in the animal shop is hovered: one-native-pixel gold outline + a gold ring on the ground */
 .farm-animal[data-selected='true'] .farm-sprite img {
-	filter: drop-shadow(2px 0 0 #ffd23a) drop-shadow(-2px 0 0 #ffd23a) drop-shadow(0 2px 0 #ffd23a)
-		drop-shadow(0 -2px 0 #ffd23a) drop-shadow(0 0 10px rgba(255, 200, 60, 0.95)) brightness(1.08);
+	filter: drop-shadow(2px 0 0 #ffd23a) drop-shadow(-2px 0 0 #ffd23a) drop-shadow(0 2px 0 #ffd23a) drop-shadow(0 -2px 0 #ffd23a)
+		drop-shadow(0 0 10px rgba(255, 200, 60, 0.95)) brightness(1.08);
 }
 
 .farm-animal[data-selected='true'] .farm-shadow {
@@ -166,12 +166,30 @@
 	animation: farm-spark 0.9s steps(9) both;
 }
 
-.farm-burst i:nth-child(1) { --x: -34px; --y: -34px; }
-.farm-burst i:nth-child(2) { --x: 0px; --y: -48px; }
-.farm-burst i:nth-child(3) { --x: 34px; --y: -34px; }
-.farm-burst i:nth-child(4) { --x: -44px; --y: -6px; }
-.farm-burst i:nth-child(5) { --x: 44px; --y: -6px; }
-.farm-burst i:nth-child(6) { --x: 0px; --y: -22px; }
+.farm-burst i:nth-child(1) {
+	--x: -34px;
+	--y: -34px;
+}
+.farm-burst i:nth-child(2) {
+	--x: 0px;
+	--y: -48px;
+}
+.farm-burst i:nth-child(3) {
+	--x: 34px;
+	--y: -34px;
+}
+.farm-burst i:nth-child(4) {
+	--x: -44px;
+	--y: -6px;
+}
+.farm-burst i:nth-child(5) {
+	--x: 44px;
+	--y: -6px;
+}
+.farm-burst i:nth-child(6) {
+	--x: 0px;
+	--y: -22px;
+}
 
 @keyframes farm-spark {
 	0% {
@@ -301,7 +319,9 @@
 	text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
 	background: #3f8f2e;
 	border: 2px solid var(--px-ink);
-	box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.3), inset -2px -2px 0 rgba(0, 0, 0, 0.4);
+	box-shadow:
+		inset 2px 2px 0 rgba(255, 255, 255, 0.3),
+		inset -2px -2px 0 rgba(0, 0, 0, 0.4);
 	cursor: pointer;
 	transition: filter 0.1s;
 }
@@ -317,7 +337,9 @@
 .farm-buy:disabled {
 	color: #b9a77f;
 	background: #2e2824;
-	box-shadow: inset 2px 2px 0 rgba(255, 255, 255, 0.08), inset -2px -2px 0 rgba(0, 0, 0, 0.45);
+	box-shadow:
+		inset 2px 2px 0 rgba(255, 255, 255, 0.08),
+		inset -2px -2px 0 rgba(0, 0, 0, 0.45);
 	cursor: not-allowed;
 }
 

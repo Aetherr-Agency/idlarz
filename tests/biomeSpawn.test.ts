@@ -11,7 +11,7 @@ import { growWorld, loneTileStats, saddleCount } from '../src/utils/growWorld';
 const tile = (biome: BiomeType, isOwned = true): Tile => ({ biome, isOwned });
 const empty = (): Tile[][] => Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => tile('empty', false)));
 /** A 5x5 map with the given owned tiles around the centre (2,2): rows of letters, '.' = not owned. */
-const L: Record<string, BiomeType> = { P: 'plains', F: 'forest', H: 'hills', S: 'swamp', T: 'tundra',B: 'coast', L: 'lake', C: 'castle' };
+const L: Record<string, BiomeType> = { P: 'plains', F: 'forest', H: 'hills', S: 'swamp', T: 'tundra', B: 'coast', L: 'lake', C: 'castle' };
 const map = (rows: string[]): Tile[][] => rows.map((r) => [...r].map((c) => (c === '.' ? tile('empty', false) : tile(L[c]))));
 
 /** Deterministic sweep of the random range. */
@@ -160,7 +160,10 @@ test('start ring: four tiles, only plains and forest, at least minPlains plains,
 	for (let i = 0; i < 300; i++) {
 		const ring = generateStartRing(seqRandom(i));
 		assert.equal(ring.length, 4);
-		assert.ok(ring.every((b) => b === 'plains' || b === 'forest'), 'no hills or lakes touch the castle');
+		assert.ok(
+			ring.every((b) => b === 'plains' || b === 'forest'),
+			'no hills or lakes touch the castle',
+		);
 		assert.ok(ring.filter((b) => b === 'plains').length >= BIOME_RULES.startRing.minPlains);
 		for (const b of new Set(ring)) {
 			assert.ok(b in BIOME_RULES.startRing.weights, `${b} is a basic biome`);
@@ -175,7 +178,12 @@ test('start ring: four tiles, only plains and forest, at least minPlains plains,
 test('a new map owns the castle and the tiles north, east, south and west of it; the economy still sees a castle-only start', () => {
 	const g = createInitialWorld(seqRandom(7));
 	assert.equal(countOwnedTiles(g), 5);
-	assert.deepEqual(RING, [[0, -1], [1, 0], [0, 1], [-1, 0]]);
+	assert.deepEqual(RING, [
+		[0, -1],
+		[1, 0],
+		[0, 1],
+		[-1, 0],
+	]);
 	assert.equal(tileAt(g, CASTLE_X, CASTLE_Y).biome, 'castle');
 	RING.forEach(([dx, dy]) => {
 		const t = tileAt(g, CASTLE_X + dx, CASTLE_Y + dy);

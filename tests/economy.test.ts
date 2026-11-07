@@ -128,7 +128,7 @@ test('buyTile: only adjacent, unowned, affordable tiles; pick-a-biome flow is gu
 	assert.ok(api().resources.gold < gold, 'the purchase is charged at once');
 	assert.equal(owned(), 4);
 	assert.ok(tileAt(api().tiles, spot[0], spot[1]).isOwned);
-	assert.notEqual(tileAt(api().tiles, spot[0], spot[1]).biome, 'grounds','the removed Grounds biome never turns up: buildings go on any tile');
+	assert.notEqual(tileAt(api().tiles, spot[0], spot[1]).biome, 'grounds', 'the removed Grounds biome never turns up: buildings go on any tile');
 });
 
 test('tile cost: extra resources are required from the configured tile count and are paid', () => {
@@ -163,7 +163,8 @@ test('tile cost: gold stays the biggest part, wood, stone and coal are a real sh
 	assert.ok((calculateTileCost(30, 0).resources.coal ?? 0) > 0);
 	const kept = calculateTileCost(150, 50).resources;
 	const full = calculateTileCost(150, 0).resources;
-	for (const key of Object.keys(full) as (keyof typeof full)[]) assert.ok((kept[key] ?? 0) <= (full[key] ?? 0) / 2 + 1, `${key} gets the Charisma discount too`);
+	for (const key of Object.keys(full) as (keyof typeof full)[])
+		assert.ok((kept[key] ?? 0) <= (full[key] ?? 0) / 2 + 1, `${key} gets the Charisma discount too`);
 });
 
 test('castle: needs the resources, only one upgrade at a time, takes real tick time, then levels up', () => {
@@ -281,10 +282,11 @@ test('buyCost: what the Resources tab shows is what buyResource charges (twice t
 	}
 });
 
-test('the owner\'s save (185 tiles, 17 % discount, the income of the Character window): gold is the slowest part of the next tile, every material takes at most 60 % of its time', () => {
+test("the owner's save (185 tiles, 17 % discount, the income of the Character window): gold is the slowest part of the next tile, every material takes at most 60 % of its time", () => {
 	const income = { gold: 75.96, wood: 66.34, stone: 50.07, coal: 70.69, food: 84.74, hide: 4.46 * 2 }; // hide: that save's income with the doubled animal output
 	const cost = calculateTileCost(185, 17);
 	const need: Record<string, number> = { gold: cost.gold, ...(cost.resources as Record<string, number>) };
 	const wait = (r: keyof typeof income) => need[r] / income[r];
-	for (const r of ['wood', 'stone', 'coal', 'food', 'hide'] as const) assert.ok(wait(r) <= 0.6 * wait('gold'), `${r}: ${(wait(r) / 60).toFixed(1)} min against ${(wait('gold') / 60).toFixed(1)} min of gold`);
+	for (const r of ['wood', 'stone', 'coal', 'food', 'hide'] as const)
+		assert.ok(wait(r) <= 0.6 * wait('gold'), `${r}: ${(wait(r) / 60).toFixed(1)} min against ${(wait('gold') / 60).toFixed(1)} min of gold`);
 });

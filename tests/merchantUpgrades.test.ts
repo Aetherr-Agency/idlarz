@@ -1,7 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, growTo, rawSnapshot, store } from './helpers';
-import { ANIMALS, CASTLE_X, CASTLE_Y, INITIAL_CHARACTER_STATS, MERCHANT_UPGRADES, MERCHANT_UPGRADE_GROUPS, REBIRTH, type MerchantUpgradeId } from '../src/config/gameConfig';
+import {
+	ANIMALS,
+	CASTLE_X,
+	CASTLE_Y,
+	INITIAL_CHARACTER_STATS,
+	MERCHANT_UPGRADES,
+	MERCHANT_UPGRADE_GROUPS,
+	REBIRTH,
+	type MerchantUpgradeId,
+} from '../src/config/gameConfig';
 import { COMBAT, STAT_RULES } from '../src/config/combatConfig';
 import { STARTER_EQUIPMENT } from '../src/config/itemCatalog';
 import { effectiveStats } from '../src/lib/effectiveStats';
@@ -10,14 +19,7 @@ import { plainItem } from '../src/lib/itemInstance';
 import { shelfCells } from '../src/lib/merchant';
 import { playerProfile } from '../src/lib/offline/profile';
 import { sanitizeSave } from '../src/lib/sanitizeSave';
-import {
-	calculateCombatStats,
-	calculateResourceRates,
-	emberGain,
-	merchantCombat,
-	merchantIncomeMultiplier,
-	merchantUpgradeCost,
-} from '../src/utils/gameUtils';
+import { calculateCombatStats, calculateResourceRates, emberGain, merchantCombat, merchantIncomeMultiplier, merchantUpgradeCost } from '../src/utils/gameUtils';
 import { patchTile } from '../src/utils/world';
 import type { CharacterStats, Equipment, MerchantStock } from '../src/types/game';
 
@@ -27,7 +29,8 @@ const ladder = (id: MerchantUpgradeId) => Array.from({ length: MERCHANT_UPGRADES
 const total = (ids: MerchantUpgradeId[]) => ids.reduce((sum, id) => sum + ladder(id).reduce((a, b) => a + b, 0), 0);
 
 const stats = (): CharacterStats => Object.assign({ ...INITIAL_CHARACTER_STATS }, calculateCombatStats(INITIAL_CHARACTER_STATS));
-const fx = (merchantUpgrades: Record<string, number>, equipment: Equipment = STARTER_EQUIPMENT) => effectiveStats({ characterStats: stats(), equipment, merchantUpgrades });
+const fx = (merchantUpgrades: Record<string, number>, equipment: Equipment = STARTER_EQUIPMENT) =>
+	effectiveStats({ characterStats: stats(), equipment, merchantUpgrades });
 
 // ---------------------------------------------------------------------------------------------------- the gold sink
 
@@ -58,14 +61,25 @@ test('gold sink: all the upgrades that start again with a rebirth cost far more 
 		spare -= cheapest.cost;
 		next[cheapest.id]++;
 	}
-	const bought = RESETTING.reduce((sum, id) => sum + ladder(id).slice(0, next[id]).reduce((a, b) => a + b, 0), 0);
+	const bought = RESETTING.reduce(
+		(sum, id) =>
+			sum +
+			ladder(id)
+				.slice(0, next[id])
+				.reduce((a, b) => a + b, 0),
+		0,
+	);
 	assert.ok(bought / all < 0.2, `a first run can pay ${((bought / all) * 100).toFixed(0)}% of the ladders`);
 	for (const id of RESETTING) assert.ok(next[id] < MERCHANT_UPGRADES[id].maxLevel, `${id} cannot be maxed in the first run`);
 });
 
 test('every upgrade has a known group, and the three groups are all used', () => {
 	for (const id of IDS) assert.ok(MERCHANT_UPGRADES[id].group in MERCHANT_UPGRADE_GROUPS, id);
-	for (const group of Object.keys(MERCHANT_UPGRADE_GROUPS)) assert.ok(IDS.some((id) => MERCHANT_UPGRADES[id].group === group), group);
+	for (const group of Object.keys(MERCHANT_UPGRADE_GROUPS))
+		assert.ok(
+			IDS.some((id) => MERCHANT_UPGRADES[id].group === group),
+			group,
+		);
 });
 
 // ---------------------------------------------------------------------------------------------------- combat effects
@@ -87,7 +101,10 @@ test('combat upgrades: no upgrade changes nothing, and each one moves exactly it
 	assert.ok(Math.abs(deadly.superCritChance - base.superCritChance - 4) < 1e-9);
 	assert.equal(deadly.critChance, base.critChance);
 
-	assert.ok(fx({ might: 8 }, { ...STARTER_EQUIPMENT, mainHand: plainItem('iron_sword') }).damage > fx({}, { ...STARTER_EQUIPMENT, mainHand: plainItem('iron_sword') }).damage);
+	assert.ok(
+		fx({ might: 8 }, { ...STARTER_EQUIPMENT, mainHand: plainItem('iron_sword') }).damage >
+			fx({}, { ...STARTER_EQUIPMENT, mainHand: plainItem('iron_sword') }).damage,
+	);
 
 	const fang = fx({ fang: 6 });
 	assert.ok(Math.abs(fang.lifeLeech - base.lifeLeech - 3) < 1e-9, '0.5 % per level');
@@ -121,8 +138,13 @@ test('combat upgrades never break the caps: crit, super crit and life leech', ()
 	assert.equal(attacksPerSecond(STARTER_EQUIPMENT, stats(), NO_COMBAT_BONUS), attacksPerSecond(STARTER_EQUIPMENT, stats()), 'no bonus, no change');
 });
 
-test('the server\'s fights use the upgrades of the last accepted save', () => {
-	const core = (merchantUpgrades?: Record<string, number>) => ({ equipment: STARTER_EQUIPMENT, characterStats: { ...stats() }, level: { level: 5, progress: 0 }, merchantUpgrades });
+test("the server's fights use the upgrades of the last accepted save", () => {
+	const core = (merchantUpgrades?: Record<string, number>) => ({
+		equipment: STARTER_EQUIPMENT,
+		characterStats: { ...stats() },
+		level: { level: 5, progress: 0 },
+		merchantUpgrades,
+	});
 	const none = playerProfile(core());
 	const some = playerProfile(core({ swift: 3, keen: 2, deadly: 1, fang: 2, wind: 4 }));
 	assert.ok(some.attacksPerSec > none.attacksPerSec);
@@ -143,12 +165,14 @@ test('Foreman raises the income of every resource but XP, Skinner only the meat 
 	growTo(30);
 	const s = api();
 	const farmLevels = Object.fromEntries(ANIMALS.map((a) => [a.id, 5]));
-	const rates = (merchantUpgrades?: Record<string, number>) => calculateResourceRates(s.tiles, s.characterStats, farmLevels, s.prestige, s.farmUpgrades, merchantUpgrades).total;
+	const rates = (merchantUpgrades?: Record<string, number>) =>
+		calculateResourceRates(s.tiles, s.characterStats, farmLevels, s.prestige, s.farmUpgrades, merchantUpgrades).total;
 	const base = rates();
 
 	const foreman = rates({ foreman: 10 });
 	assert.equal(merchantIncomeMultiplier({ foreman: 10 }), 1.1);
-	for (const key of ['gold', 'wood', 'stone', 'coal', 'food', 'meat', 'eggs', 'milk', 'hide'] as const) assert.ok(Math.abs(foreman[key] - base[key] * 1.1) < 1e-6 * Math.max(1, base[key]), key);
+	for (const key of ['gold', 'wood', 'stone', 'coal', 'food', 'meat', 'eggs', 'milk', 'hide'] as const)
+		assert.ok(Math.abs(foreman[key] - base[key] * 1.1) < 1e-6 * Math.max(1, base[key]), key);
 	assert.equal(foreman.xp, base.xp, 'XP is not an income of the merchant');
 
 	const skinner = rates({ skinner: 8 });
@@ -221,7 +245,12 @@ test('saves: a level above the maximum or an unknown upgrade is rejected, a norm
 	const ok = sanitizeSave(raw);
 	assert.equal(ok.ok, true, ok.ok ? '' : ok.reason);
 	if (ok.ok) assert.deepEqual(ok.state.merchantUpgrades, { foreman: 1, fang: 1 });
-	for (const [id, level] of [['foreman', MERCHANT_UPGRADES.foreman.maxLevel + 1], ['fang', 99], ['tithe', -1], ['bogus', 1]] as const) {
+	for (const [id, level] of [
+		['foreman', MERCHANT_UPGRADES.foreman.maxLevel + 1],
+		['fang', 99],
+		['tithe', -1],
+		['bogus', 1],
+	] as const) {
 		const bad = JSON.parse(JSON.stringify(raw));
 		bad.merchantUpgrades[id] = level;
 		assert.equal(sanitizeSave(bad).ok, false, `${id} ${level}`);
@@ -247,7 +276,11 @@ test('the shelf mixes gear and potions in a fixed order that does not jump when 
 	const after = order(shelfCells(sold, supplies));
 	const before = order(cells).filter((key, i, all) => !(key === cells.find((c) => c.kind === 'offer' && c.index === 2)!.key && all.indexOf(key) === i));
 	assert.equal(after.length, 7);
-	assert.deepEqual(after.filter((k) => k.startsWith('supply')), before.filter((k) => k.startsWith('supply')), 'the potions stay in their order');
+	assert.deepEqual(
+		after.filter((k) => k.startsWith('supply')),
+		before.filter((k) => k.startsWith('supply')),
+		'the potions stay in their order',
+	);
 
 	// a new stock is another shuffle, an empty one still shows the potions
 	assert.notDeepEqual(order(shelfCells({ ...full, at: 99999 }, supplies)), order(cells));

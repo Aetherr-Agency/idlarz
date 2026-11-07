@@ -23,8 +23,7 @@ const lot = (biome: BiomeType) => {
 	return spot;
 };
 
-const ownedLots = () =>
-	gridCells().filter(({ t }) => t.isOwned && t.biome !== 'castle');
+const ownedLots = () => gridCells().filter(({ t }) => t.isOwned && t.biome !== 'castle');
 
 test('building prices: four cheap starters, then three stages of growth, always rising', () => {
 	assert.deepEqual([0, 1, 2, 3].map(buildingCostFactor), BUILDING_COST.starter);
@@ -110,7 +109,7 @@ test('terrain: a building keeps its biome ground and gets a pad of that biome', 
 	const tiles = api().tiles;
 	const rows = rowsOf(tiles);
 	assert.equal(isBuilt(tileAt(tiles, a.x, a.y)), true);
-const pad = allPads(rows).find((p) => p.x === a.x * 48);
+	const pad = allPads(rows).find((p) => p.x === a.x * 48);
 	assert.ok(pad && pad.id.startsWith('pad_hills_'), pad?.id);
 	assert.match(terrainKey(rows), /[A-Z]/); // built-on tiles are upper case, so the terrain is redrawn
 	assert.equal(tileAt(tiles, a.x, a.y).biome, 'hills'); // the tile keeps its biome (and so its ground)

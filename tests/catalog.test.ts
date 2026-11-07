@@ -34,7 +34,10 @@ test('every item has a unique id and a rarity that exists (named items and consu
 test('sell value at level 1 follows the rarity unless the item overrides it, and never decreases with rarity', () => {
 	for (const def of ITEMS.filter((i) => i.kind !== 'consumable')) assert.equal(def.sellValue, RARITIES[def.rarity].sellValue, def.id);
 	const values = RARITY_ORDER.map((r) => RARITIES[r].sellValue);
-	assert.deepEqual([...values].sort((a, b) => a - b), values);
+	assert.deepEqual(
+		[...values].sort((a, b) => a - b),
+		values,
+	);
 });
 
 test('every item icon is registered, exists on disk at its registered size and has a PNG', () => {
@@ -94,17 +97,25 @@ test('named items sit in pools that exist, and only the King and chests reach th
 	for (const profile of Object.values(LOOT_PROFILES)) {
 		for (const table of profile.bonusTables) assert.ok(LOOT_POOLS[table.poolId], `${profile.id}/${table.id}`);
 	}
-	const reach = (poolId: string) => Object.values(LOOT_PROFILES).filter((p) => p.bonusTables.some((t) => t.poolId === poolId)).map((p) => p.id);
+	const reach = (poolId: string) =>
+		Object.values(LOOT_PROFILES)
+			.filter((p) => p.bonusTables.some((t) => t.poolId === poolId))
+			.map((p) => p.id);
 	assert.deepEqual(reach('rattatui_set'), ['boss']);
 });
 
 test('the resource registry is the one place resources are listed', () => {
 	for (const key of Object.keys(INITIAL_RESOURCES)) assert.ok(key in RESOURCES, `${key} missing from RESOURCES`);
 	assert.deepEqual(Object.keys(RESOURCE_ICONS), Object.keys(RESOURCES));
-	assert.deepEqual(Object.keys(HEADER_DISPLAYED_RESOURCES_INFO), Object.keys(RESOURCES).filter((k) => k !== 'gems' && k !== 'embers'));
+	assert.deepEqual(
+		Object.keys(HEADER_DISPLAYED_RESOURCES_INFO),
+		Object.keys(RESOURCES).filter((k) => k !== 'gems' && k !== 'embers'),
+	);
 	assert.deepEqual(
 		Object.keys(MERCHANT_RESOURCE_PRICES),
-		Object.entries(RESOURCES).filter(([, def]) => 'merchant' in def).map(([key]) => key)
+		Object.entries(RESOURCES)
+			.filter(([, def]) => 'merchant' in def)
+			.map(([key]) => key),
 	);
 	for (const [key, def] of Object.entries(RESOURCES)) {
 		assert.ok(def.label && def.description && def.usedFor && def.source && def.color, key);

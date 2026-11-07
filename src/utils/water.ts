@@ -21,7 +21,7 @@ export interface Ripple {
 	ms: number;
 }
 
-const at = (g: GroundSrc, x: number, y: number) => (typeof g === 'function' ? g(x, y) : g[y]?.[x] ?? null);
+const at = (g: GroundSrc, x: number, y: number) => (typeof g === 'function' ? g(x, y) : (g[y]?.[x] ?? null));
 
 /** x mod 4 as 0..3, also for negative coordinates (the map has them). */
 const mod4 = (n: number) => ((n % 4) + 4) % 4;
@@ -220,7 +220,12 @@ const isLocalBest = (g: GroundSrc, x: number, y: number, pct: number, salt: numb
 		for (let oy = -2; oy <= 2; oy++) {
 			if (!ox && !oy) continue;
 			const other = hash32(x + ox, y + oy, salt + 1);
-			if (hash32(x + ox, y + oy, salt) % 100 < pct && (other > mine || (other === mine && (ox < 0 || (ox === 0 && oy < 0)))) && openWater(g, x + ox, y + oy, pool, run)) return false;
+			if (
+				hash32(x + ox, y + oy, salt) % 100 < pct &&
+				(other > mine || (other === mine && (ox < 0 || (ox === 0 && oy < 0)))) &&
+				openWater(g, x + ox, y + oy, pool, run)
+			)
+				return false;
 		}
 	return true;
 };
@@ -250,7 +255,15 @@ export interface Dolphin extends Placement {
 
 export function tileDolphin(g: GroundSrc, x: number, y: number): Dolphin | null {
 	if (!isLocalBest(g, x, y, DOLPHIN_PCT, 970, DOLPHIN_POOL, false) || tileBoat(g, x, y)) return null;
-	if (![[0, -1], [1, 0], [0, 1], [-1, 0]].every(([dx, dy]) => isLake(g, x + dx, y + dy))) return null; // the whole leap stays over water
+	if (
+		![
+			[0, -1],
+			[1, 0],
+			[0, 1],
+			[-1, 0],
+		].every(([dx, dy]) => isLake(g, x + dx, y + dy))
+	)
+		return null; // the whole leap stays over water
 	const ms = 9000 + (hash32(x, y, 972) % 7000);
 	return {
 		key: `${x},${y}`,

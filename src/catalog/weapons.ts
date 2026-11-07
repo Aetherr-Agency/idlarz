@@ -19,5 +19,4 @@ export const WEAPON_ATTACK_SPEED: Partial<Record<WeaponType, number>> = {
 };
 
 /** Damage per second of a weapon: its damage per hit times its attacks per second (0 for anything that is not a weapon). */
-export const weaponDps = (def: Pick<ItemDef, 'stats' | 'attackSpeed'>): number =>
-	Math.round((def.stats?.damage ?? 0) * (def.attackSpeed ?? 0) * 100) / 100;
+export const weaponDps = (def: Pick<ItemDef, 'stats' | 'attackSpeed'>): number => Math.round((def.stats?.damage ?? 0) * (def.attackSpeed ?? 0) * 100) / 100;

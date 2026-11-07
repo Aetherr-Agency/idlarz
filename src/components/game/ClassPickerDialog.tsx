@@ -18,14 +18,8 @@ const ClassPickerDialog: React.FC = () => {
 	if (!open) return null;
 
 	return (
-		<PixelModal
-			title='Choose your hero'
-			icon={<PixelIcon name='menu_character' alt='' />}
-			size='md'
-			onClose={close}>
-			<p className='text-[#a89878] text-sm mb-4 text-center'>
-				Pick a look for {playerName}. Classes are cosmetic for now - their abilities come later.
-			</p>
+		<PixelModal title='Choose your hero' icon={<PixelIcon name='menu_character' alt='' />} size='md' onClose={close}>
+			<p className='text-[#a89878] text-sm mb-4 text-center'>Pick a look for {playerName}. Classes are cosmetic for now - their abilities come later.</p>
 			<div className='class-grid'>
 				{PLAYER_CLASS_ORDER.map((id) => {
 					const info = PLAYER_CLASSES[id];
@@ -43,7 +37,8 @@ const ClassPickerDialog: React.FC = () => {
 									audioManager.playSound('click');
 								}
 							}}
-							onDoubleClick={close}>
+							onDoubleClick={close}
+						>
 							<span className='class-card-stage'>
 								<PixelIcon name={info.full} scale={2} alt={`${info.race} ${info.label}`} />
 							</span>

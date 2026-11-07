@@ -25,7 +25,7 @@ const MinimapBody: React.FC = () => {
 	const layout = useMemo(() => minimapLayout(tiles.bounds, BOX), [tiles.bounds]);
 	const monsters = useMemo(
 		() => (monsterPlaces ? monsterPlaces.split(';').map((p) => ({ x: Number(p.split(',')[0]), y: Number(p.split(',')[1]) })) : []),
-		[monsterPlaces]
+		[monsterPlaces],
 	);
 	const chestCount = tiles.stats.chests;
 
@@ -79,7 +79,7 @@ const MinimapBody: React.FC = () => {
 			const t = minimapToTile(layout, ((e.clientX - box.left) / box.width) * layout.width, ((e.clientY - box.top) / box.height) * layout.height);
 			view.getState().centerOn(t.x * TILE_SIZE, t.y * TILE_SIZE);
 		},
-		[layout, view]
+		[layout, view],
 	);
 
 	const summary = [
@@ -101,7 +101,8 @@ const MinimapBody: React.FC = () => {
 			}}
 			onPointerMove={(e) => dragging.current && moveTo(e)}
 			onPointerUp={() => (dragging.current = false)}
-			onPointerCancel={() => (dragging.current = false)}>
+			onPointerCancel={() => (dragging.current = false)}
+		>
 			<canvas ref={canvasRef} width={layout.width} height={layout.height} className='minimap-canvas' />
 			<canvas ref={glowRef} width={layout.width} height={layout.height} className='minimap-canvas minimap-glow' aria-hidden />
 			<div ref={viewRef} className='minimap-view' />

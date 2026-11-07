@@ -85,7 +85,10 @@ test('crit odds add the character and the gear, and are capped', () => {
 
 test('rollHit (the swing of a character): low roll is a plain hit, high roll crits, and a second high roll is a super crit', () => {
 	const stats = freshStats();
-	const seq = (...r: number[]) => () => r.shift() ?? 0;
+	const seq =
+		(...r: number[]) =>
+		() =>
+			r.shift() ?? 0;
 	assert.deepEqual(rollHit(stats, STARTER_EQUIPMENT, seq(0)), { damage: 6, crit: 'none' });
 	assert.deepEqual(rollHit(stats, STARTER_EQUIPMENT, seq(0.999, 0)), { damage: 6 * COMBAT.crit.mult, crit: 'crit' });
 	assert.deepEqual(rollHit(stats, STARTER_EQUIPMENT, seq(0.999, 0.999)), { damage: 6 * COMBAT.crit.superMult, crit: 'super' });

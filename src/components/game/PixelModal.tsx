@@ -65,11 +65,9 @@ const PixelModal: React.FC<PixelModalProps> = ({
 			className='px-backdrop'
 			onMouseDown={(e) => {
 				if (closeOnBackdrop && e.target === e.currentTarget) onClose();
-			}}>
-			<div
-				className={cn('px-modal', `px-modal-${size}`, className)}
-				role='dialog'
-				aria-modal='true'>
+			}}
+		>
+			<div className={cn('px-modal', `px-modal-${size}`, className)} role='dialog' aria-modal='true'>
 				{closeButton}
 				<div className='px-modal-head'>
 					<span className='px-title-line' />

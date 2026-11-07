@@ -1,13 +1,7 @@
 import React from 'react';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
-import {
-	PIXEL_ICON_SIZES,
-	PixelIconName,
-	SHINE_FRAMES,
-	SHINE_SHEETS,
-	pixelIconSrc,
-} from '@/config/pixelIcons';
+import { PIXEL_ICON_SIZES, PixelIconName, SHINE_FRAMES, SHINE_SHEETS, pixelIconSrc } from '@/config/pixelIcons';
 
 interface PixelSheetProps {
 	/** A one-row sprite sheet from the icon set (its size is the whole sheet) */
@@ -22,14 +16,7 @@ interface PixelSheetProps {
 }
 
 /** Plays a one-row sprite sheet with stepped CSS (no JS): twinkles, the chest's idle sparkle. */
-export const PixelSheet: React.FC<PixelSheetProps> = ({
-	name,
-	frames,
-	scale = 1,
-	durationMs = 1200,
-	alt = '',
-	className,
-}) => {
+export const PixelSheet: React.FC<PixelSheetProps> = ({ name, frames, scale = 1, durationMs = 1200, alt = '', className }) => {
 	const [sheetW, h] = PIXEL_ICON_SIZES[name];
 	const w = sheetW / frames;
 	return (

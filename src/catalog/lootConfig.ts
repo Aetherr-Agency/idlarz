@@ -104,7 +104,13 @@ export const LOOT_POOLS: Record<string, PoolDef> = {
 	general_equipment: { id: 'general_equipment', requireTags: ['gear'], excludeTags: ['named'], enabled: true },
 	rattatui_set: { id: 'rattatui_set', enabled: true }, // members list it in their own `pools`
 	legendary_weapons: { id: 'legendary_weapons', enabled: true },
-	potions_rat: { id: 'potions_rat', includeIds: ['potion_minor', 'potion_greater'], weights: { potion_minor: 4, potion_greater: 1 }, minLevels: { potion_greater: 7 }, enabled: true },
+	potions_rat: {
+		id: 'potions_rat',
+		includeIds: ['potion_minor', 'potion_greater'],
+		weights: { potion_minor: 4, potion_greater: 1 },
+		minLevels: { potion_greater: 7 },
+		enabled: true,
+	},
 	potions_king: { id: 'potions_king', includeIds: ['potion_minor', 'potion_greater'], quantities: { potion_minor: 2, potion_greater: 1 }, enabled: true },
 	potions_chest: { id: 'potions_chest', includeIds: ['potion_minor', 'potion_greater'], weights: { potion_minor: 60, potion_greater: 25 }, enabled: true },
 };
@@ -128,8 +134,22 @@ export const LOOT_PROFILES: Record<string, LootProfile> = {
 		generalPoolId: 'general_equipment',
 		bonusTables: [
 			// Two rolls: the first always gives a set piece, the second does 40% of the time (as before); missing pieces first
-			{ id: 'king_set', poolId: 'rattatui_set', mode: 'fixed', rolls: { min: 2, max: 2, guaranteed: 1, chancePerRoll: 0.4 }, preferMissing: true, itemLevel: { offset: 0, variance: 0 } },
-			{ id: 'king_legendary', poolId: 'legendary_weapons', mode: 'fixed', chance: 0.05, pity: { perMiss: 0.01, maxBonus: 0.1 }, itemLevel: { offset: 0, variance: 0 } },
+			{
+				id: 'king_set',
+				poolId: 'rattatui_set',
+				mode: 'fixed',
+				rolls: { min: 2, max: 2, guaranteed: 1, chancePerRoll: 0.4 },
+				preferMissing: true,
+				itemLevel: { offset: 0, variance: 0 },
+			},
+			{
+				id: 'king_legendary',
+				poolId: 'legendary_weapons',
+				mode: 'fixed',
+				chance: 0.05,
+				pity: { perMiss: 0.01, maxBonus: 0.1 },
+				itemLevel: { offset: 0, variance: 0 },
+			},
 			{ id: 'king_potions', poolId: 'potions_king', mode: 'fixed', takeAll: true },
 		],
 		enabled: true,

@@ -54,10 +54,7 @@ export interface SaveInfo {
 }
 
 /** What the start hub sees in storage. `unreadable`: something is stored but neither copy decodes. */
-export type SavePeek =
-	| { kind: 'none' }
-	| { kind: 'ok'; state: PersistedGame; savedAt: number | null; fromBackup: boolean }
-	| { kind: 'unreadable' };
+export type SavePeek = { kind: 'none' } | { kind: 'ok'; state: PersistedGame; savedAt: number | null; fromBackup: boolean } | { kind: 'unreadable' };
 
 interface Options {
 	kv: KeyValue | null;

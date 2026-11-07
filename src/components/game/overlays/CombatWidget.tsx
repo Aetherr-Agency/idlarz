@@ -37,7 +37,11 @@ const QueueChips: React.FC<{ queue: { n: number; type: MonsterType; level: numbe
 	if (queue.length === 0) return null;
 	const shown = queue.slice(0, 4);
 	return (
-		<span className='combat-queue-chips' title={`Next in line (${queue.length}/${max}): ${queue.map((q) => monsterDef(q.type).label).join(', ')}`} aria-label={`${queue.length} monsters queued`}>
+		<span
+			className='combat-queue-chips'
+			title={`Next in line (${queue.length}/${max}): ${queue.map((q) => monsterDef(q.type).label).join(', ')}`}
+			aria-label={`${queue.length} monsters queued`}
+		>
 			{shown.map((q, i) => (
 				<span key={q.n} className='combat-queue-chip' data-next={i === 0}>
 					<MonsterArt type={q.type} scale={1} />
@@ -181,7 +185,8 @@ const CombatWidget: React.FC = () => {
 					data-resting='true'
 					onClick={() => useUiStore.getState().showToast(`Resting before the next fight (${monsterDef(next.type).label}), about ${wait}. It starts by itself.`)}
 					title={`Resting before the next fight against the ${monsterDef(next.type).label} (about ${wait})`}
-					aria-label='Resting before the next queued fight'>
+					aria-label='Resting before the next queued fight'
+				>
 					<span className='combat-icon-art' aria-hidden>
 						<MonsterArt type={next.type} scale={2} />
 					</span>
@@ -219,8 +224,13 @@ const CombatWidget: React.FC = () => {
 					data-fighting={!!fight}
 					data-slain={slain}
 					onClick={() => setPref('combatMinimized', false)}
-					title={fight ? `Fighting a ${def.label} (level ${monsterLevel})${combat.queue.length ? `, ${combat.queue.length} waiting` : ''} - click to open` : `The fight against the ${def.label} is over - click to see the result`}
-					aria-label='Open the combat panel'>
+					title={
+						fight
+							? `Fighting a ${def.label} (level ${monsterLevel})${combat.queue.length ? `, ${combat.queue.length} waiting` : ''} - click to open`
+							: `The fight against the ${def.label} is over - click to see the result`
+					}
+					aria-label='Open the combat panel'
+				>
 					<span className='combat-icon-art' aria-hidden>
 						<MonsterArt type={type} scale={2} />
 						{slain && <PixelIcon name='skull' scale={0.5} className='combat-icon-skull' />}

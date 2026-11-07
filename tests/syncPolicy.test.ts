@@ -49,7 +49,10 @@ test('the first upload comes shortly after the game starts', async () => {
 	await h.advance(SYNC.firstMs - 1);
 	assert.equal(h.pushes.length, 0);
 	await h.advance(2);
-	assert.deepEqual(h.pushes.map((p) => p.reason), ['first']);
+	assert.deepEqual(
+		h.pushes.map((p) => p.reason),
+		['first'],
+	);
 });
 
 test('an idle hour costs a handful of uploads, not forty', async () => {
@@ -83,7 +86,10 @@ test('an event after a quiet spell is uploaded within the settle time', async ()
 	await h.advance(SYNC.eventSettleMs - 1);
 	assert.equal(h.pushes.length, 0, 'waits for more events to settle');
 	await h.advance(2);
-	assert.deepEqual(h.pushes.map((p) => p.reason), ['event']);
+	assert.deepEqual(
+		h.pushes.map((p) => p.reason),
+		['event'],
+	);
 });
 
 test('events never beat the minimum gap, however many arrive', async () => {
@@ -107,7 +113,11 @@ test('hiding the tab uploads once, and never inside the server floor', async () 
 	h.scheduler.hide();
 	h.scheduler.hide();
 	await h.settle();
-	assert.deepEqual(h.pushes.map((p) => p.reason), ['hide'], 'two hide events at once make one upload');
+	assert.deepEqual(
+		h.pushes.map((p) => p.reason),
+		['hide'],
+		'two hide events at once make one upload',
+	);
 	await h.advance(5000);
 	h.scheduler.hide();
 	await h.settle();
@@ -191,7 +201,10 @@ test('runNow uploads at once as a manual attempt, and the heartbeat waits a full
 	await h.advance(SYNC.firstMs + 1);
 	await h.advance(2 * MIN);
 	assert.equal(await h.scheduler.runNow(), 'ok');
-	assert.deepEqual(h.pushes.map((p) => p.reason), ['first', 'manual']);
+	assert.deepEqual(
+		h.pushes.map((p) => p.reason),
+		['first', 'manual'],
+	);
 	const manualAt = h.pushes[1].at;
 	await h.advance(SYNC.heartbeatMs - 1000);
 	assert.equal(h.pushes.length, 2, 'no heartbeat inside the period after a manual save');
@@ -210,7 +223,10 @@ test('runNow reports busy during an upload, stopped before start and after stop,
 	await h.advance(SYNC.backoffMs[0] - 1000);
 	assert.equal(h.pushes.length, 1, 'the retry waits out the backoff');
 	await h.advance(2000);
-	assert.deepEqual(h.pushes.map((p) => p.reason), ['manual', 'retry']);
+	assert.deepEqual(
+		h.pushes.map((p) => p.reason),
+		['manual', 'retry'],
+	);
 
 	const stopped = harness();
 	stopped.scheduler.start();

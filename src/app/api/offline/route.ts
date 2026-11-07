@@ -25,7 +25,12 @@ export async function POST(request: Request) {
 		if (!body || typeof body.claimId !== 'string' || !CLAIM_ID.test(body.claimId)) return fail('Bad offline request.', 400);
 
 		const admin = createSupabaseAdmin();
-		const outcome = await claimOffline({ ledgers: supabaseLedgerRepo(admin), saves: supabaseSaveRepo(admin), secret: lootSecret() }, player.userId, body.claimId, Date.now());
+		const outcome = await claimOffline(
+			{ ledgers: supabaseLedgerRepo(admin), saves: supabaseSaveRepo(admin), secret: lootSecret() },
+			player.userId,
+			body.claimId,
+			Date.now(),
+		);
 		if (outcome.kind === 'no_save') return json({ error: 'No cloud save yet.', noSave: true }, 404);
 		return json(outcome.result);
 	} catch {

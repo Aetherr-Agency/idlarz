@@ -140,7 +140,8 @@ const WaterChunk: React.FC<WaterChunkProps> = React.memo(({ cx, cy, tiles, minX,
 								'--px-ms': `${b.ms}ms`,
 								animationDelay: `-${b.offsetMs}ms`,
 							} as React.CSSProperties
-						}>
+						}
+					>
 						<span
 							className='px-shine'
 							style={
@@ -172,7 +173,8 @@ const WaterChunk: React.FC<WaterChunkProps> = React.memo(({ cx, cy, tiles, minX,
 								'--px-delay': `-${d.offsetMs}ms`,
 								transform: d.flip ? 'scaleX(-1)' : undefined,
 							} as React.CSSProperties
-						}>
+						}
+					>
 						<span className='px-dolphin-clip'>
 							<span className='px-dolphin-x'>
 								<span className='px-dolphin-y'>

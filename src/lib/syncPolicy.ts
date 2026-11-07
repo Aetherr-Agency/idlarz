@@ -60,10 +60,13 @@ export const createSyncScheduler = (deps: SyncDeps) => {
 	const plan = () => {
 		clear();
 		if (!started || stopped || busy) return;
-		timer = deps.setTimer(() => {
-			timer = null;
-			void run(lastAttemptAt === -Infinity ? 'first' : failures > 0 ? 'retry' : eventAt !== null ? 'event' : 'heartbeat');
-		}, Math.max(0, dueAt() - deps.now()));
+		timer = deps.setTimer(
+			() => {
+				timer = null;
+				void run(lastAttemptAt === -Infinity ? 'first' : failures > 0 ? 'retry' : eventAt !== null ? 'event' : 'heartbeat');
+			},
+			Math.max(0, dueAt() - deps.now()),
+		);
 	};
 
 	const run = async (reason: PushReason): Promise<PushOutcome | 'busy' | 'stopped'> => {

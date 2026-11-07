@@ -13,14 +13,30 @@
 }
 
 @keyframes fight-shake {
-	0% { transform: translate(0, 0); }
-	12% { transform: translate(-8px, 2px); }
-	25% { transform: translate(7px, -3px); }
-	37% { transform: translate(-6px, 3px); }
-	50% { transform: translate(5px, -2px); }
-	62% { transform: translate(-4px, 1px); }
-	75% { transform: translate(3px, -1px); }
-	100% { transform: translate(0, 0); }
+	0% {
+		transform: translate(0, 0);
+	}
+	12% {
+		transform: translate(-8px, 2px);
+	}
+	25% {
+		transform: translate(7px, -3px);
+	}
+	37% {
+		transform: translate(-6px, 3px);
+	}
+	50% {
+		transform: translate(5px, -2px);
+	}
+	62% {
+		transform: translate(-4px, 1px);
+	}
+	75% {
+		transform: translate(3px, -1px);
+	}
+	100% {
+		transform: translate(0, 0);
+	}
 }
 
 .fight-hurt-flash {
@@ -75,7 +91,9 @@
 	height: 26px;
 	background: #120a06;
 	border: 2px solid #0a0605;
-	box-shadow: 0 0 0 2px #5a3f1c, inset 0 0 0 2px #2a1a0c;
+	box-shadow:
+		0 0 0 2px #5a3f1c,
+		inset 0 0 0 2px #2a1a0c;
 	overflow: hidden;
 }
 
@@ -131,7 +149,11 @@
 	font-size: 0.8rem;
 	font-weight: 700;
 	color: #fff6e0;
-	text-shadow: 1px 1px 0 #000, -1px 1px 0 #000, 1px -1px 0 #000, -1px -1px 0 #000;
+	text-shadow:
+		1px 1px 0 #000,
+		-1px 1px 0 #000,
+		1px -1px 0 #000,
+		-1px -1px 0 #000;
 }
 
 .fight-sprite {
@@ -145,8 +167,14 @@
 }
 
 @keyframes fight-hit {
-	0% { transform: scale(0.9) rotate(-3deg); filter: brightness(2.2) saturate(0.3); }
-	100% { transform: scale(1) rotate(0); filter: none; }
+	0% {
+		transform: scale(0.9) rotate(-3deg);
+		filter: brightness(2.2) saturate(0.3);
+	}
+	100% {
+		transform: scale(1) rotate(0);
+		filter: none;
+	}
 }
 
 .fight-number {
@@ -158,21 +186,54 @@
 	font-weight: 400; /* Titan One has one weight: a bold request would be a faked one */
 	letter-spacing: 0.02em;
 	pointer-events: none;
-	text-shadow: 2px 2px 0 #000, -2px 2px 0 #000, 2px -2px 0 #000, -2px -2px 0 #000;
+	text-shadow:
+		2px 2px 0 #000,
+		-2px 2px 0 #000,
+		2px -2px 0 #000,
+		-2px -2px 0 #000;
 	animation: fight-float 0.9s ease-out forwards;
 }
 
-.fight-number[data-kind='dmg'] { color: #ffe27a; }
-.fight-number[data-kind='crit'] { color: #ff3b3b; font-size: 2rem; }
-.fight-number[data-kind='super'] { color: #b45cff; font-size: 2.6rem; animation-duration: 1.2s; }
-.fight-number[data-kind='hurt'] { color: #ff6a5a; top: 70%; }
-.fight-number[data-kind='heal'] { color: #7aff8a; top: 70%; }
-.fight-number[data-kind='resist'] { color: #c8c8c8; top: 18%; font-size: 1.3rem; }
-.fight-number[data-kind='stun'] { color: #8ac0ff; top: 18%; font-size: 1.3rem; }
+.fight-number[data-kind='dmg'] {
+	color: #ffe27a;
+}
+.fight-number[data-kind='crit'] {
+	color: #ff3b3b;
+	font-size: 2rem;
+}
+.fight-number[data-kind='super'] {
+	color: #b45cff;
+	font-size: 2.6rem;
+	animation-duration: 1.2s;
+}
+.fight-number[data-kind='hurt'] {
+	color: #ff6a5a;
+	top: 70%;
+}
+.fight-number[data-kind='heal'] {
+	color: #7aff8a;
+	top: 70%;
+}
+.fight-number[data-kind='resist'] {
+	color: #c8c8c8;
+	top: 18%;
+	font-size: 1.3rem;
+}
+.fight-number[data-kind='stun'] {
+	color: #8ac0ff;
+	top: 18%;
+	font-size: 1.3rem;
+}
 
 @keyframes fight-float {
-	0% { transform: translateY(0); opacity: 1; }
-	100% { transform: translateY(-48px); opacity: 0; }
+	0% {
+		transform: translateY(0);
+		opacity: 1;
+	}
+	100% {
+		transform: translateY(-48px);
+		opacity: 0;
+	}
 }
 
 .fight-potions {
@@ -212,7 +273,9 @@
 	overflow: hidden;
 	background: #1c120a;
 	border: 2px solid #0a0605;
-	box-shadow: 0 0 0 2px #5a3f1c, inset 0 0 0 2px #2a1a0c;
+	box-shadow:
+		0 0 0 2px #5a3f1c,
+		inset 0 0 0 2px #2a1a0c;
 	color: #f0e6d0;
 	cursor: pointer;
 }
@@ -305,7 +368,6 @@
 	color: #a89878;
 	text-align: center;
 }
-
 
 /* The battle queue: the monsters waiting for their turn, as small squares (picture and level) under the bars */
 .fight-queue {

@@ -1,5 +1,19 @@
 import { COMBAT } from '@/config/combatConfig';
-import { EQUIPMENT_LAYOUT, ITEM_CATALOG, RARITIES, SETS, STARTER_BAG_ITEMS, STAT_KEYS, setBonusStats, setCounts, sumStats, weaponDps, type ItemStats, type StatKey, type StatTotals } from '@/catalog';
+import {
+	EQUIPMENT_LAYOUT,
+	ITEM_CATALOG,
+	RARITIES,
+	SETS,
+	STARTER_BAG_ITEMS,
+	STAT_KEYS,
+	setBonusStats,
+	setCounts,
+	sumStats,
+	weaponDps,
+	type ItemStats,
+	type StatKey,
+	type StatTotals,
+} from '@/catalog';
 import { STARTER_EQUIPMENT } from '@/config/itemCatalog';
 import { limitOf } from '@/lib/limits';
 import { resolveItem } from '@/lib/itemInstance';
@@ -10,18 +24,23 @@ import type { BagSlot, Drop, Equipment, EquipmentSlot, ItemDef, ItemInstance } f
 
 export const emptyBag = (): BagSlot[] => Array.from({ length: COMBAT.bagSize }, () => null);
 
-export const starterBag = (): BagSlot[] =>
-	STARTER_BAG_ITEMS.reduce((bag, { id, qty }) => addToBag(bag, id, qty).bag, emptyBag());
+export const starterBag = (): BagSlot[] => STARTER_BAG_ITEMS.reduce((bag, { id, qty }) => addToBag(bag, id, qty).bag, emptyBag());
 
 /**
  * What a character carries after a rebirth: the starter gear on, the starter bag (as big as Pack Rat makes it), nothing else and no pity.
  * Gear does not survive a rebirth, so selling a bag full of it for gold across runs is no longer a way to get ahead. The browser applies it
  * at once and the server stamps the same thing onto the ledger when the rebirth reaches it (lib/cloudSave/pipeline.ts).
  */
-export const rebirthKit = (merchantUpgrades: Record<string, number> | undefined): { equipment: Equipment; bag: BagSlot[]; lootPity: Record<string, number> } => {
+export const rebirthKit = (
+	merchantUpgrades: Record<string, number> | undefined,
+): { equipment: Equipment; bag: BagSlot[]; lootPity: Record<string, number> } => {
 	const size = limitOf('bagSize', { merchantUpgrades });
 	const bag = starterBag();
-	return { equipment: { ...STARTER_EQUIPMENT }, bag: bag.length >= size ? bag : [...bag, ...Array.from({ length: size - bag.length }, () => null)], lootPity: {} };
+	return {
+		equipment: { ...STARTER_EQUIPMENT },
+		bag: bag.length >= size ? bag : [...bag, ...Array.from({ length: size - bag.length }, () => null)],
+		lootPity: {},
+	};
 };
 
 /** The gear in a slot, or null (empty slot or a consumable stack). */
@@ -40,15 +59,10 @@ const stackMax = (id: string) => ITEM_CATALOG[id]?.stackMax ?? 1;
 
 const copySlot = (slot: BagSlot): BagSlot => (slot ? ('item' in slot ? { item: slot.item } : { ...slot }) : null);
 
-const validIndex = (bag: BagSlot[], index: number) =>
-	Number.isInteger(index) && index >= 0 && index < bag.length;
+const validIndex = (bag: BagSlot[], index: number) => Number.isInteger(index) && index >= 0 && index < bag.length;
 
 /** Adds `qty` of a consumable: tops up existing stacks first, then uses the first empty slots. Whatever does not fit is `overflow`. Gear goes in with `addGear`. */
-export const addToBag = (
-	bag: BagSlot[],
-	id: string,
-	qty = 1
-): { bag: BagSlot[]; added: number; overflow: number } => {
+export const addToBag = (bag: BagSlot[], id: string, qty = 1): { bag: BagSlot[]; added: number; overflow: number } => {
 	const next = bag.map(copySlot);
 	const def = ITEM_CATALOG[id];
 	if (!def || def.kind !== 'consumable' || !Number.isInteger(qty) || qty < 1) return { bag: next, added: 0, overflow: Math.max(0, qty) };
@@ -130,7 +144,14 @@ const gearOrder = (item: ItemInstance): (number | string)[] => {
 	const def = ITEM_CATALOG[item.base];
 	const slot = def?.slot === 'ring' ? 'ring1' : def?.slot;
 	const slotIndex = slot ? SLOT_ORDER.indexOf(slot) : -1;
-	return [KIND_ORDER[def?.kind ?? ''] ?? 9, slotIndex < 0 ? 99 : slotIndex, -((RARITIES as Record<string, { order: number } | undefined>)[item.rarity]?.order ?? 0), -item.level, -item.quality, item.base];
+	return [
+		KIND_ORDER[def?.kind ?? ''] ?? 9,
+		slotIndex < 0 ? 99 : slotIndex,
+		-((RARITIES as Record<string, { order: number } | undefined>)[item.rarity]?.order ?? 0),
+		-item.level,
+		-item.quality,
+		item.base,
+	];
 };
 
 const compareKeys = (a: (number | string)[], b: (number | string)[]): number => {
@@ -177,11 +198,7 @@ const targetSlot = (def: ItemDef, equipment: Equipment): EquipmentSlot | null =>
 };
 
 /** Equips the gear in a bag slot, sending whatever was in that gear slot back into the freed bag slot. */
-export const equipFromBag = (
-	bag: BagSlot[],
-	equipment: Equipment,
-	index: number
-): { bag: BagSlot[]; equipment: Equipment } | null => {
+export const equipFromBag = (bag: BagSlot[], equipment: Equipment, index: number): { bag: BagSlot[]; equipment: Equipment } | null => {
 	if (!validIndex(bag, index)) return null;
 	const item = gearOf(bag[index]);
 	const def = item ? ITEM_CATALOG[item.base] : undefined;
@@ -195,11 +212,7 @@ export const equipFromBag = (
 };
 
 /** Moves an equipped item into the first free bag slot; null if the slot is empty or the bag is full. */
-export const unequip = (
-	bag: BagSlot[],
-	equipment: Equipment,
-	slot: EquipmentSlot
-): { bag: BagSlot[]; equipment: Equipment } | null => {
+export const unequip = (bag: BagSlot[], equipment: Equipment, slot: EquipmentSlot): { bag: BagSlot[]; equipment: Equipment } | null => {
 	const item = equipment[slot];
 	if (!item) return null;
 	const free = bag.findIndex((s) => s === null);
@@ -354,7 +367,12 @@ export const compareDetailed = (item: ItemInstance, equipment: Equipment): Detai
 	const wornDef = worn?.def;
 	const primaryKey = primaryKeyOf({ kind: def.kind, stats });
 	const primary: PrimaryRow | null = primaryKey
-		? { key: primaryKey, was: wornStats?.[primaryKey] ?? 0, now: stats[primaryKey] ?? 0, delta: round2((stats[primaryKey] ?? 0) - (wornStats?.[primaryKey] ?? 0)) }
+		? {
+				key: primaryKey,
+				was: wornStats?.[primaryKey] ?? 0,
+				now: stats[primaryKey] ?? 0,
+				delta: round2((stats[primaryKey] ?? 0) - (wornStats?.[primaryKey] ?? 0)),
+			}
 		: null;
 	let swing: SwingRow | null = null;
 	if (def.kind === 'weapon' && def.attackSpeed) {

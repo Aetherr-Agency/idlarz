@@ -23,8 +23,7 @@ export const pinEconomy = (base = PINNED_BASE) => {
 };
 
 /** A map that is only the castle, at `level`. */
-export const castleWorld = (level = 1): World =>
-	setTiles(EMPTY_WORLD, [{ x: CASTLE_X, y: CASTLE_Y, tile: { biome: 'castle', isOwned: true, level } as Tile }]);
+export const castleWorld = (level = 1): World => setTiles(EMPTY_WORLD, [{ x: CASTLE_X, y: CASTLE_Y, tile: { biome: 'castle', isOwned: true, level } as Tile }]);
 
 /** The castle plus `n` extra owned tiles of `biome`, in a row (the tiles carry no output in the strict environment). */
 export const worldWithTiles = (n: number, biome = 'plains', building?: string, level = 1): World => {
@@ -150,8 +149,10 @@ export const combatOracle = {
 	above: (v: number) => Math.max(0, v - 5),
 	physicalPct: (str: number) => combatOracle.above(str) * 2,
 	magicPct: (int: number) => combatOracle.above(int) * 2.4,
-	attrArmor: (s: { dex: number; vit: number; str: number }) => combatOracle.above(s.dex) * 0.5 + combatOracle.above(s.vit) * 0.5 + combatOracle.above(s.str) * 0.25,
-	critDamagePct: (s: { str: number; dex: number; cha: number }) => combatOracle.above(s.str) * 1 + combatOracle.above(s.dex) * 0.5 + combatOracle.above(s.cha) * 0.5,
+	attrArmor: (s: { dex: number; vit: number; str: number }) =>
+		combatOracle.above(s.dex) * 0.5 + combatOracle.above(s.vit) * 0.5 + combatOracle.above(s.str) * 0.25,
+	critDamagePct: (s: { str: number; dex: number; cha: number }) =>
+		combatOracle.above(s.str) * 1 + combatOracle.above(s.dex) * 0.5 + combatOracle.above(s.cha) * 0.5,
 	atkSpeedPct: (dex: number) => combatOracle.above(dex) * 0.25,
 	attrMana: (int: number) => 20 + int * 4,
 	attrManaRegen: (int: number) => 0.5 + int * 0.05,

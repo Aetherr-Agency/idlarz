@@ -19,7 +19,7 @@ export type { SetDef } from './sets';
 // No prototype: `ITEM_CATALOG['constructor']` must be undefined, or a forged save could name an item that is not one
 export const ITEM_CATALOG: Record<string, ItemDef> = Object.assign(
 	Object.create(null) as Record<string, ItemDef>,
-	Object.fromEntries(ITEMS.map((item) => [item.id, item]))
+	Object.fromEntries(ITEMS.map((item) => [item.id, item])),
 );
 
 export interface ArmourSet extends SetDef {
@@ -35,8 +35,8 @@ export const SETS: Record<string, ArmourSet> = Object.assign(
 			const pieces = ITEMS.filter((item) => item.set === def.id);
 			const size = pieces.reduce((sum, item) => sum + (item.slot === 'ring' ? 2 : 1), 0);
 			return [def.id, { ...def, pieces: pieces.map((item) => item.id), size }];
-		})
-	)
+		}),
+	),
 );
 
 /** Every piece of a set, or of a plain loot family (wood, cloth, steel) that has no set bonus. */

@@ -14,14 +14,16 @@ import EmberIcon from '../EmberIcon';
 const pct = (n: number, digits = 0) => (Math.abs(n * 100) >= 5000 ? formatPercent(n * 100) : `${(n * 100).toFixed(digits)}%`);
 
 const shopText: Record<EmberUpgradeId, (levels: number) => string> = {
-	thrift: (n) => `-${pct(EMBER_UPGRADES.thrift.effectPerLevel)} tile and building cost per level (now -${pct(n * EMBER_UPGRADES.thrift.effectPerLevel)}, with Charisma at most -${REBIRTH.discountCapPercent}%)`,
+	thrift: (n) =>
+		`-${pct(EMBER_UPGRADES.thrift.effectPerLevel)} tile and building cost per level (now -${pct(n * EMBER_UPGRADES.thrift.effectPerLevel)}, with Charisma at most -${REBIRTH.discountCapPercent}%)`,
 	builders: (n) => `-${pct(EMBER_UPGRADES.builders.effectPerLevel)} castle build time per level (now -${pct(n * EMBER_UPGRADES.builders.effectPerLevel)})`,
 	nightwatch: (n) => `+${EMBER_UPGRADES.nightwatch.effectPerLevel} h of away time per level (now +${n * EMBER_UPGRADES.nightwatch.effectPerLevel} h)`,
 	steward: (n) => `+${pct(EMBER_UPGRADES.steward.effectPerLevel)} income while away per level (now +${pct(n * EMBER_UPGRADES.steward.effectPerLevel)})`,
 	mastery: (n) => `+${pct(EMBER_UPGRADES.mastery.effectPerLevel)} gold per click per level (now +${pct(n * EMBER_UPGRADES.mastery.effectPerLevel)})`,
-	provisions: (n) => `Every new run starts with ${sortedCostEntries(EMBER_UPGRADES.provisions.bundle)
-		.map(([r, v]) => `${formatNumber(v * Math.max(n, 1))} ${r}`)
-		.join(', ')}${n === 0 ? ' per level' : ''}`,
+	provisions: (n) =>
+		`Every new run starts with ${sortedCostEntries(EMBER_UPGRADES.provisions.bundle)
+			.map(([r, v]) => `${formatNumber(v * Math.max(n, 1))} ${r}`)
+			.join(', ')}${n === 0 ? ' per level' : ''}`,
 };
 
 /**
@@ -92,9 +94,9 @@ const RebirthDialog: React.FC = () => {
 				<div className='px-card mb-3 text-sm'>
 					<div className='px-h'>Rebirth now?</div>
 					<p className='text-[#d8c8a0] mb-2'>
-						You gain <b className='text-green-300'>{formatHeaderAmount(gain)}</b> Embers (+{pct(emberIncomeBonus(prestige.legacyEarned + gain) - emberIncomeBonus(prestige.legacyEarned))} income
-						for ever). The map, resources, castle and farm start again. Your name, hero, level, XP,
-						attributes, Embers and shop upgrades stay.
+						You gain <b className='text-green-300'>{formatHeaderAmount(gain)}</b> Embers (+
+						{pct(emberIncomeBonus(prestige.legacyEarned + gain) - emberIncomeBonus(prestige.legacyEarned))} income for ever). The map, resources, castle and
+						farm start again. Your name, hero, level, XP, attributes, Embers and shop upgrades stay.
 					</p>
 					<div className='flex justify-between'>
 						<button className='px-btn' onClick={() => setConfirming(false)}>
@@ -109,17 +111,19 @@ const RebirthDialog: React.FC = () => {
 				<div className='px-card mb-3 text-sm'>
 					<div className='px-h'>Rebirth</div>
 					<p className='text-[#d8c8a0] mb-2'>
-						Start over with a permanent bonus. A rebirth gives about {formatHeaderAmount(gain)} Ember{gain === 1 ? '' : 's'} now; a
-						higher castle level and more tiles give more (castle level {CASTLE_UPGRADE.maxLevel} is the best you can do).
+						Start over with a permanent bonus. A rebirth gives about {formatHeaderAmount(gain)} Ember{gain === 1 ? '' : 's'} now; a higher castle level and more
+						tiles give more (castle level {CASTLE_UPGRADE.maxLevel} is the best you can do).
 					</p>
 					<div className='mb-3'>
-						<Check ok={levelOk}>Castle level {REBIRTH.minCastleLevel}+ (now {castleLevel})</Check>
-						<Check ok={tilesOk}>At least {tilesNeeded} tiles (now {formatHeaderAmount(ownedTiles)})</Check>
+						<Check ok={levelOk}>
+							Castle level {REBIRTH.minCastleLevel}+ (now {castleLevel})
+						</Check>
+						<Check ok={tilesOk}>
+							At least {tilesNeeded} tiles (now {formatHeaderAmount(ownedTiles)})
+						</Check>
 						<Check ok={idleOk}>No castle upgrade in progress</Check>
 					</div>
-					<div className='text-xs text-[#a89878] mb-2'>
-						Castle bonus today +{pct(castleModifier(castleLevel))} - it starts again from level 1.
-					</div>
+					<div className='text-xs text-[#a89878] mb-2'>Castle bonus today +{pct(castleModifier(castleLevel))} - it starts again from level 1.</div>
 					<div className='flex justify-center'>
 						<button className='px-btn px-btn-gold' disabled={!canRebirth} onClick={() => setConfirming(true)}>
 							Rebirth for {formatHeaderAmount(gain)} Embers
@@ -141,7 +145,10 @@ const RebirthDialog: React.FC = () => {
 							<div key={id} className='flex items-center justify-between gap-3 border-b px-rule pb-2 last:border-b-0'>
 								<div>
 									<div className='text-[#ecdcb4]'>
-										{def.label} <span className='text-[#a89878]'>({level}/{def.maxLevel})</span>
+										{def.label}{' '}
+										<span className='text-[#a89878]'>
+											({level}/{def.maxLevel})
+										</span>
 									</div>
 									<div className='text-xs text-[#a89878]'>{shopText[id](level)}</div>
 								</div>
@@ -150,8 +157,15 @@ const RebirthDialog: React.FC = () => {
 									disabled={maxed || !affordable}
 									onClick={() => {
 										if (buyEmberUpgrade(id)) audioManager.playSound('purchase');
-									}}>
-									{maxed ? 'Max' : <><EmberIcon /> {formatHeaderAmount(cost)}</>}
+									}}
+								>
+									{maxed ? (
+										'Max'
+									) : (
+										<>
+											<EmberIcon /> {formatHeaderAmount(cost)}
+										</>
+									)}
 								</button>
 							</div>
 						);

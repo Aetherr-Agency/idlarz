@@ -66,26 +66,24 @@ const ChestNotification: React.FC<ChestNotificationProps> = ({ loot, onClose }) 
 			break;
 		case 'item': {
 			const drop = loot.drop;
-		const resolved = drop.kind === 'gear' ? resolveItem(drop.item) : null;
-		const def = resolved?.def ?? (drop.kind === 'consumable' ? ITEM_CATALOG[drop.id] : undefined);
-		const color = RARITY_COLOR[(resolved?.instance.rarity ?? def?.rarity ?? 'common') as keyof typeof RARITY_COLOR];
-		title = (
-			<>
-				<span className='text-lg font-semibold whitespace-nowrap'>
-					You found <span style={def ? { color } : undefined}>{resolved?.name ?? def?.name ?? 'an item'}</span>!
-				</span>
-				{def && <PixelIcon name={itemIconName(def)} alt='' />}
-			</>
-		);
-		hint = <span className='text-xs text-[#a89878] mt-1'>{resolved ? `Item level ${formatCompact(resolved.instance.level)} - ` : ''}Added to your bag</span>;
+			const resolved = drop.kind === 'gear' ? resolveItem(drop.item) : null;
+			const def = resolved?.def ?? (drop.kind === 'consumable' ? ITEM_CATALOG[drop.id] : undefined);
+			const color = RARITY_COLOR[(resolved?.instance.rarity ?? def?.rarity ?? 'common') as keyof typeof RARITY_COLOR];
+			title = (
+				<>
+					<span className='text-lg font-semibold whitespace-nowrap'>
+						You found <span style={def ? { color } : undefined}>{resolved?.name ?? def?.name ?? 'an item'}</span>!
+					</span>
+					{def && <PixelIcon name={itemIconName(def)} alt='' />}
+				</>
+			);
+			hint = <span className='text-xs text-[#a89878] mt-1'>{resolved ? `Item level ${formatCompact(resolved.instance.level)} - ` : ''}Added to your bag</span>;
 			break;
 		}
 	}
 
 	return (
-		<div
-			className='relative px-toast text-[#ffe27a] py-2 px-4 flex flex-col items-center gap-1 chest-toast cursor-pointer'
-			onClick={onClose}>
+		<div className='relative px-toast text-[#ffe27a] py-2 px-4 flex flex-col items-center gap-1 chest-toast cursor-pointer' onClick={onClose}>
 			<div className='flex items-center gap-2'>{title}</div>
 			{detail}
 			{hint}

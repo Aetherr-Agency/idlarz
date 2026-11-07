@@ -29,7 +29,14 @@ const played = (name = 'Zoë'): PersistedGame => {
 test('credentials: email is trimmed and lowercased, short or odd input is refused', () => {
 	const ok = checkCredentials({ email: '  Me@Example.COM ', password: 'longenough' });
 	assert.deepEqual(ok, { ok: true, value: { email: 'me@example.com', password: 'longenough' } });
-	for (const bad of [null, [], {}, { email: 'nope', password: 'longenough' }, { email: 'a@b.co', password: 'short' }, { email: 'a@b.co', password: 12345678 }]) {
+	for (const bad of [
+		null,
+		[],
+		{},
+		{ email: 'nope', password: 'longenough' },
+		{ email: 'a@b.co', password: 'short' },
+		{ email: 'a@b.co', password: 12345678 },
+	]) {
 		assert.equal(checkCredentials(bad).ok, false, JSON.stringify(bad));
 	}
 	assert.equal(checkCredentials({ email: 'a@b.co', password: 'x'.repeat(73) }).ok, false, 'bcrypt would silently cut it');
@@ -95,7 +102,13 @@ test('a barely played game never replaces the copy of a real one', () => {
 });
 
 test('archive reports failure when the browser refuses, and keeps unreadable text too', () => {
-	const refusing: KeyValue = { get: () => SAVE_PREFIX + 'garbage', set: () => { throw new Error('refused'); }, remove: () => undefined };
+	const refusing: KeyValue = {
+		get: () => SAVE_PREFIX + 'garbage',
+		set: () => {
+			throw new Error('refused');
+		},
+		remove: () => undefined,
+	};
 	assert.equal(createSaveStorage({ kv: refusing }).archiveForNewGame(), false);
 
 	const { kv, data } = fakeKv({ [KEY]: SAVE_PREFIX + 'garbage' });

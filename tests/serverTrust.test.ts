@@ -14,12 +14,27 @@ import type { PersistedGame } from '../src/lib/sanitizeSave';
 
 const accept = (repo: ReturnType<typeof memoryRepo>['repo'], state: PersistedGame, baseRev: number, at: number, enforcement = ENFORCEMENT) =>
 	acceptSave(repo, 'u', 'Z', encodeSave(state), baseRev, at, false, null, enforcement);
-const withGold = (state: PersistedGame, gold: number, playSeconds = state.playSeconds): PersistedGame => ({ ...state, playSeconds, resources: { ...state.resources, gold } });
+const withGold = (state: PersistedGame, gold: number, playSeconds = state.playSeconds): PersistedGame => ({
+	...state,
+	playSeconds,
+	resources: { ...state.resources, gold },
+});
 
 const ON = { enabled: true, reject: ENFORCEMENT.reject };
 
 test('every flag has a decision, and the ones enforcement can refuse are exactly the reject flags on the list', () => {
-	const flags: SaveFlag[] = ['baseline_rich', 'networth_exceeds', 'playtime_regress', 'playtime_fast', 'gold_jump', 'xp_jump', 'gems_increase', 'prestige_regress', 'castle_jump', 'ember_jump'];
+	const flags: SaveFlag[] = [
+		'baseline_rich',
+		'networth_exceeds',
+		'playtime_regress',
+		'playtime_fast',
+		'gold_jump',
+		'xp_jump',
+		'gems_increase',
+		'prestige_regress',
+		'castle_jump',
+		'ember_jump',
+	];
 	for (const flag of flags) assert.ok(['flag', 'clamp', 'reject'].includes(FLAG_POLICY[flag]), flag);
 	assert.deepEqual(rejectedFlags(flags, ON).sort(), ['gems_increase', 'gold_jump', 'playtime_fast']);
 	assert.deepEqual(rejectedFlags(flags, { enabled: false, reject: ENFORCEMENT.reject }), [], 'the kill switch turns every refusal off');
@@ -58,7 +73,11 @@ test('an honest save raises no flag with enforcement on, and a stock sold at the
 	const before = summarize(stocked);
 	assert.ok((before.derived.stockWorth ?? 0) > 0, 'the stock is recorded in gold');
 	// the stock is sold: the gold rises by its worth, the stock is gone
-	const sold = withGold({ ...stocked, resources: { ...stocked.resources, wood: 0, stone: 0, coal: 0, food: 0 } }, 100 + before.derived.stockWorth!, stocked.playSeconds + 30);
+	const sold = withGold(
+		{ ...stocked, resources: { ...stocked.resources, wood: 0, stone: 0, coal: 0, food: 0 } },
+		100 + before.derived.stockWorth!,
+		stocked.playSeconds + 30,
+	);
 	const outcome = await accept(repo, sold, 1, T0 + 30_000, ON);
 	assert.equal(outcome.kind, 'ok');
 	assert.deepEqual(outcome.kind === 'ok' ? outcome.flags : null, []);

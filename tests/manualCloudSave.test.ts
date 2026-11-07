@@ -77,7 +77,12 @@ test('one cloud save per ten minutes: the second press only saves here and says 
 });
 
 test('only an upload that went through starts the wait: a failure, a busy scheduler or a paused one can be tried again at once', async () => {
-	for (const [outcome, cloud] of [['retry', 'failed'], ['busy', 'busy'], ['stopped', 'stopped'], ['stop', 'stopped']] as const) {
+	for (const [outcome, cloud] of [
+		['retry', 'failed'],
+		['busy', 'busy'],
+		['stopped', 'stopped'],
+		['stop', 'stopped'],
+	] as const) {
 		const store = memoryStore();
 		const { saver } = saverReturning(outcome, 'ok');
 		const first = await saveGameEverywhere({ saveLocal: async () => true, now: () => 100, saver, store });

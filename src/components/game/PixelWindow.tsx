@@ -134,11 +134,18 @@ const PixelWindow: React.FC<PixelWindowProps> = ({ id, title, icon, width = 820,
 				} as React.CSSProperties
 			}
 			data-front={isFront}
-			data-fixed-height={!!fixedHeight}>
+			data-fixed-height={!!fixedHeight}
+		>
 			<button className='px-close' onClick={() => closeWindow(id)} aria-label='Close'>
 				✕
 			</button>
-			<div className='px-modal-head px-window-handle' onPointerDown={onDragStart} onPointerMove={onDragMove} onPointerUp={onDragEnd} onPointerCancel={onDragEnd}>
+			<div
+				className='px-modal-head px-window-handle'
+				onPointerDown={onDragStart}
+				onPointerMove={onDragMove}
+				onPointerUp={onDragEnd}
+				onPointerCancel={onDragEnd}
+			>
 				<span className='px-title-line' />
 				<h2 className='px-title'>
 					{icon}
@@ -147,7 +154,16 @@ const PixelWindow: React.FC<PixelWindowProps> = ({ id, title, icon, width = 820,
 				<span className='px-title-line rev' />
 			</div>
 			<div className={cn('px-modal-body', flush && 'px-modal-body-flush')}>{children}</div>
-			{!narrow && <div className='px-resize' onPointerDown={onResizeStart} onPointerMove={onResizeMove} onPointerUp={onResizeEnd} onPointerCancel={onResizeEnd} aria-hidden='true' />}
+			{!narrow && (
+				<div
+					className='px-resize'
+					onPointerDown={onResizeStart}
+					onPointerMove={onResizeMove}
+					onPointerUp={onResizeEnd}
+					onPointerCancel={onResizeEnd}
+					aria-hidden='true'
+				/>
+			)}
 		</div>
 	);
 };

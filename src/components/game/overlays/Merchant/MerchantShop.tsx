@@ -36,7 +36,10 @@ const UpgradeCard: React.FC<BoughtProps & { id: MerchantUpgradeId }> = ({ id, on
 	return (
 		<div className='px-card text-white'>
 			<h3 className='font-semibold mb-1 text-sm'>
-				{def.label} <span className='text-[#a89878]'>({level}/{def.maxLevel})</span>
+				{def.label}{' '}
+				<span className='text-[#a89878]'>
+					({level}/{def.maxLevel})
+				</span>
 			</h3>
 			<p className='text-sm text-[#d8c8a0] mb-1'>Now: {level > 0 ? def.description(level) : 'nothing yet'}</p>
 			{!maxed && <p className='text-xs text-[#a89878] mb-3'>Next level: {def.description(level + 1)}</p>}
@@ -54,7 +57,8 @@ const UpgradeCard: React.FC<BoughtProps & { id: MerchantUpgradeId }> = ({ id, on
 						disabled={gold < cost}
 						onClick={() => {
 							if (buy(id)) onBought(`${def.label} level ${level + 1}`, cost);
-						}}>
+						}}
+					>
 						{gold >= cost ? 'Purchase' : 'Get more gold!'}
 					</button>
 				</div>
@@ -101,7 +105,8 @@ const ShelfItem: React.FC<{ item?: ItemInstance; itemId?: string; name: string; 
 					const { left, top, right, bottom } = e.currentTarget.getBoundingClientRect();
 					setTip({ left, top, right, bottom });
 				}}
-				onMouseLeave={() => setTip(null)}>
+				onMouseLeave={() => setTip(null)}
+			>
 				<button className='px-btn px-btn-sm shop-buy' disabled={!affordable} aria-label={`Buy ${name} for ${formatNumber(price)} gold`} onClick={onBuy}>
 					Buy
 				</button>
@@ -119,7 +124,7 @@ const ShelfItem: React.FC<{ item?: ItemInstance; itemId?: string; name: string; 
 							</div>
 						</div>
 					</FloatingTip>,
-					document.body
+					document.body,
 				)}
 		</div>
 	);
@@ -145,7 +150,10 @@ export const MerchantGoods: React.FC<BoughtProps> = ({ onBought }) => {
 	const wait = refreshCooldown(refreshState, playSeconds);
 	const cost = freeLeft > 0 ? 0 : refreshCost(refreshes);
 	const left = stock ? secondsToRotation(stock, playSeconds) : 0;
-	const cells = shelfCells(stock, MERCHANT_SHOP_ITEMS.map(({ id }) => id));
+	const cells = shelfCells(
+		stock,
+		MERCHANT_SHOP_ITEMS.map(({ id }) => id),
+	);
 	// the cells stand on planks, SHELF_SLOTS to a plank
 	const shelves = Array.from({ length: Math.ceil(cells.length / SHELF_SLOTS) }, (_, row) => cells.slice(row * SHELF_SLOTS, (row + 1) * SHELF_SLOTS));
 	const renderCell = (cell: (typeof cells)[number]) => {
@@ -197,7 +205,8 @@ export const MerchantGoods: React.FC<BoughtProps> = ({ onBought }) => {
 						title={`Shuffle the shelf now. ${MERCHANT_GOODS.refresh.freePerWindow} refreshes are free every ${MERCHANT_GOODS.refresh.windowSec / 3600} hours of play, then each one costs double the last; ${MERCHANT_GOODS.refresh.cooldownSec} s between refreshes.`}
 						onClick={() => {
 							if (refresh()) onBought('a new shelf of goods', cost);
-						}}>
+						}}
+					>
 						<span className='inline-flex items-center gap-1'>
 							{wait > 0 ? (
 								`Wait ${formatTime(wait)}`
@@ -213,8 +222,8 @@ export const MerchantGoods: React.FC<BoughtProps> = ({ onBought }) => {
 				</div>
 			</div>
 			<p className='text-xs text-[#a89878] mb-3'>
-				Gear never more than {MERCHANT_GOODS.maxAboveAverage} item levels above what you wear (item level {worn}), and potions that are always in stock. Hover an
-				item for what it does and a Buy button for its price.
+				Gear never more than {MERCHANT_GOODS.maxAboveAverage} item levels above what you wear (item level {worn}), and potions that are always in stock. Hover
+				an item for what it does and a Buy button for its price.
 			</p>
 			<div className='shop-board'>
 				{shelves.map((shelf, row) => (

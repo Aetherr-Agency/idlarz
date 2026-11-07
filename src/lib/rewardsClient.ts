@@ -48,11 +48,13 @@ export const requestChest = (key: string, x: number, y: number): Promise<Reply<C
 export const requestInventory = (key: string, op: InventoryOp): Promise<Reply<InventoryReply>> => post<InventoryReply>('/api/inventory', { key, ...op });
 
 /** A hotkey: drink a potion or cast a skill. One key per press: the server replays the answer if it is sent twice. */
-export const requestUse = (key: string, command: CombatCommand, since: number | undefined): Promise<Reply<FightReply>> => post<FightReply>('/api/fight', { action: 'use', key, command, since });
+export const requestUse = (key: string, command: CombatCommand, since: number | undefined): Promise<Reply<FightReply>> =>
+	post<FightReply>('/api/fight', { action: 'use', key, command, since });
 
 /** Switches auto-battle and/or auto-use. */
 export const requestAuto = (switches: { autoBattle?: boolean; autoUse?: boolean }, since: number | undefined): Promise<Reply<FightReply>> =>
 	post<FightReply>('/api/fight', { action: 'auto', ...switches, since });
 
 /** Takes a monster off the map with no reward. */
-export const requestDismiss = (key: string, n: number, since: number | undefined): Promise<Reply<FightReply>> => post<FightReply>('/api/fight', { action: 'dismiss', key, n, since });
+export const requestDismiss = (key: string, n: number, since: number | undefined): Promise<Reply<FightReply>> =>
+	post<FightReply>('/api/fight', { action: 'dismiss', key, n, since });

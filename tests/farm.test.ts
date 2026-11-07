@@ -22,10 +22,7 @@ test('every animal yields meat plus a farm product', () => {
 		assert.ok(out.meat > 0, `${animal.id} meat`);
 		assert.ok(out[animal.product.resource] > 0, `${animal.id} ${animal.product.resource}`);
 	}
-	assert.deepEqual(
-		ANIMALS.map((a) => a.product.resource).sort(),
-		['eggs', 'hide', 'hide', 'milk']
-	);
+	assert.deepEqual(ANIMALS.map((a) => a.product.resource).sort(), ['eggs', 'hide', 'hide', 'milk']);
 });
 
 test('a product is a small share of the meat value once sold (so the farm stays balanced)', () => {
@@ -128,7 +125,11 @@ test('second-tier products come at a brisk pace: a full pen of chickens pays the
 	const eggsPerSec = calculateFarmOutput({ chicken: FARM.baseCap }).eggs;
 	assert.ok(eggsPerSec >= 0.35, `${eggsPerSec} eggs/s from a full coop`);
 	assert.ok((farmUpgradeCost('coop', 0).eggs ?? 0) / eggsPerSec <= 120, 'the first Hen House level costs under two minutes of a full coop');
-	for (const [id, resource, animal] of [['coop', 'eggs', 'chicken'], ['dairy', 'milk', 'cow'], ['tannery', 'hide', 'pig']] as const) {
+	for (const [id, resource, animal] of [
+		['coop', 'eggs', 'chicken'],
+		['dairy', 'milk', 'cow'],
+		['tannery', 'hide', 'pig'],
+	] as const) {
 		const base = calculateFarmOutput({ [animal]: 4 })[resource];
 		const maxed = calculateFarmOutput({ [animal]: 4 }, { [id]: 10 })[resource];
 		assert.ok(Math.abs(maxed / base - (1 + 10 * FARM_UPGRADES[id].effectPerLevel)) < 1e-9, `${id}: ${maxed / base}`);

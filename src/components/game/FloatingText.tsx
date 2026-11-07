@@ -33,10 +33,7 @@ const FloatingText: React.FC = () => {
 				drift: Math.round((Math.random() - 0.5) * 36), // rapid clicks fan out sideways
 			};
 			setPopups((prev) => [...prev.slice(-12), popup]);
-			setTimeout(
-				() => setPopups((prev) => prev.filter((p) => p.id !== popup.id)),
-				POPUP_DURATION_MS
-			);
+			setTimeout(() => setPopups((prev) => prev.filter((p) => p.id !== popup.id)), POPUP_DURATION_MS);
 		};
 		window.addEventListener(FLOAT_EVENT, onFloat);
 		return () => window.removeEventListener(FLOAT_EVENT, onFloat);
@@ -56,21 +53,18 @@ const FloatingText: React.FC = () => {
 						'--drift': `${p.drift}px`,
 						animationDuration: `${POPUP_DURATION_MS}ms`,
 					} as React.CSSProperties
-				}>
+				}
+			>
 				<span className='gold-popup-inner'>
 					{p.items.map((item) => (
-						<span
-							key={item.resource}
-							className='float-line'
-							style={{ color: colorOf(item.resource) }}>
-							<ResourceIcon resource={item.resource} />
-							+{formatNumber(item.amount)}
+						<span key={item.resource} className='float-line' style={{ color: colorOf(item.resource) }}>
+							<ResourceIcon resource={item.resource} />+{formatNumber(item.amount)}
 						</span>
 					))}
 				</span>
 			</div>
 		)),
-		document.body
+		document.body,
 	);
 };
 

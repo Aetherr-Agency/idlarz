@@ -82,7 +82,7 @@ function schedule(id: number, ms: number, remove: () => void) {
 		setTimeout(() => {
 			noticeTimers.delete(id);
 			remove();
-		}, ms)
+		}, ms),
 	);
 }
 

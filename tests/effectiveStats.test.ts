@@ -46,7 +46,12 @@ test('the crit numbers include the worn gear and the attributes, for crits and s
 test('luck adds the merchant charm and the gear; the tile discount adds the rebirth Thrift and the merchant Bulk Discount', () => {
 	const stats = character({ charisma: 10 });
 	const base = effectiveStats({ characterStats: stats, equipment: STARTER_EQUIPMENT });
-	const boosted = effectiveStats({ characterStats: stats, equipment: STARTER_EQUIPMENT, merchantUpgrades: { charm: 3, bulk: 4 }, prestige: prestige({ thrift: 5, mastery: 2, builders: 3 }) });
+	const boosted = effectiveStats({
+		characterStats: stats,
+		equipment: STARTER_EQUIPMENT,
+		merchantUpgrades: { charm: 3, bulk: 4 },
+		prestige: prestige({ thrift: 5, mastery: 2, builders: 3 }),
+	});
 	assert.equal(boosted.luck - base.luck, 6, 'three Lucky Charm levels are +6 Luck');
 	assert.equal(boosted.tileDiscount - base.tileDiscount, 4 + 5 * EMBER_UPGRADES.thrift.effectPerLevel * 100);
 	assert.equal(boosted.clickMastery, 2 * EMBER_UPGRADES.mastery.effectPerLevel * 100);

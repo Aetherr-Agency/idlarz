@@ -66,7 +66,8 @@ export const FloatingTip: React.FC<{
 			className={`fixed z-[100] ${onPointerEnter ? 'pointer-events-auto select-text' : 'pointer-events-none'}`}
 			style={{ left: anchor.right + 8, top: anchor.top, visibility: 'hidden' }}
 			onPointerEnter={onPointerEnter}
-			onPointerLeave={onPointerLeave}>
+			onPointerLeave={onPointerLeave}
+		>
 			{children}
 		</div>
 	);
@@ -162,7 +163,12 @@ const ItemSlot: React.FC<ItemSlotProps> = ({
 					setTip(null);
 					onContextMenu(e);
 				}}
-				style={def && rarity ? ({ '--glow': rarity.color, '--glow-blur': `${rarity.glow.blur}px`, '--glow-alpha': rarity.glow.alpha } as React.CSSProperties) : undefined}>
+				style={
+					def && rarity
+						? ({ '--glow': rarity.color, '--glow-blur': `${rarity.glow.blur}px`, '--glow-alpha': rarity.glow.alpha } as React.CSSProperties)
+						: undefined
+				}
+			>
 				{def ? (
 					<PixelIcon name={itemIconName(def)} alt={resolved?.name ?? def.name} className='inv-icon' />
 				) : slot ? (
@@ -174,16 +180,16 @@ const ItemSlot: React.FC<ItemSlotProps> = ({
 			{tip &&
 				hasTip &&
 				createPortal(
-						<FloatingTip anchor={tip} onPointerEnter={cancelClose} onPointerLeave={scheduleClose}>
-							{def ? (
-								<ItemTooltipStack item={item ?? undefined} itemId={itemId ?? undefined} compare={compare} buyPrice={buyPrice} />
-							) : (
-								<div className='px-tooltip'>
-									<div className='px-tip-muted text-sm'>{label}</div>
-								</div>
-							)}
-						</FloatingTip>,
-					document.body
+					<FloatingTip anchor={tip} onPointerEnter={cancelClose} onPointerLeave={scheduleClose}>
+						{def ? (
+							<ItemTooltipStack item={item ?? undefined} itemId={itemId ?? undefined} compare={compare} buyPrice={buyPrice} />
+						) : (
+							<div className='px-tooltip'>
+								<div className='px-tip-muted text-sm'>{label}</div>
+							</div>
+						)}
+					</FloatingTip>,
+					document.body,
 				)}
 		</>
 	);

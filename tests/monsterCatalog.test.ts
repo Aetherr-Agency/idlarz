@@ -26,7 +26,12 @@ test('the rats are gone: the four biomes with art are enabled, and exactly the e
 	const enabledBiomes = new Set(MONSTER_CATALOG.filter((m) => m.enabled).map((m) => m.biomes[0]));
 	assert.deepEqual([...enabledBiomes].sort(), ['forest', 'plains', 'swamp', 'tundra']);
 	assert.equal(MONSTER_CATALOG.filter((m) => m.enabled).length, 16);
-	assert.deepEqual(Object.keys(MONSTERS).sort(), MONSTER_CATALOG.filter((m) => m.enabled).map((m) => m.id).sort());
+	assert.deepEqual(
+		Object.keys(MONSTERS).sort(),
+		MONSTER_CATALOG.filter((m) => m.enabled)
+			.map((m) => m.id)
+			.sort(),
+	);
 	for (const m of MONSTER_CATALOG.filter((m) => m.enabled)) {
 		assert.equal(MONSTERS[m.id as keyof typeof MONSTERS].grade, m.grade);
 		assert.deepEqual([...m.biomes], [...MONSTERS[m.id as keyof typeof MONSTERS].spawn.biomes]);
@@ -41,7 +46,12 @@ test('an entry says it has art exactly when the picture file exists', () => {
 });
 
 test('monstersInBiome hides disabled monsters unless asked', () => {
-	assert.deepEqual(monstersInBiome('swamp').map((m) => m.id).sort(), ['bossMireMatriarch', 'dumpback', 'garbageOgre', 'rotHeron']);
+	assert.deepEqual(
+		monstersInBiome('swamp')
+			.map((m) => m.id)
+			.sort(),
+		['bossMireMatriarch', 'dumpback', 'garbageOgre', 'rotHeron'],
+	);
 	assert.equal(monstersInBiome('lake').length, 0, 'no lake monster is enabled');
 	assert.equal(monstersInBiome('lake', false).length, 4);
 	assert.equal(monstersInBiome('hills').length, 0);

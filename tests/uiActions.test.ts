@@ -27,7 +27,10 @@ test('dismissMonster removes the monster with no loot or XP', () => {
 	const before = { ...api().resources };
 	const bag = api().bag;
 	assert.equal(api().dismissMonster(1), true);
-	assert.deepEqual(api().monsters.map((m) => m.id), [2]);
+	assert.deepEqual(
+		api().monsters.map((m) => m.id),
+		[2],
+	);
 	assert.deepEqual(api().resources, before);
 	assert.equal(api().bag, bag);
 	assert.equal(api().dismissMonster(1), false, 'already gone');
@@ -119,7 +122,7 @@ test('the farm panels and the minimap are remembered: defaults first, then what 
 	assert.deepEqual(
 		[PREF_DEFAULTS.farmAnimalsOpen, PREF_DEFAULTS.farmHudOpen, PREF_DEFAULTS.farmUpgradesOpen],
 		[true, true, false],
-		'a first visit sees the shop and the readout open and the upgrade drawer shut'
+		'a first visit sees the shop and the readout open and the upgrade drawer shut',
 	);
 	// a working storage on a real (non-dev) host for this test only
 	const memory = new Map<string, string>();

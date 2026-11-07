@@ -38,7 +38,14 @@ test('tileXp adds up the XP of the purchases (the n-th purchase gives calculateX
 });
 
 test('an honest purchase is never clamped, at any size of map (the old check flagged it from about tile 45)', () => {
-	for (const [from, to] of [[19, 20], [44, 45], [71, 72], [99, 100], [330, 331], [900, 901]] as const) {
+	for (const [from, to] of [
+		[19, 20],
+		[44, 45],
+		[71, 72],
+		[99, 100],
+		[330, 331],
+		[900, 901],
+	] as const) {
 		const before = summaryAt(from, 5_000, 10_000);
 		const xp = before.xp + tileXp(from, to, before.xpGainPct);
 		const next = summaryAt(to, xp, 10_040);

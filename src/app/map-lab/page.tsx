@@ -35,7 +35,7 @@ const MapLab: React.FC = () => {
 						}
 						lab().drawCells(cells);
 					},
-					{ brush, onEnd: () => (snapped = false) }
+					{ brush, onEnd: () => (snapped = false) },
 				)
 			: undefined;
 		return {
@@ -64,7 +64,7 @@ const MapLab: React.FC = () => {
 		<MapSourceProvider value={source}>
 			<Grid />
 			{/* the real bottom right stack (combat window above the minimap); the combat window is the preview's mock */}
-				<BottomRightStack combat={previewing ? <CombatPreview /> : null} />
+			<BottomRightStack combat={previewing ? <CombatPreview /> : null} />
 			<LabPanel />
 		</MapSourceProvider>
 	);

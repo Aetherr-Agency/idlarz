@@ -219,7 +219,8 @@ export const sumStats = (...blocks: (ItemStats | undefined)[]): StatTotals => {
 export const statLabel = (key: string): string => (STAT_DEFS as Record<string, StatDef>)[key]?.label ?? key;
 
 /** A stat value for a tooltip: plain up to 9,999, then 12.34K / M / B / T like every other number in the game */
-const statText = (value: number, decimals?: number): string => (Math.abs(value) >= 10_000 ? formatNumber(value) : decimals ? value.toFixed(decimals) : String(value));
+const statText = (value: number, decimals?: number): string =>
+	Math.abs(value) >= 10_000 ? formatNumber(value) : decimals ? value.toFixed(decimals) : String(value);
 
 /** '+8% Crit Chance' */
 export const formatStat = (key: string, value: number): string => {

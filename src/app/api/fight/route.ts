@@ -27,7 +27,8 @@ const parseRequest = (body: Record<string, unknown>): { key: string | null; requ
 				return { key, request: { action: 'use', command: { kind: 'unqueue', n: command.n as number }, since: common } };
 			if (!key || !command || typeof command.id !== 'string') return null;
 			if (command.kind === 'potion') return { key, request: { action: 'use', command: { kind: 'potion', id: command.id }, since: common } };
-			if (command.kind === 'skill' && isSkillId(command.id)) return { key, request: { action: 'use', command: { kind: 'skill', id: command.id }, since: common } };
+			if (command.kind === 'skill' && isSkillId(command.id))
+				return { key, request: { action: 'use', command: { kind: 'skill', id: command.id }, since: common } };
 			return null;
 		}
 		case 'auto': {

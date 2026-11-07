@@ -42,8 +42,21 @@ test('a fresh character has no attribute bonuses: it plays exactly like before t
 	assert.equal(damagePerHit(STARTER_EQUIPMENT, fresh), 6);
 	assert.equal(armorOf(STARTER_EQUIPMENT, fresh), 2);
 	assert.equal(maxHp(fresh, STARTER_EQUIPMENT), 101);
-	assert.deepEqual(rollHit(fresh, STARTER_EQUIPMENT, () => 0), { damage: 6, crit: 'none' });
-	assert.deepEqual(rollHit(fresh, STARTER_EQUIPMENT, (() => { let n = 0; return () => (n++ ? 0 : 0.999); })()), { damage: 6 * COMBAT.crit.mult, crit: 'crit' });
+	assert.deepEqual(
+		rollHit(fresh, STARTER_EQUIPMENT, () => 0),
+		{ damage: 6, crit: 'none' },
+	);
+	assert.deepEqual(
+		rollHit(
+			fresh,
+			STARTER_EQUIPMENT,
+			(() => {
+				let n = 0;
+				return () => (n++ ? 0 : 0.999);
+			})(),
+		),
+		{ damage: 6 * COMBAT.crit.mult, crit: 'crit' },
+	);
 	assert.equal(fresh.physicalAtk, 0);
 	assert.equal(fresh.magicAtk, 0);
 	assert.equal(fresh.def, 0);
@@ -168,11 +181,21 @@ test('attribute tooltips group their effects by kind, and every effect lands in 
 	for (const stat of ['strength', 'dexterity', 'intelligence', 'vitality', 'charisma'] as const) {
 		const groups = getStatDescriptionGroups(stat);
 		const lines = groups.flatMap((group) => group.lines);
-		assert.deepEqual(lines.slice().sort(), getStatDescription(stat).split(' / ').map((l) => l.trim()).sort());
+		assert.deepEqual(
+			lines.slice().sort(),
+			getStatDescription(stat)
+				.split(' / ')
+				.map((l) => l.trim())
+				.sort(),
+		);
 	}
 	const economy = getStatDescriptionGroups('intelligence').find((group) => group.category.id === 'economy');
 	assert.ok(economy?.lines.some((line) => line.includes('production per point')));
-	assert.ok(getStatDescriptionGroups('intelligence').find((group) => group.category.id === 'magic')?.lines.some((line) => line.includes('Max Mana')));
+	assert.ok(
+		getStatDescriptionGroups('intelligence')
+			.find((group) => group.category.id === 'magic')
+			?.lines.some((line) => line.includes('Max Mana')),
+	);
 });
 
 test('every listed effect has a reader: the derived values equal the functions the fight uses', () => {
