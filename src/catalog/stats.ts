@@ -53,6 +53,42 @@ export const STAT_DEFS = {
 export type StatKey = keyof typeof STAT_DEFS;
 export const STAT_KEYS = Object.keys(STAT_DEFS) as StatKey[];
 
+// ---- categories: how tooltips group stats so a long list is quick to scan -----------------------------------------------------
+export type StatCategory = 'combat' | 'defense' | 'magic' | 'economy';
+
+/** In the order tooltips list them, with the heading and its color */
+export const STAT_CATEGORIES: readonly { id: StatCategory; label: string; color: string }[] = [
+	{ id: 'combat', label: 'Combat', color: '#e8894a' },
+	{ id: 'defense', label: 'Defense', color: '#6fb7e8' },
+	{ id: 'magic', label: 'Magic', color: '#b08cf0' },
+	{ id: 'economy', label: 'Generators', color: '#e6c04a' },
+];
+
+/** The category of every stat (a new stat must pick one: the type is complete) */
+export const STAT_CATEGORY: Record<StatKey, StatCategory> = {
+	damage: 'combat',
+	critChance: 'combat',
+	superCrit: 'combat',
+	lifeLeech: 'combat',
+	damagePct: 'combat',
+	armor: 'defense',
+	maxHp: 'defense',
+	maxHpPct: 'defense',
+	regen: 'defense',
+	dodge: 'defense',
+	maxMana: 'magic',
+	manaRegen: 'magic',
+	spellPower: 'magic',
+	luck: 'economy',
+	goldFind: 'economy',
+	incomePct: 'economy',
+	xpPct: 'economy',
+	killRewardPct: 'economy',
+	offlineEff: 'economy',
+	offlineCapHours: 'economy',
+	clickPct: 'economy',
+};
+
 type SetOnlyKey = { [K in StatKey]: (typeof STAT_DEFS)[K] extends { setOnly: true } ? K : never }[StatKey];
 /** The stats an item can carry (everything but the set-only ones) */
 export type ItemStatKey = Exclude<StatKey, SetOnlyKey>;

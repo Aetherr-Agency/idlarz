@@ -464,7 +464,7 @@ export const combatView = (ledger: Ledger, env: CombatEnv, since: number, behind
 			const king = ledger.bank.king && ledger.bank.king.n === n && isPlaced(ledger.bank.king) ? ledger.bank.king : undefined;
 			const ticket = rat ?? king;
 			if (!ticket) return [];
-			return [{ n, type: monsterTypeOf(ticket, rat ? 'rat' : 'king'), level: levelAtAge(ticket.spawnLevel ?? 1, c.at - ticket.at) }];
+			return [{ n, type: monsterTypeOf(ticket, rat ? 'rat' : 'king'), level: levelAtAge(ticket.spawnLevel ?? 1, c.at - ticket.at), lucky: !!ticket.lucky }];
 		}),
 		queueMax: limitOf('battleQueue'),
 		autoBattle: c.autoBattle,

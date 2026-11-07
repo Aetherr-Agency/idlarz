@@ -726,13 +726,20 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 	barracks: { name: 'barracks', label: 'Barracks', resourceGeneration: { gold: 0.1, xp: 0.1 } },
 };
 
-// Gold per click = total gold/s x click power. Four upgrade levels, bought from the merchant.
+// Gold per click = total gold/s x click power, but never less than the level's `floor` (so a click always feels like something, even in
+// the first minutes when the income is tiny). Four upgrade levels, bought from the merchant.
 export const CLICK_LADDER = [
-	{ power: 0.5, price: 0 },
-	{ power: 0.9, price: 750000 },
-	{ power: 1.3, price: 2500000 },
-	{ power: 1.8, price: 10000000 },
+	{ power: 2, floor: 2, price: 0 },
+	{ power: 4, floor: 6, price: 750000 },
+	{ power: 8, floor: 20, price: 2500000 },
+	{ power: 15, floor: 60, price: 10000000 },
 ] as const;
+
+/** Gold of one click at a ladder level: gold/s x power (at least the level's floor), then the multipliers (Click Mastery, set bonus). */
+export const clickGold = (goldPerSec: number, clickLevel: number, multiplier = 1): number => {
+	const level = CLICK_LADDER[clickLevel] ?? CLICK_LADDER[0];
+	return Math.max(goldPerSec * level.power, level.floor) * multiplier;
+};
 
 // Click rate limiter: two token buckets, a click must take a token from both.
 // - burst: up to `capacity` clicks at once, refilling `refillPerSec` per second (a fast human is never limited here;
@@ -887,7 +894,7 @@ export const EMBER_UPGRADES = {
 		maxLevel: 10,
 		baseCost: 2,
 		costGrowth: 1.4,
-		effectPerLevel: 0.1, // +10% gold per click per level
+		effectPerLevel: 0.25, // +25% gold per click per level
 	},
 	provisions: {
 		label: 'Provisions',

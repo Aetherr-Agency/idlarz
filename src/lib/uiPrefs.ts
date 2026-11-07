@@ -36,6 +36,38 @@ export const readPref = (key: UiPrefKey): boolean => {
 	}
 };
 
+const jsonKey = (key: string) => scoped(`idlarz.ui.${key}`);
+
+/** A remembered string (the merchant's amount, a tab): null when nothing is stored or storage is unavailable */
+export const readStringPref = (key: string): string | null => {
+	try {
+		return window.localStorage.getItem(jsonKey(key));
+	} catch {
+		return null;
+	}
+};
+
+export const writeStringPref = (key: string, value: string): void => {
+	try {
+		window.localStorage.setItem(jsonKey(key), value);
+	} catch {
+		/* storage unavailable: not remembered */
+	}
+};
+
+/** A remembered JSON value (window positions): null when missing or unreadable. The caller validates the shape. */
+export const readJsonPref = (key: string): unknown => {
+	const raw = readStringPref(key);
+	if (raw === null) return null;
+	try {
+		return JSON.parse(raw);
+	} catch {
+		return null;
+	}
+};
+
+export const writeJsonPref = (key: string, value: unknown): void => writeStringPref(key, JSON.stringify(value));
+
 export const writePref = (key: UiPrefKey, value: boolean): void => {
 	try {
 		window.localStorage.setItem(storageKey(key), value ? '1' : '0');

@@ -3,6 +3,7 @@ import type { Resources } from '@/types/game';
 import type { SaveRepo, StoredSave, WorldPart } from './pipeline';
 import type { SaveFlag } from './verify';
 import { DEFAULT_DERIVED, type SaveDerived } from './summary';
+import { runSecondsOf, type RebirthEntry } from './rebirthHistory';
 
 interface Row {
 	rev: number;
@@ -169,5 +170,57 @@ export const supabaseSaveRepo = (db: SupabaseClient): SaveRepo => {
 			}
 			await trim(userId, true, keep);
 		},
+
+		async recordRebirth(userId, record) {
+			// the run's length is this rebirth's play time minus the previous rebirth's
+			const { data: last } = await db.from('rebirth_history').select('play_seconds').eq('user_id', userId).lt('rebirth_no', record.rebirthNo).order('rebirth_no', { ascending: false }).limit(1).maybeSingle();
+			const { error } = await db.from('rebirth_history').upsert(
+				{
+					user_id: userId,
+					rebirth_no: record.rebirthNo,
+					at: iso(record.at),
+					run_seconds: runSecondsOf(record, last ? Number(last.play_seconds) : null),
+					play_seconds: record.playSeconds,
+					tiles: record.tiles,
+					buildings: record.buildings,
+					castle_level: record.castleLevel,
+					level: record.level,
+					xp: record.xp,
+					gold: record.gold,
+					gold_per_sec: record.goldPerSec,
+					click_level: record.clickLevel,
+					embers_gained: record.embersGained,
+					legacy_earned: record.legacyEarned,
+					stats: { rates: record.rates },
+				},
+				{ onConflict: 'user_id,rebirth_no', ignoreDuplicates: true }
+			);
+			if (error) throw new Error(error.message);
+		},
 	};
+};
+
+const HISTORY_COLUMNS = 'rebirth_no, at, run_seconds, play_seconds, tiles, buildings, castle_level, level, xp, gold, gold_per_sec, click_level, embers_gained, legacy_earned, stats';
+
+/** The rebirths of a player, newest first (the Rebirths tab). `db` is the player's own client: row level security lets them read only their own rows. */
+export const loadRebirthHistory = async (db: SupabaseClient, userId: string, limit = 200): Promise<RebirthEntry[]> => {
+	const { data, error } = await db.from('rebirth_history').select(HISTORY_COLUMNS).eq('user_id', userId).order('rebirth_no', { ascending: false }).limit(limit);
+	if (error) throw new Error(error.message);
+	return (data ?? []).map((row) => ({
+		rebirthNo: row.rebirth_no,
+		at: row.at,
+		runSeconds: Number(row.run_seconds),
+		playSeconds: Number(row.play_seconds),
+		tiles: row.tiles,
+		buildings: row.buildings,
+		castleLevel: row.castle_level,
+		level: row.level,
+		xp: Number(row.xp),
+		gold: Number(row.gold),
+		goldPerSec: Number(row.gold_per_sec),
+		clickLevel: row.click_level,
+		embersGained: row.embers_gained,
+		legacyEarned: row.legacy_earned,
+		rates: (row.stats?.rates ?? {}) as Resources,
+	}));
 };

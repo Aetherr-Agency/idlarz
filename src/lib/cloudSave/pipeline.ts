@@ -7,6 +7,7 @@ import { SAVE_SCHEMA, decodeSave, packBody, sealWire, type SaveBody } from '@/li
 import { checkNetWorth } from './netWorth';
 import { summarize, type SaveSummary } from './summary';
 import { settleXp } from './xpModel';
+import { rebirthRecordOf, type RebirthRecord } from './rebirthHistory';
 import { calculateLevel, reconcileCharacter } from '@/utils/gameUtils';
 import { POISON_FLAGS, VERIFY, verifyTransition, type SaveFlag, type Snapshot } from './verify';
 
@@ -68,6 +69,8 @@ export interface SaveRepo {
 	archive(userId: string, save: StoredSave, keep: number): Promise<void>;
 	/** Keeps a copy of a full save that ordinary trimming never drops (only the newest `keep` pinned ones stay). */
 	pin(userId: string, save: StoredSave, keep: number): Promise<void>;
+	/** Keeps the record of a rebirth (the Rebirths tab); recording the same rebirth twice changes nothing. Optional: a store without history just has none. */
+	recordRebirth?(userId: string, record: RebirthRecord): Promise<void>;
 }
 
 export type SaveOutcome =
@@ -206,6 +209,13 @@ export const acceptSave = async (
 	}
 
 	if (archive) await repo.archive(userId, { ...save, world }, HISTORY_KEEP);
+
+	// A higher rebirth count: the run that just ended goes into the rebirth history, from the save before this one (a failure here never
+	// loses the save: the history is a log, not the game)
+	if (current && repo.recordRebirth) {
+		const record = rebirthRecordOf(current.summary, summary, nowMs);
+		if (record) await repo.recordRebirth(userId, record).catch(() => undefined);
+	}
 
 	if (ledgers && ledgerUsable) {
 		try {

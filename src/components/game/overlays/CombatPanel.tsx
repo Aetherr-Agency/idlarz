@@ -136,7 +136,7 @@ const STAGE_ART_FACTOR = 2.6;
 
 export interface CombatPanelProps {
 	/** The monster the window is about; `art` (a roster id, the map lab) draws another roster monster's picture instead of its own */
-	monster: { type: MonsterType; level: number; art?: string };
+	monster: { type: MonsterType; level: number; art?: string; lucky?: boolean };
 	/** Draw the monster mirrored, so it faces left toward the hero */
 	flip?: boolean;
 	/** The open fight (timer and stun), when there is one */
@@ -162,7 +162,7 @@ export interface CombatPanelProps {
 	hitTick: number;
 	shake: boolean;
 	/** The monsters waiting for their turn (the battle queue) and a way to take one out; both left out in the lab */
-	queue?: { n: number; type: MonsterType; level: number }[];
+	queue?: { n: number; type: MonsterType; level: number; lucky?: boolean }[];
 	queueMax?: number;
 	onUnqueue?: (n: number) => void;
 	onFlee: () => void;
@@ -292,13 +292,22 @@ const CombatPanel: React.FC<CombatPanelProps> = (p) => {
 						Time left: {Math.ceil(fight.timeLeftSec)} s
 					</div>
 				)}
-				<div className='combat-stage'>
+				<div className='combat-stage' data-lucky={!!monster.lucky && !dead}>
 					<span key={hpKey} className='fight-sprite' data-hit={!over && p.hitTick > 0} data-loading={p.loading}>
 						<span className={dead ? 'fight-dead' : undefined} style={flip ? { display: 'block', transform: 'scaleX(-1)' } : undefined}>
 							{art}
 						</span>
 					</span>
 					{p.loading && <div className='fight-loading'>Engaging...</div>}
+					{monster.lucky && !dead && (
+						<span className='fight-sparks' aria-hidden>
+							{[0, 1, 2, 3, 4, 5].map((i) => (
+								<i key={i} style={{ left: `${12 + i * 15}%`, animationDelay: `${i * 0.37}s` }}>
+									✦
+								</i>
+							))}
+						</span>
+					)}
 					{fight && fight.stunLeft > 0 && <div className='fight-stunned'>Stunned {fight.stunLeft.toFixed(1)} s</div>}
 					{p.numbers.map((n) => (
 						<span key={n.id} className='fight-number' data-kind={n.kind} style={{ left: `${n.x}%` }}>
@@ -311,13 +320,21 @@ const CombatPanel: React.FC<CombatPanelProps> = (p) => {
 				<Bar value={player.hp} max={player.maxHp} kind='player' label='You' snapKey={p.snapKey} />
 				<Bar value={player.mp} max={player.maxMp} kind='mana' label='Mana' snapKey={p.snapKey} />
 				{p.queue && p.queue.length > 0 && (
-					<div className='fight-queue' aria-label='Battle queue'>
-						<span className='fight-queue-title'>
-							Next ({p.queue.length}/{p.queueMax ?? p.queue.length})
+					<div className='fight-queue' aria-label={`Battle queue: ${p.queue.length} of ${p.queueMax ?? p.queue.length}`}>
+						<span className='fight-queue-title' title='Monsters waiting for their turn (the queue holds this many)'>
+							{p.queue.length}/{p.queueMax ?? p.queue.length}
 						</span>
 						{p.queue.map((q, i) => (
-							<span key={q.n} className='fight-queue-item' data-boss={monsterDef(q.type).grade === 'boss'} title={`${monsterDef(q.type).label}, level ${q.level}`}>
-								<b>{i + 1}</b> {monsterDef(q.type).label} <i>Lv {formatCompact(q.level)}</i>
+							<span
+								key={q.n}
+								className='fight-queue-item'
+								data-boss={monsterDef(q.type).grade === 'boss'}
+								data-lucky={!!q.lucky}
+								title={`${i + 1}. ${q.lucky ? 'Lucky ' : ''}${monsterDef(q.type).label}, level ${q.level}`}>
+								<span className='fight-queue-art'>
+									<MonsterArt type={q.type} scale={0.8} />
+								</span>
+								<i className='fight-queue-lv'>{formatCompact(q.level)}</i>
 								{p.onUnqueue && (
 									<button className='fight-queue-x' onClick={() => p.onUnqueue!(q.n)} aria-label={`Take ${monsterDef(q.type).label} out of the queue`} title='Take it out of the queue'>
 										x

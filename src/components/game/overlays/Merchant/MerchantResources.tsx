@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useGameStore } from '@/stores/gameStore';
-import { useUiStore } from '@/stores/uiStore';
+import { MERCHANT_CUSTOM_MAX, useUiStore } from '@/stores/uiStore';
 import { MERCHANT_BUYABLE, MERCHANT_BUY_MULTIPLIER, MERCHANT_RESOURCE_INFO, MERCHANT_RESOURCE_PRICES } from '@/config/gameConfig';
 import { formatCompact, formatNumber, parseAmount } from '@/utils/formatters';
 import { buyCost, sellMultiplier, sellPayout } from '@/utils/gameUtils';
@@ -41,8 +41,11 @@ export const MerchantResources: React.FC = () => {
 	const sellResources = useGameStore((state) => state.sellResources);
 	const buyResource = useGameStore((state) => state.buyResource);
 	const showToast = useUiStore((state) => state.showToast);
-	const [preset, setPreset] = useState<Amount>(1_000);
-	const [custom, setCustom] = useState('');
+	// kept in the ui store (and remembered): they survive switching tabs or closing the window
+	const preset = useUiStore((state) => state.merchantPreset);
+	const setPreset = useUiStore((state) => state.setMerchantPreset);
+	const custom = useUiStore((state) => state.merchantCustom);
+	const setCustom = useUiStore((state) => state.setMerchantCustom);
 	// a typed amount wins while it reads as a number; a chip click clears it
 	const typed = custom.trim() === '' ? null : parseAmount(custom);
 	const amount: Amount = typed ?? preset;
@@ -97,7 +100,7 @@ export const MerchantResources: React.FC = () => {
 					data-active={typed !== null}
 					data-invalid={custom.trim() !== '' && typed === null}
 					value={custom}
-					maxLength={12}
+					maxLength={MERCHANT_CUSTOM_MAX}
 					onChange={(event) => setCustom(event.target.value)}
 				/>
 				<span className='text-xs text-[#a89878] mr-note'>

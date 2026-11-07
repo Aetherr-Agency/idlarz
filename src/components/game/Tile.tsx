@@ -30,7 +30,7 @@ import { growthInfo, growthSecondsLeft, isBoss, maxLevelOf, monsterAt, monsterSt
 import { limitOf } from '@/lib/limits';
 import { MONSTERS } from '@/config/combatConfig';
 import { MONSTER_CATALOG } from '@/catalog/monsters';
-import CastleUpgradeDialog from './CastleUpgradeDialog';
+import { useWindowStore } from '@/stores/windowStore';
 import { useMapTipLayer } from './MapTipLayer';
 import { useUiStore, type ContextMenuItem } from '@/stores/uiStore';
 import { useGameStore } from '@/stores/gameStore';
@@ -123,7 +123,6 @@ const Tile: React.FC<TileProps> = ({
 	const queuePos = useGameStore((state) => (monsterTicket === undefined ? 0 : state.combat.queue.findIndex((q) => q.n === monsterTicket) + 1));
 	const lineOpen = useGameStore((state) => !!state.combat.fight || state.combat.queue.length > 0);
 	const [isShaking, setIsShaking] = useState(false);
-	const [showCastleDialog, setShowCastleDialog] = useState(false);
 	const [showChestTooltip, setShowChestTooltip] = useState(false);
 	const [hovered, setHovered] = useState(false);
 	const tipLayer = useMapTipLayer();
@@ -158,7 +157,9 @@ const Tile: React.FC<TileProps> = ({
 		// A monster on this tile: a (real) click asks the server to start the fight against it, auto-battle or not; no chest, no gold
 		if (isOwned && monsterKey) {
 			e.stopPropagation();
-			if (e.nativeEvent.isTrusted && startFight(Number(monsterId))) audioManager.playSound('click');
+			// the click sound is for starting a fight: a click that only joins or leaves the queue is silent (it sounded like a purchase)
+			const lineWasOpen = lineOpen;
+			if (e.nativeEvent.isTrusted && startFight(Number(monsterId)) && !lineWasOpen) audioManager.playSound('click');
 			return;
 		}
 
@@ -178,7 +179,7 @@ const Tile: React.FC<TileProps> = ({
 			if (biome === 'castle') {
 				audioManager.playSound('click');
 				if (castleLevel >= CASTLE_UPGRADE.maxLevel) useUiStore.getState().toggleRebirth();
-				else setShowCastleDialog(true);
+				else useWindowStore.getState().openWindow('castle');
 				return;
 			}
 
@@ -384,9 +385,6 @@ const Tile: React.FC<TileProps> = ({
 					tipLayer
 				)}
 
-			{/* Dialogs go to <body>: inside the map they would be scaled and panned together with the tiles */}
-			{showCastleDialog &&
-				createPortal(<CastleUpgradeDialog onClose={() => setShowCastleDialog(false)} />, document.body)}
 		</>
 	);
 };

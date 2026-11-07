@@ -5,11 +5,13 @@ import { MAX_LEVEL } from '@/config/gameConfig';
 import { rebirthStatus, xpToNextLevel } from '@/utils/gameUtils';
 import { useMenuAttention } from '@/hooks/useMenuAttention';
 import { useUiStore } from '@/stores/uiStore';
+import { useWindowStore, type WinId } from '@/stores/windowStore';
 import { openMenuAt } from '@/lib/globalMenu';
 import { castleTimerLabel } from '@/lib/castleTimer';
 import { useViewStore } from '@/stores/viewStore';
 import { cn } from '@/lib/utils';
 import PixelIcon from './PixelIcon';
+import type { PixelIconName } from '@/config/pixelIcons';
 import LevelOrb from './LevelOrb';
 import NotifyDot from './NotifyDot';
 import CharacterPortrait from './CharacterPortrait';
@@ -27,8 +29,8 @@ export const PlayerCard: React.FC = () => {
 	const playerName = useGameStore((state) => state.playerName);
 	const availablePoints = useGameStore((state) => state.characterStats.availablePoints);
 	const attention = useMenuAttention();
-	const openMenu = useUiStore((state) => state.openMenu);
-	const statsOpen = useUiStore((state) => state.menuOpen && state.menuTab === 'stats');
+	const toggleWindow = useWindowStore((state) => state.toggleWindow);
+	const statsOpen = useWindowStore((state) => state.order.includes('character'));
 	const [levelUpActive, setLevelUpActive] = useState(false);
 	const [prevAvailablePoints, setPrevAvailablePoints] = useState(0);
 
@@ -53,11 +55,11 @@ export const PlayerCard: React.FC = () => {
 			role='button'
 			tabIndex={0}
 			aria-label={`${playerName}, level ${level.level}. Opens the character screen`}
-			onClick={() => openMenu('stats')}
+			onClick={() => toggleWindow('character')}
 			onKeyDown={(event) => {
 				if (event.key === 'Enter' || event.key === ' ') {
 					event.preventDefault();
-					openMenu('stats');
+					toggleWindow('character');
 				}
 			}}>
 			<span className='pixel-avatar'>
@@ -89,7 +91,47 @@ export const PlayerCard: React.FC = () => {
 	);
 };
 
-/** The Rebirth button (always there, greyed out until a rebirth is possible) and the Settings menu. */
+const WINDOW_BUTTONS: { id: WinId; label: string; icon: PixelIconName }[] = [
+	{ id: 'equipment', label: 'Equipment', icon: 'menu_character' },
+	{ id: 'character', label: 'Character', icon: 'menu_stats' },
+	{ id: 'merchant', label: 'Merchant', icon: 'menu_merchant' },
+	{ id: 'farm', label: 'Farm', icon: 'menu_farm' },
+];
+
+/** One button per window: each opens (or, when it is the front one, closes) its window; several can be open together. */
+const WindowButtons: React.FC = () => {
+	const order = useWindowStore((state) => state.order);
+	const toggleWindow = useWindowStore((state) => state.toggleWindow);
+	const attention = useMenuAttention();
+	const dots: Partial<Record<WinId, boolean>> = { character: attention.stats, farm: attention.farm };
+	return (
+		<div className='flex items-center gap-1'>
+			{WINDOW_BUTTONS.map(({ id, label, icon }) => (
+				<div
+					key={id}
+					className='pixel-slot pixel-slot-sm relative'
+					data-active={order.includes(id)}
+					title={label}
+					role='button'
+					tabIndex={0}
+					aria-label={label}
+					aria-pressed={order.includes(id)}
+					onClick={() => toggleWindow(id)}
+					onKeyDown={(event) => {
+						if (event.key === 'Enter' || event.key === ' ') {
+							event.preventDefault();
+							toggleWindow(id);
+						}
+					}}>
+					<PixelIcon name={icon} alt='' scale={0.6} />
+					<NotifyDot show={!!dots[id]} label={id === 'character' ? 'Unassigned stat points' : 'An animal or upgrade is affordable'} />
+				</div>
+			))}
+		</div>
+	);
+};
+
+/** The window buttons, the Rebirth button (always there, greyed out until a rebirth is possible) and the Settings menu. */
 export const HeaderButtons: React.FC = () => {
 	const settingsOpen = useUiStore((state) => state.settingsOpen);
 	const rebirthOpen = useUiStore((state) => state.rebirthOpen);
@@ -111,6 +153,7 @@ export const HeaderButtons: React.FC = () => {
 
 	return (
 		<div className='flex items-center gap-1.5 shrink-0'>
+			<WindowButtons />
 			{castleTimer && (
 				<div
 					className='hdr-castle-timer'

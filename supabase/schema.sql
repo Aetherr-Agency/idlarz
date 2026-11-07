@@ -122,7 +122,38 @@ create table public.player_ledger (
   constraint ledger_gems_range   check (gems >= 0 and gems <= 1000000000)
 );
 
+-- ---- rebirth_history: one row per rebirth (the Rebirths tab of the Character window; migration rebirth_history) ------------
+-- Written ONLY by the server when an accepted save shows a higher rebirth count, from the last accepted save of the run that ended.
+create table public.rebirth_history (
+  id             bigint generated always as identity primary key,
+  user_id        uuid        not null references auth.users (id) on delete cascade,
+  rebirth_no     integer     not null,                 -- the rebirth count reached (1 = the first rebirth)
+  at             timestamptz not null default now(),
+  run_seconds    numeric     not null default 0,       -- play time of the run that ended
+  play_seconds   numeric     not null default 0,       -- total play time at the rebirth
+  tiles          integer     not null default 0,
+  buildings      integer     not null default 0,
+  castle_level   integer     not null default 1,
+  level          integer     not null default 1,
+  xp             numeric     not null default 0,
+  gold           numeric     not null default 0,
+  gold_per_sec   numeric     not null default 0,       -- the run's gold income when it ended (the "generation")
+  click_level    integer     not null default 0,
+  embers_gained  integer     not null default 0,
+  legacy_earned  integer     not null default 0,       -- Embers ever earned, after this rebirth
+  stats          jsonb       not null default '{}'::jsonb,
+  unique (user_id, rebirth_no)                         -- a retried save never records one rebirth twice
+);
+create index rebirth_history_user on public.rebirth_history (user_id, rebirth_no desc);
+
 -- ---- access ----------------------------------------------------------------------------------------------------------
+alter table public.rebirth_history enable row level security;
+revoke all on table public.rebirth_history from anon, authenticated, public;
+grant select on public.rebirth_history to authenticated;
+create policy "rebirth_history_select_own" on public.rebirth_history for select to authenticated using (user_id = (select auth.uid()));
+grant select, insert, update, delete on public.rebirth_history to service_role;
+grant usage, select on sequence public.rebirth_history_id_seq to service_role;
+
 alter table public.player_saves  enable row level security;
 alter table public.player_worlds enable row level security;
 alter table public.player_stats  enable row level security;

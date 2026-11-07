@@ -14,7 +14,7 @@ export const STEEL_ITEMS: ItemDef[] = [
 	gear('recurve_bow', 'Recurve Bow', 'mainHand', 'uncommon', { damage: 9, critChance: 12 }, { tier: 2, weaponType: 'bow', art: true, description: 'Steel-backed limbs for sharp shooting.' }),
 	gear('steel_shield', 'Steel Shield', 'offHand', 'uncommon', { armor: 8, maxHp: 2 }, { ...steel, weaponType: 'shield', description: 'Studded and round.' }),
 	gear('steel_helm', 'Steel Helm', 'head', 'uncommon', { armor: 4, maxHp: 3 }, { ...steel, description: 'A kettle helm with a blue band.' }),
-	gear('steel_pauldrons', 'Steel Pauldrons', 'shoulder', 'uncommon', { armor: 3, maxHp: 3 }, { ...steel, description: 'Shrugs off glancing blows.' }),
+	gear('steel_pauldrons', 'Steel Shoulderpads', 'shoulder', 'uncommon', { armor: 3, maxHp: 3 }, { ...steel, description: 'Shrugs off glancing blows.' }),
 	gear('steel_cuirass', 'Steel Cuirass', 'chest', 'uncommon', { armor: 7, maxHp: 6 }, { ...steel, description: 'A breastplate over a blue tabard.' }),
 	gear('steel_gauntlets', 'Steel Gauntlets', 'hands', 'uncommon', { armor: 2, maxHp: 2 }, { ...steel, description: 'Hinged and heavy.' }),
 	gear('steel_greaves', 'Steel Greaves', 'legs', 'uncommon', { armor: 5, maxHp: 4 }, { ...steel, description: 'Knee cops that have met a few rats.' }),

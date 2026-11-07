@@ -4,6 +4,7 @@ import { api, freshGame, growTo, owned, patchTileAt, setResources, store, tileAt
 import {
 	CASTLE_UPGRADE,
 	CLICK_LADDER,
+	clickGold,
 	CASTLE_X,
 	CASTLE_Y,
 	MAX_CATCHUP_SEC,
@@ -191,7 +192,10 @@ test('click power: untrusted clicks pay nothing, trusted clicks pay gold/s x pow
 	assert.equal(api().clickForGold({ eventId: 1, now: 0, trusted: false }), 0);
 	const rate = api().resourceRates.total.gold;
 	const paid = api().clickForGold({ eventId: 2, now: 10_000, trusted: true });
-	assert.ok(Math.abs(paid - rate * CLICK_LADDER[0].power) < 1e-9);
+	assert.ok(Math.abs(paid - Math.max(rate * CLICK_LADDER[0].power, CLICK_LADDER[0].floor)) < 1e-9);
+	// the floor: with no income at all a click still pays the level's minimum
+	assert.equal(clickGold(0, 0), CLICK_LADDER[0].floor);
+	assert.equal(clickGold(100, 1, 1.5), 100 * CLICK_LADDER[1].power * 1.5);
 	setResources({ gold: 0 });
 	assert.equal(api().buyClickUpgrade(), false);
 	setResources({ gold: CLICK_LADDER[1].price });

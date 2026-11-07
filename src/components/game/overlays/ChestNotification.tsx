@@ -11,15 +11,14 @@ import { RARITY_COLOR, itemIconName } from '../itemUi';
 
 interface ChestNotificationProps {
 	loot: (ChestLoot & { gems?: number }) | null;
-	show: boolean;
 	onClose: () => void;
 }
 
 const fmt = (n: number) => formatNumber(Math.floor(n));
 
 /** The toast after opening a chest: what was inside, in the same gold-framed style for every kind. */
-const ChestNotification: React.FC<ChestNotificationProps> = ({ loot, show, onClose }) => {
-	if (!show || !loot) return null;
+const ChestNotification: React.FC<ChestNotificationProps> = ({ loot, onClose }) => {
+	if (!loot) return null;
 
 	let title: React.ReactNode;
 	let detail: React.ReactNode = null;

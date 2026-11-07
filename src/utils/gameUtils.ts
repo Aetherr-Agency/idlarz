@@ -44,6 +44,7 @@ import {
 	Tile,
 	TileCost,
 } from '@/types/game';
+import { STAT_CATEGORIES, type StatCategory } from '@/catalog/stats';
 import { castleAreaBonus, castleRangeRadius, inCastleRange } from '@/lib/castleWard';
 import type { CombatBonus } from '@/lib/combat';
 import { STAT_RULES } from '@/config/combatConfig';
@@ -121,6 +122,24 @@ export const getStatDescription = (
 	};
 
 	return descriptions[stat];
+};
+
+/** Which kind of effect one line of a stat description is (the same categories item tooltips group by) */
+const descriptionCategory = (line: string): StatCategory => {
+	if (/production|XP gained|Discount|Luck|chest/i.test(line)) return 'economy';
+	if (/Mana|magic weapons/i.test(line)) return 'magic';
+	if (/damage|DMG|Crit|ATK Speed/i.test(line)) return 'combat';
+	return 'defense';
+};
+
+/** The description of an attribute split into its effects and grouped by kind: Generators (income, XP), Combat, Defense, Magic. */
+export const getStatDescriptionGroups = (stat: keyof Omit<CharacterStats, 'availablePoints'>) => {
+	const lines = getStatDescription(stat)
+		.split(' / ')
+		.map((line) => line.trim());
+	return STAT_CATEGORIES.map((category) => ({ category, lines: lines.filter((line) => descriptionCategory(line) === category.id) })).filter(
+		(group) => group.lines.length > 0
+	);
 };
 
 /**

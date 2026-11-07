@@ -13,7 +13,7 @@ export const CLOTH_ITEMS: ItemDef[] = [
 	gear('apprentice_wand', 'Apprentice Wand', 'mainHand', 'common',{ damage: 5, critChance: 4, luck: 2, spellPower: baseStat('spellPower', 1) }, { tier: 1, weaponType: 'wand', art: true, description: 'Sparks wherever it points.' }),
 	gear('apprentice_tome', 'Apprentice Tome', 'offHand', 'common',{ maxHp: 6, regen: 0.3, maxMana: baseStat('maxMana', 1), manaRegen: baseStat('manaRegen', 1) * 1.5 }, { ...cloth, weaponType: 'tome', description: 'Half the pages are doodles.' }),
 	gear('cloth_hat', 'Apprentice Hat', 'head', 'common',{ maxHp: 4, luck: 1, maxMana: 4 }, { ...cloth, description: 'Pointy, purple and slightly too big.' }),
-	gear('cloth_mantle', 'Linen Mantle', 'shoulder', 'common', { armor: 1, maxHp: 3 }, { ...cloth, description: 'Soft linen with gold piping.' }),
+	gear('cloth_mantle', 'Linen Shoulderpads', 'shoulder', 'common', { armor: 1, maxHp: 3 }, { ...cloth, description: 'Soft linen with gold piping.' }),
 	gear('cloth_robe', 'Apprentice Robe', 'chest', 'common',{ armor: 1, maxHp: 8, regen: 0.3, manaRegen: baseStat('manaRegen', 1) }, { ...cloth, description: 'Woven with a little patience.' }),
 	gear('cloth_gloves', 'Linen Gloves', 'hands', 'common', { maxHp: 2, critChance: 1 }, { ...cloth, description: 'Nimble fingers, steady aim.' }),
 	gear('cloth_trousers', 'Apprentice Trousers', 'legs', 'common', { armor: 1, maxHp: 4 }, { ...cloth, description: 'Easy to run in.' }),

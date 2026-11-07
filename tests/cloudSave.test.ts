@@ -16,6 +16,7 @@ import {
 	type WorldPart,
 } from '../src/lib/cloudSave/pipeline';
 import { summarize } from '../src/lib/cloudSave/summary';
+import { rebirthRecordOf, runSecondsOf, type RebirthRecord } from '../src/lib/cloudSave/rebirthHistory';
 import { VERIFY, verifyTransition } from '../src/lib/cloudSave/verify';
 import { isNonProduction } from '../src/lib/cloudSave/environment';
 import { setTile as setWorldTile, getTile as getWorldTile } from '../src/utils/world';
@@ -34,7 +35,11 @@ const memoryRepo = () => {
 	const stats = new Map<string, StatsRow>();
 	const history: Hist[] = [];
 	let worldWrites = 0;
+	const rebirths: (RebirthRecord & { userId: string })[] = [];
 	const repo: SaveRepo = {
+		recordRebirth: async (id, record) => {
+			if (!rebirths.some((r) => r.userId === id && r.rebirthNo === record.rebirthNo)) rebirths.push({ ...record, userId: id }); // the same rebirth twice changes nothing
+		},
 		load: async (id, options) => {
 			const row = rows.get(id);
 			if (!row) return null;
@@ -64,7 +69,7 @@ const memoryRepo = () => {
 			pinned.slice(keep).forEach((h) => history.splice(history.indexOf(h), 1));
 		},
 	};
-	return { repo, rows, worlds, stats, history, worldWrites: () => worldWrites };
+	return { repo, rows, worlds, stats, history, rebirths, worldWrites: () => worldWrites };
 };
 
 const game = (patch: Partial<PersistedGame> = {}): PersistedGame => {
@@ -387,4 +392,43 @@ test('a rebirth resets the castle without a flag', () => {
 		null
 	);
 	assert.ok(!flagsOf(prev, reborn, T0 + 61_000).includes('castle_jump'));
+});
+
+const rebirthed = (state: PersistedGame, rebirths: number, legacyEarned: number): PersistedGame => ({
+	...state,
+	playSeconds: state.playSeconds + 12,
+	prestige: { ...state.prestige, rebirths, legacyEarned, legacyPoints: legacyEarned },
+});
+
+test('a rebirth is recorded from the save before it: the run that ended, once, with the Embers it paid', async () => {
+	const { repo, rebirths } = memoryRepo();
+	const run = game();
+	await accept(repo, 'u1', run, 0, T0);
+	const before = summarize(run);
+	const next = rebirthed(run, 1, 4);
+	assert.equal((await accept(repo, 'u1', next, 1, T0 + MIN_SAVE_INTERVAL_MS + 1000)).kind, 'ok');
+	assert.equal(rebirths.length, 1);
+	const [record] = rebirths;
+	assert.equal(record.rebirthNo, 1);
+	assert.equal(record.tiles, before.tilesOwned, 'the tiles of the run that ended, not of the fresh one');
+	assert.equal(record.goldPerSec, before.rates.gold);
+	assert.equal(record.embersGained, 4);
+	assert.equal(record.legacyEarned, 4);
+
+	// an ordinary save after it records nothing; the next rebirth is number 2 with only its own Embers
+	assert.equal((await accept(repo, 'u1', { ...next, playSeconds: next.playSeconds + 12 }, 2, T0 + 2 * (MIN_SAVE_INTERVAL_MS + 1000))).kind, 'ok');
+	assert.equal(rebirths.length, 1);
+	assert.equal((await accept(repo, 'u1', rebirthed(next, 2, 9), 3, T0 + 3 * (MIN_SAVE_INTERVAL_MS + 1000))).kind, 'ok');
+	assert.deepEqual(rebirths.map((r) => [r.rebirthNo, r.embersGained]), [[1, 4], [2, 5]]);
+});
+
+test('the rebirth history ignores a New Game, a repeat and a save that is not a rebirth', () => {
+	const base = summarize(game());
+	assert.equal(rebirthRecordOf(base, base, T0), null);
+	assert.equal(rebirthRecordOf(base, { ...base, rebirths: base.rebirths + 1, playSeconds: base.playSeconds - 500 }, T0), null, 'play time going back is a New Game');
+	const record = rebirthRecordOf(base, { ...base, rebirths: base.rebirths + 1, legacyEarned: base.legacyEarned + 2 }, T0);
+	assert.equal(record?.rebirthNo, base.rebirths + 1);
+	assert.equal(record?.embersGained, 2);
+	assert.equal(runSecondsOf({ playSeconds: 5000 }, 3200), 1800);
+	assert.equal(runSecondsOf({ playSeconds: 5000 }, null), 5000, 'the first run is all the play time so far');
 });

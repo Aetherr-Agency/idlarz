@@ -63,7 +63,7 @@ Gear is authored at the start of its item level window; bases roll their rarity,
 |---|---|---|---|---|---|---|---|---|
 | Obsidian Aegis | `obsidian_aegis` | offhand (shield) | 3 | base | 8-100 | +11 Armor, +12 Max HP |  | general pool |
 | Obsidian Helm | `obsidian_helm` | armor | 3 | base | 8-100 | +6 Armor, +6 Max HP |  | general pool |
-| Obsidian Pauldrons | `obsidian_pauldrons` | armor | 3 | base | 8-100 | +5 Armor, +5 Max HP |  | general pool |
+| Obsidian Shoulderpads | `obsidian_pauldrons` | armor | 3 | base | 8-100 | +5 Armor, +5 Max HP |  | general pool |
 | Obsidian Cuirass | `obsidian_cuirass` | armor | 3 | base | 8-100 | +10 Armor, +12 Max HP |  | general pool |
 | Obsidian Gauntlets | `obsidian_gauntlets` | armor | 3 | base | 8-100 | +3 Armor, +3 Max HP, +1.5% Crit Chance |  | general pool |
 | Obsidian Greaves | `obsidian_greaves` | armor | 3 | base | 8-100 | +7 Armor, +8 Max HP |  | general pool |

@@ -23,9 +23,10 @@ Needs `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, read from the environment 
 | `player_saves` | **deleted**: level, XP, gold, castle, tiles, buildings, rebirths, legacy points, everything in `core` |
 | `player_worlds`, `player_stats` | deleted by cascade; the leaderboard row returns after the player's first new save |
 | `player_ledger` (all but `gems`) | **reset** to new-game values: spawn timers and tickets, granted totals, combat, inventory (bag and gear), rebirths. `run_id` and `ver` are bumped, so sealed rolls never repeat across the restart |
+| `rebirth_history` | **deleted** (the log of the season that ended: the new season counts its rebirths from 1 again, and the table keeps one row per number); it is in the JSON backup. Needs the `rebirth_history` migration |
 | `save_history` | kept by default (rollback copies); deleted with `--purge-history` |
 
-Before a real reset the tool writes `backups/reset-<timestamp>.json` with `player_saves`, `player_worlds`, `player_stats` and `player_ledger` (the folder is gitignored; it holds player data). `save_history` is not part of the dump because it stays in the database unless purged.
+Before a real reset the tool writes `backups/reset-<timestamp>.json` with `player_saves`, `player_worlds`, `player_stats`, `player_ledger` and `rebirth_history` (the folder is gitignored; it holds player data). `save_history` is not part of the dump because it stays in the database unless purged.
 
 ## Running it
 

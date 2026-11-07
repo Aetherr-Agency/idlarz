@@ -230,7 +230,7 @@ export interface CombatClientState {
 	/** A monster was just clicked and the server has not opened the fight yet: the window is already up, loading (transient) */
 	pending: { type: MonsterType; level: number } | null;
 	/** The monsters waiting for their turn, first to fight first (docs/24-battle-queue.md), and how many the queue holds */
-	queue: { n: number; type: MonsterType; level: number }[];
+	queue: { n: number; type: MonsterType; level: number; lucky?: boolean }[];
 	queueMax: number;
 }
 

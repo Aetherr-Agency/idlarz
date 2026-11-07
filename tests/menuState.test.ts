@@ -1,34 +1,60 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import './helpers';
-import { useUiStore } from '../src/stores/uiStore';
+import { useWindowStore, DEFAULT_WINDOW_POS, WIN_IDS } from '../src/stores/windowStore';
 import { ANIMALS, FARM, FARM_UPGRADES, INITIAL_RESOURCES, type FarmUpgradeId } from '../src/config/gameConfig';
 import { calculateAnimalCost, farmCap, farmHasPurchase, farmUpgradeCost } from '../src/utils/gameUtils';
 
-const ui = () => useUiStore.getState();
+const win = () => useWindowStore.getState();
+const closeAll = () => WIN_IDS.forEach((id) => win().closeWindow(id));
 
-test('the menu opens on the last tab and remembers it between visits', () => {
-	ui().closeMenu();
-	ui().openMenu('merchant');
-	assert.equal(ui().menuOpen, true);
-	assert.equal(ui().menuTab, 'merchant');
-	ui().closeMenu();
-	assert.equal(ui().menuOpen, false);
-	ui().toggleMenu(); // the header button: reopens where you left off
-	assert.equal(ui().menuOpen, true);
-	assert.equal(ui().menuTab, 'merchant');
-	ui().setMenuTab('farm');
-	assert.equal(ui().menuTab, 'farm');
-	ui().toggleMenu();
-	assert.equal(ui().menuOpen, false);
+test('several windows can be open at once, the last opened is in front', () => {
+	closeAll();
+	win().openWindow('merchant');
+	win().openWindow('farm');
+	win().openWindow('castle');
+	assert.deepEqual(win().order, ['merchant', 'farm', 'castle']);
+	win().closeWindow('farm');
+	assert.deepEqual(win().order, ['merchant', 'castle']);
+	closeAll();
+	assert.deepEqual(win().order, []);
 });
 
-test('opening the menu without a tab keeps the current one', () => {
-	ui().openMenu('stats');
-	ui().closeMenu();
-	ui().openMenu();
-	assert.equal(ui().menuTab, 'stats');
-	ui().closeMenu();
+test('clicking a window brings it to the front, and opening an open one does the same', () => {
+	closeAll();
+	win().openWindow('equipment');
+	win().openWindow('character');
+	win().openWindow('merchant');
+	win().focusWindow('equipment');
+	assert.deepEqual(win().order, ['character', 'merchant', 'equipment']);
+	win().openWindow('character');
+	assert.deepEqual(win().order, ['merchant', 'equipment', 'character']);
+	win().focusWindow('farm'); // a closed window is not opened by a click
+	assert.equal(win().order.includes('farm'), false);
+	closeAll();
+});
+
+test('the header button: opens, brings a buried window forward, and closes the front one', () => {
+	closeAll();
+	win().toggleWindow('merchant');
+	win().toggleWindow('farm');
+	win().toggleWindow('merchant'); // behind the farm: comes forward, stays open
+	assert.deepEqual(win().order, ['farm', 'merchant']);
+	win().toggleWindow('merchant'); // in front: closes
+	assert.deepEqual(win().order, ['farm']);
+	closeAll();
+});
+
+test('dragging moves one window only, and a window keeps its place while closed', () => {
+	closeAll();
+	win().moveWindow('merchant', 300, 220);
+	assert.deepEqual(win().positions.merchant, { x: 300, y: 220 });
+	assert.deepEqual(win().positions.farm, DEFAULT_WINDOW_POS.farm);
+	win().openWindow('merchant');
+	win().closeWindow('merchant');
+	win().openWindow('merchant');
+	assert.deepEqual(win().positions.merchant, { x: 300, y: 220 });
+	closeAll();
 });
 
 const res = (extra: Partial<typeof INITIAL_RESOURCES> = {}) => ({ ...INITIAL_RESOURCES, ...extra });

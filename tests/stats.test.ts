@@ -19,7 +19,7 @@ import {
 } from '../src/lib/combat';
 import { atkSpeedPercent, critDamagePercent, magicDamagePercent, physicalDamagePercent, statArmor, statManaRegen, statMaxMana } from '../src/lib/statBonuses';
 import { plainItem } from '../src/lib/itemInstance';
-import { calculateCombatStats, getStatDescription } from '../src/utils/gameUtils';
+import { calculateCombatStats, getStatDescription, getStatDescriptionGroups } from '../src/utils/gameUtils';
 import { AFFIX_CATALOG } from '../src/catalog/affixes';
 import { resolveItem } from '../src/lib/itemInstance';
 import type { CharacterStats, Equipment, ItemInstance } from '../src/types/game';
@@ -162,6 +162,17 @@ test('the tooltips are built from the same constants the maths uses', () => {
 	assert.ok(getStatDescription('dexterity').includes(`+${STAT_RULES.atkSpeedPerDexterity}% ATK Speed`));
 	assert.ok(getStatDescription('vitality').includes(`+${STAT_RULES.armorPerVitality} DEF`));
 	assert.ok(!('magicDef' in character()), 'Magic DEF is gone: one DEF');
+});
+
+test('attribute tooltips group their effects by kind, and every effect lands in exactly one group', () => {
+	for (const stat of ['strength', 'dexterity', 'intelligence', 'vitality', 'charisma'] as const) {
+		const groups = getStatDescriptionGroups(stat);
+		const lines = groups.flatMap((group) => group.lines);
+		assert.deepEqual(lines.slice().sort(), getStatDescription(stat).split(' / ').map((l) => l.trim()).sort());
+	}
+	const economy = getStatDescriptionGroups('intelligence').find((group) => group.category.id === 'economy');
+	assert.ok(economy?.lines.some((line) => line.includes('production per point')));
+	assert.ok(getStatDescriptionGroups('intelligence').find((group) => group.category.id === 'magic')?.lines.some((line) => line.includes('Max Mana')));
 });
 
 test('every listed effect has a reader: the derived values equal the functions the fight uses', () => {

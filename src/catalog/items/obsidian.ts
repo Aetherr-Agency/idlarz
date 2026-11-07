@@ -14,7 +14,7 @@ export const OBSIDIAN_ITEMS: ItemDef[] = [
 	gear('obsidian_staff', 'Obsidian Staff', 'mainHand', 'rare',{ damage: 17, regen: 1.5, luck: 5, maxMana: baseStat('maxMana', 3), manaRegen: baseStat('manaRegen', 3), spellPower: baseStat('spellPower', 3) * 2 }, { tier: 3, weaponType: 'staff', art: true, description: 'Cold light pools in its orb.' }),
 	gear('obsidian_aegis', 'Obsidian Aegis', 'offHand', 'rare', { armor: 11, maxHp: 12 }, { ...obs, weaponType: 'shield', description: 'A spiked disc of black glass.' }),
 	gear('obsidian_helm', 'Obsidian Helm', 'head', 'rare', { armor: 6, maxHp: 6 }, { ...obs, description: 'Crowned with two cold horns.' }),
-	gear('obsidian_pauldrons', 'Obsidian Pauldrons', 'shoulder', 'rare', { armor: 5, maxHp: 5 }, { ...obs, description: 'Spiked and shining.' }),
+	gear('obsidian_pauldrons', 'Obsidian Shoulderpads', 'shoulder', 'rare', { armor: 5, maxHp: 5 }, { ...obs, description: 'Spiked and shining.' }),
 	gear('obsidian_cuirass', 'Obsidian Cuirass', 'chest', 'rare', { armor: 10, maxHp: 12 }, { ...obs, description: 'A violet core pulses behind the glass.' }),
 	gear('obsidian_gauntlets', 'Obsidian Gauntlets', 'hands', 'rare', { armor: 3, maxHp: 3, critChance: 1.5 }, { ...obs, description: 'Fingertips like knives.' }),
 	gear('obsidian_greaves', 'Obsidian Greaves', 'legs', 'rare', { armor: 7, maxHp: 8 }, { ...obs, description: 'Knee spikes for emphasis.' }),

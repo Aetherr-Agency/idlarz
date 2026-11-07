@@ -8,7 +8,7 @@ export const LIMITS = {
 	/** Seconds of map time per level of growth */
 	monsterGrowthIntervalSec: 1800,
 	/** Monsters that can wait in the battle queue while a fight is open (docs/24-battle-queue.md) */
-	battleQueue: 3,
+	battleQueue: 10,
 	/** Pieces of gear on the merchant's shelf */
 	merchantOffers: 6,
 	/** Seconds of play time until the shelf is reshuffled */
@@ -34,7 +34,7 @@ export type LimitKey = keyof typeof LIMITS;
 export const HARD_LIMITS = {
 	monsterGrowthLevels: 40,
 	merchantOffers: 12,
-	battleQueue: 8,
+	battleQueue: 16,
 	offlineCapHours: 72,
 	offlineEfficiency: 1,
 } as const;
