@@ -12,7 +12,7 @@ Clicking another monster while a fight is open adds it to a **server-owned queue
 
 ## Still open
 
-- Show the estimated win chance of each queued monster in the strip (the server already computes it for auto-battle, `offline/winChance.ts`).
-- Should a defeat also switch Auto-battle off? (Today it only clears the queue.)
+- Show the estimated win chance of each queued monster in the strip (the server already computes it for auto-battle, `offline/winChance.ts`). **Decided 2026-11-07 (IDL-59): a coloured bucket (Safe 80 %+, Risky 50-79 %, Unlikely below 50 %) with the exact percent on hover.**
+- Should a defeat also switch Auto-battle off? (Today it only clears the queue.) **Decided 2026-11-07 (IDL-59): no, it stays on; three defeats in a row pause it with a notice, one win resets the count (`COMBAT.auto.pauseAfterDefeats`).**
 - Ember-shop or other raises of the queue size through `LIMIT_BONUSES`.
 - Look at it in a real session; add a Playwright smoke test.

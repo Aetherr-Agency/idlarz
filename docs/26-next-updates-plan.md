@@ -70,7 +70,7 @@ The rats had a **golden ("lucky") variant** and we keep that for every monster: 
 
 ## Small things to do on the way
 
-- Show the **estimated win chance** of each queued monster in the Next strip ([24](24-battle-queue.md)); decide whether a defeat should also switch Auto-battle off.
+- Show the **estimated win chance** of each queued monster in the Next strip ([24](24-battle-queue.md)); decide whether a defeat should also switch Auto-battle off. **Decided 2026-11-07 (IDL-59): coloured Safe/Risky/Unlikely bucket with the percent on hover; three defeats in a row pause Auto-battle.**
 - Per-band danger offsets (`dangerBonus` is 0 or 1, ROADMAP R7).
 - Docs 02, 06 and 19: the castle timer tables still show the old numbers.
 - Look at the growth badge, the queue markers and the Next strip in a real browser session once (nobody has yet), and write a Playwright smoke test for them.
