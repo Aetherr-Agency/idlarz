@@ -1,9 +1,4 @@
-import { convertMonstersBody } from '@/lib/monstersMigration';
-import { convertLevelsBody } from '@/lib/levelsMigration';
-import { convertGroundsBody } from '@/lib/groundsMigration';
-import { LEGACY_GEAR } from '@/lib/legacyGear';
 import { BASE_STAT_KEYS, PERSISTED_KEYS, sanitizeSave, type PersistedGame } from '@/lib/sanitizeSave';
-import { sanitizeSaveLenient, type LenientResult } from '@/lib/repairSave';
 import { MAX_OWNED_TILES, inRange, ownedRowMajor, tileKey, type World } from '@/utils/world';
 
 /**
@@ -20,25 +15,14 @@ import { MAX_OWNED_TILES, inRange, ownedRowMajor, tileKey, type World } from '@/
  *     tiles x0, x0 + 1, ... of row y) and `extra` lists the tiles that carry more than a biome, `[x, y, { level?, building?,
  *     chest? }]`. A 50,000-tile map is about 60 KB of text. Coordinates may be negative.
  *   - level, activeChests, previousLevel, tile upgrade costs and combat stats are left out (rebuilt on load).
- * Schema 1 wrote `land` as one `{ x, y, biome, level?, building?, chest? }` object per tile (MIGRATIONS[1] converts it).
- * Schema 2 stored gear as bare item ids (`equipment: { head: 'steel_helm' }`, bag entries `{ id, qty }`); schema 3 stores item
- * instances (`{ base, level, rarity, quality, affixes }`, bag gear as `{ item }`) and MIGRATIONS[2] converts them (src/lib/legacyGear.ts).
- * Schema 3 could still hold Grounds tiles (the old building lot, letter `g`, built lots with `level: 2`); schema 4 has no Grounds biome and
- * MIGRATIONS[3] turns each into the land biome around it (src/lib/groundsMigration.ts).
- * Schema 4 monsters had a tier (1-5); schema 5 has a level and the level they appeared at; MIGRATIONS[4] converts them (src/lib/monstersMigration.ts).
- * Schema 5 had the fast level curve and reset the character on a rebirth; schema 6 has the slow one (it carries over rebirths), and MIGRATIONS[5] re-derives
- * the level from the XP and refunds the attribute points (src/lib/levelsMigration.ts).
  *
- * ADDING THINGS LATER (keep old saves working):
- *   - A new field: add it to PERSISTED_KEYS, make `sanitizeSave` accept it as OPTIONAL with a default, and do
- *     nothing else. Old saves simply lack it. No version bump.
- *   - A renamed, moved or reinterpreted field, or removed content (an item, a building): bump SAVE_SCHEMA and add
- *     MIGRATIONS[oldVersion], which receives the old `s` and returns the new one. Never edit an old migration,
- *     and add a frozen save of the old version to tests/fixtures/saves (the fixture test loads every file there).
- *   - A save written by a NEWER schema than this game is refused with a clear message, never half-loaded.
+ * A save written by any other schema than this game's is refused with a clear message, never half-loaded. When the format changes
+ * (a renamed, moved or reinterpreted field, removed content), bump SAVE_SCHEMA; write a migration only if old saves must survive
+ * (today they do not: player progress is reset between seasons, see docs/23-reset-players-cli.md). A new OPTIONAL field needs no bump:
+ * add it to PERSISTED_KEYS and let `sanitizeSave` accept it with a default.
  */
 
-export const SAVE_SCHEMA = 6;
+export const SAVE_SCHEMA = 7;
 export const SAVE_PREFIX = 'IDLZ2.';
 
 /** Longer than any real save by far; stops a pasted novel from freezing the page. */
@@ -49,13 +33,9 @@ const NOT_WRITTEN = new Set<string>(['tiles', 'level', 'previousLevel', 'activeC
 
 export type SaveBody = Record<string, unknown>;
 
-/** Upgrades the `s` of schema N to schema N+1. */
-export type Migration = (body: SaveBody) => SaveBody;
-
 /** One letter per biome in the compact land. Frozen: never change or reuse a letter (a test checks every biome has one). */
 export const BIOME_CODES: Readonly<Record<string, string>> = {
 	castle: 'K',
-	grounds: 'g', // LEGACY: the biome is gone (schema 4) but the letter stays reserved: MIGRATIONS[1] and [3] still read it, and a v4 save with it is refused
 	forest: 'f',
 	plains: 'p',
 	hills: 'h',
@@ -130,71 +110,6 @@ export const packLand = (world: World): PackedLand => {
 		packedCache.set(world, packed);
 	}
 	return packed;
-};
-
-/** The instance an old save's bare item id stands for, or null when the id is not old gear. */
-const legacyItem = (id: unknown): SaveBody | null => {
-	if (typeof id !== 'string' || !Object.prototype.hasOwnProperty.call(LEGACY_GEAR, id)) return null;
-	const [rarity, level] = LEGACY_GEAR[id];
-	return { base: id, level, rarity, quality: 50, affixes: [] };
-};
-
-export const MIGRATIONS: Record<number, Migration> = {
-	// 1 -> 2: `land` was one object per tile; it is runs now. A body that is not a plain list of such objects is left as it
-	// is, and unpackBody then refuses it.
-	1: (body) => {
-		const old = body.land;
-		if (!Array.isArray(old)) return body;
-		const cells: LandCell[] = [];
-		for (const entry of old) {
-			if (!isRecord(entry) || !Number.isInteger(entry.x) || !Number.isInteger(entry.y) || typeof entry.biome !== 'string' || !(entry.biome in BIOME_CODES)) {
-				return body;
-			}
-			cells.push({ x: entry.x as number, y: entry.y as number, biome: entry.biome, level: entry.level, building: entry.building, chest: entry.chest === true });
-		}
-		cells.sort((a, b) => a.y - b.y || a.x - b.x);
-		const { land, extra } = packCells(cells);
-		return { ...body, land, extra };
-	},
-	// 2 -> 3: gear was an item id; it is an instance now (the rarity and level the item had, neutral quality, no affixes: the
-	// same stats). Anything that is not plain old gear is left as it is, and sanitizeSave refuses it.
-	2: (body) => {
-		const next: SaveBody = { ...body };
-		if (isRecord(body.equipment)) {
-			const equipment: SaveBody = {};
-			for (const [slot, id] of Object.entries(body.equipment)) equipment[slot] = legacyItem(id) ?? id;
-			next.equipment = equipment;
-		}
-		if (Array.isArray(body.bag)) {
-			next.bag = body.bag.map((entry) => {
-				if (!isRecord(entry) || Object.keys(entry).length !== 2 || entry.qty !== 1) return entry;
-				const item = legacyItem(entry.id);
-				return item ? { item } : entry;
-			});
-		}
-		return next;
-	},
-	// 3 -> 4: no more Grounds tiles (see groundsMigration.ts)
-	3: (body) => convertGroundsBody(body),
-	// 4 -> 5: monsters have a level instead of a tier (see monstersMigration.ts)
-	4: (body) => convertMonstersBody(body),
-	// 5 -> 6: the slower level curve: the level follows the XP, the attribute points are refunded (see levelsMigration.ts)
-	5: (body) => convertLevelsBody(body),
-};
-
-export const migrateBody = (
-	body: SaveBody,
-	from: number,
-	to: number = SAVE_SCHEMA,
-	table: Record<number, Migration> = MIGRATIONS
-): SaveBody => {
-	let current = body;
-	for (let v = from; v < to; v++) {
-		const step = table[v];
-		if (!step) throw new Error(`no migration from schema ${v}`);
-		current = step(current);
-	}
-	return current;
 };
 
 // ---- text helpers ------------------------------------------------------------------------------------------
@@ -292,7 +207,7 @@ export const unpackBody = (body: SaveBody): { raw: SaveBody } | { error: string 
 
 // ---- encode / decode ---------------------------------------------------------------------------------------------
 
-/** Wraps any `{ v, t, s }` object as save text. Only encodeSave and tests (older / newer schemas) need this. */
+/** Wraps any `{ v, t, s }` object as save text. Only encodeSave, the cloud pipeline and tests (older / newer schemas) need this. */
 export const sealWire = (wire: unknown): string => {
 	const payload = toBase64(new TextEncoder().encode(JSON.stringify(wire)));
 	return `${SAVE_PREFIX}${payload}.${checkCode(payload)}`;
@@ -301,30 +216,12 @@ export const sealWire = (wire: unknown): string => {
 export const encodeSave = (state: PersistedGame, now: number = Date.now()): string =>
 	sealWire({ v: SAVE_SCHEMA, t: now, s: packBody(state) });
 
-export type DecodeResult =
-	| { ok: true; state: PersistedGame; savedAt: number | null; schema: number; /** Lenient reads only: the refusals that were adjusted away to load the save */ repaired?: string[] }
-	| { ok: false; reason: string };
+export type DecodeResult = { ok: true; state: PersistedGame; savedAt: number | null; schema: number } | { ok: false; reason: string };
 
 const bad = (reason: string): DecodeResult => ({ ok: false, reason });
 
 /** Everything that can go wrong with a pasted or stored save becomes a readable reason, never an exception. */
-export const decodeSave = (
-	text: string,
-	/** Tests run a different schema / migration table; the game always uses the defaults. */
-	{
-		schema: current = SAVE_SCHEMA,
-		migrations = MIGRATIONS,
-		lenient = false,
-	}: {
-		schema?: number;
-		migrations?: Record<number, Migration>;
-		/**
-		 * For the game's own copies (browser storage, the account's save): a value the rules of today no longer allow is adjusted instead of
-		 * refusing the whole save (src/lib/repairSave.ts). The server and imports read strictly, which is the default.
-		 */
-		lenient?: boolean;
-	} = {}
-): DecodeResult => {
+export const decodeSave = (text: string): DecodeResult => {
 	// Pasting often adds line breaks, spaces or quotes around the text
 	const clean = text.replace(/\s+/g, '').replace(/^["'`]+|["'`]+$/g, '');
 	if (clean.length > MAX_SAVE_CHARS) return bad('This text is far too long to be a save.');
@@ -347,24 +244,18 @@ export const decodeSave = (
 		return bad('The save has an unknown layout.');
 	}
 	const schema = wire.v as number;
-	if (schema > current) return bad('This save was made by a newer version of the game. Update the game first.');
+	if (schema > SAVE_SCHEMA) return bad('This save was made by a newer version of the game. Update the game first.');
+	if (schema < SAVE_SCHEMA) return bad('This save is from an older season of the game and can no longer be loaded. Start a new game.');
 
-	let body: SaveBody;
-	try {
-		body = migrateBody(wire.s, schema, current, migrations);
-	} catch {
-		return bad('This save is too old to be upgraded.');
-	}
-	const unpacked = unpackBody(body);
+	const unpacked = unpackBody(wire.s);
 	if ('error' in unpacked) return bad(`The save contains impossible data (${unpacked.error}).`);
 
-	const result: LenientResult = lenient ? sanitizeSaveLenient(unpacked.raw) : sanitizeSave(unpacked.raw);
+	const result = sanitizeSave(unpacked.raw);
 	if (!result.ok) return bad(`The save contains impossible data (${result.reason}).`);
 	return {
 		ok: true,
 		state: result.state,
 		savedAt: typeof wire.t === 'number' && Number.isFinite(wire.t) ? wire.t : null,
 		schema,
-		...(result.repaired?.length ? { repaired: result.repaired } : {}),
 	};
 };

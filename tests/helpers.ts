@@ -10,6 +10,7 @@ import { INITIAL_RESOURCES, CASTLE_X, CASTLE_Y, LEGACY_GRID_SIZE } from '../src/
 import { calculateResourceRates } from '../src/utils/gameUtils';
 import { RING } from '../src/utils/biomeRules';
 import { pickPersisted } from '../src/lib/sanitizeSave';
+import { packBody, unpackBody } from '../src/lib/saveFormat';
 import { hasOwnedNeighbour, isOwnedAt, ownedBounds, ownedCount, patchTile, setTile, worldToRows, type World } from '../src/utils/world';
 import type { Resources, Tile } from '../src/types/game';
 
@@ -113,6 +114,19 @@ export const growTo = (n: number) => {
 
 export const owned = () => ownedCount(api().tiles);
 
-/** A plain JSON copy of the persisted game with the map in the 50 x 50 layout of the first save formats: what sanitizeSave reads. */
-export const rawSnapshot = (state = api()) =>
-	JSON.parse(JSON.stringify({ ...pickPersisted(state), tiles: rowsOf(state.tiles) }));
+/** A plain JSON copy of the persisted game with the map as the owned-tile list `land`: what sanitizeSave reads. */
+export const rawSnapshot = (state = api()) => {
+	const persisted = pickPersisted(state);
+	const raw = JSON.parse(JSON.stringify({ ...persisted, tiles: undefined }));
+	raw.land = JSON.parse(JSON.stringify((unpackBody(packBody(persisted)) as { raw: { land: unknown[] } }).raw.land));
+	return raw;
+};
+
+/** The `land` entry of a raw snapshot at x, y (undefined when that tile is not owned). */
+export const landAt = (raw: { land: Record<string, unknown>[] }, x: number, y: number) => raw.land.find((e) => e.x === x && e.y === y)!;
+
+/** Replaces (or adds) the `land` entry at x, y. */
+export const setLandAt = (raw: { land: Record<string, unknown>[] }, x: number, y: number, entry: Record<string, unknown>) => {
+	raw.land = raw.land.filter((e) => !(e.x === x && e.y === y));
+	raw.land.push({ x, y, ...entry });
+};

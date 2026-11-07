@@ -15,7 +15,6 @@ import {
 	MERCHANT_UPGRADES,
 	CASTLE_X,
 	CASTLE_Y,
-	LEGACY_GRID_SIZE,
 	INITIAL_CHARACTER_STATS,
 	INITIAL_RESOURCES,
 	EMBER_UPGRADES,
@@ -40,9 +39,8 @@ import {
 	EMPTY_PRESTIGE,
 	emberSpent,
 	STARTER_FREE_TILES,
-	LEGACY_FREE_TILES,
 } from '@/utils/gameUtils';
-import { RING, LEGACY_RING } from '@/utils/biomeRules';
+import { RING } from '@/utils/biomeRules';
 import {
 	EMPTY_WORLD,
 	MAX_OWNED_TILES,
@@ -144,7 +142,6 @@ const int = (v: unknown, min: number, max: number): number | null => {
 export const BASE_STAT_KEYS = ['strength', 'dexterity', 'intelligence', 'vitality', 'charisma'] as const;
 const RESOURCE_KEYS = Object.keys(INITIAL_RESOURCES) as (keyof Resources)[];
 const OPTIONAL_RESOURCES = new Set<keyof Resources>(OPTIONAL_KEYS);
-const TILE_KEYS = new Set(['biome', 'isOwned', 'level', 'upgradeCost', 'building', 'hasChest']);
 export const MAX_ANIMALS = 5000;
 const GEAR_SLOTS = new Set<string>([...EQUIPMENT_LAYOUT.left, ...EQUIPMENT_LAYOUT.right, ...EQUIPMENT_LAYOUT.bottom]);
 const STACK_KEYS = new Set(['id', 'qty']);
@@ -167,34 +164,10 @@ interface RawLand {
 
 /**
  * The owned tiles of a raw save, as `{ x, y, t }` with `t` in the tile shape (`biome`, `isOwned`, `level`, `building`,
- * `hasChest`). Two layouts are read: the 50 x 50 grid of the first saves (`tiles`, also what the legacy vault holds) and the
- * list of owned tiles (`land`) that the save format writes. Returns an error text instead when the layout is wrong.
+ * `hasChest`) from the list of owned tiles (`land`) that the save format writes. Returns an error text instead when the layout is wrong.
  */
 const readLand = (raw: Record<string, unknown>): RawLand[] | string => {
 	const out: RawLand[] = [];
-	if (Array.isArray(raw.tiles)) {
-		const rows = raw.tiles;
-		if (rows.length !== LEGACY_GRID_SIZE) return 'grid height';
-		for (let y = 0; y < LEGACY_GRID_SIZE; y++) {
-			const row = rows[y];
-			if (!Array.isArray(row) || row.length !== LEGACY_GRID_SIZE) return 'grid width';
-			for (let x = 0; x < LEGACY_GRID_SIZE; x++) {
-				const t = row[x];
-				if (!isObject(t)) return 'tile shape';
-				for (const key of Object.keys(t)) if (!TILE_KEYS.has(key)) return 'tile key';
-				if (!hasBiome(t.biome)) return 'tile biome';
-				if (typeof t.isOwned !== 'boolean') return 'tile owned';
-				if (!t.isOwned) {
-					if (t.biome !== 'empty' || t.level !== undefined || t.building !== undefined || t.hasChest) {
-						return 'unowned tile content';
-					}
-					continue;
-				}
-				out.push({ x, y, t });
-			}
-		}
-		return out;
-	}
 	if (!Array.isArray(raw.land)) return 'map';
 	if (raw.land.length > MAX_OWNED_TILES) return 'too many tiles';
 	for (const entry of raw.land) {
@@ -295,13 +268,12 @@ export const sanitizeSave = (raw: unknown): SanitizeResult => {
 	if (reached.size !== owned) return fail('disconnected territory');
 	const tiles = setTiles(EMPTY_WORLD, placed);
 
-	// Tiles that cost nothing: just the castle in a save from before the starting tiles, the castle + its four neighbours
-	// today, or the castle + all eight neighbours for a run that began with the old 3x3 start
-	const freeTiles = raw.freeTiles === undefined ? 1 : int(raw.freeTiles, 1, LEGACY_FREE_TILES);
-	if (freeTiles === null || (freeTiles !== 1 && freeTiles !== STARTER_FREE_TILES && freeTiles !== LEGACY_FREE_TILES)) {
+	// Tiles that cost nothing: just the castle (1), or the castle + its four neighbours (a new game)
+	const freeTiles = raw.freeTiles === undefined ? 1 : int(raw.freeTiles, 1, STARTER_FREE_TILES);
+	if (freeTiles === null || (freeTiles !== 1 && freeTiles !== STARTER_FREE_TILES)) {
 		return fail('free tiles');
 	}
-	const startTiles = freeTiles === LEGACY_FREE_TILES ? LEGACY_RING : freeTiles === STARTER_FREE_TILES ? RING : [];
+	const startTiles = freeTiles === STARTER_FREE_TILES ? RING : [];
 	if (!startTiles.every(([dx, dy]) => at.has(tileKey(CASTLE_X + dx, CASTLE_Y + dy)))) {
 		return fail('starting ring not owned');
 	}

@@ -251,11 +251,9 @@ const countAdjacentSameBiomes = (
 	(getTile(tiles, x, y + 1)?.biome === biome ? 1 : 0);
 
 /**
- * Tiles that did not cost anything: the castle (1) in an old save, the castle and its four neighbours (north, east, south,
- * west) in a new game. A run that began with the old 3x3 start keeps 9 (`LEGACY_FREE_TILES`).
+ * Tiles that did not cost anything: the castle and its four neighbours (north, east, south, west) in a new game.
  */
 export const STARTER_FREE_TILES = 5;
-export const LEGACY_FREE_TILES = 9;
 
 /**
  * Owned-tile count as the economy sees it: purchases + 1 (the old castle-only start). Tile cost, XP per tile, the extra

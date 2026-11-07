@@ -39,7 +39,7 @@ export const affixFits = (affix: AffixDef, item: ItemDef, itemLevel: number, rar
 	rarity.order >= (affix.minRarityRank ?? 0) &&
 	(affix.tags.length === 0 || affix.tags.some((tag) => item.tags?.includes(tag)));
 
-/** The authored stats of a base at an item level, with the quality and rarity multipliers. A legacy instance (authored level, quality 50) returns the authored values exactly. */
+/** The authored stats of a base at an item level, with the quality and rarity multipliers. An instance at the authored level and quality 50 returns the authored values exactly. */
 export const baseStatsAt = (def: ItemDef, level: number, quality: number, rarity: RarityDef): ItemStats =>
 	scaleStats(def.stats ?? {}, levelScale(level) / levelScale(def.minItemLevel ?? 1), qualityMultiplier(quality) * rarity.statMultiplier);
 
@@ -91,13 +91,6 @@ export const sellValueOf = (instance: ItemInstance, data: LootData = LOOT_DATA):
 	return Math.max(1, Math.round(value));
 };
 
-/** The item an old save held when it only stored an id: the base at its authored level, neutral quality, its old rarity, no affixes. Resolves to the old stats exactly. */
-export const legacyInstance = (id: string, rarity: string, data: LootData = LOOT_DATA): ItemInstance | null => {
-	const def = data.items[id];
-	if (!def || !def.slot) return null;
-	return { base: id, level: def.minItemLevel ?? 1, rarity, quality: 50, affixes: [] };
-};
-
 /** A base item as a plain instance: its authored level, neutral quality, no affixes. Common unless it is a named item. For starter kits, shop stock, tools and tests. */
 export const plainItem = (id: string, data: LootData = LOOT_DATA): ItemInstance => {
 	const def = data.items[id];
@@ -109,7 +102,7 @@ const isInt = (value: unknown, min: number, max: number): value is number => Num
 
 /**
  * Checks that an instance is something the generator could have produced (a save, an import, a server upload).
- * Returns the reason it is not, or null. Deliberately no LOWER bound on the affix count, so migrated items stay valid.
+ * Returns the reason it is not, or null. Deliberately no LOWER bound on the affix count, so plain items stay valid.
  */
 export const instanceProblem = (instance: ItemInstance, data: LootData = LOOT_DATA): string | null => {
 	const def = data.items[instance.base];

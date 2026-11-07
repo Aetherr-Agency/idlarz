@@ -27,7 +27,7 @@ const bigGame = (count: number, seed = 5) => {
 
 test('every biome except empty has one save letter, and letters are unique', () => {
 	const biomes = Object.keys(BIOMES).filter((b) => b !== 'empty');
-	assert.deepEqual(Object.keys(BIOME_CODES).sort(), [...biomes, 'grounds'].sort(), "plus 'grounds': a removed biome keeps its letter, old saves still name it (MIGRATIONS[1] and [3])");
+	assert.deepEqual(Object.keys(BIOME_CODES).sort(), [...biomes].sort());
 	const letters = Object.values(BIOME_CODES);
 	assert.equal(new Set(letters).size, letters.length);
 	assert.ok(letters.every((l) => l.length === 1));
@@ -58,34 +58,6 @@ test('a map with negative coordinates survives encode -> decode exactly', () => 
 		assert.deepEqual(got, expected);
 		assert.deepEqual(ownedBounds(back.state.tiles), ownedBounds(withExtras));
 	}
-});
-
-test('schema 1 saves (one object per tile) are upgraded to the runs layout on load', () => {
-	freshGame();
-	growTo(12);
-	const game = pickPersisted(api());
-	const v2 = packBody(game);
-	const oldLand = sorted(game.tiles).map((line) => {
-		const [x, y, biome, level, building, chest] = line.split(',');
-		const entry: Record<string, unknown> = { x: Number(x), y: Number(y), biome };
-		if (level) entry.level = Number(level);
-		if (building) entry.building = building;
-		if (chest) entry.chest = true;
-		return entry;
-	});
-	const { land: _land, extra: _extra, ...rest } = v2;
-	void _land;
-	void _extra;
-	const v1 = sealWire({ v: 1, t: 1, s: { ...rest, land: oldLand } });
-	const loaded = decodeSave(v1);
-	assert.equal(loaded.ok, true, loaded.ok ? '' : loaded.reason);
-	if (loaded.ok) {
-		assert.equal(loaded.schema, 1);
-		assert.deepEqual(sorted(loaded.state.tiles), sorted(game.tiles));
-	}
-	// a v1 body with a broken land list is refused with a reason, not thrown
-	const broken = decodeSave(sealWire({ v: 1, t: 1, s: { ...rest, land: [{ x: 'a' }] } }));
-	assert.equal(broken.ok, false);
 });
 
 test('50,000 tiles: the text stays small and encoding / decoding are quick', () => {
