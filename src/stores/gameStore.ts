@@ -150,6 +150,8 @@ const initialCombat = (): CombatClientState => ({
 	notice: null,
 	pending: null,
 	queue: [],
+	resting: false,
+	restSec: 0,
 	queueMax: LIMITS.battleQueue,
 });
 
@@ -471,6 +473,8 @@ const createGameSlice = (
 				// a click waits for the server's answer; once a fight is open (or the answer came) it is over
 				pending: view.fight ? null : state.combat.pending,
 				queue: view.queue ?? [],
+				resting: !!view.resting,
+				restSec: view.restSec ?? 0,
 				queueMax: view.queueMax ?? state.combat.queueMax,
 			},
 		});

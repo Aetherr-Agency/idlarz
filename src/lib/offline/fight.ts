@@ -439,6 +439,8 @@ export const combatView = (ledger: Ledger, env: CombatEnv, since: number, behind
 	const f = c.fight;
 	let nextPollSec: number = COMBAT.poll.minimizedSec;
 	let waiting = false;
+	let resting = false;
+	let restSec = 0;
 	if (behind) nextPollSec = 0.5;
 	else if (f) nextPollSec = COMBAT.poll.fightSec;
 	else {
@@ -447,7 +449,15 @@ export const combatView = (ledger: Ledger, env: CombatEnv, since: number, behind
 		waiting = pickTarget(ledger, c, c.at, winnable) !== null;
 		const resume = (p.maxHp * COMBAT.auto.resumeHpPct) / 100;
 		const retry = nextRetry(ledger, c, c.at);
-		if (!c.autoBattle) nextPollSec = 600;
+		// a queued monster starts by itself once the hero is back above the resume line, with auto-battle on or off: ask again when that is
+		// (without this the idle wait below, up to ten minutes, applied and the queue looked stuck after a fight)
+		const regen = Math.max(0.1, COMBAT.regenPerSec + p.hpRegen);
+		const queuedWaiting = (c.queue ?? []).some((n) => ledger.bank.rats.some((ticket) => ticket.n === n && isPlaced(ticket)) || (ledger.bank.king?.n === n && isPlaced(ledger.bank.king)));
+		if (queuedWaiting) {
+			resting = c.hp < resume;
+			restSec = resting ? Math.ceil((resume - c.hp) / regen) : 0;
+			nextPollSec = resting ? Math.min(600, restSec + 1) : COMBAT.poll.fightSec;
+		} else if (!c.autoBattle) nextPollSec = 600;
 		else if (waiting && c.hp < resume) nextPollSec = Math.min(600, Math.ceil((resume - c.hp) / Math.max(0.1, COMBAT.regenPerSec + p.hpRegen)) + 1);
 		else if (!waiting && Number.isFinite(retry)) nextPollSec = Math.min(nextSpawnSec ?? 600, Math.min(600, Math.ceil(retry - c.at) + 1));
 		else if (!waiting) nextPollSec = Math.min(600, Math.max(COMBAT.poll.minimizedSec, Math.ceil(nextSpawnSec ?? 600) + 1));
@@ -475,6 +485,8 @@ export const combatView = (ledger: Ledger, env: CombatEnv, since: number, behind
 		events: c.log.filter((event) => event.no > since),
 		behind,
 		nextPollSec,
+		resting,
+		...(resting ? { restSec } : {}),
 		// auto-battle is idle with monsters standing around: they are all beyond the player (or still waiting out a retry, which has its own line)
 		autoNote: c.autoBattle && !f && !waiting && pickTarget(ledger, c, c.at) !== null ? 'no_winnable' : null,
 	};

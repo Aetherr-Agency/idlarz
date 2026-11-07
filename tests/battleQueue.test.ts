@@ -153,3 +153,22 @@ test('a combat record from before the queue (no field) still runs, and auto-batt
   assert.deepEqual(wins(r.ledger).slice(0, 2), [1, 2]);
   assert.equal(wins(r.ledger).length, 3);
 });
+
+test('a resting hero with a queue is asked about again when the rest is over, not after the idle wait (auto-battle off or on)', () => {
+  for (const autoBattle of [false, true]) {
+    const s = setup({ monsters: boars(2) });
+    const hurt: Ledger = { ...s.ledger, combat: { ...s.ledger.combat!, fight: null, queue: [2], hp: 1, autoBattle } };
+    const r = at(s, hurt, 0.5);
+    assert.equal(r.ledger.combat!.fight, null, 'too weak to start yet');
+    const view = combatView(r.ledger, s.env(s.start + 0.5), 0, false, null);
+    assert.ok(view.nextPollSec <= 120, `auto-battle ${autoBattle ? 'on' : 'off'}: the next poll is in ${view.nextPollSec} s (the idle wait is 600)`);
+    assert.equal(view.resting, true, 'the view says the hero is resting before the queue');
+    assert.ok((view.restSec ?? 0) > 0 && (view.restSec ?? 0) <= view.nextPollSec, 'and how long it takes');
+  }
+});
+
+test('with nothing queued the view is not resting', () => {
+  const s = setup({ monsters: boars(1) });
+  const view = combatView(s.ledger, s.env(s.start + 1), 0, false, null);
+  assert.equal(view.resting, false);
+});

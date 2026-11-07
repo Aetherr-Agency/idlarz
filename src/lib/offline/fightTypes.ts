@@ -173,6 +173,10 @@ export interface CombatView {
 	behind: boolean;
 	/** Seconds until the browser should ask again */
 	nextPollSec: number;
+	/** No fight is open and the hero is resting before the queue's next monster (it starts by itself once the HP is back above the resume line) */
+	resting?: boolean;
+	/** Seconds until that rest is over (only while `resting`) */
+	restSec?: number;
 	/** Why auto-battle is idle although monsters wait: none of them looks winnable (see offline/winChance.ts); a click fights one anyway */
 	autoNote?: 'no_winnable' | null;
 }
