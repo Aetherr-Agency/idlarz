@@ -27,6 +27,7 @@ These documents describe the game **as the code behaves**. Numbers are traceable
 | [22-glossary-and-mastery.md](22-glossary-and-mastery.md) | *Draft.* Unknown monsters, glossary tabs, kill-count reveals, monster and resource mastery |
 | [23-reset-players-cli.md](23-reset-players-cli.md) | Operator CLI `npm run reset-players`: season restart that wipes progress but keeps names, classes and gems |
 | [24-battle-queue.md](24-battle-queue.md) | *Draft.* A server-owned queue: keep clicking monsters during a fight and they are fought one after the other |
+| [25-idle-game-research.md](25-idle-game-research.md) | *Research note.* Idle-game formulas, big numbers and offline progress compared with this game; ranked improvements |
 | [RELEASE-PLAN.md](RELEASE-PLAN.md) | *Proposal.* Phases P0-P13 in release order, triage of the roadmap's bug and balance tables, landing v1 to v2, asset plan, decisions needed |
 | [ROADMAP.md](ROADMAP.md) | Open work: known issues, balance backlog, the building rework, server migration, planned features |
 | [generated/](generated/) | Auto-generated: `balance-tables.md`, `sim-milestones.md`, `item-catalog.md`, `loot-sim.md`, `fight-sim.md` |
