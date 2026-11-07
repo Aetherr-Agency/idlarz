@@ -358,7 +358,8 @@ export const CASTLE_UPGRADE = {
 	glowFromLevel: 6, // from this level the castle is drawn animated and glowing, stronger with every level
 	xpBonus: 0.5, // Additional flat XP/s for every castle level above 1
 	// Real upgrade time in seconds, indexed by the level being left (1 -> 2 is index 0). Counted by the tick loop.
-	durationsSec: [3600, 14400, 43200, 86400, 172800, 259200, 345600, 432000, 604800],
+	// Halved in the 2026-11 balancing pass (was 1 h, 4 h, 12 h, 24 h, 48 h, 3 d, 4 d, 5 d, 7 d): 30 min, 2 h, 6 h, 12 h, 24 h, 1.5 d, 2 d, 2.5 d, 3.5 d
+	durationsSec: [1800, 7200, 21600, 43200, 86400, 129600, 172800, 216000, 302400],
 	upgradeCosts: [
 		{ gold: 70000, wood: 10000, stone: 10000 },
 		{ gold: 200000, wood: 30000, stone: 30000, coal: 20000 },
