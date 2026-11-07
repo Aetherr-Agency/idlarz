@@ -7,6 +7,9 @@ import { hasOpenModal } from './PixelModal';
 const NARROW_PX = 900;
 /** Keep at least this much of a dragged window on screen */
 const KEEP_VISIBLE_PX = 80;
+/** The smallest a window can be dragged to */
+const MIN_W = 420;
+const MIN_H = 260;
 /** The z-index of the back-most window; the front one is this plus the number of open windows (modal backdrops are above, at 45) */
 const BASE_Z = 40;
 
@@ -38,7 +41,7 @@ const useNarrow = (): boolean => {
 const headerHeight = () => parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h'), 10) || 76;
 
 /**
- * A window of the game: the same bronze frame as PixelModal, but it does not dim or block the screen. Drag it by its title, click
+ * A window of the game: the same bronze frame as PixelModal, but it does not dim or block the screen. Drag it by its title, resize it from the bottom right corner, click
  * anywhere on it to bring it to the front, close it with the X or Esc (the front one). Several can be open at once.
  */
 const PixelWindow: React.FC<PixelWindowProps> = ({ id, title, icon, width = 820, height, flush = false, className, children }) => {
@@ -46,9 +49,11 @@ const PixelWindow: React.FC<PixelWindowProps> = ({ id, title, icon, width = 820,
 	const pos = useWindowStore((state) => state.positions[id]);
 	const rank = useWindowStore((state) => state.order.indexOf(id));
 	const isFront = useWindowStore((state) => state.order[state.order.length - 1] === id);
-	const { focusWindow, closeWindow, moveWindow, savePositions } = useWindowStore.getState();
+	const size = useWindowStore((state) => state.sizes[id]);
+	const { focusWindow, closeWindow, moveWindow, savePositions, resizeWindow, saveSizes } = useWindowStore.getState();
 	const narrow = useNarrow();
 	const drag = useRef<{ dx: number; dy: number } | null>(null);
+	const resize = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
 
 	// Esc closes the front window (unless a real modal is open: that one gets the key first)
 	useEffect(() => {
@@ -87,7 +92,29 @@ const PixelWindow: React.FC<PixelWindowProps> = ({ id, title, icon, width = 820,
 		savePositions();
 	};
 
+	const onResizeStart = (e: React.PointerEvent) => {
+		const el = ref.current;
+		if (narrow || e.button !== 0 || !el) return;
+		e.stopPropagation();
+		resize.current = { x: e.clientX, y: e.clientY, w: el.offsetWidth, h: el.offsetHeight };
+		e.currentTarget.setPointerCapture(e.pointerId);
+	};
+	const onResizeMove = (e: React.PointerEvent) => {
+		const start = resize.current;
+		if (!start) return;
+		const maxW = window.innerWidth - pos.x - 8;
+		const maxH = window.innerHeight - pos.y - 8;
+		resizeWindow(id, clamp(start.w + e.clientX - start.x, MIN_W, maxW), clamp(start.h + e.clientY - start.y, MIN_H, maxH));
+	};
+	const onResizeEnd = () => {
+		if (!resize.current) return;
+		resize.current = null;
+		saveSizes();
+	};
+
 	if (rank < 0) return null;
+
+	const fixedHeight = size?.h ?? height;
 
 	return (
 		<div
@@ -107,7 +134,7 @@ const PixelWindow: React.FC<PixelWindowProps> = ({ id, title, icon, width = 820,
 				} as React.CSSProperties
 			}
 			data-front={isFront}
-			data-fixed-height={!!height}>
+			data-fixed-height={!!fixedHeight}>
 			<button className='px-close' onClick={() => closeWindow(id)} aria-label='Close'>
 				✕
 			</button>

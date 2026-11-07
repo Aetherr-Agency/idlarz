@@ -12,7 +12,7 @@ import FarmOverlay from './FarmOverlay';
 
 /**
  * Every game window, each open or not on its own: Equipment, Character, Merchant, Farm and the castle upgrade. They sit side by side,
- * can be dragged, and the one you click comes to the front (see PixelWindow and the window store). A closed window is not mounted, so
+ * can be dragged and resized from the bottom right corner, and the one you click comes to the front (see PixelWindow and the window store). A closed window is not mounted, so
  * the farm scene measures its real body and its critters only roam while the Farm is open.
  */
 const GameWindows: React.FC = () => {
@@ -29,22 +29,22 @@ const GameWindows: React.FC = () => {
 	return (
 		<>
 			{open.includes('equipment') && (
-				<PixelWindow id='equipment' title='Equipment' icon={<PixelIcon name='menu_character' alt='' />} width={780}>
+				<PixelWindow id='equipment' title='Equipment' icon={<PixelIcon name='menu_character' alt='' />} width={1040} height={720}>
 					<CharacterOverlay />
 				</PixelWindow>
 			)}
 			{open.includes('character') && (
-				<PixelWindow id='character' title='Character' icon={<PixelIcon name='menu_stats' alt='' />} width={860}>
+				<PixelWindow id='character' title='Character' icon={<PixelIcon name='menu_stats' alt='' />} width={1180}>
 					<StatisticsOverlay />
 				</PixelWindow>
 			)}
 			{open.includes('merchant') && (
-				<PixelWindow id='merchant' title='Merchant' icon={<PixelIcon name='menu_merchant' alt='' />} width={860}>
+				<PixelWindow id='merchant' title='Merchant' icon={<PixelIcon name='menu_merchant' alt='' />} width={980} height={720}>
 					<MerchantOverlay />
 				</PixelWindow>
 			)}
 			{open.includes('farm') && (
-				<PixelWindow id='farm' title='Farm' icon={<PixelIcon name='menu_farm' alt='' />} width={940} height={640} flush>
+				<PixelWindow id='farm' title='Farm' icon={<PixelIcon name='menu_farm' alt='' />} width={1120} height={760} flush>
 					<FarmOverlay />
 				</PixelWindow>
 			)}
