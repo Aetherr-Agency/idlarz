@@ -353,7 +353,7 @@ A real game rolls its 4 start tiles at random; this table uses one fixed ring (s
 | Bonus | effect per level | max level | price of level 1 | price of the last level |
 | --- | --- | --- | --- | --- |
 | Haggler | +3% gold from everything you sell | 10 | 100.00K | 32.27M |
-| Bulk Discount | -1% tile and building cost | 8 | 250.00K | 45.03M |
+| Bulk Discount | -1% tile cost | 8 | 250.00K | 45.03M |
 | Lucky Charm | +2 Luck for chests and kills | 10 | 150.00K | 48.40M |
 | Pack Rat | +4 bag slots | 4 | 500.00K | 13.50M |
 | Foreman | +1% income from every resource, gold included | 10 | 400.00K | 129.08M |

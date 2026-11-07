@@ -227,7 +227,7 @@ test('building price factor: 0.4, 0.6, 0.8, 1, then three growth stages; cost = 
 	assert.deepEqual(BUILDING_COST.starter, [0.4, 0.6, 0.8, 1]);
 });
 
-test('MISMATCH 1: building cost takes no Charisma and no Bulk Discount, though Bulk says "tile and building cost"', () => {
+test('MISMATCH 1: building cost takes no Charisma and no Bulk Discount, so Bulk says "tile cost" (IDL-169)', () => {
 	// calculateBuildingCost(tiles, prestige) has no stats or merchant argument, so only Thrift can ever lower the price.
 	assert.equal(calculateBuildingCost.length, 2, 'signature: (tiles, prestige?) only');
 	const tiles = worldWithTiles(10, 'plains', 'farm');
