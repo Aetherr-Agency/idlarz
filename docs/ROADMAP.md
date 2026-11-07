@@ -97,8 +97,8 @@ Notes from reading the code (not measured against the live project):
 
 1. 🚧 **Item upgrading** (M): a gold/resource sink tied to the merchant; salvage and reroll are in [10](10-loot-system.md). The merchant's Upgrades tab holds click power and merchant bonuses, not gear enhancement.
 2. 🚧 **Building rework** (M-L, see the next section): demolish, levels, specialisation.
-3. 🚧 **Quests** (L): the merchant's *Quests* tab is a placeholder. Early guidance, item rewards, tracking in the store.
-4. 🚧 **Gambling** (M): the *Gambling* tab is a placeholder. Uses `luck`; every payout must be computed on the server side, limited by cooldown.
+3. 🚧 **Quests** (L): the merchant's *Quests* tab is a placeholder. Early guidance, item rewards, tracking in the store. Brainstorm: IDL-203 (self-completing kill/gather quests plus rotating dailies).
+4. 🚧 **Gambling** (M): the *Gambling* tab is a placeholder. Uses `luck`; every payout must be computed on the server side, limited by cooldown. Gold only, never gems (IDL-205).
 5. 🚧 **Mobile layout** (L): the pixel UI is desktop-first; touch pan exists, the rest is untested. Responsive modals, bigger tap targets, test on a real phone.
 6. **Monsters and combat depth**: monsters for hills, coast and lake, a bestiary with kill counts and monster-specific loot ([26](26-next-updates-plan.md) phases C and D); more skills (the two ability slots hold Heal and Stun; classes are cosmetic, so class skills are open); monster abilities (bleed, enrage), a daily bounty monster; elite monsters and premium chests ([10](10-loot-system.md)).
 7. **Ambient life** (cheap, optional): weather (rain tint), day/night tint by real clock, castle flag animation. Each switchable in Settings and covered by `prefers-reduced-motion`.
@@ -119,10 +119,8 @@ Loose ideas, not scheduled and not sized; each needs a design pass before it ent
 
 **Economy upgrades** (the Ember shop and the merchant ladders are flat percentages today; BL5, BL6, BL9, BL10)
 - *Market saturation*: the price of a resource drops with the volume sold and recovers over ~30 min, so burst selling is not the best move.
-- *Caravans / trade contracts*: a timed gold-and-resource sink that pays out more than it costs, run on the server clock (the ledger already has the timers pattern).
-- *Storage caps tied to the castle*: stockpiles stop at a cap that grows with the castle, which gives wood, stone and coal a reason to be spent.
 - *Building levels and specialisation*: the building rework below, with the set-like bonus for clusters of one kind.
-- *A second Ember currency or prestige tier* and shop items with a different shape (a longer chest timer cap, a free animal slot, a start with a tier-2 resource). Embers stay permanent: no reroll or respec.
+- *New Ember shop item shapes* (a longer chest timer cap, a free animal slot, a start with a tier-2 resource). Embers stay permanent: no reroll or respec. (A second Ember currency, storage caps and caravans were closed on 2026-11-07, IDL-137: the endless Ember sink, cosmetic Ember shop and Paragon cover the late sink.)
 - *More economy sets*: the Obsidian set pays income, XP and away time; a later tier could pay different things (chest rewards, merchant prices, farm output).
 - *Autobuyers* (decided 2026-11-07, IDL-133; permanent Ember shop unlocks, online only, no per-click server calls). First version: a **tile buyer** (placement: most owned neighbours first, then nearest the castle; about 40 Embers), a **castle auto-upgrade** (starts the next upgrade when affordable and none runs; about 100 Embers) and a **surplus auto-sell** for resources above a set threshold (about 40 Embers). Bulk buy ("buy next N" with a cost preview, summing the price stage by stage) is free for everyone. Offline autobuying waits for the server-owned economy (IDL-134).
 - *Building auto-upgrade and auto-build* (draft, **not scheduled**): when buildings get levels and specialisation (the building rework, R7) an autobuyer can build the best producer for a tile's biome and raise building levels by a cheapest-first rule. It needs the building level costs and caps first, and the same Ember-unlock shape as above (priced when the levels exist). Kept here so the building design leaves room for it: costs must be computable as a pure function of (building, level) and a purchase must be one batched request on the server.
