@@ -200,3 +200,15 @@ head, shoulder, chest, hands, cape, charm, axe, spear, dagger, bow, crossbow, st
 2. Pick the first group (for example rings or feet), set tier and stats, remove `enabled: false`.
 3. `npm run catalog-report`, `npm run loot-sim`, `npm test`.
 4. Retire the old art only after the new is wired (art rule 6).
+
+## 10. Special set bonuses (decided 2026-11-07, IDL-39; numbers are placeholders until `fight-sim` and `sim` have run)
+
+14 pieces each (13 slots plus the belt), thresholds **3 / 6 / 9 / 12 / 14**, `SetDef` shape as in `catalog/sets.ts` (every reached threshold applies, so the rows add up). **Power rule: a full set reaches 70-90 % of its family caps by itself** (caps of IDL-149: income 50, XP 40, kill reward 60, click 40, damage 45), so one top legendary still tips a family over the cap: set or legendary is a choice, but a special set is clearly stronger than Obsidian (income 26, XP 25, kill reward 37) and Rattatui (damage 35). Only existing stat keys are used; the new stats of section 7 (Crit Damage, Armor Penetration, Thorns, Build Speed, Tile Discount, Farm Yield) are added to these rows after IDL-176, one small step each, inside the same caps.
+
+| Set | 3 | 6 | 9 | 12 | 14 (full) | Full-set totals |
+|---|---|---|---|---|---|---|
+| **S1 Sunhoney** (economy, no defence) | income 8, gold find 10 | XP 10, click 8 | kill reward 20, offline eff 10, income 10 | income 10, XP 10, offline cap 3 h, gold find 10, click 6 | income 10, XP 12, kill reward 28, offline eff 10, offline cap 3 h, gold find 10, click 6 | income 38, XP 32, kill reward 48, offline eff 20, offline cap +6 h, click 20, gold find 30 |
+| **S2 Ashen Warlord** (combat plate) | damage 6, armor 6 | max HP 10 %, crit 4 | damage 12, armor 8, regen 2 | damage 10, max HP 8 %, crit 4, armor 6 | damage 10, max HP 7 %, crit 4, regen 2, kill reward 10, armor 4 | damage 38, max HP 25 %, armor 24, crit 12, regen 4, kill reward 10 |
+| **S3 Blightbound** (caster/leech, fragile: no armor, no max HP) | damage 8, luck 3 | leech 3, crit 4 | damage 12, luck 5, super crit 4 | damage 10, leech 2, crit 3, luck 4 | damage 10, leech 3, crit 3, luck 3, super crit 6 | damage 40, leech 8, luck 15, crit 10, super crit 10 |
+
+Checks before the numbers are final: `fight-sim` for S2 and S3 damage (also with one top legendary on top, which must stop at the cap of 45) against Rattatui's 35; `npm run sim` with an S1 profile (income, XP and kill reward caps, run-2 ratio 60-70 %, pacing guard +-15 %); a test that no set bonus pushes a family past its `HARD_LIMITS`. Sources and piece acquisition (boss, relic, war medal, Blight Ichor) belong to IDL-146; the Rattatui retirement stays in IDL-55.
