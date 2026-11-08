@@ -24,7 +24,7 @@ A save is rejected if it contains anything the game cannot produce: a malformed 
 - **Other optional fields**: `lootPity` (counters by `profile:table`), `autoSellUpTo` (a rarity id), `playerMp`, `merchantStock` (every offer goes through the same item validation as the bag; the price is derived, never read) and `merchantRefreshes`. A save without equipment + bag gets the starter kit; one of the two alone is rejected.
 - **Prestige block** (optional): all numbers are non-negative integers, shop ids are known, levels do not exceed the maximum, `legacyPoints + emberSpent === legacyEarned` (the spent part is recomputed from the shop levels), and `rebirths = 0` implies `legacyEarned = 0` while `rebirths > 0` implies `legacyEarned > 0`. A forged point balance or shop level is rejected, not repaired.
 
-Tests: `tests/saves.test.ts`, `saveStorage.test.ts`, `saveWorld.test.ts`, `rebirth.test.ts`. What validation **cannot** prove: that the player really earned a legal amount of gold or resources. That is what the server-side checks are for (§5).
+Tests: `tests/saves/saves.test.ts`, `saveStorage.test.ts`, `saveWorld.test.ts`, `rebirth.test.ts`. What validation **cannot** prove: that the player really earned a legal amount of gold or resources. That is what the server-side checks are for (§5).
 
 ## 3. Save & Backup (Settings → *Save & backup*, or Control x5)
 
@@ -56,9 +56,9 @@ The honest summary: the browser still owns the economy (income, purchases, the m
 
 ## 6. How to extend safely
 
-- **New persisted field**: add it to `PERSISTED_KEYS`, make `sanitizeSave` accept it as *optional with a default* (old saves simply lack it) and validate it. No version bump. Add the field to a test that round-trips it (`tests/saveStorage.test.ts`).
+- **New persisted field**: add it to `PERSISTED_KEYS`, make `sanitizeSave` accept it as *optional with a default* (old saves simply lack it) and validate it. No version bump. Add the field to a test that round-trips it (`tests/saves/saveStorage.test.ts`).
 - **Renamed, moved or reinterpreted field, or removed content** (an item, a building, a biome): bump `SAVE_SCHEMA` in `src/lib/saveFormat.ts`. Older saves are then refused. If they must survive, write the conversion for that bump (a `MIGRATIONS`-style step in `decodeSave`) and a frozen fixture save of the old version in `tests/fixtures/saves/`; the project does not carry any today.
 - A save from a *newer* schema than the running game is refused with a clear message instead of being half-loaded.
-- **New action that moves resources**: validate inputs (type, range, finiteness, ownership), check affordability against the full cost bundle, and add a test in `tests/economy.test.ts`.
+- **New action that moves resources**: validate inputs (type, range, finiteness, ownership), check affordability against the full cost bundle, and add a test in `tests/economy/economy.test.ts`.
 - **Anything that decides a reward or a fight** belongs on the server side (`src/lib/offline/`), seeded by the sealed random source, not in the store ([11](11-server-authority.md)).
 - **Balance changes**: run `npm run docs:gen` and `npm test` (the click limiter, arbitrage and fight-balance tests guard the main exploits).

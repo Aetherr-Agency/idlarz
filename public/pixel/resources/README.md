@@ -1,6 +1,6 @@
 # Resource art (Sprite Fusion, 32 x 32)
 
-Generated icons for resources, materials and spare ideas. Roster in code: `src/catalog/resourceArt.ts` (test: `tests/resourceArt.test.ts`).
+Generated icons for resources, materials and spare ideas. Roster in code: `src/catalog/resourceArt.ts` (test: `tests/catalog/resourceArt.test.ts`).
 
 | File name | Meaning |
 |---|---|

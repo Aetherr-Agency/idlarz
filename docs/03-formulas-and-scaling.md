@@ -62,7 +62,7 @@ The merchant's Skinner upgrade (+5 % per level) multiplies the farm's meat and h
 
 The old hidden +10 % gold / +25 % XP modifier is gone (modifiers start at 0). Everything is additive inside the single `(1 + Σ)`.
 
-`calculateResourceBreakdown` (`src/utils/game/income.ts`) is the one place this formula lives: per resource it returns the pieces (realm start, farm, biome tiles, buildings, castle-level XP), the bonuses (castle, plains, attributes, the Ember factor) and the totals, and `calculateResourceRates` is built on it (`tests/uiActions.test.ts` checks that base, modifier and total are identical and that the pieces add up). The Character tab's *Where the income comes from* section shows exactly these numbers per resource.
+`calculateResourceBreakdown` (`src/utils/game/income.ts`) is the one place this formula lives: per resource it returns the pieces (realm start, farm, biome tiles, buildings, castle-level XP), the bonuses (castle, plains, attributes, the Ember factor) and the totals, and `calculateResourceRates` is built on it (`tests/ui/uiActions.test.ts` checks that base, modifier and total are identical and that the pieces add up). The Character tab's *Where the income comes from* section shows exactly these numbers per resource.
 
 **New game**: the castle plus the 4 free start tiles (a random mix of plains and forest) give roughly 2-3 gold/s, about 0.1 wood and 0.2 stone/s and a few food per second, under the castle's +45 % modifier (+32.5 % stone), and about 1.2 xp/s. The exact rows for one fixed ring are in [generated/balance-tables.md §7](generated/balance-tables.md).
 
@@ -208,7 +208,7 @@ Rat King     : level 15: 1000 HP behind 15 armor, attack 11 every 3 s, 75 s limi
 ```
 
 The King's numbers were tuned with `npm run fight-sim` (a bot with the real combat rules; tables in [generated/fight-sim.md](generated/fight-sim.md)) and are
-held by `tests/fightBalance.test.ts`: the starter kit and plain wood never win, full steel does not, full obsidian wins with seconds to spare, the Rattatui set comfortably,
+held by `tests/combat/fightBalance.test.ts`: the starter kit and plain wood never win, full steel does not, full obsidian wins with seconds to spare, the Rattatui set comfortably,
 and no loadout trivialises him. Rats are basic enemies and are not tuned around him.
 
 Set bonuses (`catalog/sets.ts`) may carry the set-only stats `incomePct`, `xpPct`, `killRewardPct`, `offlineEff`, `offlineCapHours`, `clickPct`, `damagePct` and `maxHpPct`; `xpGain% = attributes + set XP %`, the away limits add the set's away hours and efficiency points. The two sets are generated into [generated/item-catalog.md](generated/item-catalog.md), with where every effect is applied.
@@ -239,8 +239,8 @@ cost (gold / wood / stone) = floor(base x factor x (1 - Thrift))     base = 500 
 | 40 | 25.9 | 12,941 |
 
 The price follows the tile curve in shape (steep, then gentler, then gentler again) but starts lower, so a building is a fraction of a tile at the same point of the game.
-`src/config/buildings.ts` `BUILDING_COST` and `buildingCostFactor` in `src/utils/game/costs.ts`; `tests/buildOnTile.test.ts` holds the shape.
+`src/config/buildings.ts` `BUILDING_COST` and `buildingCostFactor` in `src/utils/game/costs.ts`; `tests/economy/buildOnTile.test.ts` holds the shape.
 
 ## 12. Limits and bonus hooks (what upgrades and rebirth will extend)
 
-Bounds that progression is meant to raise live in `src/config/limits.ts` (`LIMITS`: monster growth levels and interval, merchant shelf size, rotation and refresh cost, bag size) with a `HARD_LIMITS` ceiling for what a save may hold. Code reads them through `limitOf(key, ctx)` (`src/lib/limits.ts`), which adds the bonuses registered in `LIMIT_BONUSES` (today only Pack Rat on the bag size); a new upgrade or Ember effect is one entry there and every reader follows. Likewise every gold payout for something the player sells goes through `sellMultiplier(ctx)` / `sellPayout` (`utils/game/merchant.ts`) with the bonuses in `SELL_BONUSES` (today Haggler): resources, bag gear, junk, auto-sold drops, the merchant previews and the cloud net-worth check all use it, so a "+20 % selling" effect applies to all of them alike (`tests/limitsAndSelling.test.ts` proves it with a registered bonus).
+Bounds that progression is meant to raise live in `src/config/limits.ts` (`LIMITS`: monster growth levels and interval, merchant shelf size, rotation and refresh cost, bag size) with a `HARD_LIMITS` ceiling for what a save may hold. Code reads them through `limitOf(key, ctx)` (`src/lib/limits.ts`), which adds the bonuses registered in `LIMIT_BONUSES` (today only Pack Rat on the bag size); a new upgrade or Ember effect is one entry there and every reader follows. Likewise every gold payout for something the player sells goes through `sellMultiplier(ctx)` / `sellPayout` (`utils/game/merchant.ts`) with the bonuses in `SELL_BONUSES` (today Haggler): resources, bag gear, junk, auto-sold drops, the merchant previews and the cloud net-worth check all use it, so a "+20 % selling" effect applies to all of them alike (`tests/economy/limitsAndSelling.test.ts` proves it with a registered bonus).

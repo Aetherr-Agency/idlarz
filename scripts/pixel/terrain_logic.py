@@ -1,7 +1,7 @@
 """Terrain placement logic with no imaging: layers per dual cell, tile depth, props and docks.
 
 src/utils/terrain.ts is a line-for-line port of this file (integer maths only, so both produce identical results);
-terrain_build.py writes a `parity` block into the manifest and tests/terrain.test.ts checks the port against it.
+terrain_build.py writes a `parity` block into the manifest and tests/world/terrain.test.ts checks the port against it.
 `m` is the manifest dict (see terrain_build.py): sprite sizes, prop tables, rank, depth limits.
 """
 from terrain_field import hash32

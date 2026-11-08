@@ -12,7 +12,7 @@ Clicking another monster while a fight is open adds it to a **server-owned queue
 - **Minimized:** the icon shows the monster's level, its HP bar (red) above the hero's (green) and the queue under it (up to four monster icons, the next one framed, `+N` for the rest); while resting it shows the next monster dimmed with "Rest N s", in either window mode.
 - **Shown:** a gold number on each queued monster (`MonsterSprite`), the "Next (2/3)" strip with a × per entry (`CombatPanel`), the right-click entry "Add ... to the queue" / "Remove from the queue", toasts, a line in the Guide.
 - **Auto-battle switch:** the combat window shows the checkbox only once Auto-battle is unlocked (first rebirth); before that it is not drawn at all (no greyed-out switch). The right-click menu entry is still shown greyed.
-- **Tests:** `tests/battleQueue.test.ts` (engine), `tests/clientCombat.test.ts` (store).
+- **Tests:** `tests/combat/battleQueue.test.ts` (engine), `tests/combat/clientCombat.test.ts` (store).
 
 ## Still open
 

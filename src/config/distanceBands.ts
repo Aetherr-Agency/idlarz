@@ -15,7 +15,7 @@ export interface DistanceBand {
 	dangerOffset: number;
 }
 
-// Ordered by `from`, ascending (checked by tests/distance.test.ts).
+// Ordered by `from`, ascending (checked by tests/world/distance.test.ts).
 export const DISTANCE_BANDS: readonly DistanceBand[] = [
 	{ id: 'home', from: 1, dangerOffset: 0 }, // 1-6
 	{ id: 'outskirts', from: 7, dangerOffset: 0 }, // 7-12

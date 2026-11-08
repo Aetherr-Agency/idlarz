@@ -22,7 +22,7 @@ import { takeMonster } from '@/lib/offline/tickets';
 //   fightTargets  who is fought next: placed monsters, auto-battle's pick, the battle queue, the wait between fights
 //   fightSteps    what happens in a fight, tick by tick: swings, skills, potions, the end of a fight, commands
 //   fightView     the picture the browser is given
-// tests/goldenFight.test.ts pins the whole engine to recorded fights: a change to any of them that moves a number there changes the game.
+// tests/combat/goldenFight.test.ts pins the whole engine to recorded fights: a change to any of them that moves a number there changes the game.
 
 export type { CombatEnv } from '@/lib/offline/fightContext';
 export { combatView } from '@/lib/offline/fightView';
