@@ -8,7 +8,7 @@ Related: [12 biomes](12-rebirth-biomes.md) (the five new biomes and T2), [17 cra
 - `BUILDINGS` (16 types, one flat `resourceGeneration` each) and `BUILDING_COST` (a price ladder over the number of buildings built, in gold, wood, stone) in `config/gameConfig.ts`; `canBuildOn`, `calculateBuildingCost`, `calculateTileOutput` in `utils/gameUtils.ts`; `buildOnTile` in the store; `BuildDialog.tsx`.
 - Any building on any explored tile except castle, lake and empty; permanent, no demolish, no levels. A monster never stands on a building (`canSpawnOn`).
 - The server sees `tile.building` in the saved map only (plausibility in `cloudSave/netWorth.ts`; rates are derived from the map by `summary()`).
-- The castle is the model for timed upgrades: `CASTLE_UPGRADE.durationsSec` (levels 2-6: 1 h, 4 h, 12 h, 24 h, 48 h = **3 d 17 h**; 7-10: 3, 4, 5, 7 days), counted by the tick loop; the server checks the timer on its own clock (`castle_jump`).
+- The castle is the model for timed upgrades: `CASTLE_UPGRADE.durationsSec` (levels 2-6: 30 min, 2 h, 6 h, 12 h, 24 h = **1 d 20 h 30 min**; 7-10: 1.5, 2, 2.5, 3.5 days), counted by the tick loop; the server checks the timer on its own clock (`castle_jump`).
 - Pattern to reuse for effects: `gearEconomy(equipment)` (`lib/gearEconomy.ts`) is a pure function that `summarize()` folds into income, XP gain, away-time limits and kill rewards, so the server and the browser agree. Idol bonuses use the same shape: `buildingEconomy(world)`.
 
 ## 2. The rules
@@ -76,19 +76,8 @@ Rules: the **merchant trades T0 and T1 only** (your instruction); T2-T4 are craf
 - **Server**: the castle timer's pattern generalizes to a list of `timers` in the save (castle + buildings) checked against the server clock (`castle_jump` becomes `timer_jump`); once the castle upgrade is server-owned ([ROADMAP](ROADMAP.md) "Economy actions") the buildings ride along. Until then they are the browser's, verified by plausibility, with `netWorth.ts` pricing building levels.
 - **Save**: today a tile with a building "never has a level" (`sanitizeSave`). Buildings need `level` (and `upgradeEndsAt`/remaining seconds) as **optional** tile fields in `extra`. No `SAVE_SCHEMA` bump: absent means level 1.
 
-### 5.1 Castle timers: shorter early levels
-Today levels 2-6 take 1 h, 4 h, 12 h, **24 h**, 48 h = 3 d 17 h. **Decided** (with the first five castle costs x0.75, sim-measured in [19](19-first-build-steps.md)) to take about **1 day** off the first run:
-
-| Upgrade | Now | Proposed |
-|---|---|---|
-| 1 -> 2 | 1 h | 1 h |
-| 2 -> 3 | 4 h | 3 h |
-| 3 -> 4 | 12 h | 9 h |
-| 4 -> 5 | 24 h | 16 h |
-| 5 -> 6 | 48 h | 36 h |
-| **Total to castle 6** | **3 d 17 h** | **2 d 17 h** |
-
-**Measured with the sim ([19](19-first-build-steps.md)): these timers save 1.0 d for the hardcore bot but only 0.5 d for the owner-like `human` profile (its sleep windows and resource waits dominate); with the first five castle costs x0.75 it saves 1.0 d for both (decided, see [19](19-first-build-steps.md)).** Levels 7-10 (3, 4, 5, 7 days) stay for now. Checks before shipping, from [06](06-pacing-targets.md): the cost of 5 -> 6 must still be payable while the (now 16 h) 4 -> 5 timer runs; `sim` first-rebirth day moves from about 5-7 to about 4-6 and the run-2 ratio target (65-70 %) must be re-measured; Master Builders (-5 %/level) and the Dwarf Statue stack, so cap the combined reduction (proposal 60 %). Update `CASTLE_UPGRADE.durationsSec` and the first five `upgradeCosts` rows; no save change.
+### 5.1 Castle timers (built, and changed)
+Built in the balancing pass, with other numbers than this section proposed: all nine timers were halved (30 min, 2 h, 6 h, 12 h, 24 h, 1.5 d, 2 d, 2.5 d, 3.5 d; `CASTLE_UPGRADE.durationsSec`, pinned in `tests/castle.test.ts`). Levels 2-6 take 1 d 20 h 30 min, level 10 comes after 11 d 8 h 30 min. Still open: the first five castle costs x0.75 (see [19](19-first-build-steps.md)) and a combined cap on Master Builders (-5 %/level) plus the Dwarf Statue (proposal 60 %).
 
 ### 5.2 Roads (decided 2026-10-29)
 

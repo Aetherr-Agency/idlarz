@@ -12,17 +12,16 @@ Written after the balancing pass (castle timers, rebirth wipe and respec, the Em
 
 ## Phase 0 · Core cleanup (done)
 
-Before Phase A, the old-save support was removed (nothing needs it after `reset-players`): the save migrations 1 to 5 and their modules, the lenient `repairSave` reader, the legacy 3x3 and 50x50 layouts in `sanitizeSave`, `upgradeBank`, the `derived.known` gate and the `purchased` fallback, the `itemCatalog` re-export shim, the duplicate seeded generators (`lib/rng.ts` `mulberry32` is the one), `isRecord` (`lib/isRecord.ts`), unused exports and dead CSS. `SAVE_SCHEMA` is 7 and any other schema is refused ([07](07-saves-and-security.md)). Not done and still open: the `monster_rat`/`monster_ratking`/`bonus_chest`/`menu_main` icons (they come from the `scripts/pixel` generators, so remove them together with B1/B5), moving `lib/fightSim.ts` to `scripts/`, the exports only tests use, and `scripts/sim.ts --legacy`.
+The old-save support, the duplicate helpers and the dead code were removed before Phase A; git history is the record.
 
 ## Phase A · Core you can read (M-L in total, no behaviour change)
+
+Built and removed from this table: A1 (line endings, Prettier, `format:check` in CI), A2 (the store split into slices, `src/stores/game/*`), A3 (the config split by domain, `src/config/*`; the `gameConfig.ts` barrel and the `gameUtils.ts` split are still IDL-15). Left: A4-A8 (Linear IDL-16, IDL-7, IDL-8, IDL-9, IDL-17).
 
 Rule for every step: **no gameplay change, the sim and the generated docs stay identical** (`npm run sim -- --no-write human hardcore` before and after), one PR each.
 
 | # | Step | Size | Notes |
 |---|---|---|---|
-| A1 | **Line endings and format.** Add `.gitattributes` (`* text=auto eol=lf`), `.editorconfig`, one Prettier config and a single "format everything" commit that is the only noisy diff. Add `npm run format:check` to CI. | S | Today the index is LF but working copies are CRLF on Windows and `git` warns on every commit; a formatter ends style talk in reviews. Do it first, in its own PR, so no other PR is mixed with it. |
-| A2 | **Split `gameStore.ts` into slices** (`economy`, `map`, `character`, `inventory`, `combat`, `merchant`, `farm`, `rebirth`) composed in `stores/gameStore.ts`; keep the public `useGameStore` and the action names. | M | Zustand slices; each slice file under about 250 lines with its own helpers. The tests import the store, so they are the safety net. |
-| A3 | **Split `gameConfig.ts` by domain** (`config/castle.ts`, `rebirth.ts`, `merchant.ts`, `farm.ts`, `biomes.ts`, `economy.ts`) and re-export from `gameConfig.ts` until imports are moved. | M | Pure moves. (`LEGACY_GRID_SIZE` there is now only used by tests: move it to `tests/helpers.ts`.) |
 | A4 | **Split `fight.ts`.** `runCombat` is one 300-line closure. Pull out `profile`, `targets` (pickTarget, queue), `steps` (swings, skills, potions) and the view; keep the closure only as the orchestrator. | M | `tests/fightEngine.test.ts` and `battleQueue.test.ts` pin it. |
 | A5 | **Rename the rat leftovers.** `bank.rats`, `TicketKind 'rat'`, `LUCK.luckyRat`, `ratsMinted`, `luckyRatChance`, `monster_rat` icons: say `monsters` / `normal` / golden monster (the golden variant itself stays, see the section below). The ledger bank is stored JSON: no reader for the old names is needed (the ledger is reset), so rename, bump `SAVE_SCHEMA` if the save changes, and run `npm run reset-players` with that release. | M | Replaces the "additive ledger columns first" rule of [14](14-server-audit-and-data-plan.md) for this step. |
 | A6 | **Component hygiene.** `Tile.tsx` (the tile, the monster, the menu, the tooltip) into `Tile`, `TileMonster`, `TileMenu`; `Tutorial.tsx` (400 lines of prose with numbers) onto the guided-tutorial data format of [21](21-classes-avatars-achievements-offline-report.md) section 7 when that is built, until then split per section. | M | |

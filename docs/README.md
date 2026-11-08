@@ -21,7 +21,7 @@ These documents describe the game **as the code behaves**. Numbers are traceable
 | [16-landing-and-play-route.md](16-landing-and-play-route.md) | *Draft.* Landing page, auth-protected `/play`, account and avatar polish |
 | [17-crafting.md](17-crafting.md) | *Draft.* Luck/Intelligence crafting with a persistent crafting level |
 | [18-biome-buildings-and-material-tiers.md](18-biome-buildings-and-material-tiers.md) | *Draft.* Three buildings per biome, upgrade timers, material tiers T0-T4, shorter castle timers |
-| [19-first-build-steps.md](19-first-build-steps.md) | *Built.* Castle timers halved, resource-key registry; what is left (the castle costs, the old tables) |
+| [19-first-build-steps.md](19-first-build-steps.md) | Open points left from the first build steps: the castle costs (the timers and the resource registry are built) |
 | [20-monster-families-and-rewards.md](20-monster-families-and-rewards.md) | *Draft.* Monster families per biome, capped absolute rewards scaled by level, goods and tiered drops, spawn pressure |
 | [21-classes-avatars-achievements-offline-report.md](21-classes-avatars-achievements-offline-report.md) | *Draft.* Class bonuses, separate avatars, achievements and glossary sketches, offline report bar |
 | [22-glossary-and-mastery.md](22-glossary-and-mastery.md) | *Draft.* Unknown monsters, glossary tabs, kill-count reveals, monster and resource mastery |
