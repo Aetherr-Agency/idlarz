@@ -21,13 +21,13 @@ test('maxHp is 101 for a fresh character with the starter kit', () => {
 });
 
 test('maxHp includes gear and set bonuses', () => {
-	assert.equal(maxHp(freshStats(), { chest: plainItem('rattatui_tunic') }), 101 + ITEM_CATALOG.rattatui_tunic.stats!.maxHp!);
+	assert.equal(maxHp(freshStats(), { chest: plainItem('obsidian_cuirass') }), 101 + ITEM_CATALOG.obsidian_cuirass.stats!.maxHp!);
 });
 
 test('damagePerHit is 6 with the wooden sword, 1 without a weapon, 3 with the fang blade', () => {
 	assert.equal(damagePerHit(STARTER_EQUIPMENT), 6);
 	assert.equal(damagePerHit({}), 1);
-	assert.equal(damagePerHit({ mainHand: plainItem('rattatui_fang_blade') }), ITEM_CATALOG.rattatui_fang_blade.stats!.damage);
+	assert.equal(damagePerHit({ mainHand: plainItem('obsidian_blade') }), ITEM_CATALOG.obsidian_blade.stats!.damage);
 });
 
 test('armorOf sums gear armor', () => {
@@ -77,7 +77,7 @@ test('regen stops at max and ignores bad input', () => {
 test('crit odds add the character and the gear, and are capped', () => {
 	const stats = freshStats();
 	assert.deepEqual(critOdds(stats, {}), { crit: stats.critChance / 100, superCrit: COMBAT.crit.superBase / 100 });
-	const gear = critOdds(stats, { mainHand: plainItem('starfall_bow'), charm: plainItem('rattatui_charm') });
+	const gear = critOdds(stats, { mainHand: plainItem('starfall_bow'), charm: plainItem('obsidian_charm') });
 	assert.ok(gear.crit > critOdds(stats, {}).crit && gear.superCrit > COMBAT.crit.superBase / 100);
 	const stacked = { ...stats, critChance: 500 };
 	assert.equal(critOdds(stacked, {}).crit, COMBAT.crit.maxCritChance / 100);
@@ -107,6 +107,6 @@ test('the player swings at the weapon speed: attacks per second is the weapon sp
 
 test('dodgeChance reads the gear and is capped', () => {
 	assert.equal(dodgeChance({}), 0);
-	assert.equal(dodgeChance({ cape: plainItem('rattatui_cloak') }), ITEM_CATALOG.rattatui_cloak.stats!.dodge! / 100);
-	assert.ok(dodgeChance(fullSet('rattatui')) <= COMBAT.maxDodge / 100);
+	assert.equal(dodgeChance({ cape: plainItem('obsidian_cloak') }), ITEM_CATALOG.obsidian_cloak.stats!.dodge! / 100);
+	assert.ok(dodgeChance(fullSet('obsidian')) <= COMBAT.maxDodge / 100);
 });

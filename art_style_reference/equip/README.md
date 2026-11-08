@@ -87,7 +87,7 @@ Format: G1, G2, G3, G4, G5, G6, G7, G8, G9 | S1, S2, S3.
 | `staff` | Walking Stick, Hide-bound Staff, Iron-shod Staff, Steel Staff, Knight's Quarterstaff, Obsidian Staff, Runed Staff, Ancient Staff, Archmage's Spire | Blightbound Blight Staff |
 | `wand` | Twig Wand, Bronze Wand, Iron Wand, Steel Wand, Knight's Wand, Obsidian Wand, Runed Wand, Ancient Wand, Starlight Wand | |
 
-Existing items that already fit the ladder and may keep their ids: `item_emberbrand` (G9 sword), `item_iron_sword` (G3), `item_battle_axe`, `item_hunting_bow`, `item_apprentice_wand`, `item_apprentice_tome`, the wooden starter kit (G1), the cloth family (G2 to G4 caster) and the Obsidian set (G6). The Rattatui set is **retired** ([RELEASE-PLAN](../../docs/RELEASE-PLAN.md) P3.6): its definitions and icons stay as long as any save can hold a piece, see section 7.
+Existing items that already fit the ladder and may keep their ids: `item_emberbrand` (G9 sword), `item_iron_sword` (G3), `item_battle_axe`, `item_hunting_bow`, `item_apprentice_wand`, `item_apprentice_tome`, the wooden starter kit (G1), the cloth family (G2 to G4 caster) and the Obsidian set (G6). The Rattatui set was deleted (2026-11-08).
 
 ## 5. The three special sets (each 13 pieces: all slots, both rings, weapon and off hand)
 
@@ -118,7 +118,7 @@ Sheet: `sets/special-sets-palette-draft.png` (ramps are light to dark, the last 
 ## 7. What agents should do with this folder later
 
 1. **Do not delete old equipment graphics yet.** Items reference icons by id (`config/pixelIcons.ts`, `public/pixel/icons/item_*.png`, `equip_*` slot icons, `scripts/pixel/sprites_gear.py`, `sprites_equipment.py`, `scripts/pixel/reference/gear.png`). The 78 `item_*` icons plus the gear scripts are what the owner wants gone, **but only after the replacements are wired** (root README rule 6).
-2. **The safe moment**: after the one-time progress reset ([RELEASE-PLAN](../../docs/RELEASE-PLAN.md) P2) every bag and set of worn gear is empty, so no save holds an old item and the old files can be removed. The retired Rattatui pieces are the only exception while saves can still carry them (until P2 ships, keep their icons or map them to a new icon).
+2. **The safe moment**: after the one-time progress reset ([RELEASE-PLAN](../../docs/RELEASE-PLAN.md) P2) every bag and set of worn gear is empty, so no save holds an old item and the old files can be removed.
 3. **Work order** (one PR each): (E1) build the 12-per-slot catalog as data with new icon ids, art as placeholders or cuts, **not yet in any drop table**; (E2) put the 9 normal grades into the loot profiles and the craft tiers, tuned with `loot-sim` and `fight-sim`; (E3) add the three special sets through boss, relic and enchanted-craft sources; (E4) delete the old `item_*` files and gear scripts; update `docs/generated/item-catalog.md` via `npm run catalog-report`.
 4. **Making an icon**: pick a reference cell by silhouette (a sword for a sword, not just colour); decide recreate or cut (root README rules 1 to 3). The sheets are **JPG**, so a direct cut carries compression noise: quantizing to the shared palette (root README rule 5) removes most of it; if a cut still looks dirty, recreate it or ask the owner for the original PNG pack. Output 40 px, transparent, coloured outline, no glow, one palette per grade (look cues in the ladder).
 5. **Sets first as a palette sheet**: before drawing 13 pieces of a set, produce one palette and one silhouette rule and get it approved.

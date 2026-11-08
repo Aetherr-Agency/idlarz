@@ -14,7 +14,8 @@ import {
 import { CASTLE_X, CASTLE_Y } from '../../src/config/castle';
 import { REBIRTH } from '../../src/config/rebirth';
 import { ITEM_CATALOG, RARITY_ORDER } from '../../src/catalog';
-import { BASIC_GEAR, RATTATUI_SET } from '../../src/config/itemCatalog';
+import { BASIC_GEAR } from '../../src/config/itemCatalog';
+import { SETS } from '../../src/catalog';
 import { emptyBag, gearOf, slotItemId, stackOf } from '../../src/lib/inventory';
 import { plainItem, sellValueOf } from '../../src/lib/itemInstance';
 import type { ItemInstance } from '../../src/types/game';
@@ -75,7 +76,7 @@ test('the supplies are potions only, every price is at least 3x the sell value (
 		assert.ok(price > unitValue(id) * MAX_HAGGLER, `${id} with a max Haggler`);
 	}
 	for (const id of BASIC_GEAR) assert.ok(unitValue(id) > 0);
-	assert.ok(!MERCHANT_SHOP_ITEMS.some(({ id }) => RATTATUI_SET.pieces.includes(id)));
+	assert.ok(!MERCHANT_SHOP_ITEMS.some(({ id }) => SETS.obsidian.pieces.includes(id)));
 });
 
 test('buy-then-sell of every shop item never gains gold, even with a max Haggler', () => {
@@ -178,7 +179,7 @@ test('buyItem: charges the price, adds the item, and a full bag costs nothing', 
 	assert.equal(api().resources.gold, 1e9, 'nothing charged');
 
 	for (const bad of [0, -1, 1.5, 1000, NaN]) assert.equal(api().buyItem(id, bad), false, String(bad));
-	assert.equal(api().buyItem('rattatui_cap', 1), false);
+	assert.equal(api().buyItem('obsidian_helm', 1), false);
 	assert.equal(api().buyItem('constructor', 1), false);
 });
 

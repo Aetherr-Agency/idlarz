@@ -11,6 +11,5 @@
 	{"icon": "item_leather_boots", "item": "leather_boots", "file": null, "slot": "feet", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
 	{"icon": "item_cloth_slippers", "item": "cloth_slippers", "file": null, "slot": "feet", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
 	{"icon": "item_steel_sabatons", "item": "steel_sabatons", "file": null, "slot": "feet", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
-	{"icon": "item_obsidian_sabatons", "item": "obsidian_sabatons", "file": null, "slot": "feet", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
-	{"icon": "item_rattatui_boots", "item": "rattatui_boots", "file": null, "slot": "feet", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
+	{"icon": "item_obsidian_sabatons", "item": "obsidian_sabatons", "file": null, "slot": "feet", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
 ]

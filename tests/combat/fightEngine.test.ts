@@ -21,7 +21,7 @@ import type { Equipment } from '../../src/types/game';
 
 const DAGGER: Equipment = { ...STARTER_EQUIPMENT, mainHand: plainItem('steel_dagger') };
 const MAUL: Equipment = { ...STARTER_EQUIPMENT, mainHand: plainItem('obsidian_maul') };
-const STRONG = fullSet('rattatui');
+const STRONG = fullSet('obsidian', 'titan_maul');
 
 const setup = (over: Partial<SimSetup> = {}) =>
 	simSetup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'thistleBoar', level: 1 }], seed: 'engine', ...over });

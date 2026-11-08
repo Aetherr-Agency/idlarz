@@ -81,7 +81,7 @@ export interface ItemDef {
 	/** Gear slot; 'ring' fits ring1 or ring2. Consumables have none. */
 	slot?: EquipmentSlot | 'ring';
 	rarity: EquipmentRarity;
-	/** Grade of the material family: 1 wooden / cloth, 2 steel, 3 obsidian, 4 Rattatui, 5 legendary (consumables: 0) */
+	/** Grade of the material family: 1 wooden / cloth, 2 steel, 3 obsidian, 4 reserve gear, 5 legendary (consumables: 0) */
 	tier: number;
 	weaponType?: WeaponType;
 	/** Weapons only: attacks per second. Not a summed stat; the base for attack-speed combat (catalog `weaponDps`) */

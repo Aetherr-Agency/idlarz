@@ -94,16 +94,6 @@ Level factor: `1 + 0.07 x (level - 1)` relative to the base's authored level; ca
 | 9 pieces | offlineEff 15, clickPct 10, incomePct 8, maxHp 40 | incomePct 14, maxHp 60, xpPct 10, goldFind 10, armor 6, killRewardPct 12, damage 5, luck 3, offlineEff 15, clickPct 10 |
 | 12 pieces | incomePct 12, xpPct 15, killRewardPct 25, offlineCapHours 3, goldFind 20, armor 10, superCrit 6 | incomePct 26, maxHp 60, xpPct 25, goldFind 30, armor 16, killRewardPct 37, damage 5, luck 3, offlineEff 15, clickPct 10, offlineCapHours 3, superCrit 6 |
 
-**Rattatui Set** (13 slots)
-
-| Pieces | Adds | Total so far |
-| --- | --- | --- |
-| 2 pieces | maxHp 25, armor 3 | maxHp 25, armor 3 |
-| 4 pieces | damagePct 8, critChance 4 | maxHp 25, armor 3, damagePct 8, critChance 4 |
-| 6 pieces | maxHpPct 15, lifeLeech 3, goldFind 10 | maxHp 25, armor 3, damagePct 8, critChance 4, maxHpPct 15, lifeLeech 3, goldFind 10 |
-| 9 pieces | damagePct 12, superCrit 8, regen 2, luck 5 | maxHp 25, armor 3, damagePct 20, critChance 4, maxHpPct 15, lifeLeech 3, goldFind 10, superCrit 8, regen 2, luck 5 |
-| 13 pieces | damagePct 15, maxHpPct 10, killRewardPct 10, xpPct 10 | maxHp 25, armor 3, damagePct 35, critChance 4, maxHpPct 25, lifeLeech 3, goldFind 10, superCrit 8, regen 2, luck 5, killRewardPct 10, xpPct 10 |
-
 ## 4. Combat: one attribute at a time, plain starter kit (wooden sword and shield)
 
 | Character | Max HP | Damage/hit | Attacks/s | DPS | Crit % | Armor | Armor reduction % |

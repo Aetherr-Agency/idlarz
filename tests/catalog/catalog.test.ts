@@ -75,10 +75,10 @@ test('every set piece exists and names its set, and set bonuses only use known s
 });
 
 test('set counting and bonuses go through the registry', () => {
-	const rattatui = SETS.rattatui;
-	const six = Object.fromEntries(rattatui.pieces.slice(0, 6).map((id, i) => [['head', 'shoulder', 'chest', 'hands', 'legs', 'feet'][i], plainItem(id)]));
-	assert.equal(setCounts(six).rattatui, 6);
-	assert.deepEqual(setBonusStats(setCounts(six)), sumStats(rattatui.bonuses[2], rattatui.bonuses[4], rattatui.bonuses[6]));
+	const obsidian = SETS.obsidian;
+	const six = Object.fromEntries(obsidian.pieces.slice(0, 6).map((id, i) => [['head', 'shoulder', 'chest', 'hands', 'legs', 'feet'][i], plainItem(id)]));
+	assert.equal(setCounts(six).obsidian, 6);
+	assert.deepEqual(setBonusStats(setCounts(six)), sumStats(obsidian.bonuses[2], obsidian.bonuses[4], obsidian.bonuses[6]));
 	assert.deepEqual(setBonusStats({}), sumStats());
 });
 
@@ -91,14 +91,6 @@ test('shop items exist and cost at least 3x what they sell for (bought as a plai
 });
 
 test('named items sit in pools that exist, and only bosses and chests reach them', () => {
-	// the Rattatui set is retired (IDL-55): the definitions stay so owned pieces load, but no pool lists them and nothing sells them
-	for (const piece of SETS.rattatui.pieces) {
-		assert.equal(ITEM_CATALOG[piece].retired, true, piece);
-		assert.deepEqual(ITEM_CATALOG[piece].pools, [], piece);
-		assert.equal(ITEM_CATALOG[piece].shop, undefined, piece);
-		assert.equal(ITEM_CATALOG[piece].generation, 'named', piece);
-		assert.equal(ITEM_CATALOG[piece].fixedRarity, 'epic', piece);
-	}
 	for (const profile of Object.values(LOOT_PROFILES)) {
 		for (const table of profile.bonusTables) assert.ok(LOOT_POOLS[table.poolId], `${profile.id}/${table.id}`);
 	}
@@ -106,7 +98,6 @@ test('named items sit in pools that exist, and only bosses and chests reach them
 		Object.values(LOOT_PROFILES)
 			.filter((p) => p.bonusTables.some((t) => t.poolId === poolId))
 			.map((p) => p.id);
-	assert.ok(!LOOT_POOLS.rattatui_set, 'the Rattatui pool is gone');
 	assert.deepEqual(reach('legendary_weapons').sort(), ['basic_chest', 'boss'].sort());
 });
 

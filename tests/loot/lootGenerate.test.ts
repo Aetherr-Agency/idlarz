@@ -135,7 +135,7 @@ test('rarity sets the affix count', () => {
 	}
 });
 
-test('a boss always drops a general roll and every potion, and never a retired Rattatui piece', () => {
+test('a boss always drops a general roll and every potion', () => {
 	const rng = mulberry32(8);
 	for (let i = 0; i < 500; i++) {
 		const { drops } = generateLoot({ sourceId: 'boss', level: 25 }, rng);
@@ -171,7 +171,7 @@ test('retired items never drop from any source, at any level', () => {
 });
 
 test('a table with preferMissing favours the pieces the player does not own yet, then duplicates', () => {
-	// no table in the shipped data uses it since the Rattatui set was retired: the generator feature is kept and tested on the legendary pool
+	// no table in the shipped data uses it today: the generator feature is kept and tested on the legendary pool
 	const data = copy();
 	data.profiles.boss.bonusTables = [
 		{

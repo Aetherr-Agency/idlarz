@@ -3,7 +3,6 @@ import { CLOTH_ITEMS } from './cloth';
 import { CONSUMABLES } from './consumables';
 import { LEGENDARY_ITEMS } from './legendary';
 import { OBSIDIAN_ITEMS } from './obsidian';
-import { RATTATUI_ITEMS } from './rattatui';
 import { RESERVE_ITEMS } from './reuse';
 import { WOODEN_ITEMS } from './starter';
 import { STEEL_ITEMS } from './steel';
@@ -15,7 +14,6 @@ export const ITEMS: ItemDef[] = [
 	...CLOTH_ITEMS,
 	...STEEL_ITEMS,
 	...OBSIDIAN_ITEMS,
-	...RATTATUI_ITEMS,
 	...LEGENDARY_ITEMS,
 	// disabled: art and stats are ready, nothing drops them yet (catalog/items/reuse.ts)
 	...RESERVE_ITEMS,

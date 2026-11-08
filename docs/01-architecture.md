@@ -29,8 +29,8 @@ src/
 │   ├── combatConfig.ts       COMBAT + MONSTERS + STAT_RULES: HP, regen, armor, spawn, monster defs (level scaling, armor, crit, Stun resist, grade)
 │   ├── limits.ts             the limits registry (`limitOf('bagSize')` etc.: base value + effects like Pack Rat)
 │   ├── biomeRules.ts, biomePalette.ts, playerClasses.ts, pixelIcons.ts, terrainAtlas.json
-│   └── itemCatalog.ts        facade: re-exports src/catalog and derives BASIC_GEAR / RATTATUI_SET for older imports
-├── catalog/                  THE item catalog: index.ts (ITEM_CATALOG, SETS, starter kit, equipment layout), items/*.ts (starter, cloth, steel, obsidian, rattatui, legendary,
+│   └── itemCatalog.ts        facade: re-exports src/catalog and derives BASIC_GEAR for older imports
+├── catalog/                  THE item catalog: index.ts (ITEM_CATALOG, SETS, starter kit, equipment layout), items/*.ts (starter, cloth, steel, obsidian, legendary,
 │                             consumables + define.ts helpers), weapons.ts (attack speed per weapon type), rarity.ts, stats.ts, affixes.ts, sets.ts, resources.ts, skills.ts (Heal, Stun),
 │                             loot.ts + lootConfig.ts (loot profiles, pools, merchant stock; see 10-loot-system.md)
 ├── types/game.ts             Resources, Tile, CharacterStats, ItemInstance, Monster, GameState (store interface), ClickInput ...

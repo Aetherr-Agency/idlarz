@@ -29,6 +29,18 @@ The one place to look when planning the next step. It lists only what is **still
 | Rankings (four boards, daily snapshot), preview map, +20 attribute points | [15](15-leaderboard-and-world-preview.md), [13](13-rebirth-reset-and-paragon.md) | IDL-113, 115, 100 |
 | Paragon | [13](13-rebirth-reset-and-paragon.md) section 5 | IDL-104, 186, 187 |
 
+## Item art in three passes (decided 2026-11-08, owner)
+
+The same idea as the MVP art: first something that ships, then better. **Do not wait for the finished art to build the items.**
+
+1. **Pass 1: use what exists.** The good icons already in `public/pixel/items/` (115 supplied 64 px pieces: belts, boots, trousers, necklaces, rings, off-hand shields, swords, maces and mauls, legendary weapons, 12 potions) are registered in the icon registry (`src/config/itemIcons/`, IDL-18) and wired to catalog items first. They keep their files; nothing is regenerated.
+2. **Pass 2: placeholders for the rest.** Every item we plan that has no good icon yet (shoulders, chest, gloves, capes, charms, head, tomes, orbs, quivers, starter G1-G2 families, the S1-S3 set pieces, dagger/axe/spear/bow/staff/wand grades) gets a **lower-quality placeholder generated in Python** (`scripts/pixel`, the procedural renderer that made the 78 `item_*` icons, palette-swapped per grade and set with the palettes of IDL-23), written with Claude like the MVP art. A placeholder is a registry line with `provenance: "placeholder, scripts/pixel"` and a `grade`; the item ships enabled-ready behind `enabled: false` until its loot work (Phase C) says otherwise. Good enough to read at 20 px, not final.
+3. **Pass 3: replace with Sprite Fusion (later release).** The batches in [item-resource-art-prompts](item-resource-art-prompts.md) (sections 3.7 and 3.8) regenerate slot by slot; each replaced icon is a one-line registry change (new file, new provenance), the catalog id never changes, so saves are untouched. Order: whatever players see most (weapons, chest, head), then the rest; placeholders stay until their replacement is approved. Budget is in that doc.
+
+Order of work: pass 1 (IDL-26..31 wiring) -> pass 2 -> the loot work of phase C of [26](26-next-updates-plan.md) -> pass 3 slot by slot in later releases. Pass 2 is cheap and unblocks C; pass 3 is polish and never blocks a release. Linear: IDL-217 (pass 2), IDL-218 (pass 3), IDL-219 (test benchmark).
+
+**The test benchmark moves with the items.** Fight and loot tests use "a strong kit" as a fixture; since the Rattatui set was deleted (2026-11-08) that is the Obsidian set plus a legendary maul. Once the grade ladder (G1-G9), the new legendary pool and sets S1-S3 exist, Obsidian is no longer the top of the game, so the fixtures must be **one named kit per grade** from a single helper (not `fullSet('obsidian', ...)` scattered through the tests), and `fight-sim`, `monster-ladder` and `fightBalance` pin their numbers to those grades. Ticketed in Linear; until then do not add new tests that name Obsidian as "the best".
+
 ## The next update: the rebirth world (design drafts, nothing built)
 
 One theme, ten docs. Each doc lists what exists in the code, the design, the server and save impact, and its open questions. Numbers and names in them are proposals until the questions are answered.
@@ -75,7 +87,7 @@ Cross-cutting rules for all of it: additive save fields only (no `SAVE_SCHEMA` b
 Triaged in [RELEASE-PLAN.md](RELEASE-PLAN.md) section 2 (2026-10-29); no open item remains in this table.
 
 - **R7** (`dangerBonus` is 0 or 1 because monsters stand at most 9 tiles out) is decided: per-band danger offsets and spawn tables replace it ([20](20-monster-families-and-rewards.md) section 8, IDL-53); delete this line when IDL-53 ships.
-- **R8** is resolved: the rats and the Rat King are gone, and the Rattatui set no longer drops (IDL-55, `retired: true`; the definitions go at the epoch reset, IDL-76).
+- **R8** is resolved: the rats and the Rat King are gone, and the Rattatui set is gone (IDL-55 stopped its drops; the definitions were deleted on 2026-11-08).
 - **R9** (local dev needs Supabase and `LOOT_SECRET`) is accepted as is; the README says what is needed.
 - **B6** (chests and clicks are small) is decided (BL1 + BL3 below, IDL-80/197). **B7** (sim bots are simple) is an acceptance line of each release step that changes player choices (class picker, `BUILD_ORDER`, respec, craft-sim; IDL-78).
 - **Open bugs and urgent items are in Linear:** IDL-166 (Urgent: bound the Ember balance by what the last save could have earned), IDL-167 (a flagged save still pays), IDL-168 (merchant upgrades are never paid on the server), IDL-169 (building cost ignores Charisma and Bulk Discount), IDL-170, IDL-172.
@@ -205,5 +217,5 @@ Removed on 2026-10-29 because the release plan answers them ([RELEASE-PLAN.md](R
 ## Combat and items: known limits
 
 - Four biomes of monsters (hills, coast and lake have none yet: rosters decided, IDL-201). There is one weapon per rarity tier; item upgrading is replaced by crafting (R11).
-- Bosses no longer drop Rattatui pieces (IDL-55); they own their drops from IDL-44 on (docs/20). Several tests still use the retired set as a strong-gear fixture until its definitions are deleted at the epoch reset. When gear or monsters change, rerun `npm run fight-sim -- --md` and `npm run monster-ladder -- --md` (`tests/fightBalance.test.ts` pins the tuning).
+- Bosses no longer drop Rattatui pieces (IDL-55); they own their drops from IDL-44 on (docs/20). The tests use the Obsidian set (with a legendary maul where a strong kit is needed) as the strong-gear fixture. When gear or monsters change, rerun `npm run fight-sim -- --md` and `npm run monster-ladder -- --md` (`tests/fightBalance.test.ts` pins the tuning).
 - Crits and weapon speed, Heal and Stun, selling, affixes, item levels, bag expansion (Pack Rat), auto-battle and the battle queue are built; offline-safe combat is the server's.

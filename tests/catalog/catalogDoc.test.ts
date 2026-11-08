@@ -10,11 +10,10 @@ test('the generated item catalog doc matches the catalog (run npm run catalog-re
 	assert.equal(committed, renderItemCatalog());
 });
 
-test('the generated catalog lists the two sets with every threshold and no plain loot family as a set', () => {
+test('the generated catalog lists the set with every threshold and no plain loot family as a set', () => {
 	const doc = renderItemCatalog();
 	assert.match(doc, /### Obsidian Set/);
-	assert.match(doc, /### Rattatui Set/);
+	assert.doesNotMatch(doc, /Rattatui/);
 	assert.doesNotMatch(doc, /### (Woodland|Apprentice|Knight)/);
 	assert.match(doc, /\| 12 \|/);
-	assert.match(doc, /\| 13 \|/);
 });

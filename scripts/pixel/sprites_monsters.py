@@ -3,7 +3,6 @@
 - monster_rat (2-frame idle sheet, 2 x 40x40) and monster_ratking (2 x 56x56, crowned): 3/4 view, head to the
   lower-left like the farm animals.
 - item_potion_hp (40x40) and the wooden starter kit.
-- the 12 Rattatui set icons: the slot pieces from sprites_equipment re-skinned in rat materials (fur, pink, tan).
 """
 import math
 from PIL import Image
@@ -130,14 +129,10 @@ def _skin(fn, remap, glint=False):
         eq.MATS, fx.glint = old_mats, old_glint
 
 
-RAT = {'steel': 'rat_fur', 'gold': 'rat_tan', 'cloth': 'rat_pink', 'leather': 'rat_fur_dk', 'pleather': 'rat_fur_dk',
-       'trouser': 'rat_fur', 'ruby': 'rat_pink', 'bark': 'cheese', 'cap': 'rat_fur', 'tunic': 'rat_fur'}
 WOOD = {'steel': 'wood_cut', 'gold': 'bark', 'ruby': 'bark', 'cloth': 'leather', 'bark': 'wood_cut'}
-FANG = {'steel': 'bone', 'gold': 'rat_tan', 'ruby': 'rat_pink', 'leather': 'rat_fur_dk'}
-BUCKLER = {'steel': 'rat_fur_dk', 'bark': 'cheese', 'cloth': 'rat_pink', 'gold': 'rat_tan'}
 
 
-def _item(fn, remap=RAT):
+def _item(fn, remap):
     return lambda: _skin(fn, remap)
 
 
@@ -148,16 +143,4 @@ SPRITES = {
     'item_potion_hp': potion,
     'item_wooden_sword': _item(eq.mainhand, WOOD),
     'item_wooden_shield': _item(eq.offhand, WOOD),
-    'item_rattatui_cap': _item(eq.head),
-    'item_rattatui_shoulderpads': _item(eq.shoulder),
-    'item_rattatui_tunic': _item(eq.chest),
-    'item_rattatui_gloves': _item(eq.hands),
-    'item_rattatui_trousers': _item(eq.legs),
-    'item_rattatui_boots': _item(eq.feet),
-    'item_rattatui_amulet': _item(eq.neck),
-    'item_rattatui_cloak': _item(eq.cape),
-    'item_rattatui_ring': _item(eq.ring),
-    'item_rattatui_charm': _item(eq.charm),
-    'item_rattatui_fang_blade': _item(eq.mainhand, FANG),
-    'item_rattatui_buckler': _item(eq.offhand, BUCKLER),
 }

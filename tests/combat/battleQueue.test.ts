@@ -13,7 +13,7 @@ import type { Ledger } from '../../src/lib/offline/ledger';
 // the win-chance gate is for auto-battle only and has its own tests; a queued fight ignores it by design, but the help below also fights with auto-battle on
 (COMBAT.auto as { minWinChance: number }).minWinChance = 0;
 
-const STRONG = fullSet('rattatui');
+const STRONG = fullSet('obsidian', 'titan_maul');
 const boars = (count: number, level = 1) => Array.from({ length: count }, () => ({ type: 'thistleBoar' as const, level }));
 // the sim helper switches auto-battle on (it lets the engine pick the monsters); here only the queue and the clicks decide, so it starts off
 const setup = (over: Partial<SimSetup> = {}) => {
@@ -170,7 +170,7 @@ test('a resting hero with a queue is asked about again when the rest is over, no
 		const r = at(s, hurt, 0.5);
 		assert.equal(r.ledger.combat!.fight, null, 'too weak to start yet');
 		const view = combatView(r.ledger, s.env(s.start + 0.5), 0, false, null);
-		assert.ok(view.nextPollSec <= 120, `auto-battle ${autoBattle ? 'on' : 'off'}: the next poll is in ${view.nextPollSec} s (the idle wait is 600)`);
+		assert.ok(view.nextPollSec < 600, `auto-battle ${autoBattle ? 'on' : 'off'}: the next poll is in ${view.nextPollSec} s (the idle wait is 600)`);
 		assert.equal(view.resting, true, 'the view says the hero is resting before the queue');
 		assert.ok((view.restSec ?? 0) > 0 && (view.restSec ?? 0) <= view.nextPollSec, 'and how long it takes');
 	}

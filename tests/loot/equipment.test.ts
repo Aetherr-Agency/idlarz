@@ -33,9 +33,9 @@ test('new game starts with sword and shield equipped, 2 potions and full HP', ()
 
 test('equipItem swaps with the equipped item and nothing is lost', () => {
 	freshGame();
-	store.setState({ bag: bagWith('rattatui_fang_blade') });
+	store.setState({ bag: bagWith('obsidian_blade') });
 	assert.equal(api().equipItem(0), true);
-	assert.deepEqual(api().equipment.mainHand, plainItem('rattatui_fang_blade'));
+	assert.deepEqual(api().equipment.mainHand, plainItem('obsidian_blade'));
 	assert.deepEqual(api().bag[0], { item: plainItem('wooden_sword') });
 });
 
@@ -49,13 +49,13 @@ test('equipItem rejects potions, empty slots and bad indexes', () => {
 
 test('gear that raises max HP can be taken off again and playerHp follows the new max', () => {
 	freshGame();
-	store.setState({ bag: bagWith('rattatui_tunic') });
+	store.setState({ bag: bagWith('obsidian_cuirass') });
 	api().equipItem(0);
-	assert.equal(max(), 101 + ITEM_CATALOG.rattatui_tunic.stats!.maxHp!);
+	assert.equal(max(), 101 + ITEM_CATALOG.obsidian_cuirass.stats!.maxHp!);
 	store.setState({ playerHp: max() });
 	assert.equal(api().unequipItem('chest'), true);
 	assert.equal(api().playerHp, 101);
-	assert.deepEqual(api().bag[0], { item: plainItem('rattatui_tunic') });
+	assert.deepEqual(api().bag[0], { item: plainItem('obsidian_cuirass') });
 });
 
 test('unequipItem fails on an empty slot and when the bag is full', () => {
@@ -77,13 +77,13 @@ test('moveBagItem swaps slots and rejects bad indexes', () => {
 
 test('equip actions are refused during a fight', () => {
 	freshGame();
-	store.setState({ bag: bagWith('rattatui_fang_blade') });
+	store.setState({ bag: bagWith('obsidian_blade') });
 	openFight();
 	assert.equal(api().equipItem(0), false);
 	assert.equal(api().unequipItem('offHand'), false);
 	assert.equal(api().moveBagItem(0, 1), false);
 	assert.deepEqual(api().equipment.mainHand, plainItem('wooden_sword'));
-	assert.equal(gearOf(api().bag[0])?.base, 'rattatui_fang_blade');
+	assert.equal(gearOf(api().bag[0])?.base, 'obsidian_blade');
 });
 
 test('rebirth wipes the gear and the bag (starter kit again) and refills HP', () => {
@@ -91,7 +91,7 @@ test('rebirth wipes the gear and the bag (starter kit again) and refills HP', ()
 	growTo(REBIRTH.minTiles);
 	store.setState((s) => {
 		const tiles = patchTile(s.tiles, CASTLE_X, CASTLE_Y, { level: REBIRTH.minCastleLevel });
-		return { tiles, bag: bagWith('rattatui_tunic', 'rattatui_cap'), playerHp: 10 };
+		return { tiles, bag: bagWith('obsidian_cuirass', 'obsidian_helm'), playerHp: 10 };
 	});
 	api().equipItem(1);
 	assert.equal(api().rebirth(), true);

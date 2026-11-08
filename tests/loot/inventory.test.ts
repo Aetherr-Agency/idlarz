@@ -19,7 +19,8 @@ import {
 	unequip,
 } from '../../src/lib/inventory';
 import { ITEM_CATALOG, emptyStats, setCounts, sumStats } from '../../src/catalog';
-import { RATTATUI_SET, STARTER_EQUIPMENT } from '../../src/config/itemCatalog';
+import { STARTER_EQUIPMENT } from '../../src/config/itemCatalog';
+import { SETS } from '../../src/catalog';
 import { plainItem as p, resolveItem } from '../../src/lib/itemInstance';
 import type { BagSlot, Equipment, ItemInstance } from '../../src/types/game';
 
@@ -55,10 +56,10 @@ test('addToBag stacks potions to 20 then spills into a new slot', () => {
 });
 
 test('addGear / addDrop report overflow when all 36 slots are full', () => {
-	const r = addGear(fullOfGear(), p('rattatui_cap'));
+	const r = addGear(fullOfGear(), p('obsidian_helm'));
 	assert.equal(r.added, false);
 	assert.equal(r.bag.filter(Boolean).length, 36);
-	assert.equal(addDrop(fullOfGear(), { kind: 'gear', item: p('rattatui_cap') }).overflow, 1);
+	assert.equal(addDrop(fullOfGear(), { kind: 'gear', item: p('obsidian_helm') }).overflow, 1);
 	assert.equal(addDrop(fullOfGear(), { kind: 'consumable', id: 'potion_minor', qty: 4 }).overflow, 4);
 	const unknown = addToBag(emptyBag(), 'nope', 2);
 	assert.equal(unknown.overflow, 2);
@@ -66,7 +67,7 @@ test('addGear / addDrop report overflow when all 36 slots are full', () => {
 });
 
 test('addToBag takes consumables only, and rejects object prototype names as item ids', () => {
-	for (const id of ['constructor', '__proto__', 'toString', 'hasOwnProperty', 'rattatui_cap']) {
+	for (const id of ['constructor', '__proto__', 'toString', 'hasOwnProperty', 'obsidian_helm']) {
 		const r = addToBag(emptyBag(), id, 1);
 		assert.equal(r.added, 0, id);
 		assert.equal(r.overflow, 1, id);
@@ -109,7 +110,7 @@ test('removeFromBag lowers a stack and clears an empty one; gear goes whole', ()
 });
 
 test('equipFromBag swaps with the equipped item and nothing is lost, rolls included', () => {
-	const rolled: ItemInstance = { base: 'rattatui_fang_blade', level: 14, rarity: 'epic', quality: 70, affixes: [] };
+	const rolled: ItemInstance = { base: 'obsidian_blade', level: 14, rarity: 'epic', quality: 70, affixes: [] };
 	const bag = addGear(emptyBag(), rolled).bag;
 	const r = equipFromBag(bag, STARTER_EQUIPMENT, 0)!;
 	assert.deepEqual(r.equipment.mainHand, rolled);
@@ -118,15 +119,15 @@ test('equipFromBag swaps with the equipped item and nothing is lost, rolls inclu
 });
 
 test('equipFromBag fills an empty slot and frees the bag slot', () => {
-	const bag = addGear(emptyBag(), p('rattatui_cap')).bag;
+	const bag = addGear(emptyBag(), p('obsidian_helm')).bag;
 	const r = equipFromBag(bag, {}, 0)!;
-	assert.deepEqual(r.equipment.head, p('rattatui_cap'));
+	assert.deepEqual(r.equipment.head, p('obsidian_helm'));
 	assert.equal(r.bag[0], null);
 });
 
 test('two rings go to ring1 then ring2, a third swaps ring1', () => {
 	let bag = emptyBag();
-	const rings = [1, 2, 3].map((n): ItemInstance => ({ ...p('rattatui_ring'), quality: 40 + n }));
+	const rings = [1, 2, 3].map((n): ItemInstance => ({ ...p('obsidian_ring'), quality: 40 + n }));
 	for (const ring of rings) bag = addGear(bag, ring).bag;
 	const eq: Equipment = {};
 	let r = equipFromBag(bag, eq, 0)!;
@@ -136,7 +137,7 @@ test('two rings go to ring1 then ring2, a third swaps ring1', () => {
 	assert.deepEqual(r.equipment.ring2, rings[1]);
 	r = equipFromBag(r.bag, r.equipment, 2)!;
 	assert.deepEqual(r.equipment.ring1, rings[2]);
-	assert.equal(r.bag.filter((s) => gearOf(s)?.base === 'rattatui_ring').length, 1);
+	assert.equal(r.bag.filter((s) => gearOf(s)?.base === 'obsidian_ring').length, 1);
 	assert.deepEqual(gearOf(r.bag[2]), rings[0], 'the displaced ring is back in the bag');
 });
 
@@ -208,72 +209,72 @@ test('aggregateStats uses the item level, quality and affixes of what is worn', 
 
 test('aggregateStats adds gear stats and every set bonus threshold reached', () => {
 	const six: Equipment = {
-		head: p('rattatui_cap'),
-		shoulder: p('rattatui_shoulderpads'),
-		chest: p('rattatui_tunic'),
-		hands: p('rattatui_gloves'),
-		legs: p('rattatui_trousers'),
-		feet: p('rattatui_boots'),
+		head: p('obsidian_helm'),
+		shoulder: p('obsidian_pauldrons'),
+		chest: p('obsidian_cuirass'),
+		hands: p('obsidian_gauntlets'),
+		legs: p('obsidian_greaves'),
+		feet: p('obsidian_sabatons'),
 	};
 	const gearOnly = (eq: Equipment) => sumStats(...Object.values(eq).map((item) => resolveItem(item!)!.stats));
-	const bonus = (...counts: number[]) => sumStats(...counts.map((c) => RATTATUI_SET.bonuses[c]));
+	const bonus = (...counts: number[]) => sumStats(...counts.map((c) => SETS.obsidian.bonuses[c]));
 	const a6 = aggregateStats(six);
 	assert.equal(a6.setCount, 6);
 	assert.deepEqual({ ...a6, setCount: undefined }, { ...sumStats(gearOnly(six), bonus(2, 4, 6)), setCount: undefined });
 
 	const full: Equipment = {
 		...six,
-		neck: p('rattatui_amulet'),
-		cape: p('rattatui_cloak'),
-		ring1: p('rattatui_ring'),
-		ring2: p('rattatui_ring'),
-		charm: p('rattatui_charm'),
-		mainHand: p('rattatui_fang_blade'),
-		offHand: p('rattatui_buckler'),
+		neck: p('obsidian_pendant'),
+		cape: p('obsidian_cloak'),
+		ring1: p('obsidian_ring'),
+		ring2: p('obsidian_ring'),
+		charm: p('obsidian_charm'),
+		mainHand: p('obsidian_blade'),
+		offHand: p('obsidian_aegis'),
 	};
-	const a13 = aggregateStats(full);
-	assert.equal(a13.setCount, 13);
-	assert.deepEqual({ ...a13, setCount: undefined }, { ...sumStats(gearOnly(full), bonus(2, 4, 6, 9, 13)), setCount: undefined });
+	const a12 = aggregateStats(full);
+	assert.equal(a12.setCount, 12, 'the weapon is not part of the Obsidian set');
+	assert.deepEqual({ ...a12, setCount: undefined }, { ...sumStats(gearOnly(full), bonus(2, 4, 6, 9, 12)), setCount: undefined });
 });
 
-test('two sets at once: each counts its own pieces', () => {
+test('only set pieces count: a steel piece belongs to no set', () => {
 	const mixed: Equipment = {
 		head: p('obsidian_helm'),
 		chest: p('obsidian_cuirass'),
 		hands: p('obsidian_gauntlets'),
-		legs: p('rattatui_trousers'),
-		feet: p('rattatui_boots'),
-		neck: p('rattatui_amulet'),
+		legs: p('obsidian_greaves'),
+		feet: p('obsidian_sabatons'),
+		neck: p('obsidian_pendant'),
 		cape: p('steel_cloak'),
 	};
-	assert.deepEqual(setCounts(mixed), { obsidian: 3, rattatui: 3 }); // a steel piece belongs to no set
+	assert.deepEqual(setCounts(mixed), { obsidian: 6 });
 });
 
 test('functions do not mutate their inputs', () => {
 	const bag = deepFreeze(starterBag());
 	const eq = deepFreeze({ ...STARTER_EQUIPMENT });
 	addToBag(bag, 'potion_minor', 3);
-	addGear(bag, p('rattatui_cap'));
+	addGear(bag, p('obsidian_helm'));
 	removeFromBag(bag, 0);
 	moveSlot(bag, 0, 4);
 	unequip(bag, eq, 'mainHand');
-	const withGear = deepFreeze(addGear(emptyBag(), p('rattatui_cap')).bag);
+	const withGear = deepFreeze(addGear(emptyBag(), p('obsidian_helm')).bag);
 	equipFromBag(withGear, eq, 0);
 	aggregateStats(eq);
 });
 
 test('compareToEquipped: a better weapon shows the stat difference to the worn one', () => {
-	const cmp = compareToEquipped(p('rattatui_fang_blade'), STARTER_EQUIPMENT)!;
+	const cmp = compareToEquipped(p('obsidian_blade'), STARTER_EQUIPMENT)!;
 	assert.equal(cmp.slot, 'mainHand');
 	assert.deepEqual(cmp.equipped, p('wooden_sword'));
 	const now = sumStats(stats('wooden_sword'));
-	const next = sumStats(stats('rattatui_fang_blade'));
+	const next = sumStats(stats('obsidian_blade'));
 	for (const key of Object.keys(next) as (keyof typeof next)[]) {
 		const expected = Math.round((next[key] - now[key]) * 100) / 100;
 		assert.equal(cmp.deltas[key] ?? 0, expected, key);
 	}
 	// swapping back is the exact opposite
-	const back = compareToEquipped(p('wooden_sword'), { ...STARTER_EQUIPMENT, mainHand: p('rattatui_fang_blade') })!;
+	const back = compareToEquipped(p('wooden_sword'), { ...STARTER_EQUIPMENT, mainHand: p('obsidian_blade') })!;
 	for (const key of Object.keys(cmp.deltas) as (keyof typeof cmp.deltas)[]) assert.equal(back.deltas[key], -cmp.deltas[key]!);
 });
 
@@ -286,14 +287,14 @@ test('compareToEquipped sees item level: the same base at a higher level is an u
 });
 
 test('compareToEquipped: an empty slot gains everything, rings pick the slot equipFromBag would, consumables have none', () => {
-	const cap = compareToEquipped(p('rattatui_cap'), {})!;
+	const cap = compareToEquipped(p('obsidian_helm'), {})!;
 	assert.equal(cap.slot, 'head');
 	assert.equal(cap.equipped, undefined);
-	assert.deepEqual(cap.deltas, Object.fromEntries(Object.entries(ITEM_CATALOG.rattatui_cap.stats!).filter(([, v]) => v)));
+	assert.deepEqual(cap.deltas, Object.fromEntries(Object.entries(ITEM_CATALOG.obsidian_helm.stats!).filter(([, v]) => v)));
 
-	assert.equal(compareToEquipped(p('rattatui_ring'), {})!.slot, 'ring1');
-	assert.equal(compareToEquipped(p('rattatui_ring'), { ring1: p('rattatui_ring') })!.slot, 'ring2');
-	const full = compareToEquipped(p('rattatui_ring'), { ring1: p('rattatui_ring'), ring2: p('rattatui_ring') })!;
+	assert.equal(compareToEquipped(p('obsidian_ring'), {})!.slot, 'ring1');
+	assert.equal(compareToEquipped(p('obsidian_ring'), { ring1: p('obsidian_ring') })!.slot, 'ring2');
+	const full = compareToEquipped(p('obsidian_ring'), { ring1: p('obsidian_ring'), ring2: p('obsidian_ring') })!;
 	assert.equal(full.slot, 'ring1');
 	assert.deepEqual(full.deltas, {}, 'the same ring over the same ring changes nothing');
 
@@ -302,7 +303,7 @@ test('compareToEquipped: an empty slot gains everything, rings pick the slot equ
 });
 
 test('compareToEquipped includes the set bonus the swap reaches', () => {
-	const pieces = RATTATUI_SET.pieces;
+	const pieces = SETS.obsidian.pieces;
 	const [first, ...rest] = pieces;
 	const wornAll = Object.fromEntries(rest.map((id) => [ITEM_CATALOG[id].slot === 'ring' ? 'ring1' : ITEM_CATALOG[id].slot, p(id)])) as Equipment;
 	const withSet = aggregateStats({ ...wornAll, [ITEM_CATALOG[first].slot === 'ring' ? 'ring1' : ITEM_CATALOG[first].slot!]: p(first) });
@@ -314,11 +315,11 @@ test('compareToEquipped includes the set bonus the swap reaches', () => {
 });
 
 test('compareDetailed: stats are NEW, LOST, up or down against the worn piece, and an empty slot has no worn piece', () => {
-	const cmp = compareDetailed(p('rattatui_fang_blade'), STARTER_EQUIPMENT)!;
+	const cmp = compareDetailed(p('obsidian_blade'), STARTER_EQUIPMENT)!;
 	assert.equal(cmp.slot, 'mainHand');
 	assert.deepEqual(cmp.equipped, p('wooden_sword'));
 	const worn = stats('wooden_sword');
-	const next = stats('rattatui_fang_blade');
+	const next = stats('obsidian_blade');
 	for (const row of cmp.rows) {
 		assert.equal(row.was, worn[row.key] ?? 0, row.key);
 		assert.equal(row.now, next[row.key] ?? 0, row.key);
@@ -326,15 +327,15 @@ test('compareDetailed: stats are NEW, LOST, up or down against the worn piece, a
 		const expected = !row.was ? 'new' : !row.now ? 'lost' : row.delta > 0 ? 'up' : row.delta < 0 ? 'down' : 'same';
 		assert.equal(row.status, expected, row.key);
 	}
-	assert.deepEqual(cmp.net, compareToEquipped(p('rattatui_fang_blade'), STARTER_EQUIPMENT)!.deltas);
-	assert.deepEqual(cmp.after.mainHand, p('rattatui_fang_blade'));
+	assert.deepEqual(cmp.net, compareToEquipped(p('obsidian_blade'), STARTER_EQUIPMENT)!.deltas);
+	assert.deepEqual(cmp.after.mainHand, p('obsidian_blade'));
 
 	// swapping to something that lacks a stat the worn piece has marks it as lost
-	const back = compareDetailed(p('wooden_sword'), { ...STARTER_EQUIPMENT, mainHand: p('rattatui_fang_blade') })!;
+	const back = compareDetailed(p('wooden_sword'), { ...STARTER_EQUIPMENT, mainHand: p('obsidian_blade') })!;
 	const lostKeys = Object.keys(next).filter((k) => !(worn as Record<string, number>)[k]);
 	for (const key of lostKeys) assert.equal(back.rows.find((r) => r.key === key)?.status, 'lost', key);
 
-	const empty = compareDetailed(p('rattatui_cap'), {})!;
+	const empty = compareDetailed(p('obsidian_helm'), {})!;
 	assert.equal(empty.equipped, undefined);
 	assert.ok(empty.rows.length > 0 && empty.rows.every((r) => r.status === 'new'));
 
@@ -343,15 +344,15 @@ test('compareDetailed: stats are NEW, LOST, up or down against the worn piece, a
 });
 
 test('compareDetailed reports the set tiers a swap switches on and off', () => {
-	const pieces = RATTATUI_SET.pieces;
+	const pieces = SETS.obsidian.pieces;
 	const slotOf = (id: string) => (ITEM_CATALOG[id].slot === 'ring' ? 'ring1' : ITEM_CATALOG[id].slot!);
-	const lowest = Math.min(...Object.keys(RATTATUI_SET.bonuses).map(Number));
+	const lowest = Math.min(...Object.keys(SETS.obsidian.bonuses).map(Number));
 	const wornIds = pieces.filter((id) => ITEM_CATALOG[id].slot !== 'ring').slice(0, lowest - 1);
 	const wornSome = Object.fromEntries(wornIds.map((id) => [slotOf(id), p(id)])) as Equipment;
 	const next = pieces.find((id) => ITEM_CATALOG[id].slot !== 'ring' && !wornIds.includes(id))!;
 
 	const gain = compareDetailed(p(next), wornSome)!;
-	const change = gain.setChanges.find((c) => c.setId === RATTATUI_SET.id)!;
+	const change = gain.setChanges.find((c) => c.setId === SETS.obsidian.id)!;
 	assert.equal(change.from, lowest - 1);
 	assert.equal(change.to, lowest);
 	assert.deepEqual(
