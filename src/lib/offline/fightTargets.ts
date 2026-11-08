@@ -1,0 +1,131 @@
+import { COMBAT } from '@/config/combatConfig';
+import { limitOf } from '@/lib/limits';
+import { levelAtAge } from '@/lib/monsters';
+import { EPS, type FightCtx } from '@/lib/offline/fightContext';
+import { resumeHpOf, startFight, winnable } from '@/lib/offline/fightProfile';
+import type { CombatState, QueueResult } from '@/lib/offline/fightTypes';
+import type { Ledger } from '@/lib/offline/ledger';
+import { isPlaced } from '@/lib/offline/placement';
+import { monsterTypeOf, type MonsterTicket } from '@/lib/offline/tickets';
+import type { MonsterType } from '@/types/game';
+
+// SERVER ONLY. Who the hero fights next: the monsters standing on the map, auto-battle's pick, the battle queue (docs/24-battle-queue.md) and
+// the waiting between fights.
+
+type Target = { ticket: MonsterTicket; type: MonsterType };
+
+/** A placed monster by ticket number, with what it is (null: gone, or not on the map yet). */
+export const placedTarget = (ledger: Ledger, n: number): Target | null => {
+	const rat = ledger.bank.rats.find((ticket) => ticket.n === n && isPlaced(ticket));
+	if (rat) return { ticket: rat, type: monsterTypeOf(rat, 'rat') };
+	const king = ledger.bank.king && ledger.bank.king.n === n && isPlaced(ledger.bank.king) ? ledger.bank.king : undefined;
+	return king ? { ticket: king, type: monsterTypeOf(king, 'king') } : null;
+};
+
+/**
+ * The next monster to engage: placed normal monsters first (the weakest, or the oldest: COMBAT.auto.engageOrder), then the King. One that
+ * beat the player is left alone until its retry time has passed, so an unbeatable monster never blocks the easy ones.
+ */
+export const pickTarget = (
+	ledger: Ledger,
+	combat: CombatState,
+	tSec: number,
+	/** Auto-battle only: whether the player is expected to win against this monster (left out: no check) */
+	winnable?: (type: MonsterType, level: number) => boolean,
+): Target | null => {
+	const levelOf = (ticket: MonsterTicket) => levelAtAge(ticket.spawnLevel ?? 1, tSec - ticket.at);
+	const ready = (ticket: MonsterTicket, kind: 'rat' | 'king') =>
+		isPlaced(ticket) && tSec >= (combat.retryAt[ticket.n] ?? 0) && (!winnable || winnable(monsterTypeOf(ticket, kind), levelOf(ticket)));
+	const rats = ledger.bank.rats
+		.filter((ticket) => ready(ticket, 'rat'))
+		.sort((a, b) => (COMBAT.auto.engageOrder === 'weakest' ? levelOf(a) - levelOf(b) : 0) || a.n - b.n);
+	if (rats[0]) return { ticket: rats[0], type: monsterTypeOf(rats[0], 'rat') };
+	const king = ledger.bank.king;
+	if (king && ready(king, 'king')) return { ticket: king, type: monsterTypeOf(king, 'king') };
+	return null;
+};
+
+/** The soonest time a monster that is waiting out its retry cooldown becomes a target again (Infinity: none). */
+export const nextRetry = (ledger: Ledger, combat: CombatState, tSec: number): number => {
+	let soonest = Infinity;
+	for (const ticket of [...ledger.bank.rats, ...(ledger.bank.king ? [ledger.bank.king] : [])]) {
+		const at = combat.retryAt[ticket.n] ?? 0;
+		if (isPlaced(ticket) && at > tSec) soonest = Math.min(soonest, at);
+	}
+	return soonest;
+};
+
+/** Drops the queued monsters that are gone (or are the open fight's own) and says whether any is left. */
+export const queueHasTarget = (ctx: FightCtx): boolean => {
+	const c = ctx.c;
+	c.queue = c.queue.filter((n) => placedTarget(ctx.ledger, n) !== null && n !== c.fight?.n);
+	return c.queue.length > 0;
+};
+
+/** A click while a fight is open: the monster joins the queue, or leaves it when it was already there. */
+export const queueTicket = (ctx: FightCtx, n: number): QueueResult => {
+	const c = ctx.c;
+	if (c.queue.includes(n)) {
+		c.queue = c.queue.filter((queuedN) => queuedN !== n);
+		return 'removed';
+	}
+	if (!placedTarget(ctx.ledger, n) || c.fight?.n === n) return 'refused';
+	if (c.queue.length >= limitOf('battleQueue')) return 'full';
+	c.queue.push(n);
+	return 'queued';
+};
+
+/** A monster leaves the queue (an `unqueue` command): says whether it was in it. */
+export const unqueueTicket = (ctx: FightCtx, n: number): boolean => {
+	if (!ctx.c.queue.includes(n)) return false;
+	ctx.c.queue = ctx.c.queue.filter((queuedN) => queuedN !== n);
+	return true;
+};
+
+/** The next fight: the queue's head (the player chose it, so no retry time and no win estimate stop it, but the hero must be back on his feet), then auto-battle's pick. */
+export const engage = (ctx: FightCtx, t: number): boolean => {
+	const c = ctx.c;
+	if (queueHasTarget(ctx)) {
+		if (c.hp < resumeHpOf(ctx.profileNow)) return false;
+		const next = placedTarget(ctx.ledger, c.queue.shift()!)!;
+		return startFight(ctx, t, next);
+	}
+	if (!c.autoBattle || c.hp < resumeHpOf(ctx.profileNow)) return false;
+	const target = pickTarget(ctx.ledger, c, t, winnable(ctx));
+	return target ? startFight(ctx, t, target) : false;
+};
+
+/** The player's pick (a click on a monster): works with auto-battle off, needs no HP threshold and ignores a monster's retry time. */
+export const engageTicket = (ctx: FightCtx, t: number, n: number): boolean => {
+	const c = ctx.c;
+	if (c.fight || c.hp <= 0) return false;
+	const target = placedTarget(ctx.ledger, n);
+	if (!target) return false;
+	c.queue = c.queue.filter((queuedN) => queuedN !== n); // a click that fights it now moves it out of the line
+	return startFight(ctx, t, target);
+};
+
+/**
+ * With no fight open: how long to rest from `t` before something can change (HP back above the resume line, the King's retry time, or `now`).
+ * Never less than one tick (or what is left of the request).
+ */
+export const restFor = (ctx: FightCtx, t: number, now: number): number => {
+	const c = ctx.c;
+	const idleRegen = COMBAT.regenPerSec + ctx.profileNow.hpRegen;
+	let until = now;
+	if (queueHasTarget(ctx) || (c.autoBattle && pickTarget(ctx.ledger, c, t, winnable(ctx)))) {
+		const need = resumeHpOf(ctx.profileNow) - c.hp;
+		if (need > 0 && idleRegen > 0) until = Math.min(until, t + need / idleRegen + EPS);
+	} else if (c.autoBattle) {
+		until = Math.min(until, nextRetry(ctx.ledger, c, t));
+	}
+	return Math.max(until - t, Math.min(COMBAT.tickSec, now - t));
+};
+
+/** The monsters waiting for their turn as the browser is shown them, first to fight first (one that is gone is not listed). */
+export const queueView = (ledger: Ledger, c: CombatState): { n: number; type: MonsterType; level: number; lucky: boolean }[] =>
+	(c.queue ?? []).flatMap((n) => {
+		const target = placedTarget(ledger, n);
+		if (!target) return [];
+		return [{ n, type: target.type, level: levelAtAge(target.ticket.spawnLevel ?? 1, c.at - target.ticket.at), lucky: !!target.ticket.lucky }];
+	});

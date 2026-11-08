@@ -1,109 +1,31 @@
-import { SKILLS, type SkillId } from '@/catalog/skills';
 import { COMBAT } from '@/config/combatConfig';
 import { ITEM_CATALOG } from '@/catalog';
-import type { StoredSave } from '@/lib/cloudSave/pipeline';
-import { armorReduction, autoBattleUnlocked, mitigate, swing } from '@/lib/combat';
-import { isBoss, levelAtAge, monsterDef, monsterStats } from '@/lib/monsters';
-import {
-	COSMETIC_EVENTS,
-	LOG_HARD_CAP,
-	LOG_KEEP,
-	freshCombat,
-	freshCooldowns,
-	type CombatCommand,
-	type CombatState,
-	type CombatView,
-	type FightEvent,
-	type FightRecord,
-	type PlayerProfile,
-	type QueueResult,
-} from '@/lib/offline/fightTypes';
-import { limitOf } from '@/lib/limits';
+import { autoBattleUnlocked } from '@/lib/combat';
+import { combatOf, EPS, type CombatEnv, type FightCtx } from '@/lib/offline/fightContext';
+import { engage, queueHasTarget } from '@/lib/offline/fightTargets';
+import { applyCommand, endFight, fightStep, idleStep } from '@/lib/offline/fightSteps';
+import { COSMETIC_EVENTS, freshCooldowns, type CombatCommand, type CombatState, type QueueResult } from '@/lib/offline/fightTypes';
 import type { Ledger } from '@/lib/offline/ledger';
-import { isPlaced } from '@/lib/offline/placement';
-import { playerProfile, savedVitals } from '@/lib/offline/profile';
-import { bagCountOf, inventoryFromCore, takeOne } from '@/lib/offline/inventory';
-import type { Inventory } from '@/lib/offline/types';
-import { estimateWin, type PotionStock } from '@/lib/offline/winChance';
-import { payKill } from '@/lib/offline/reward';
-import { sealedRng } from '@/lib/offline/seal';
-import { monsterTypeOf, takeMonster, type MonsterTicket } from '@/lib/offline/tickets';
-import type { MonsterType } from '@/types/game';
-import type { Rng } from '@/lib/rng';
+import { playerProfile } from '@/lib/offline/profile';
+import { inventoryFromCore } from '@/lib/offline/inventory';
+import { takeMonster } from '@/lib/offline/tickets';
 
 // SERVER ONLY. The fight engine. Combat is a pure function of the player's saved strength, the monster's ticket and a sealed random
 // stream, stepped in fixed ticks (COMBAT.tickSec): the player swings at the weapon's attack speed, the monster at its own, and
 // cooldowns, mana and stun run on the same clock. There is no server process ticking in the background: every request fast-forwards
 // the player's combat from where it stopped to the server clock (at most COMBAT.maxCatchUpSec of fighting), so a missed poll loses nothing
 // and nobody can speed a fight up by asking more often.
+//
+// This file is the orchestrator and the public face; the parts live next to it (IDL-16), each importing only the ones before it:
+//   fightContext  the request's environment and working state, the event log, the sealed random stream
+//   fightProfile  the numbers a fight is judged on: the player's profile, the resume line, the win estimate, how a fight starts
+//   fightTargets  who is fought next: placed monsters, auto-battle's pick, the battle queue, the wait between fights
+//   fightSteps    what happens in a fight, tick by tick: swings, skills, potions, the end of a fight, commands
+//   fightView     the picture the browser is given
+// tests/goldenFight.test.ts pins the whole engine to recorded fights: a change to any of them that moves a number there changes the game.
 
-export interface CombatEnv {
-	secret: string;
-	userId: string;
-	stored: StoredSave;
-	/** Server clock, epoch seconds */
-	nowSec: number;
-}
-
-const EPS = 1e-9;
-const round1 = (value: number): number => Math.round(value * 10) / 10;
-
-/** The potions auto-use would drink (none with auto-use off), for the win estimate. */
-const potionsForEstimate = (inv: Inventory, c: CombatState): PotionStock[] =>
-	c.autoUse
-		? Object.keys(ITEM_CATALOG)
-				.filter((id) => ITEM_CATALOG[id].consumable?.healHp)
-				.map((id) => ({ healHp: ITEM_CATALOG[id].consumable!.healHp, count: bagCountOf(inv, id) }))
-		: [];
-
-/** The combat record of a ledger, seeded from the saved HP and mana the first time. */
-const combatOf = (ledger: Ledger, env: CombatEnv): CombatState => {
-	if (ledger.combat) return ledger.combat;
-	const vitals = savedVitals(env.stored.core);
-	return freshCombat(env.nowSec, vitals.hp, vitals.mp);
-};
-
-/**
- * The next monster to engage: placed normal monsters first (the weakest, or the oldest: COMBAT.auto.engageOrder), then the King. One that
- * beat the player is left alone until its retry time has passed, so an unbeatable monster never blocks the easy ones.
- */
-const pickTarget = (
-	ledger: Ledger,
-	combat: CombatState,
-	tSec: number,
-	/** Auto-battle only: whether the player is expected to win against this monster (left out: no check) */
-	winnable?: (type: MonsterType, level: number) => boolean,
-): { ticket: MonsterTicket; type: MonsterType } | null => {
-	const levelOf = (ticket: MonsterTicket) => levelAtAge(ticket.spawnLevel ?? 1, tSec - ticket.at);
-	const ready = (ticket: MonsterTicket, kind: 'rat' | 'king') =>
-		isPlaced(ticket) && tSec >= (combat.retryAt[ticket.n] ?? 0) && (!winnable || winnable(monsterTypeOf(ticket, kind), levelOf(ticket)));
-	const rats = ledger.bank.rats
-		.filter((ticket) => ready(ticket, 'rat'))
-		.sort((a, b) => (COMBAT.auto.engageOrder === 'weakest' ? levelOf(a) - levelOf(b) : 0) || a.n - b.n);
-	if (rats[0]) return { ticket: rats[0], type: monsterTypeOf(rats[0], 'rat') };
-	const king = ledger.bank.king;
-	if (king && ready(king, 'king')) return { ticket: king, type: monsterTypeOf(king, 'king') };
-	return null;
-};
-
-/**
- * Whether auto-battle expects to beat a monster: the estimate (offline/winChance.ts) with the HP it would start with (at least the resume
- * line, so a player who is still resting is not judged on a low HP) and the potions auto-use would drink. A click on a monster skips this.
- */
-const winnableBy =
-	(profile: PlayerProfile, hp: number, potions: PotionStock[]) =>
-	(type: MonsterType, level: number): boolean =>
-		estimateWin(profile, Math.max(hp, (profile.maxHp * COMBAT.auto.resumeHpPct) / 100), type, level, potions).chance >= COMBAT.auto.minWinChance;
-
-/** The soonest time a monster that is waiting out its retry cooldown becomes a target again (Infinity: none). */
-const nextRetry = (ledger: Ledger, combat: CombatState, tSec: number): number => {
-	let soonest = Infinity;
-	for (const ticket of [...ledger.bank.rats, ...(ledger.bank.king ? [ledger.bank.king] : [])]) {
-		const at = combat.retryAt[ticket.n] ?? 0;
-		if (isPlaced(ticket) && at > tSec) soonest = Math.min(soonest, at);
-	}
-	return soonest;
-};
+export type { CombatEnv } from '@/lib/offline/fightContext';
+export { combatView } from '@/lib/offline/fightView';
 
 export interface CombatTotals {
 	ledger: Ledger;
@@ -122,271 +44,38 @@ export const runCombat = (
 	ask: { commands?: CombatCommand[]; autoBattle?: boolean; autoUse?: boolean; ack?: number } = {},
 ): CombatTotals => {
 	// the bag is the ledger's (the engine tests and the sim build a ledger from a core: the inventory is read from it then)
-	let ledger: Ledger = input.inv ? input : { ...input, inv: inventoryFromCore(env.stored.core) };
+	const ledger: Ledger = input.inv ? input : { ...input, inv: inventoryFromCore(env.stored.core) };
 	const base = combatOf(ledger, env);
 	// what the browser has told us it applied (its `since`) is not kept: only cosmetic events are ever dropped unacknowledged
 	const log = ask.ack === undefined ? [...base.log] : base.log.filter((event) => COSMETIC_EVENTS.has(event.kind) || event.no > ask.ack!);
 	const c: CombatState = { ...base, cd: { ...base.cd }, log, fight: base.fight ? { ...base.fight } : null, queue: [...(base.queue ?? [])] };
+	const ctx: FightCtx = {
+		env,
+		c,
+		ledger,
+		profileNow: playerProfile(env.stored.core),
+		potionIds: Object.keys(ITEM_CATALOG).filter((id) => ITEM_CATALOG[id].consumable?.healHp),
+	};
 	let queued: QueueResult | undefined;
-	const profileNow = playerProfile(env.stored.core);
 	// auto-battle is locked until the first rebirth: a save that has it on from before (or a request for it) does not get it
 	const autoAllowed = autoBattleUnlocked(ledger.rebirths);
 	if (!autoAllowed) c.autoBattle = false;
-	const potionIds = Object.keys(ITEM_CATALOG).filter((id) => ITEM_CATALOG[id].consumable?.healHp);
-
-	const push = (t: number, kind: FightEvent['kind'], extra: Partial<FightEvent> = {}) => {
-		c.eventNo++;
-		c.log.push({ no: c.eventNo, t, kind, ...extra });
-		if (c.log.length > LOG_KEEP) {
-			let drop = c.log.length - LOG_KEEP;
-			c.log = c.log.filter((event) => !(drop > 0 && COSMETIC_EVENTS.has(event.kind) && drop-- > 0));
-		}
-		if (c.log.length > LOG_HARD_CAP) c.log.splice(0, c.log.length - LOG_HARD_CAP);
-	};
-	const maxHpNow = () => (c.fight ? c.fight.profile.maxHp : profileNow.maxHp);
-	const levelNow = () => (c.fight ? c.fight.profile.level : profileNow.level);
-	const rngFor = (f: FightRecord): Rng => sealedRng(env.secret, env.userId, ledger.runId, 'fight', f.ord * 100000 + (f.seq++ % 100000));
-
-	const tickCooldowns = (dt: number) => {
-		c.cd = { heal: Math.max(0, c.cd.heal - dt), stun: Math.max(0, c.cd.stun - dt), potion: Math.max(0, c.cd.potion - dt) };
-	};
-	const stock = (id: string): number => bagCountOf(ledger.inv!, id);
-	/** What auto-battle checks a monster against: the numbers it would fight with and the potions auto-use would drink */
-	const winnable = () => winnableBy(profileNow, c.hp, potionsForEstimate(ledger.inv!, c));
-
-	const drink = (t: number, id: string): boolean => {
-		const healHp = ITEM_CATALOG[id]?.consumable?.healHp;
-		if (!healHp || stock(id) < 1 || c.hp >= maxHpNow() - EPS) return false;
-		if (c.fight && c.cd.potion > 0) return false;
-		const healed = Math.min(healHp, maxHpNow() - c.hp);
-		c.hp += healed;
-		ledger = { ...ledger, inv: takeOne(ledger.inv!, id) ?? ledger.inv! };
-		if (c.fight) c.cd.potion = COMBAT.potionCooldownSec;
-		push(t, 'potion', { id, amount: Math.round(healed) });
-		return true;
-	};
-
-	const cast = (t: number, id: SkillId): boolean => {
-		const skill = SKILLS[id];
-		if (!skill || levelNow() < skill.unlockLevel || c.cd[id] > 0 || c.mp < skill.manaCost) return false;
-		if (skill.fightOnly && !c.fight) return false;
-		if (id === 'heal') {
-			const profile = c.fight ? c.fight.profile : profileNow;
-			if (c.hp >= maxHpNow() - EPS) return false;
-			const healed = Math.min(profile.heal, maxHpNow() - c.hp);
-			c.hp += healed;
-			push(t, 'heal', { amount: Math.round(healed) });
-		} else if (c.fight) {
-			const stats = monsterStats(c.fight.type, c.fight.level);
-			if (stats.stunResist > 0 && rngFor(c.fight)() * 100 < stats.stunResist) push(t, 'resist');
-			else {
-				c.fight.stunLeft = skill.stunSec ?? 0;
-				push(t, 'stun', { amount: skill.stunSec ?? 0 });
-			}
-		}
-		c.mp -= skill.manaCost;
-		c.cd[id] = skill.cooldownSec;
-		return true;
-	};
-
-	const autoUse = (t: number) => {
-		const hpPct = (c.hp / maxHpNow()) * 100;
-		if (c.cd.potion <= 0 && hpPct < COMBAT.auto.potionBelowHpPct) {
-			const missing = maxHpNow() - c.hp;
-			const options = potionIds.filter((id) => stock(id) > 0).sort((a, b) => ITEM_CATALOG[a].consumable!.healHp! - ITEM_CATALOG[b].consumable!.healHp!);
-			const fit = options.find((id) => ITEM_CATALOG[id].consumable!.healHp! >= missing) ?? options[options.length - 1];
-			if (fit) drink(t, fit);
-		}
-		if (hpPct < COMBAT.auto.healBelowHpPct) cast(t, 'heal');
-		if (COMBAT.auto.stunWhenReady && c.fight && c.fight.stunLeft <= 0) cast(t, 'stun');
-	};
-
-	/** Opens the fight against a monster: the start of both an automatic and a chosen fight. */
-	const start = (t: number, target: { ticket: MonsterTicket; type: MonsterType }): boolean => {
-		const level = levelAtAge(target.ticket.spawnLevel ?? 1, t - target.ticket.at);
-		const stats = monsterStats(target.type, level);
-		const profile: PlayerProfile = profileNow;
-		c.hp = Math.min(c.hp, profile.maxHp);
-		c.mp = Math.min(c.mp, profile.maxMp);
-		c.ord++;
-		c.fight = {
-			n: target.ticket.n,
-			type: target.type,
-			level,
-			lucky: target.ticket.lucky,
-			monsterHp: stats.maxHp,
-			monsterMaxHp: stats.maxHp,
-			playerTimer: 0,
-			monsterTimer: 0,
-			stunLeft: 0,
-			elapsed: 0,
-			timeLeftSec: monsterDef(target.type).timeLimitSec ?? null,
-			ord: c.ord,
-			seq: 0,
-			profile,
-			x: target.ticket.x ?? 0,
-			y: target.ticket.y ?? 0,
-		};
-		push(t, 'engage', { n: target.ticket.n, type: target.type, level });
-		return true;
-	};
-
-	/** A placed monster by ticket number, with what it is (null: gone, or not on the map yet). */
-	const placedTarget = (n: number): { ticket: MonsterTicket; type: MonsterType } | null => {
-		const rat = ledger.bank.rats.find((ticket) => ticket.n === n && isPlaced(ticket));
-		if (rat) return { ticket: rat, type: monsterTypeOf(rat, 'rat') };
-		const king = ledger.bank.king && ledger.bank.king.n === n && isPlaced(ledger.bank.king) ? ledger.bank.king : undefined;
-		return king ? { ticket: king, type: monsterTypeOf(king, 'king') } : null;
-	};
-	const resumeHp = (profileNow.maxHp * COMBAT.auto.resumeHpPct) / 100;
-	/** Drops the queued monsters that are gone (or are the open fight's own) and says whether any is left. */
-	const queueHasTarget = (): boolean => {
-		c.queue = c.queue.filter((n) => placedTarget(n) !== null && n !== c.fight?.n);
-		return c.queue.length > 0;
-	};
-
-	/** The next fight: the queue's head (the player chose it, so no retry time and no win estimate stop it, but the hero must be back on his feet), then auto-battle's pick. */
-	const engage = (t: number): boolean => {
-		if (queueHasTarget()) {
-			if (c.hp < resumeHp) return false;
-			const next = placedTarget(c.queue.shift()!)!;
-			return start(t, next);
-		}
-		if (!c.autoBattle || c.hp < resumeHp) return false;
-		const target = pickTarget(ledger, c, t, winnable());
-		return target ? start(t, target) : false;
-	};
-
-	/** The player's pick (a click on a monster): works with auto-battle off, needs no HP threshold and ignores a monster's retry time. */
-	const engageTicket = (t: number, n: number): boolean => {
-		if (c.fight || c.hp <= 0) return false;
-		const target = placedTarget(n);
-		if (!target) return false;
-		c.queue = c.queue.filter((queuedN) => queuedN !== n); // a click that fights it now moves it out of the line
-		return start(t, target);
-	};
-
-	/** A click while a fight is open: the monster joins the queue, or leaves it when it was already there. */
-	const queueTicket = (n: number): QueueResult => {
-		if (c.queue.includes(n)) {
-			c.queue = c.queue.filter((queuedN) => queuedN !== n);
-			return 'removed';
-		}
-		if (!placedTarget(n) || c.fight?.n === n) return 'refused';
-		if (c.queue.length >= limitOf('battleQueue')) return 'full';
-		c.queue.push(n);
-		return 'queued';
-	};
-
-	const endFight = (t: number, kind: 'defeated' | 'timeout' | 'retreat') => {
-		const f = c.fight!;
-		push(t, kind, { n: f.n, type: f.type, level: f.level });
-		if (kind !== 'retreat') {
-			if (kind === 'defeated') c.hp = Math.round(f.profile.maxHp * COMBAT.knockoutHpFraction);
-			c.retryAt[f.n] = t + (isBoss(f.type) ? COMBAT.auto.bossRetryCooldownSec : COMBAT.auto.retryCooldownSec);
-		}
-		c.fight = null;
-		c.queue = []; // the hero lost, ran out the clock or left: the plan is off (a win keeps the queue)
-	};
-
-	/** One tick of the open fight. Returns when the fight ended. */
-	const step = (t: number, dt: number) => {
-		const f = c.fight!;
-		const p = f.profile;
-		const monster = monsterStats(f.type, f.level);
-		f.elapsed += dt;
-		c.hp = Math.min(p.maxHp, c.hp + p.hpRegen * dt);
-		c.mp = Math.min(p.maxMp, c.mp + p.mpRegen * dt);
-		tickCooldowns(dt);
-		if (f.timeLeftSec !== null) f.timeLeftSec = Math.max(0, f.timeLeftSec - dt);
-		if (c.autoUse) autoUse(t);
-
-		const stunned = Math.min(f.stunLeft, dt);
-		f.stunLeft -= stunned;
-
-		// the player's swings
-		f.playerTimer += dt;
-		const period = 1 / Math.max(0.05, p.attacksPerSec);
-		while (f.playerTimer >= period - EPS && f.monsterHp > 0) {
-			f.playerTimer -= period;
-			const rolled = swing(p.hit, { crit: p.crit, superCrit: p.superCrit }, p.critExtra, rngFor(f));
-			const kind = rolled.crit === 'none' ? 'hit' : rolled.crit;
-			const raw = rolled.damage;
-			const damage = monster.armor > 0 ? Math.max(1, round1(raw * (1 - armorReduction(monster.armor)))) : raw;
-			f.monsterHp = Math.max(0, f.monsterHp - damage);
-			if (p.leechPct > 0) c.hp = Math.min(p.maxHp, c.hp + (damage * p.leechPct) / 100);
-			push(t, kind, { amount: damage });
-		}
-		if (f.monsterHp <= 0) {
-			const paid = payKill(env.secret, env.userId, ledger, env.stored, f.n, t);
-			if (!paid) return endFight(t, 'retreat');
-			ledger = paid.ledger;
-			push(t, 'won', {
-				n: f.n,
-				type: f.type,
-				level: paid.payout.level,
-				reward: {
-					gold: paid.payout.gold,
-					xp: paid.payout.xp,
-					hide: paid.payout.hide,
-					items: paid.payout.items,
-					stored: paid.payout.stored,
-					convertedGold: paid.payout.convertedGold,
-					autoSold: paid.payout.autoSold,
-					pity: paid.payout.pity,
-					lucky: paid.payout.lucky,
-				},
-			});
-			c.fight = null;
-			return;
-		}
-
-		// the monster's swings (a stunned monster does not wind up)
-		f.monsterTimer += dt - stunned;
-		const every = 1 / Math.max(0.01, monster.attackSpeed);
-		while (f.monsterTimer >= every - EPS && c.hp > 0) {
-			f.monsterTimer -= every;
-			const rng = rngFor(f);
-			if (p.dodge > 0 && rng() >= 1 - p.dodge) {
-				push(t, 'dodged');
-				continue;
-			}
-			const crit = monster.critChance > 0 && rng() >= 1 - monster.critChance / 100;
-			const amount = mitigate(crit ? Math.round(monster.attack * monster.critMult) : monster.attack, p.armor);
-			c.hp = Math.max(0, c.hp - amount);
-			push(t, 'hurt', { amount, crit });
-		}
-		if (c.hp <= 0) endFight(t, 'defeated');
-		else if (f.timeLeftSec === 0 || f.elapsed >= COMBAT.maxFightSec) endFight(t, 'timeout');
-	};
 
 	// ---- fast-forward to now ----
 	const now = env.nowSec;
 	let t = Math.min(c.at, now);
 	let budget = COMBAT.maxCatchUpSec;
 	let behind = false;
-	const idleRegen = COMBAT.regenPerSec + profileNow.hpRegen;
 	for (let guard = 0; t < now - EPS && guard < 200000; guard++) {
 		if (!c.fight) {
-			if (engage(t)) continue;
-			// nothing to fight yet: rest until something can change (HP back above the resume line, the King's retry time, or now)
-			let until = now;
-			if (queueHasTarget() || (c.autoBattle && pickTarget(ledger, c, t, winnable()))) {
-				const need = resumeHp - c.hp;
-				if (need > 0 && idleRegen > 0) until = Math.min(until, t + need / idleRegen + EPS);
-			} else if (c.autoBattle) {
-				until = Math.min(until, nextRetry(ledger, c, t));
-			}
-			const dt = Math.max(until - t, Math.min(COMBAT.tickSec, now - t));
-			c.hp = Math.min(profileNow.maxHp, c.hp + idleRegen * dt);
-			c.mp = Math.min(profileNow.maxMp, c.mp + profileNow.mpRegen * dt);
-			tickCooldowns(dt);
-			t += dt;
+			if (engage(ctx, t)) continue;
+			// nothing to fight yet: rest until something can change
+			t += idleStep(ctx, t, now);
 			continue;
 		}
 		const dt = Math.min(COMBAT.tickSec, now - t);
 		t += dt;
-		step(t, dt);
+		fightStep(ctx, t, dt);
 		budget -= dt;
 		if (budget <= 0 && t < now - EPS) {
 			behind = true;
@@ -399,34 +88,22 @@ export const runCombat = (
 	if (ask.autoUse !== undefined) c.autoUse = ask.autoUse;
 	if (ask.autoBattle !== undefined) {
 		c.autoBattle = ask.autoBattle && autoAllowed;
-		if (!ask.autoBattle && c.fight) endFight(t, 'retreat');
+		if (!ask.autoBattle && c.fight) endFight(ctx, t, 'retreat');
 	}
 	for (const command of ask.commands ?? []) {
-		if (command.kind === 'potion') drink(t, command.id);
-		else if (command.kind === 'fight') {
-			if (!behind) {
-				if (c.fight || c.hp <= 0 || c.queue.length > 0) {
-					// a fight is open (or the hero is resting before the queue's next one): the click joins the line
-					if (c.fight || c.queue.length > 0) queued = queueTicket(command.n);
-				} else engageTicket(t, command.n);
-			}
-		} else if (command.kind === 'unqueue') {
-			if (c.queue.includes(command.n)) {
-				c.queue = c.queue.filter((n) => n !== command.n);
-				queued = 'removed';
-			}
-		} else cast(t, command.id);
+		const result = applyCommand(ctx, t, command, behind);
+		if (result) queued = result;
 	}
-	if (!behind && !c.fight) engage(t);
+	if (!behind && !c.fight) engage(ctx, t);
 
 	// a retry time only matters for a monster that is still there
-	const standing = new Set([...ledger.bank.rats.map((ticket) => ticket.n), ...(ledger.bank.king ? [ledger.bank.king.n] : [])].map(String));
+	const standing = new Set([...ctx.ledger.bank.rats.map((ticket) => ticket.n), ...(ctx.ledger.bank.king ? [ctx.ledger.bank.king.n] : [])].map(String));
 	c.retryAt = Object.fromEntries(Object.entries(c.retryAt).filter(([n]) => standing.has(n)));
 
 	// a queued monster must still be there
-	queueHasTarget();
+	queueHasTarget(ctx);
 
-	return { ledger: { ...ledger, combat: c }, behind, ...(queued ? { queued } : {}) };
+	return { ledger: { ...ctx.ledger, combat: c }, behind, ...(queued ? { queued } : {}) };
 };
 
 /** Takes a monster off the map without a fight (a monster that cannot be beaten, or that is in the way). Ends the fight against it. */
@@ -453,79 +130,4 @@ export const restThrough = (ledger: Ledger, env: CombatEnv, gapSec: number): Led
 		queue: [],
 	};
 	return { ...ledger, combat };
-};
-
-/** The picture the browser is given: vitals, cooldowns, the open fight and the events it has not seen. */
-export const combatView = (ledger: Ledger, env: CombatEnv, since: number, behind: boolean, nextSpawnSec: number | null): CombatView => {
-	const c = combatOf(ledger, env);
-	const p = c.fight ? c.fight.profile : playerProfile(env.stored.core);
-	const f = c.fight;
-	let nextPollSec: number = COMBAT.poll.minimizedSec;
-	let waiting = false;
-	let resting = false;
-	let restSec = 0;
-	if (behind) nextPollSec = 0.5;
-	else if (f) nextPollSec = COMBAT.poll.fightSec;
-	else {
-		// idle: ask again when something can change
-		const winnable = winnableBy(p, c.hp, potionsForEstimate(ledger.inv ?? inventoryFromCore(env.stored.core), c));
-		waiting = pickTarget(ledger, c, c.at, winnable) !== null;
-		const resume = (p.maxHp * COMBAT.auto.resumeHpPct) / 100;
-		const retry = nextRetry(ledger, c, c.at);
-		// a queued monster starts by itself once the hero is back above the resume line, with auto-battle on or off: ask again when that is
-		// (without this the idle wait below, up to ten minutes, applied and the queue looked stuck after a fight)
-		const regen = Math.max(0.1, COMBAT.regenPerSec + p.hpRegen);
-		const queuedWaiting = (c.queue ?? []).some(
-			(n) => ledger.bank.rats.some((ticket) => ticket.n === n && isPlaced(ticket)) || (ledger.bank.king?.n === n && isPlaced(ledger.bank.king)),
-		);
-		if (queuedWaiting) {
-			resting = c.hp < resume;
-			restSec = resting ? Math.ceil((resume - c.hp) / regen) : 0;
-			nextPollSec = resting ? Math.min(600, restSec + 1) : COMBAT.poll.fightSec;
-		} else if (!c.autoBattle) nextPollSec = 600;
-		else if (waiting && c.hp < resume) nextPollSec = Math.min(600, Math.ceil((resume - c.hp) / Math.max(0.1, COMBAT.regenPerSec + p.hpRegen)) + 1);
-		else if (!waiting && Number.isFinite(retry)) nextPollSec = Math.min(nextSpawnSec ?? 600, Math.min(600, Math.ceil(retry - c.at) + 1));
-		else if (!waiting) nextPollSec = Math.min(600, Math.max(COMBAT.poll.minimizedSec, Math.ceil(nextSpawnSec ?? 600) + 1));
-	}
-	return {
-		hp: c.hp,
-		mp: c.mp,
-		maxHp: p.maxHp,
-		maxMp: p.maxMp,
-		cd: c.cd,
-		fight: f
-			? {
-					n: f.n,
-					type: f.type,
-					level: f.level,
-					lucky: f.lucky,
-					monsterHp: f.monsterHp,
-					monsterMaxHp: f.monsterMaxHp,
-					stunLeft: f.stunLeft,
-					timeLeftSec: f.timeLeftSec,
-					x: f.x,
-					y: f.y,
-				}
-			: null,
-		queue: (c.queue ?? []).flatMap((n) => {
-			const rat = ledger.bank.rats.find((ticket) => ticket.n === n && isPlaced(ticket));
-			const king = ledger.bank.king && ledger.bank.king.n === n && isPlaced(ledger.bank.king) ? ledger.bank.king : undefined;
-			const ticket = rat ?? king;
-			if (!ticket) return [];
-			return [{ n, type: monsterTypeOf(ticket, rat ? 'rat' : 'king'), level: levelAtAge(ticket.spawnLevel ?? 1, c.at - ticket.at), lucky: !!ticket.lucky }];
-		}),
-		queueMax: limitOf('battleQueue'),
-		autoBattle: c.autoBattle,
-		autoUse: c.autoUse,
-		retrySec: Number.isFinite(nextRetry(ledger, c, c.at)) ? Math.max(0, Math.ceil(nextRetry(ledger, c, c.at) - c.at)) : 0,
-		at: c.at,
-		eventNo: c.eventNo,
-		events: c.log.filter((event) => event.no > since),
-		behind,
-		nextPollSec,
-		resting,
-		...(resting ? { restSec } : {}),
-		// auto-battle is idle with monsters standing around: they are all beyond the player (or still waiting out a retry, which has its own line)
-		autoNote: c.autoBattle && !f && !waiting && pickTarget(ledger, c, c.at) !== null ? 'no_winnable' : null,
-	};
 };
