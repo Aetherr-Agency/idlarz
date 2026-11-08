@@ -79,12 +79,13 @@ The flat base is pinned at 1000 per second and never raised (castle output, biom
 | leather_cloak | cape | armor | 1 | 1 | 2 | 4 | 8 |
 | wooden_ring | ring | maxHp | 1 | 2 | 3 | 9 | 16 |
 | acorn_charm | charm | maxHp | 1 | 3 | 5 | 13 | 24 |
+| worn_leather_belt | belt | armor | 1 | 1 | 2 | 4 | 8 |
 
 Level factor: `1 + 0.07 x (level - 1)` relative to the base's authored level; capped stats follow only a share of it (crit, dodge, leech 30 %; regen 60 %; luck, gold find, mana regen 50 %; mana 70 %; spell power 40 %).
 
 ### Sets (bonuses add up at every threshold reached)
 
-**Obsidian Set** (12 slots)
+**Obsidian Set** (13 slots)
 
 | Pieces | Adds | Total so far |
 | --- | --- | --- |
@@ -93,6 +94,36 @@ Level factor: `1 + 0.07 x (level - 1)` relative to the base's authored level; ca
 | 6 pieces | killRewardPct 12, damage 5, luck 3 | incomePct 6, maxHp 20, xpPct 10, goldFind 10, armor 6, killRewardPct 12, damage 5, luck 3 |
 | 9 pieces | offlineEff 15, clickPct 10, incomePct 8, maxHp 40 | incomePct 14, maxHp 60, xpPct 10, goldFind 10, armor 6, killRewardPct 12, damage 5, luck 3, offlineEff 15, clickPct 10 |
 | 12 pieces | incomePct 12, xpPct 15, killRewardPct 25, offlineCapHours 3, goldFind 20, armor 10, superCrit 6 | incomePct 26, maxHp 60, xpPct 25, goldFind 30, armor 16, killRewardPct 37, damage 5, luck 3, offlineEff 15, clickPct 10, offlineCapHours 3, superCrit 6 |
+
+**Sunhoney Raiment** (14 slots)
+
+| Pieces | Adds | Total so far |
+| --- | --- | --- |
+| 3 pieces | incomePct 8, goldFind 10 | incomePct 8, goldFind 10 |
+| 6 pieces | xpPct 10, clickPct 8 | incomePct 8, goldFind 10, xpPct 10, clickPct 8 |
+| 9 pieces | killRewardPct 20, offlineEff 10, incomePct 10 | incomePct 18, goldFind 10, xpPct 10, clickPct 8, killRewardPct 20, offlineEff 10 |
+| 12 pieces | incomePct 10, xpPct 10, offlineCapHours 3, goldFind 10, clickPct 6 | incomePct 28, goldFind 20, xpPct 20, clickPct 14, killRewardPct 20, offlineEff 10, offlineCapHours 3 |
+| 14 pieces | incomePct 10, xpPct 12, killRewardPct 28, offlineEff 10, offlineCapHours 3, goldFind 10, clickPct 6 | incomePct 38, goldFind 30, xpPct 32, clickPct 20, killRewardPct 48, offlineEff 20, offlineCapHours 6 |
+
+**Ashen Warlord** (14 slots)
+
+| Pieces | Adds | Total so far |
+| --- | --- | --- |
+| 3 pieces | damagePct 6, armor 6 | damagePct 6, armor 6 |
+| 6 pieces | maxHpPct 10, critChance 4 | damagePct 6, armor 6, maxHpPct 10, critChance 4 |
+| 9 pieces | damagePct 12, armor 8, regen 2 | damagePct 18, armor 14, maxHpPct 10, critChance 4, regen 2 |
+| 12 pieces | damagePct 10, maxHpPct 8, critChance 4, armor 6 | damagePct 28, armor 20, maxHpPct 18, critChance 8, regen 2 |
+| 14 pieces | damagePct 10, maxHpPct 7, critChance 4, regen 2, killRewardPct 10, armor 4 | damagePct 38, armor 24, maxHpPct 25, critChance 12, regen 4, killRewardPct 10 |
+
+**Blightbound** (14 slots)
+
+| Pieces | Adds | Total so far |
+| --- | --- | --- |
+| 3 pieces | damagePct 8, luck 3 | damagePct 8, luck 3 |
+| 6 pieces | lifeLeech 3, critChance 4 | damagePct 8, luck 3, lifeLeech 3, critChance 4 |
+| 9 pieces | damagePct 12, luck 5, superCrit 4 | damagePct 20, luck 8, lifeLeech 3, critChance 4, superCrit 4 |
+| 12 pieces | damagePct 10, lifeLeech 2, critChance 3, luck 4 | damagePct 30, luck 12, lifeLeech 5, critChance 7, superCrit 4 |
+| 14 pieces | damagePct 10, lifeLeech 3, critChance 3, luck 3, superCrit 6 | damagePct 40, luck 15, lifeLeech 8, critChance 10, superCrit 10 |
 
 ## 4. Combat: one attribute at a time, plain starter kit (wooden sword and shield)
 

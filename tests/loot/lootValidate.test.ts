@@ -123,7 +123,8 @@ test('every weighted rarity needs an eligible item at every level the source can
 	assert.ok(has(d, /nothing can drop at item level|has weight but no eligible item/));
 	// A rarity nobody may roll
 	d = copy();
-	for (const item of Object.values(d.items)) if (item.generation === 'base') item.allowedRarities = item.allowedRarities!.filter((r) => r !== 'rare');
+	for (const item of Object.values(d.items))
+		if (item.generation === 'base' && item.enabled !== false) item.allowedRarities = item.allowedRarities!.filter((r) => r !== 'rare');
 	assert.ok(has(d, /rarity rare has weight but no eligible item/));
 	// ...is fine when the weight is zero
 	d.profiles.normal_monster.rarityWeights.rare = 0;

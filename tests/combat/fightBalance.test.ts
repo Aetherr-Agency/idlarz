@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { COMBAT, MONSTERS } from '../../src/config/combatConfig';
 import { ITEM_CATALOG } from '../../src/catalog';
 import { STARTER_EQUIPMENT } from '../../src/config/itemCatalog';
-import { plainItem } from '../../src/lib/itemInstance';
 import { atItemLevel, fullSet, simulateMany, spentCharacter } from '../../src/lib/fightSim';
+import { STRONG_KIT } from '../builders';
 import type { Equipment } from '../../src/types/game';
 
 // The fights run on the server's engine (lib/offline/fight.ts) with the player swinging at the weapon's attack speed: nobody clicks, so
@@ -20,10 +20,11 @@ const sim = (equipment: Equipment, monster: Foe = KING, extra: { level?: number;
 const OBSIDIAN = fullSet('obsidian', 'obsidian_maul');
 const STEEL = fullSet('knight', 'steel_mace');
 const WOOD = fullSet('woodland', 'wooden_club');
-const BEST = { ...fullSet('obsidian'), mainHand: plainItem('titan_maul') };
+const BEST = STRONG_KIT;
 
 test('no item exceeds the damage sanity ceiling', () => {
-	for (const def of Object.values(ITEM_CATALOG)) assert.ok((def.stats?.damage ?? 0) <= COMBAT.maxItemDamage, def.id);
+	// the disabled grade ladder (catalog/items/ladder.ts) is authored at its own, higher item levels and tuned in R2 C5
+	for (const def of Object.values(ITEM_CATALOG).filter((d) => d.enabled !== false)) assert.ok((def.stats?.damage ?? 0) <= COMBAT.maxItemDamage, def.id);
 });
 
 test('the starter kit and plain wood never beat the king, with or without skills and potions', () => {

@@ -65,7 +65,21 @@ export interface Tile {
 	hasChest?: boolean;
 }
 
-export type EquipmentSlot = 'head' | 'shoulder' | 'chest' | 'hands' | 'legs' | 'feet' | 'neck' | 'cape' | 'ring1' | 'ring2' | 'charm' | 'mainHand' | 'offHand';
+export type EquipmentSlot =
+	| 'head'
+	| 'shoulder'
+	| 'chest'
+	| 'hands'
+	| 'legs'
+	| 'feet'
+	| 'neck'
+	| 'cape'
+	| 'ring1'
+	| 'ring2'
+	| 'charm'
+	| 'belt'
+	| 'mainHand'
+	| 'offHand';
 
 export type EquipmentRarity = 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
 

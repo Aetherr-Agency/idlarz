@@ -182,11 +182,11 @@ test('sets: every threshold applies and adds up (2 / 4 / 6 / 9 / 12-13 pieces), 
 });
 
 test('sets: the full-set totals are the ones in the design, and both rings count', () => {
-	assert.equal(SETS.obsidian.size, 12);
-	assert.deepEqual(Object.keys(SETS), ['obsidian']);
+	assert.equal(SETS.obsidian.size, 13, 'with its belt, which is disabled until the belt is live');
+	assert.deepEqual(Object.keys(SETS), ['obsidian', 'sunhoney', 'ashen_warlord', 'blightbound']);
 	for (const id of Object.keys(SET_TOTALS)) {
 		const eq = fullSet(id);
-		assert.equal(setCounts(eq)[id], SETS[id].size, `${id}: both rings must count`);
+		assert.equal(setCounts(eq)[id], SETS[id].size - 1, `${id}: both rings must count (the disabled belt is not worn)`);
 		const bonus = setBonusStats(setCounts(eq)) as Record<string, number>;
 		for (const [key, value] of Object.entries(SET_TOTALS[id])) near(bonus[key], value!, `${id} ${key}`);
 	}
