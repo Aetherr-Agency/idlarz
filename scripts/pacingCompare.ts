@@ -35,7 +35,9 @@ export const comparePacing = (base: PacingBaseline, current: PacingBaseline, tol
 			violations.push({ profile, milestone: '(whole profile missing)', base: null, current: null, change: null });
 			continue;
 		}
-		for (const milestone of Object.keys(baseMs).filter((k) => GUARDED_MILESTONE.test(k))) {
+		// the union of both sides: a key the base never wrote (level90 of `human`) counts as "never reached", so a change that reaches it is seen
+		const keys = new Set([...Object.keys(baseMs), ...Object.keys(currentMs)]);
+		for (const milestone of [...keys].filter((k) => GUARDED_MILESTONE.test(k))) {
 			const b = baseMs[milestone] ?? null;
 			const c = currentMs[milestone] ?? null;
 			if (b == null && c == null) continue;

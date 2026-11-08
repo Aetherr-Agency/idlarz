@@ -29,6 +29,14 @@ test('milestones that become reached or unreachable fail', () => {
 	assert.deepEqual(comparePacing(baseline({ level90: null }), baseline({ level90: null })), []);
 });
 
+test('a guarded key the base never wrote counts as never reached (union of both sides)', () => {
+	const violations = comparePacing(baseline({ finished: 3 }), baseline({ finished: 3, level90: 12.4 }));
+	assert.equal(violations.length, 1);
+	assert.equal(violations[0].milestone, 'level90');
+	assert.equal(violations[0].base, null);
+	assert.equal(comparePacing(baseline({ finished: 3, level90: 12.4 }), baseline({ finished: 3 })).length, 1);
+});
+
 test('a missing profile fails, a new profile is fine, tiny values are noise', () => {
 	assert.equal(comparePacing({ profiles: { hardcore: { finished: 3 }, casual: { finished: 4 } } }, baseline({ finished: 3 })).length, 1);
 	assert.deepEqual(comparePacing(baseline({ finished: 3 }), { profiles: { hardcore: { finished: 3 }, extra: { finished: 9 } } }), []);
