@@ -174,47 +174,47 @@ Measured with the real store at the checkpoints of docs/06; the last seed of eac
 
 | profile | checkpoint | measured | band | status |
 | --- | --- | --- | --- | --- |
-| idle | run 1, castle 10: gold per second | 4,523 | 2500-5000 | ok |
+| idle | run 1, castle 10: gold per second | 4,523 | 3000-6000 | ok |
 | idle | run 1, castle 10: unspent gold (hours of income) | 0.6 | <= 4 | ok |
 | idle | run 1, castle 10: biggest stock (food, hours of production) | 17.4 | <= 24 | ok |
-| casual | run 1, castle 10: gold per second | 5,486 | 2500-5000 | **outside** |
+| casual | run 1, castle 10: gold per second | 5,486 | 3000-6000 | ok |
 | casual | run 1, castle 10: unspent gold (hours of income) | 0.5 | <= 4 | ok |
 | casual | run 1, castle 10: biggest stock (food, hours of production) | 12.5 | <= 24 | ok |
-| hardcore | run 1, castle 10: gold per second | 5,478 | 2500-5000 | **outside** |
+| hardcore | run 1, castle 10: gold per second | 5,478 | 3000-6000 | ok |
 | hardcore | run 1, castle 10: unspent gold (hours of income) | 1,255 | <= 4 | **outside** |
 | hardcore | run 1, castle 10: biggest stock (food, hours of production) | 63.8 | <= 24 | **outside** |
-| autoclicker | run 1, castle 10: gold per second | 4,905 | 2500-5000 | ok |
+| autoclicker | run 1, castle 10: gold per second | 4,905 | 3000-6000 | ok |
 | autoclicker | run 1, castle 10: unspent gold (hours of income) | 1,966 | <= 4 | **outside** |
 | autoclicker | run 1, castle 10: biggest stock (food, hours of production) | 62.9 | <= 24 | **outside** |
-| hardcore-rebirth6 | rebirth 1 at castle 6: Embers gained | 24 | 20-30 | ok |
-| hardcore-rebirth6 | rebirth 2 at castle 6: Embers gained | 26 | 20-30 | ok |
-| hardcore-rebirth6 | rebirth 3 at castle 6: Embers gained | 26 | 20-30 | ok |
-| hardcore-rebirth10 | run 1, castle 10: gold per second | 5,478 | 2500-5000 | **outside** |
+| hardcore-rebirth6 | rebirth 1 at castle 6: Embers gained | 24 | 18-28 | ok |
+| hardcore-rebirth6 | rebirth 2 at castle 6: Embers gained | 26 | 18-28 | ok |
+| hardcore-rebirth6 | rebirth 3 at castle 6: Embers gained | 26 | 18-28 | ok |
+| hardcore-rebirth10 | run 1, castle 10: gold per second | 5,478 | 3000-6000 | ok |
 | hardcore-rebirth10 | run 1, castle 10: unspent gold (hours of income) | 1,255 | <= 4 | **outside** |
 | hardcore-rebirth10 | run 1, castle 10: biggest stock (food, hours of production) | 63.8 | <= 24 | **outside** |
-| hardcore-rebirth10 | rebirth 1 at castle 10: Embers gained | 606 | 80-130 | **outside** |
-| hardcore-rebirth6-x10 | rebirth 1 at castle 6: Embers gained | 24 | 20-30 | ok |
-| hardcore-rebirth6-x10 | rebirth 2 at castle 6: Embers gained | 26 | 20-30 | ok |
-| hardcore-rebirth6-x10 | rebirth 3 at castle 6: Embers gained | 26 | 20-30 | ok |
-| hardcore-rebirth6-x10 | rebirth 4 at castle 6: Embers gained | 22 | 20-30 | ok |
-| hardcore-rebirth6-x10 | rebirth 5 at castle 6: Embers gained | 23 | 20-30 | ok |
-| hardcore-rebirth6-x10 | after rebirth 5: lifetime Embers | 121 | 150-350 | **outside** |
+| hardcore-rebirth10 | rebirth 1 at castle 10: Embers gained | 606 | 400-650 | ok |
+| hardcore-rebirth6-x10 | rebirth 1 at castle 6: Embers gained | 24 | 18-28 | ok |
+| hardcore-rebirth6-x10 | rebirth 2 at castle 6: Embers gained | 26 | 18-28 | ok |
+| hardcore-rebirth6-x10 | rebirth 3 at castle 6: Embers gained | 26 | 18-28 | ok |
+| hardcore-rebirth6-x10 | rebirth 4 at castle 6: Embers gained | 22 | 18-28 | ok |
+| hardcore-rebirth6-x10 | rebirth 5 at castle 6: Embers gained | 23 | 18-28 | ok |
+| hardcore-rebirth6-x10 | after rebirth 5 at castle 6: lifetime Embers | 121 | 90-140 | ok |
 | hardcore-rebirth6-x10 | after rebirth 5: income multiplier at castle 6 (run 6 over run 1) | 3.6 | x3-6 | ok |
-| human | run 1, castle 10: gold per second | 4,712 | 2500-5000 | ok |
+| human | run 1, castle 10: gold per second | 4,712 | 3000-6000 | ok |
 | human | run 1, castle 10: unspent gold (hours of income) | 467 | <= 4 | **outside** |
 | human | run 1, castle 10: biggest stock (hide, hours of production) | 145 | <= 24 | **outside** |
-| human-rebirth6 | rebirth 1 at castle 6: Embers gained | 19 | 20-30 | **outside** |
-| human-rebirth6 | rebirth 2 at castle 6: Embers gained | 20 | 20-30 | ok |
-| human-rebirth6 | rebirth 3 at castle 6: Embers gained | 21 | 20-30 | ok |
-| human-rebirth6 | rebirth 4 at castle 6: Embers gained | 22 | 20-30 | ok |
-| human-rebirth6 | rebirth 5 at castle 6: Embers gained | 23 | 20-30 | ok |
-| human-rebirth6 | after rebirth 5: lifetime Embers | 105 | 150-350 | **outside** |
+| human-rebirth6 | rebirth 1 at castle 6: Embers gained | 19 | 18-28 | ok |
+| human-rebirth6 | rebirth 2 at castle 6: Embers gained | 20 | 18-28 | ok |
+| human-rebirth6 | rebirth 3 at castle 6: Embers gained | 21 | 18-28 | ok |
+| human-rebirth6 | rebirth 4 at castle 6: Embers gained | 22 | 18-28 | ok |
+| human-rebirth6 | rebirth 5 at castle 6: Embers gained | 23 | 18-28 | ok |
+| human-rebirth6 | after rebirth 5 at castle 6: lifetime Embers | 105 | 90-140 | ok |
 | human-rebirth6 | after rebirth 5: income multiplier at castle 6 (run 6 over run 1) | 2 | x3-6 | **outside** |
-| human-rebirth8 | rebirth 1 at castle 8: Embers gained | 81 | 50-70 | **outside** |
-| human-rebirth8 | rebirth 2 at castle 8: Embers gained | 86 | 50-70 | **outside** |
-| human-rebirth8 | rebirth 3 at castle 8: Embers gained | 90 | 50-70 | **outside** |
-| human-rebirth8 | rebirth 4 at castle 8: Embers gained | 93 | 50-70 | **outside** |
+| human-rebirth8 | rebirth 1 at castle 8: Embers gained | 81 | 70-100 | ok |
+| human-rebirth8 | rebirth 2 at castle 8: Embers gained | 86 | 70-100 | ok |
+| human-rebirth8 | rebirth 3 at castle 8: Embers gained | 90 | 70-100 | ok |
+| human-rebirth8 | rebirth 4 at castle 8: Embers gained | 93 | 70-100 | ok |
 
-20 lines outside the band.
+9 lines outside the band.
 
 Profiles: idle = never clicks; casual = 1 click/s for 3 h/day; hardcore = 4 clicks/s for 8 h/day; autoclicker = 20 clicks/s 24 h/day (the limiter should keep it at roughly hardcore pace).

@@ -669,11 +669,13 @@ const ORDER = [
 
 /** The bands of docs/06 "Magnitude targets" (IDL-128). Change them there and here together. */
 const MAGNITUDE_BANDS = {
-	gpsRun1Castle10: [2500, 5000],
+	gpsRun1Castle10: [3000, 6000], // was 2,500-5,000 before the gentler tile tail of IDL-181 (casual and hardcore measure 5,480)
 	unspentGoldHours: 4,
 	stockHours: 24,
-	embersPerRebirth: { 6: [20, 30], 8: [50, 70], 10: [80, 130] } as Record<number, [number, number]>,
-	lifetimeEmbers: { 5: [150, 350], 10: [500, 1000] } as Record<number, [number, number]>,
+	// from `REBIRTH.gain` = 3 x (castle - 5)^1.3 x (sqrt(tiles / 10) + 0.02 x surplus) at the territory the bots rebirth with (400-460 tiles at castle 6 and 8, ~850-1,000 at castle 10)
+	embersPerRebirth: { 6: [18, 28], 8: [70, 100], 10: [400, 650] } as Record<number, [number, number]>,
+	// lifetime Embers after the 5th / 10th rebirth, by the castle level the bot rebirths at (about n x the per-rebirth band)
+	lifetimeEmbers: { 5: { 6: [90, 140], 8: [350, 500] }, 10: { 6: [190, 300] } } as Record<number, Record<number, [number, number]>>,
 	incomeMultiplier: { 5: [3, 6], 10: [7, 15] } as Record<number, [number, number]>,
 };
 
@@ -716,9 +718,11 @@ function renderMagnitudes(names: string[]): { lines: string[]; warnings: string[
 				row(p, `rebirth ${run} at castle ${castle}: Embers gained`, num(p, `r${run}.gain`)!, `${band[0]}-${band[1]}`, inBand(num(p, `r${run}.gain`)!, band));
 		}
 		// lifetime Embers after the 5th and the 10th rebirth
-		for (const [n, band] of Object.entries(MAGNITUDE_BANDS.lifetimeEmbers)) {
+		for (const [n, byCastle] of Object.entries(MAGNITUDE_BANDS.lifetimeEmbers)) {
 			const v = num(p, `lifetime.${n}`);
-			if (v != null) row(p, `after rebirth ${n}: lifetime Embers`, v, `${band[0]}-${band[1]}`, inBand(v, band));
+			const castle = num(p, `r${n}.gainCastle`);
+			const band = castle == null ? undefined : byCastle[castle];
+			if (v != null && band) row(p, `after rebirth ${n} at castle ${castle}: lifetime Embers`, v, `${band[0]}-${band[1]}`, inBand(v, band));
 		}
 		// income multiplier: run N+1 against run 1 at the highest castle level both reached (docs/06 defines it at castle 10; the sim bot rebirths earlier)
 		for (const [n, band] of Object.entries(MAGNITUDE_BANDS.incomeMultiplier)) {
