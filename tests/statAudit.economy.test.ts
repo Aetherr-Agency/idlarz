@@ -5,19 +5,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { castleWorld, character, near, oracle, pinEconomy, prestigeWith, worldWithTiles, PINNED_BASE, type Attr } from './statAudit.helpers';
-import { BUILDING_COST, EMBER_UPGRADES, REBIRTH, TILE_RESOURCE_COST, type EmberUpgradeId } from '../src/config/gameConfig';
-import {
-	buildingCostFactor,
-	calculateBuildingCost,
-	calculateResourceBreakdown,
-	calculateTileCost,
-	castleModifier,
-	emberGain,
-	emberIncomeMultiplier,
-	emberSpent,
-	emberUpgradeCost,
-	rebirthStatus,
-} from '../src/utils/gameUtils';
+import { BUILDING_COST } from '../src/config/buildings';
+import { EMBER_UPGRADES, REBIRTH, type EmberUpgradeId } from '../src/config/rebirth';
+import { TILE_RESOURCE_COST } from '../src/config/economy';
+import { buildingCostFactor, calculateBuildingCost, calculateTileCost } from '../src/utils/game/costs';
+import { calculateResourceBreakdown } from '../src/utils/game/income';
+import { castleModifier } from '../src/utils/game/castle';
+import { emberGain, emberIncomeMultiplier, emberSpent, emberUpgradeCost, rebirthStatus } from '../src/utils/game/rebirth';
 import { computeOfflineGrant } from '../src/lib/offline/grant';
 import { limitOf } from '../src/lib/limits';
 import { HARD_LIMITS, LIMITS } from '../src/config/limits';

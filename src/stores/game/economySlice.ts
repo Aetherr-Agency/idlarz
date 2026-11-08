@@ -1,21 +1,15 @@
 // economySlice.ts
 // Split out of gameStore.ts (IDL-14); the actions and their behaviour are unchanged.
 
-import { BUILDINGS, CASTLE_UPGRADE, CLICK_LADDER, clickGold, RESOURCE_CAP, XP_CAP } from '@/config/gameConfig';
-import {
-	calculateBuildingCost,
-	canBuildAt,
-	calculateResourceRates,
-	calculateTileCost,
-	calculateXpGain,
-	canAffordBundle,
-	castleUpgradeDuration,
-	economyTiles,
-	effectiveTileDiscount,
-	emberEffect,
-	subtractBundle,
-	tileCostAsResources,
-} from '@/utils/gameUtils';
+import { BUILDINGS } from '@/config/buildings';
+import { CASTLE_UPGRADE } from '@/config/castle';
+import { CLICK_LADDER, clickGold, RESOURCE_CAP, XP_CAP } from '@/config/economy';
+import { calculateBuildingCost, canBuildAt, calculateTileCost, canAffordBundle, subtractBundle, tileCostAsResources } from '@/utils/game/costs';
+import { calculateResourceRates } from '@/utils/game/income';
+import { calculateXpGain } from '@/utils/game/character';
+import { castleUpgradeDuration } from '@/utils/game/castle';
+import { economyTiles } from '@/utils/game/tiles';
+import { effectiveTileDiscount, emberEffect } from '@/utils/game/rebirth';
 import { rollBiome } from '@/utils/biomeRules';
 import { gearEconomy, gearIncomePct, xpGainPct } from '@/lib/gearEconomy';
 import { monsterAt } from '@/lib/monsters';

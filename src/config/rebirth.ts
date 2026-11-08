@@ -1,5 +1,5 @@
 // Rebirth and the Ember shop.
-// Split out of gameConfig.ts (IDL-15); the values are unchanged.
+// Part of the former gameConfig.ts (split in IDL-15); the values are unchanged.
 import { Resources } from '@/types/game';
 
 // Rebirth: restart with a permanent bonus paid in Embers. Available once the castle reaches `minCastleLevel`.

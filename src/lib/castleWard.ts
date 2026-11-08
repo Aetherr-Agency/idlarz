@@ -1,4 +1,4 @@
-import { CASTLE_AREA_BONUS, CASTLE_FORTRESS, CASTLE_RANGE, CASTLE_UPGRADE, CASTLE_X, CASTLE_Y } from '@/config/gameConfig';
+import { CASTLE_AREA_BONUS, CASTLE_FORTRESS, CASTLE_RANGE, CASTLE_UPGRADE, CASTLE_X, CASTLE_Y } from '@/config/castle';
 import { getTile, type World } from '@/utils/world';
 
 // The castle's ward: from CASTLE_FORTRESS.fromLevel the 3x3 range around the castle is walled in and kept free of

@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, growTo } from './helpers';
-import { CASTLE_FORTRESS, SPAWN_LIMIT } from '../src/config/gameConfig';
+import { CASTLE_FORTRESS } from '../src/config/castle';
+import { SPAWN_LIMIT } from '../src/config/spawns';
 import { castleLevelOf } from '../src/lib/castleWard';
 import { freeTiles, spawnCap } from '../src/lib/spawnLimits';
 import { syntheticWorld } from '../src/utils/worldGen';

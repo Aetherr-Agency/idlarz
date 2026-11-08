@@ -7,7 +7,7 @@ import { gearOf, slotQty } from '@/lib/inventory';
 import { resolveItem, sellValueOf } from '@/lib/itemInstance';
 import { isAutoSold } from '@/lib/loot/autoSell';
 import { formatNumber } from '@/utils/formatters';
-import { sellPayout } from '@/utils/gameUtils';
+import { sellPayout } from '@/utils/game/merchant';
 import ItemSlot from '../../ItemSlot';
 import { slotProps } from '../../itemUi';
 import ResourceIcon from '../../ResourceIcon';

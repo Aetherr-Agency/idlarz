@@ -1,7 +1,7 @@
 // combatSync.ts
 // Split out of gameStore.ts (IDL-14); the actions and their behaviour are unchanged.
 
-import { RESOURCE_CAP, XP_CAP } from '@/config/gameConfig';
+import { RESOURCE_CAP, XP_CAP } from '@/config/economy';
 import { writeCursor } from '@/lib/combatCursor';
 import { emitCombat } from '@/lib/combatFx';
 import type { CombatView, FightEvent } from '@/lib/offline/fightTypes';

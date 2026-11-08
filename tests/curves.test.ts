@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import './helpers';
-import { BASE_TILE_COST, BASE_XP_PER_TILE, RESOURCE_CAP, SCALING_CONFIG, TILE_PRICE, XP_CAP, XP_TILE } from '../src/config/gameConfig';
-import { calculateBuildingCost, calculateLevel, calculateXpGain } from '../src/utils/gameUtils';
+import { BASE_TILE_COST, BASE_XP_PER_TILE, RESOURCE_CAP, SCALING_CONFIG, TILE_PRICE, XP_CAP, XP_TILE } from '../src/config/economy';
+import { calculateBuildingCost } from '../src/utils/game/costs';
+import { calculateLevel, calculateXpGain } from '../src/utils/game/character';
 import { setTiles, EMPTY_WORLD } from '../src/utils/world';
 import { formatCompact, formatNumber, formatPct, formatPercent, formatRate } from '../src/utils/formatters';
 

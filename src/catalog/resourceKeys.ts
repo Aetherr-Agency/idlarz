@@ -2,7 +2,7 @@ import { RESOURCES, type ResourceDef } from '@/catalog/resources';
 
 /**
  * The one list of the resources a save and the ledger store (gold ... xp), derived from the catalog: a new resource is one catalog entry
- * with `stored: true`, nothing else needs a hand-kept list. Imports only the catalog (never gameConfig), so every module can use it.
+ * with `stored: true`, nothing else needs a hand-kept list. Imports only the catalog (never the config), so every module can use it.
  * The order is the catalog's and must stay the order of saves written so far (tests/catalog.test.ts pins it).
  */
 type Catalog = typeof RESOURCES;

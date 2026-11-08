@@ -1,9 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { RING, SELECTABLE_BIOMES, biomeVerdicts, generateStartRing, neighbourBiomes, rollBiome } from '../src/utils/biomeRules';
-import { createInitialWorld, economyTiles, STARTER_FREE_TILES, countOwnedTiles } from '../src/utils/gameUtils';
+import { createInitialWorld, economyTiles, STARTER_FREE_TILES, countOwnedTiles } from '../src/utils/game/tiles';
 import { BIOME_RULES } from '../src/config/biomeRules';
-import { SCALING_CONFIG, BIOMES, CASTLE_X, CASTLE_Y } from '../src/config/gameConfig';
+import { SCALING_CONFIG } from '../src/config/economy';
+import { BIOMES } from '../src/config/biomes';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
 import type { BiomeType, Tile } from '../src/types/game';
 import { tileAt, worldFromRows } from '../src/utils/world';
 import { growWorld, loneTileStats, saddleCount } from '../src/utils/growWorld';

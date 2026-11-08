@@ -1,5 +1,5 @@
 import { useGameStore } from '@/stores/gameStore';
-import { farmHasPurchase } from '@/utils/gameUtils';
+import { farmHasPurchase } from '@/utils/game/farm';
 
 /**
  * Which tabs of the main menu have something waiting: unspent stat points (Stats) and an affordable animal or

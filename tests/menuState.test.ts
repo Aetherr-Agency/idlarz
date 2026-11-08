@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import './helpers';
 import { useWindowStore, DEFAULT_WINDOW_POS, WIN_IDS } from '../src/stores/windowStore';
-import { ANIMALS, FARM, FARM_UPGRADES, INITIAL_RESOURCES, type FarmUpgradeId } from '../src/config/gameConfig';
-import { calculateAnimalCost, farmCap, farmHasPurchase, farmUpgradeCost } from '../src/utils/gameUtils';
+import { ANIMALS, FARM, FARM_UPGRADES, type FarmUpgradeId } from '../src/config/farm';
+import { INITIAL_RESOURCES } from '../src/config/economy';
+import { calculateAnimalCost, farmCap, farmHasPurchase, farmUpgradeCost } from '../src/utils/game/farm';
 
 const win = () => useWindowStore.getState();
 const closeAll = () => WIN_IDS.forEach((id) => win().closeWindow(id));

@@ -1,8 +1,10 @@
-import type { BIOMES } from '@/config/gameConfig';
+import type { BIOMES } from '@/config/biomes';
 import type { MONSTERS } from '@/config/combatConfig';
 import type { StoredAmounts } from '@/catalog/resourceKeys';
 import type { PlayerClassId } from '@/config/playerClasses';
-import type { FarmUpgradeId, EmberUpgradeId, MerchantUpgradeId } from '@/config/gameConfig';
+import type { FarmUpgradeId } from '@/config/farm';
+import type { EmberUpgradeId } from '@/config/rebirth';
+import type { MerchantUpgradeId } from '@/config/merchant';
 import type { PixelIconName } from '@/config/pixelIcons';
 import type { ItemStats } from '@/catalog/stats';
 import type { SkillId } from '@/catalog/skills';

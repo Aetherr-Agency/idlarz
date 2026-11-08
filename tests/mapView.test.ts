@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { TILE_SIZE } from '../src/config/gameConfig';
+import { TILE_SIZE } from '../src/config/biomes';
 import { PAN_MARGIN_TILES, centerOf, clampPosition, positionForCenter, visibleTileRange } from '../src/lib/mapView';
 import { COORD_LIMIT, type Bounds } from '../src/utils/world';
 

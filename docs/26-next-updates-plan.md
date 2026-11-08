@@ -16,7 +16,7 @@ The old-save support, the duplicate helpers and the dead code were removed befor
 
 ## Phase A · Core you can read (M-L in total, no behaviour change)
 
-Built and removed from this table: A1 (line endings, Prettier, `format:check` in CI), A2 (the store split into slices, `src/stores/game/*`), A3 (the config split by domain, `src/config/*`; the `gameConfig.ts` barrel and the `gameUtils.ts` split are still IDL-15). Left: A4-A8 (Linear IDL-16, IDL-7, IDL-8, IDL-9, IDL-17).
+Built and removed from this table: A1 (line endings, Prettier, `format:check` in CI), A2 (the store split into slices, `src/stores/game/*`), A3 (the config split by domain, `src/config/*`, and the game maths split by domain, `src/utils/game/*`; the old `gameConfig.ts` and `gameUtils.ts` are gone). Left: A4-A8 (Linear IDL-16, IDL-7, IDL-8, IDL-9, IDL-17).
 
 Rule for every step: **no gameplay change, the sim and the generated docs stay identical** (`npm run sim -- --no-write human hardcore` before and after), one PR each.
 

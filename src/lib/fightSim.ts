@@ -1,4 +1,4 @@
-import { INITIAL_CHARACTER_STATS } from '@/config/gameConfig';
+import { INITIAL_CHARACTER_STATS } from '@/config/character';
 import { ITEM_CATALOG, familyPieces } from '@/catalog';
 import type { StoredSave } from '@/lib/cloudSave/pipeline';
 import { COMBAT } from '@/config/combatConfig';
@@ -8,7 +8,7 @@ import { freshCombat, type FightEvent } from '@/lib/offline/fightTypes';
 import { newLedger } from '@/lib/offline/ledger';
 import { savedVitals } from '@/lib/offline/profile';
 import { plainItem } from '@/lib/itemInstance';
-import { calculateCombatStats } from '@/utils/gameUtils';
+import { calculateCombatStats } from '@/utils/game/character';
 import type { CharacterStats, Equipment, EquipmentSlot, MonsterType } from '@/types/game';
 
 // A fight run by the server's own engine (lib/offline/fight.ts): used by scripts/fight-sim.ts to tune the monsters and the gear, and by

@@ -6,8 +6,10 @@
 };
 
 import { useGameStore } from '../src/stores/gameStore';
-import { INITIAL_RESOURCES, CASTLE_X, CASTLE_Y } from '../src/config/gameConfig';
-import { calculateLevel, calculateResourceRates, totalStatPoints } from '../src/utils/gameUtils';
+import { INITIAL_RESOURCES } from '../src/config/economy';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
+import { calculateLevel, totalStatPoints } from '../src/utils/game/character';
+import { calculateResourceRates } from '../src/utils/game/income';
 import { RING } from '../src/utils/biomeRules';
 import { pickPersisted } from '../src/lib/sanitizeSave';
 import { packBody, unpackBody } from '../src/lib/saveFormat';

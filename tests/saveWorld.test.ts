@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, growTo, setResources, store } from './helpers';
-import { BIOMES, XP_CAP } from '../src/config/gameConfig';
+import { BIOMES } from '../src/config/biomes';
+import { XP_CAP } from '../src/config/economy';
 import { pickPersisted } from '../src/lib/sanitizeSave';
 import { BIOME_CODES, SAVE_SCHEMA, decodeSave, encodeSave, packBody, packLand, sealWire } from '../src/lib/saveFormat';
-import { calculateXpGain } from '../src/utils/gameUtils';
+import { calculateXpGain } from '../src/utils/game/character';
 import { COORD_LIMIT, ownedBounds, ownedCount, ownedEntries, patchTile, type World } from '../src/utils/world';
 import { syntheticWorld } from '../src/utils/worldGen';
 

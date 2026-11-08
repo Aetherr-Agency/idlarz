@@ -1,5 +1,5 @@
 // The merchant: resource prices, upgrades, shop goods.
-// Split out of gameConfig.ts (IDL-15); the values are unchanged.
+// Part of the former gameConfig.ts (split in IDL-15); the values are unchanged.
 import { RESOURCES, type MerchantResourceKey } from '@/catalog/resources';
 import { shopItems } from '@/catalog/loot';
 import { HARD_LIMITS, LIMITS } from '@/config/limits';
@@ -65,7 +65,7 @@ export const MERCHANT_UPGRADES = {
 		group: 'economy',
 		description: (n: number) => `+${n}% income from every resource, gold included`,
 		maxLevel: 10,
-		effectPerLevel: 0.01, // multiplies the income of every resource but XP (utils/gameUtils.ts, merchantIncomeMultiplier)
+		effectPerLevel: 0.01, // multiplies the income of every resource but XP (utils/game/merchant.ts, merchantIncomeMultiplier)
 		baseCost: 400000,
 		costGrowth: 1.9,
 	},

@@ -21,6 +21,52 @@ import { mulberry32 } from '../src/lib/rng';
 	removeItem: () => undefined,
 };
 
+/** The config and the game maths as one object each (the sim reads and overrides them by name; they are loaded late because the store needs the localStorage mock above). */
+type GameConfig = typeof import('../src/config/economy') &
+	typeof import('../src/config/resources') &
+	typeof import('../src/config/character') &
+	typeof import('../src/config/castle') &
+	typeof import('../src/config/biomes') &
+	typeof import('../src/config/buildings') &
+	typeof import('../src/config/merchant') &
+	typeof import('../src/config/farm') &
+	typeof import('../src/config/rebirth') &
+	typeof import('../src/config/spawns');
+type GameUtils = typeof import('../src/utils/game/castle') &
+	typeof import('../src/utils/game/character') &
+	typeof import('../src/utils/game/costs') &
+	typeof import('../src/utils/game/farm') &
+	typeof import('../src/utils/game/income') &
+	typeof import('../src/utils/game/merchant') &
+	typeof import('../src/utils/game/rebirth') &
+	typeof import('../src/utils/game/tiles');
+const loadConfig = async (): Promise<GameConfig> =>
+	Object.assign(
+		{},
+		await import('../src/config/economy'),
+		await import('../src/config/resources'),
+		await import('../src/config/character'),
+		await import('../src/config/castle'),
+		await import('../src/config/biomes'),
+		await import('../src/config/buildings'),
+		await import('../src/config/merchant'),
+		await import('../src/config/farm'),
+		await import('../src/config/rebirth'),
+		await import('../src/config/spawns'),
+	) as GameConfig;
+const loadUtils = async (): Promise<GameUtils> =>
+	Object.assign(
+		{},
+		await import('../src/utils/game/castle'),
+		await import('../src/utils/game/character'),
+		await import('../src/utils/game/costs'),
+		await import('../src/utils/game/farm'),
+		await import('../src/utils/game/income'),
+		await import('../src/utils/game/merchant'),
+		await import('../src/utils/game/rebirth'),
+		await import('../src/utils/game/tiles'),
+	) as GameUtils;
+
 const main = async () => {
 	const args = process.argv.slice(2);
 	const legacy = args.includes('--legacy');
@@ -30,8 +76,8 @@ const main = async () => {
 	const maxDays = args.find((a) => a.startsWith('--maxdays='));
 	if (maxDays) MAX_DAYS = Number(maxDays.slice(10));
 
-	const cfg = await import('../src/config/gameConfig');
-	const utils = await import('../src/utils/gameUtils');
+	const cfg = await loadConfig();
+	const utils = await loadUtils();
 	const monsters = await import('../src/lib/monsters');
 	const combatCfg = await import('../src/config/combatConfig');
 	const kill = await import('../src/lib/loot/kill');
@@ -156,8 +202,8 @@ interface Ctx {
 	fightSim: typeof import('../src/lib/fightSim');
 	monsters: typeof import('../src/lib/monsters');
 	combatCfg: typeof import('../src/config/combatConfig');
-	cfg: typeof import('../src/config/gameConfig');
-	utils: typeof import('../src/utils/gameUtils');
+	cfg: GameConfig;
+	utils: GameUtils;
 	store: typeof import('../src/stores/gameStore').useGameStore;
 }
 
@@ -855,7 +901,7 @@ function applyOverride(cfg: object, spec: string) {
 	const [path, raw] = spec.split('=');
 	const value = Number(raw);
 	if (path === 'castleCostScale') {
-		const costs = (cfg as typeof import('../src/config/gameConfig')).CASTLE_UPGRADE.upgradeCosts as Record<string, number>[];
+		const costs = (cfg as GameConfig).CASTLE_UPGRADE.upgradeCosts as Record<string, number>[];
 		costs.forEach((row) => Object.keys(row).forEach((k) => (row[k] = Math.round(row[k] * value))));
 		return;
 	}
@@ -867,7 +913,7 @@ function applyOverride(cfg: object, spec: string) {
 }
 
 /** Approximate the game before the rebalance by overriding config at runtime (for validating the sim). */
-function applyLegacy(cfg: typeof import('../src/config/gameConfig')) {
+function applyLegacy(cfg: GameConfig) {
 	const c = cfg as unknown as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 	c.CLICK_LADDER.forEach((l: { power: number; price: number }, i: number) => {
 		l.power = [2, 4, 8, 16][i];

@@ -8,8 +8,8 @@ import { summarize } from '../src/lib/cloudSave/summary';
 import { merchantGoldSpent } from '../src/lib/cloudSave/netWorth';
 import { restoreMerchantLevels } from '../src/lib/cloudSave/trustedEconomy';
 import { ENFORCEMENT, FLAG_POLICY, rejectedFlags, verifyTransition, type SaveFlag } from '../src/lib/cloudSave/verify';
-import { MERCHANT_UPGRADES } from '../src/config/gameConfig';
-import { merchantUpgradeCost } from '../src/utils/gameUtils';
+import { MERCHANT_UPGRADES } from '../src/config/merchant';
+import { merchantUpgradeCost } from '../src/utils/game/merchant';
 import type { PersistedGame } from '../src/lib/sanitizeSave';
 
 const accept = (repo: ReturnType<typeof memoryRepo>['repo'], state: PersistedGame, baseRev: number, at: number, enforcement = ENFORCEMENT) =>

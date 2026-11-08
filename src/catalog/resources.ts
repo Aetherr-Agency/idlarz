@@ -1,8 +1,8 @@
 /**
  * Every resource and currency the player can hold: what it is called, how it looks, what it is for and where it comes
  * from, what the merchant pays. The header tooltips, the merchant windows, the floating "+N" popups and the icon
- * fallbacks all read this one table (gameConfig.ts derives its old RESOURCE_ICONS / HEADER_* / MERCHANT_* views from it).
- * Rates, costs and prices-per-level stay in gameConfig.ts: those are balance numbers, not catalog data.
+ * fallbacks all read this one table (config/resources.ts derives its old RESOURCE_ICONS / HEADER_* / MERCHANT_* views from it).
+ * Rates, costs and prices-per-level stay in src/config: those are balance numbers, not catalog data.
  */
 /**
  * The header shows one boxed group per tier, left to right. A new tier is one entry here plus its resources' `tier`.

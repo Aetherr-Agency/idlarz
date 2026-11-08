@@ -1,10 +1,12 @@
 import React from 'react';
 import { formatNumber } from '@/utils/formatters';
 import audioManager from '@/utils/audioManager';
-import { BIOMES, BIOME_YIELD, BUILDINGS } from '@/config/gameConfig';
+import { BIOMES } from '@/config/biomes';
+import { BIOME_YIELD } from '@/config/economy';
+import { BUILDINGS } from '@/config/buildings';
 import { useGameStore } from '@/stores/gameStore';
 import { useUiStore } from '@/stores/uiStore';
-import { calculateBuildingCost, canAffordBundle, canBuildAt, countBuildings } from '@/utils/gameUtils';
+import { calculateBuildingCost, canAffordBundle, canBuildAt, countBuildings } from '@/utils/game/costs';
 import { getTile } from '@/utils/world';
 import { isLandmarkTile } from '@/utils/terrain';
 import { BUILDING_PIXEL_ICONS } from '@/config/pixelIcons';

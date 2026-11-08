@@ -20,7 +20,9 @@ import {
 	sumStats,
 } from '../src/catalog';
 import { plainItem, sellValueOf } from '../src/lib/itemInstance';
-import { HEADER_DISPLAYED_RESOURCES_INFO, INITIAL_RESOURCES, MERCHANT_RESOURCE_PRICES, RESOURCE_ICONS } from '../src/config/gameConfig';
+import { HEADER_DISPLAYED_RESOURCES_INFO, RESOURCE_ICONS } from '../src/config/resources';
+import { INITIAL_RESOURCES } from '../src/config/economy';
+import { MERCHANT_RESOURCE_PRICES } from '../src/config/merchant';
 import { PIXEL_ICON_SIZES, pixelIconSrc, type PixelIconName } from '../src/config/pixelIcons';
 
 const PUBLIC = resolve(__dirname, '..', 'public');
@@ -140,7 +142,9 @@ test('every header resource sits in a tier: the header groups come from the cata
 
 test('the stored resource keys come from the catalog, in the order saves have always had', async () => {
 	const { STORED_KEYS, OPTIONAL_KEYS, FARM_KEYS, zeroResources } = await import('../src/catalog/resourceKeys');
-	const { INITIAL_RESOURCES, BASE_GENERATION_RATES, CASTLE_BASE_RATES, FARM_PRODUCT_KEYS } = await import('../src/config/gameConfig');
+	const { BASE_GENERATION_RATES } = await import('../src/config/economy');
+	const { CASTLE_BASE_RATES } = await import('../src/config/castle');
+	const { FARM_PRODUCT_KEYS } = await import('../src/config/farm');
 	const { zeroTotals } = await import('../src/lib/offline/ledger');
 	// a snapshot: adding a resource changes this list on purpose, never by accident
 	assert.deepEqual([...STORED_KEYS], ['gold', 'wood', 'stone', 'coal', 'food', 'meat', 'eggs', 'milk', 'hide', 'xp']);

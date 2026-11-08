@@ -1,19 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, growTo, owned, patchTileAt, setResources, store, tileAt, gridCells } from './helpers';
-import {
-	CASTLE_UPGRADE,
-	CLICK_LADDER,
-	clickGold,
-	CASTLE_X,
-	CASTLE_Y,
-	MAX_CATCHUP_SEC,
-	MERCHANT_BUYABLE,
-	MERCHANT_BUY_MULTIPLIER,
-	MERCHANT_RESOURCE_PRICES,
-	TILE_RESOURCE_COST,
-} from '../src/config/gameConfig';
-import { buyCost, calculateTileCost, calculateBuildingCost, effectiveTileDiscount, totalStatPoints, xpToNextLevel } from '../src/utils/gameUtils';
+import { CASTLE_UPGRADE, CASTLE_X, CASTLE_Y } from '../src/config/castle';
+import { CLICK_LADDER, clickGold, MAX_CATCHUP_SEC, TILE_RESOURCE_COST } from '../src/config/economy';
+import { MERCHANT_BUYABLE, MERCHANT_BUY_MULTIPLIER, MERCHANT_RESOURCE_PRICES } from '../src/config/merchant';
+import { buyCost } from '../src/utils/game/merchant';
+import { calculateTileCost, calculateBuildingCost } from '../src/utils/game/costs';
+import { effectiveTileDiscount } from '../src/utils/game/rebirth';
+import { totalStatPoints, xpToNextLevel } from '../src/utils/game/character';
 import type { Resources } from '../src/types/game';
 import { hasOwnedNeighbour, isOwnedAt } from '../src/utils/world';
 

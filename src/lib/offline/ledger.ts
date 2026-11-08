@@ -1,5 +1,5 @@
 import { zeroResources } from '@/catalog/resourceKeys';
-import { STARTING_GEMS } from '@/config/gameConfig';
+import { STARTING_GEMS } from '@/config/economy';
 import type { CombatState } from '@/lib/offline/fightTypes';
 import { inventoryFromCore } from '@/lib/offline/inventory';
 import type { Inventory } from '@/lib/offline/types';

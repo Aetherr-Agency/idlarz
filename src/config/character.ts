@@ -1,5 +1,5 @@
 // The player: default name, starting attributes, the level curve and what an attribute point gives.
-// Split out of gameConfig.ts (IDL-15); the values are unchanged.
+// Part of the former gameConfig.ts (split in IDL-15); the values are unchanged.
 import { CharacterStats } from '@/types/game';
 
 // Default player name
@@ -29,7 +29,7 @@ export const INITIAL_CHARACTER_STATS: CharacterStats = {
 	tileCostDiscount: 0,
 };
 
-// The character level curve (xpToNextLevel / calculateLevel in utils/gameUtils.ts). Level and XP carry over a rebirth, so the curve is
+// The character level curve (xpToNextLevel / calculateLevel in utils/game/character.ts). Level and XP carry over a rebirth, so the curve is
 // paced over rebirths, not days, and is written down as ANCHORS: the total XP at which a level is reached, measured with the sim bot
 // (npm run sim hardcore-rebirth6-x10 logs lifetime XP and level; with the cheaper castle the hardcore bot rebirths at ~day 4, 7, 10, 12.5, 15 ... 25):
 //   level 10 after ~4-5 h (XP 1.4e5), level ~30 around day 2 (1e8), the soft cap (80) around the 3rd rebirth (3e9),
@@ -55,7 +55,7 @@ export const LEVELING = {
 };
 export const MAX_LEVEL = LEVELING.maxLevel;
 
-// What each base stat does per point. Used by the maths (gameUtils) AND by every tooltip/tutorial text.
+// What each base stat does per point. Used by the maths (utils/game/character.ts) AND by every tooltip/tutorial text.
 export const CHARACTER_STAT_CONFIG = {
 	// Fraction added to the modifier of each listed resource, per point
 	resourceModifierPerPoint: 0.025,

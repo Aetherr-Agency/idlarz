@@ -1,5 +1,6 @@
 import { HARD_LIMITS, LIMITS, type LimitKey } from '@/config/limits';
-import { emberEffect, merchantEffect, type MerchantUpgrades } from '@/utils/gameUtils';
+import { emberEffect } from '@/utils/game/rebirth';
+import { merchantEffect, type MerchantUpgrades } from '@/utils/game/merchant';
 import type { PrestigeState } from '@/types/game';
 
 /** What can raise a limit: the merchant bonuses now, the rebirth (Embers) effects later. Pass what you have; the rest counts as none. */

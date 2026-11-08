@@ -20,7 +20,7 @@ import { rebirthRecordOf, runSecondsOf, type RebirthRecord } from '../src/lib/cl
 import { VERIFY, verifyTransition } from '../src/lib/cloudSave/verify';
 import { isNonProduction } from '../src/lib/cloudSave/environment';
 import { setTile as setWorldTile, getTile as getWorldTile } from '../src/utils/world';
-import { CASTLE_X as CX, CASTLE_Y as CY } from '../src/config/gameConfig';
+import { CASTLE_X as CX, CASTLE_Y as CY } from '../src/config/castle';
 
 interface Hist {
 	userId: string;

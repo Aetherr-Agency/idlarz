@@ -10,7 +10,7 @@ import { generateLoot } from '../src/lib/loot/generate';
 import { LOOT_DATA } from '../src/lib/loot/data';
 import { validateLootData } from '../src/lib/loot/validate';
 import { mulberry32 } from '../src/lib/rng';
-import { LUCK } from '../src/config/gameConfig';
+import { LUCK } from '../src/config/spawns';
 import { chestIntervalSec, gemChance, luckyRatChance, rollGemFind } from '../src/lib/luck';
 
 const arg = (name: string, fallback: number) => {

@@ -6,7 +6,7 @@ import { commitImport, exportSaveText, getDamagedSave, getSaveInfo, parseSaveTex
 import { copyText } from '@/lib/clipboard';
 import { formatTime } from '@/utils/formatters';
 import { castleLevelOf } from '@/lib/castleWard';
-import { countOwnedTiles } from '@/utils/gameUtils';
+import { countOwnedTiles } from '@/utils/game/tiles';
 import PixelModal from '../PixelModal';
 
 const MAX_FILE_BYTES = 3_000_000;

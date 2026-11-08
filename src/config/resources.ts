@@ -1,5 +1,5 @@
 // The old views of catalog/resources.ts (icons and header tooltips) and the helper that builds them.
-// Split out of gameConfig.ts (IDL-15); the values are unchanged.
+// Part of the former gameConfig.ts (split in IDL-15); the values are unchanged.
 import { RESOURCES, type ResourceKey } from '@/catalog/resources';
 
 // Resource presentation (labels, glyphs, tooltips, merchant prices) lives in catalog/resources.ts; these are the old views of it

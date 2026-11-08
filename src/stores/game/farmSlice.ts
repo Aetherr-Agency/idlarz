@@ -1,17 +1,10 @@
 // farmSlice.ts
 // Split out of gameStore.ts (IDL-14); the actions and their behaviour are unchanged.
 
-import { ANIMALS, FARM_UPGRADES, type FarmUpgradeId } from '@/config/gameConfig';
-import {
-	affordableAnimals,
-	animalBatchCost,
-	calculateResourceRates,
-	canAffordBundle,
-	farmCap,
-	farmUpgradeCost,
-	farmUpgradeLevel,
-	subtractBundle,
-} from '@/utils/gameUtils';
+import { ANIMALS, FARM_UPGRADES, type FarmUpgradeId } from '@/config/farm';
+import { affordableAnimals, animalBatchCost, farmCap, farmUpgradeCost, farmUpgradeLevel } from '@/utils/game/farm';
+import { calculateResourceRates } from '@/utils/game/income';
+import { canAffordBundle, subtractBundle } from '@/utils/game/costs';
 import { gearIncomePct } from '@/lib/gearEconomy';
 import { type GameGet, type GameSet } from './base';
 

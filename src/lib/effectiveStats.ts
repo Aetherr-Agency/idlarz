@@ -16,7 +16,8 @@ import { critDamagePercent } from '@/lib/statBonuses';
 import { gearEconomy, xpGainPct } from '@/lib/gearEconomy';
 import { chestRateBonusPct, gemChance, luckyRatChance, rarityLuckMultiplier } from '@/lib/luck';
 import { offlineCapHours, offlineEfficiency } from '@/lib/offline/limits';
-import { effectiveTileDiscount, emberEffect, merchantCombat, merchantLuck, type MerchantUpgrades } from '@/utils/gameUtils';
+import { effectiveTileDiscount, emberEffect } from '@/utils/game/rebirth';
+import { merchantCombat, merchantLuck, type MerchantUpgrades } from '@/utils/game/merchant';
 import type { CharacterStats, Equipment, PrestigeState } from '@/types/game';
 
 /** Everything that decides the numbers shown for the character: the attributes, the worn gear, the merchant bonuses and the rebirth state. */

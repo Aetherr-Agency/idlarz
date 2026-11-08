@@ -1,5 +1,6 @@
 import React from 'react';
-import { TILE_SIZE, CASTLE_RANGE, CASTLE_X, CASTLE_Y } from '@/config/gameConfig';
+import { TILE_SIZE } from '@/config/biomes';
+import { CASTLE_RANGE, CASTLE_X, CASTLE_Y } from '@/config/castle';
 import '@/styles/CastleRange.css';
 
 /** Violet patch drawn over the tiles the castle's range bonus covers (the bonus itself comes later): 3x3, growing with the castle from level 8. */

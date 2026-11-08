@@ -1,5 +1,5 @@
 import { COMBAT } from '@/config/combatConfig';
-import { CHEST, LUCK } from '@/config/gameConfig';
+import { CHEST, LUCK } from '@/config/spawns';
 import { monsterDef, monsterStats } from '@/lib/monsters';
 import type { Rng } from '@/lib/rng';
 import type { Drop, Monster } from '@/types/game';

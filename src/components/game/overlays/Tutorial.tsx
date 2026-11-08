@@ -1,37 +1,22 @@
 import React from 'react';
 import { isLiveBiome } from '@/config/biomeStage';
-import {
-	ANIMALS,
-	LEVELING,
-	BASE_TILE_COST,
-	BIOME_YIELD,
-	BIOMES,
-	BUILDINGS,
-	BUILDING_COST,
-	CASTLE_FORTRESS,
-	CASTLE_RANGE,
-	CASTLE_UPGRADE,
-	CHARACTER_STAT_CONFIG,
-	CHEST,
-	EMBER_UPGRADES,
-	REBIRTH,
-	SPAWN_LIMIT,
-	CLICK_LADDER,
-	CLICK_LIMIT,
-	MERCHANT_BUY_MULTIPLIER,
-	MERCHANT_GOODS,
-	MERCHANT_RESOURCE_PRICES,
-	SCALING_CONFIG,
-	TILE_PRICE,
-	TILE_RESOURCE_COST,
-} from '@/config/gameConfig';
+import { ANIMALS } from '@/config/farm';
+import { LEVELING, CHARACTER_STAT_CONFIG } from '@/config/character';
+import { BASE_TILE_COST, BIOME_YIELD, CLICK_LADDER, CLICK_LIMIT, SCALING_CONFIG, TILE_PRICE, TILE_RESOURCE_COST } from '@/config/economy';
+import { BIOMES } from '@/config/biomes';
+import { BUILDINGS, BUILDING_COST } from '@/config/buildings';
+import { CASTLE_FORTRESS, CASTLE_RANGE, CASTLE_UPGRADE } from '@/config/castle';
+import { CHEST, SPAWN_LIMIT } from '@/config/spawns';
+import { EMBER_UPGRADES, REBIRTH } from '@/config/rebirth';
+import { MERCHANT_BUY_MULTIPLIER, MERCHANT_GOODS, MERCHANT_RESOURCE_PRICES } from '@/config/merchant';
 import { COMBAT, MONSTERS, STAT_RULES } from '@/config/combatConfig';
 import { SKILLS } from '@/catalog/skills';
 import { LIMITS } from '@/config/limits';
 import { RARITIES, RARITY_ORDER, SETS, sortedCostEntries } from '@/catalog';
 import { BIOME_PIXEL_ICONS } from '@/config/pixelIcons';
 import { formatCompact, formatNumber, formatTime } from '@/utils/formatters';
-import { buildingCostFactor, castleModifier } from '@/utils/gameUtils';
+import { buildingCostFactor } from '@/utils/game/costs';
+import { castleModifier } from '@/utils/game/castle';
 import PixelIcon from '../PixelIcon';
 import ResourceIcon from '../ResourceIcon';
 

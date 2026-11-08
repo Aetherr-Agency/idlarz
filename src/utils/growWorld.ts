@@ -1,6 +1,6 @@
-import { CASTLE_X, CASTLE_Y } from '@/config/gameConfig';
+import { CASTLE_X, CASTLE_Y } from '@/config/castle';
 import { rollBiome } from '@/utils/biomeRules';
-import { createInitialWorld } from '@/utils/gameUtils';
+import { createInitialWorld } from '@/utils/game/tiles';
 import { getTile, hasOwnedNeighbour, isOwnedAt, ownedBounds, setTile, type World } from '@/utils/world';
 
 /** Seeded generator (mulberry32): the same seed always gives the same stream. */

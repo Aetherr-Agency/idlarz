@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { TILE_SIZE } from '@/config/gameConfig';
+import { TILE_SIZE } from '@/config/biomes';
 import { highlightColor } from '@/config/biomePalette';
 import { visibleTileRange } from '@/lib/mapView';
 import { useUiStore, HIGHLIGHT_MS } from '@/stores/uiStore';

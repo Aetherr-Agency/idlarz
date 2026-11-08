@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { STARTING_GEMS } from '@/config/gameConfig';
+import { STARTING_GEMS } from '@/config/economy';
 import { emptyBank } from '@/lib/offline/tickets';
 import { inventoryFromCore, rebirthInventory, stampInventory } from '@/lib/offline/inventory';
 import { seedLedger, subtractTotals, type Ledger, type LedgerRepo } from '@/lib/offline/ledger';
@@ -10,7 +10,7 @@ import { settleXp } from './xpModel';
 import { clampPrestige, settleEmbers } from './emberModel';
 import { rebirthRecordOf, type RebirthRecord } from './rebirthHistory';
 import type { PrestigeState } from '@/types/game';
-import { calculateLevel, reconcileCharacter } from '@/utils/gameUtils';
+import { calculateLevel, reconcileCharacter } from '@/utils/game/character';
 import { restoreMerchantLevels, sameRunAs, trustedEconomy } from './trustedEconomy';
 import { ENFORCEMENT, POISON_FLAGS, VERIFY, rejectedFlags, verifyTransition, type Enforcement, type SaveFlag, type Snapshot } from './verify';
 

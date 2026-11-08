@@ -5,7 +5,7 @@ import { pickPersisted, type PersistedGame } from '../src/lib/sanitizeSave';
 import { SAVE_PREFIX, encodeSave } from '../src/lib/saveFormat';
 import { createSaveStorage, type KeyValue } from '../src/lib/saveStorage';
 import { checkCredentials, checkProfile, CHARACTER_NAME_MAX } from '../src/lib/authValidation';
-import { DEFAULT_PLAYER_NAME } from '../src/config/gameConfig';
+import { DEFAULT_PLAYER_NAME } from '../src/config/character';
 
 const KEY = 'idlarz.save';
 const BACKUP = 'idlarz.save.backup';

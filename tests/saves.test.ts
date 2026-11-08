@@ -3,12 +3,13 @@ import assert from 'node:assert/strict';
 import { api, freshGame, growTo, setResources, owned, store, tileAt, gridCells, rawSnapshot, landAt, setLandAt } from './helpers';
 import { pickPersisted, sanitizeSave } from '../src/lib/sanitizeSave';
 import { decodeSave, encodeSave } from '../src/lib/saveFormat';
-import { CASTLE_UPGRADE, CASTLE_X, CASTLE_Y, RESOURCE_CAP } from '../src/config/gameConfig';
+import { CASTLE_UPGRADE, CASTLE_X, CASTLE_Y } from '../src/config/castle';
+import { RESOURCE_CAP } from '../src/config/economy';
 import { STARTER_EQUIPMENT } from '../src/config/itemCatalog';
 import { plainItem } from '../src/lib/itemInstance';
 import { emptyBag } from '../src/lib/inventory';
 import { ownedCount, setTile } from '../src/utils/world';
-import { totalStatPoints, xpToNextLevel } from '../src/utils/gameUtils';
+import { totalStatPoints, xpToNextLevel } from '../src/utils/game/character';
 
 /** A plain JSON copy of a (valid) persisted game, as it would come out of a save file. */
 const snapshot = () => rawSnapshot();

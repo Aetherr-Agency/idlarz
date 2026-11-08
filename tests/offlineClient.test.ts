@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, growTo, setResources } from './helpers';
-import { CASTLE_X, CASTLE_Y } from '../src/config/gameConfig';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
 import { COMBAT } from '../src/config/combatConfig';
 import { ownedRowMajor } from '../src/utils/world';
 import { reconcileTickets } from '../src/lib/offline/reconcile';
@@ -9,7 +9,7 @@ import { sanitizeSave } from '../src/lib/sanitizeSave';
 import { computeOfflineGrant, zeroGrant } from '../src/lib/offline/grant';
 import type { ClaimResult, PublicTickets } from '../src/lib/offline/types';
 import { rawSnapshot } from './helpers';
-import { castleUpgradeDuration } from '../src/utils/gameUtils';
+import { castleUpgradeDuration } from '../src/utils/game/castle';
 import { tileAt } from './helpers';
 import type { Monster } from '../src/types/game';
 

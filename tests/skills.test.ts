@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SKILLS, SKILL_IDS, skillDescription } from '../src/catalog/skills';
-import { INITIAL_CHARACTER_STATS } from '../src/config/gameConfig';
+import { INITIAL_CHARACTER_STATS } from '../src/config/character';
 import { STARTER_EQUIPMENT } from '../src/config/itemCatalog';
 import { maxHp, maxMana } from '../src/lib/combat';
 import { plainItem } from '../src/lib/itemInstance';
 import { healAmount, isSkillId } from '../src/lib/skills';
-import { calculateCombatStats } from '../src/utils/gameUtils';
+import { calculateCombatStats } from '../src/utils/game/character';
 import type { CharacterStats } from '../src/types/game';
 
 const character = (over: Partial<CharacterStats> = {}): CharacterStats => {

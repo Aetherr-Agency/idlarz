@@ -1,5 +1,5 @@
 // Buildings and what they cost.
-// Split out of gameConfig.ts (IDL-15); the values are unchanged.
+// Part of the former gameConfig.ts (split in IDL-15); the values are unchanged.
 import { Resources } from '@/types/game';
 
 // Buildings (any explored tile)

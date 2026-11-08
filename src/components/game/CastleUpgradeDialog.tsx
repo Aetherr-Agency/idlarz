@@ -1,10 +1,10 @@
 import React from 'react';
 import type { FC } from 'react';
 import { sortedCostEntries } from '@/catalog';
-import { CASTLE_UPGRADE } from '@/config/gameConfig';
+import { CASTLE_UPGRADE } from '@/config/castle';
 import { useGameStore } from '@/stores/gameStore';
 import { formatCompact, formatNumber, formatPercent, formatTime } from '@/utils/formatters';
-import { castleModifier, castleUpgradeDuration } from '@/utils/gameUtils';
+import { castleModifier, castleUpgradeDuration } from '@/utils/game/castle';
 import { castleAreaBonus, castleLevelOf, castleRangeRadius } from '@/lib/castleWard';
 import audioManager from '@/utils/audioManager';
 import PixelWindow from './PixelWindow';

@@ -1,7 +1,7 @@
 import { ITEM_CATALOG } from '@/catalog';
 import { addDrop } from '@/lib/inventory';
 import { sellValueOf } from '@/lib/itemInstance';
-import { sellPayout, type SellContext } from '@/utils/gameUtils';
+import { sellPayout, type SellContext } from '@/utils/game/merchant';
 import type { BagSlot, Drop } from '@/types/game';
 import { isAutoSold } from './autoSell';
 

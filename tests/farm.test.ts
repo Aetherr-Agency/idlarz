@@ -1,17 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, setResources } from './helpers';
-import { ANIMALS, FARM, FARM_PEN, FARM_UPGRADES, type FarmUpgradeId } from '../src/config/gameConfig';
+import { ANIMALS, FARM, FARM_PEN, FARM_UPGRADES, type FarmUpgradeId } from '../src/config/farm';
 import { RESOURCES } from '../src/catalog/resources';
-import {
-	affordableAnimals,
-	animalBatchCost,
-	calculateAnimalCost,
-	calculateFarmOutput,
-	farmCap,
-	calculateTileCost,
-	farmUpgradeCost,
-} from '../src/utils/gameUtils';
+import { affordableAnimals, animalBatchCost, calculateAnimalCost, calculateFarmOutput, farmCap, farmUpgradeCost } from '../src/utils/game/farm';
+import { calculateTileCost } from '../src/utils/game/costs';
 
 const chicken = ANIMALS.find((a) => a.id === 'chicken')!;
 const cow = ANIMALS.find((a) => a.id === 'cow')!;

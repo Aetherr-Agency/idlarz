@@ -1,7 +1,9 @@
 import React, { memo, useMemo } from 'react';
 import { BiomeType } from '@/types/game';
-import { BIOMES } from '@/config/gameConfig';
-import { calculateTileCost, canAffordBundle, effectiveTileDiscount, economyTiles, tileCostAsResources } from '@/utils/gameUtils';
+import { BIOMES } from '@/config/biomes';
+import { calculateTileCost, canAffordBundle, tileCostAsResources } from '@/utils/game/costs';
+import { effectiveTileDiscount } from '@/utils/game/rebirth';
+import { economyTiles } from '@/utils/game/tiles';
 import { BiomeTooltip } from './BiomeTooltip';
 import CostList from './CostList';
 import { useMapGame } from './mapSource';

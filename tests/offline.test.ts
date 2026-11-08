@@ -1,9 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, setResources, tileAt } from './helpers';
-import { CASTLE_X, CASTLE_Y, CHEST, EMBER_UPGRADES, LUCK } from '../src/config/gameConfig';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
+import { CHEST, LUCK } from '../src/config/spawns';
+import { EMBER_UPGRADES } from '../src/config/rebirth';
 import { COMBAT } from '../src/config/combatConfig';
-import { INITIAL_CHARACTER_STATS } from '../src/config/gameConfig';
+import { INITIAL_CHARACTER_STATS } from '../src/config/character';
 import { STARTER_EQUIPMENT } from '../src/config/itemCatalog';
 import { effectiveStats } from '../src/lib/effectiveStats';
 import { chestIntervalSec, chestRateBonusPct, dropChanceMultiplier, gemChance, luckyRatChance, rarityLuckMultiplier, rollGemAmount } from '../src/lib/luck';
@@ -13,8 +15,9 @@ import { computeOfflineGrant, zeroGrant, type OfflineInput } from '../src/lib/of
 import { offlineCapHours, offlineCapSec, offlineEfficiency, offlineMinGapSec } from '../src/lib/offline/limits';
 import { sealedRng } from '../src/lib/offline/seal';
 import { advanceBank, emptyBank, takeChestAt, takeMonster, ticketCap, TICKET_CAP, type BankContext, type TicketBank } from '../src/lib/offline/tickets';
-import { calculateCombatStats, calculateResourceRates, totalStatPoints } from '../src/utils/gameUtils';
-import { castleUpgradeDuration } from '../src/utils/gameUtils';
+import { calculateCombatStats, totalStatPoints } from '../src/utils/game/character';
+import { calculateResourceRates } from '../src/utils/game/income';
+import { castleUpgradeDuration } from '../src/utils/game/castle';
 import type { PrestigeState, Resources } from '../src/types/game';
 
 /** A bank whose land has plenty of tiles for monsters (a bank that has never looked at the land mints none). */

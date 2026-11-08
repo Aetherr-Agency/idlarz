@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import './helpers';
 import { createClickLimiter } from '../src/lib/clickLimiter';
-import { CLICK_LIMIT } from '../src/config/gameConfig';
+import { CLICK_LIMIT } from '../src/config/economy';
 
 const make = () => createClickLimiter({ ...CLICK_LIMIT });
 

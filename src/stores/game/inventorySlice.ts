@@ -1,8 +1,8 @@
 // inventorySlice.ts
 // Split out of gameStore.ts (IDL-14); the actions and their behaviour are unchanged.
 
-import { RESOURCE_CAP } from '@/config/gameConfig';
-import { sellPayout } from '@/utils/gameUtils';
+import { RESOURCE_CAP } from '@/config/economy';
+import { sellPayout } from '@/utils/game/merchant';
 import { maxHp, maxMana } from '@/lib/combat';
 import { equipFromBag, gearOf, moveSlot, organizeBag, removeFromBag, slotQty, stackOf, unequip } from '@/lib/inventory';
 import { sellValueOf } from '@/lib/itemInstance';

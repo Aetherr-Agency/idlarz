@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
-import { TILE_SIZE } from '@/config/gameConfig';
+import { TILE_SIZE } from '@/config/biomes';
 import { CHEST_COLOR, MONSTER_COLOR, minimapLayout, minimapMarkers, minimapToTile, paintChestGlow, paintMinimap, viewRectangle } from '@/lib/minimap';
 import { useUiStore } from '@/stores/uiStore';
 import '@/styles/Minimap.css';

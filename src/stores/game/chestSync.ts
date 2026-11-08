@@ -1,7 +1,7 @@
 // chestSync.ts
 // Split out of gameStore.ts (IDL-14); the actions and their behaviour are unchanged.
 
-import { RESOURCE_CAP, XP_CAP } from '@/config/gameConfig';
+import { RESOURCE_CAP, XP_CAP } from '@/config/economy';
 import { type ChestLoot } from '@/lib/chests';
 import { reconcileTickets } from '@/lib/offline/reconcile';
 import type { ChestReward, SyncResult } from '@/lib/offline/types';

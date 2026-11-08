@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { formatTime, formatRate } from '@/utils/formatters';
-import { MAX_LEVEL } from '@/config/gameConfig';
-import { xpToNextLevel } from '@/utils/gameUtils';
+import { MAX_LEVEL } from '@/config/character';
+import { xpToNextLevel } from '@/utils/game/character';
 
 // Level Up Timer Component that updates every second
 export const LevelUpTimer: React.FC<{

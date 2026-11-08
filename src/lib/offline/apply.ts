@@ -1,11 +1,13 @@
-import { CASTLE_UPGRADE, CASTLE_X, CASTLE_Y, RESOURCE_CAP, XP_CAP } from '@/config/gameConfig';
+import { CASTLE_UPGRADE, CASTLE_X, CASTLE_Y } from '@/config/castle';
+import { RESOURCE_CAP, XP_CAP } from '@/config/economy';
 import { maxHp, maxMana } from '@/lib/combat';
 import { gearIncomePct } from '@/lib/gearEconomy';
 import type { LimitContext } from '@/lib/limits';
 import { afterAbsence } from '@/lib/merchant';
 import { advanceMonsters } from '@/lib/monsters';
 import type { OfflineGrant } from '@/lib/offline/grant';
-import { calculateLevel, calculateResourceRates, totalStatPoints } from '@/utils/gameUtils';
+import { calculateLevel, totalStatPoints } from '@/utils/game/character';
+import { calculateResourceRates } from '@/utils/game/income';
 import { getTile, setTile } from '@/utils/world';
 import type { GameState, Resources } from '@/types/game';
 

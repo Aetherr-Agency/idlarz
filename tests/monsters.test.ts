@@ -20,8 +20,8 @@ import { COMBAT, MONSTERS } from '../src/config/combatConfig';
 import { LIMITS } from '../src/config/limits';
 import { limitOf, LIMIT_BONUSES } from '../src/lib/limits';
 import { armorReduction } from '../src/lib/combat';
-import { CASTLE_X, CASTLE_Y } from '../src/config/gameConfig';
-import { BIOMES } from '../src/config/gameConfig';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
+import { BIOMES } from '../src/config/biomes';
 import type { Monster } from '../src/types/game';
 import { ownedRowMajor, patchTile } from '../src/utils/world';
 

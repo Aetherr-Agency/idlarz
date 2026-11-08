@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CHEST, CASTLE_X, CASTLE_Y } from '../src/config/gameConfig';
+import { CHEST } from '../src/config/spawns';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
 import { pickChestSpot, rewardWeights, rollChestLoot } from '../src/lib/chests';
 import { emptyBag, addGear, addToBag } from '../src/lib/inventory';
 import { instanceProblem, plainItem } from '../src/lib/itemInstance';

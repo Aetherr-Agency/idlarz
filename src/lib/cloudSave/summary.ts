@@ -1,9 +1,11 @@
-import { CASTLE_UPGRADE, CASTLE_X, CASTLE_Y } from '@/config/gameConfig';
+import { CASTLE_UPGRADE, CASTLE_X, CASTLE_Y } from '@/config/castle';
 import { castleLevelOf } from '@/lib/castleWard';
 import { effectiveStats } from '@/lib/effectiveStats';
 import { gearEconomy, gearIncomePct, xpGainPct } from '@/lib/gearEconomy';
 import { offlineCapSec, offlineEfficiency } from '@/lib/offline/limits';
-import { calculateResourceRates, countBuildings, countOwnedTiles, economyTiles } from '@/utils/gameUtils';
+import { calculateResourceRates } from '@/utils/game/income';
+import { countBuildings } from '@/utils/game/costs';
+import { countOwnedTiles, economyTiles } from '@/utils/game/tiles';
 import { getTile, setTile } from '@/utils/world';
 import type { PersistedGame } from '@/lib/sanitizeSave';
 import { stockValue } from './netWorth';

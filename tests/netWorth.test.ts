@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, growTo, store, LEGACY_GRID_SIZE } from './helpers';
 import { hasOwnedNeighbour, isOwnedAt, ownedBounds } from '../src/utils/world';
-import { CASTLE_X, CASTLE_Y } from '../src/config/gameConfig';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
 import { pickPersisted, type PersistedGame } from '../src/lib/sanitizeSave';
 import { checkNetWorth, minimumSpend } from '../src/lib/cloudSave/netWorth';
 import { summarize } from '../src/lib/cloudSave/summary';

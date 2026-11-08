@@ -1,9 +1,9 @@
 import React from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { MERCHANT_CUSTOM_MAX, useUiStore } from '@/stores/uiStore';
-import { MERCHANT_BUYABLE, MERCHANT_BUY_MULTIPLIER, MERCHANT_RESOURCE_INFO, MERCHANT_RESOURCE_PRICES } from '@/config/gameConfig';
+import { MERCHANT_BUYABLE, MERCHANT_BUY_MULTIPLIER, MERCHANT_RESOURCE_INFO, MERCHANT_RESOURCE_PRICES } from '@/config/merchant';
 import { formatCompact, formatNumber, parseAmount } from '@/utils/formatters';
-import { buyCost, sellMultiplier, sellPayout } from '@/utils/gameUtils';
+import { buyCost, sellMultiplier, sellPayout } from '@/utils/game/merchant';
 import ResourceIcon from '../../ResourceIcon';
 import { TipButton } from './TipButton';
 import '@/styles/Inventory.css';

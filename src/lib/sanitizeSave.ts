@@ -2,30 +2,14 @@ import { isRecord } from '@/lib/isRecord';
 import { OPTIONAL_KEYS } from '@/catalog/resourceKeys';
 import { PLAYER_CLASSES, DEFAULT_PLAYER_CLASS, type PlayerClassId } from '@/config/playerClasses';
 import { isLiveBiome } from '@/config/biomeStage';
-import {
-	ANIMALS,
-	BIOMES,
-	BUILDINGS,
-	BUILDING_COST,
-	CASTLE_UPGRADE,
-	GEMS_CAP,
-	STARTING_GEMS,
-	CLICK_LADDER,
-	DEFAULT_PLAYER_NAME,
-	FARM_UPGRADES,
-	MERCHANT_GOODS,
-	MERCHANT_UPGRADES,
-	CASTLE_X,
-	CASTLE_Y,
-	INITIAL_CHARACTER_STATS,
-	INITIAL_RESOURCES,
-	EMBER_UPGRADES,
-	RESOURCE_CAP,
-	XP_CAP,
-	type FarmUpgradeId,
-	type EmberUpgradeId,
-	type MerchantUpgradeId,
-} from '@/config/gameConfig';
+import { ANIMALS, FARM_UPGRADES, type FarmUpgradeId } from '@/config/farm';
+import { BIOMES } from '@/config/biomes';
+import { BUILDINGS, BUILDING_COST } from '@/config/buildings';
+import { CASTLE_UPGRADE, CASTLE_X, CASTLE_Y } from '@/config/castle';
+import { GEMS_CAP, STARTING_GEMS, CLICK_LADDER, INITIAL_RESOURCES, RESOURCE_CAP, XP_CAP } from '@/config/economy';
+import { DEFAULT_PLAYER_NAME, INITIAL_CHARACTER_STATS } from '@/config/character';
+import { MERCHANT_GOODS, MERCHANT_UPGRADES, type MerchantUpgradeId } from '@/config/merchant';
+import { EMBER_UPGRADES, type EmberUpgradeId } from '@/config/rebirth';
 import { COMBAT } from '@/config/combatConfig';
 import { EQUIPMENT_LAYOUT, ITEM_CATALOG, LOOT_PROFILES, RARITIES } from '@/catalog';
 import { STARTER_EQUIPMENT } from '@/config/itemCatalog';
@@ -33,16 +17,10 @@ import { instanceProblem } from '@/lib/itemInstance';
 import { maxHp, maxMana } from '@/lib/combat';
 import { starterBag } from '@/lib/inventory';
 import { limitOf } from '@/lib/limits';
-import {
-	calculateCombatStats,
-	calculateLevel,
-	totalStatPoints,
-	calculateXpGain,
-	castleUpgradeDuration,
-	EMPTY_PRESTIGE,
-	emberSpent,
-	STARTER_FREE_TILES,
-} from '@/utils/gameUtils';
+import { calculateCombatStats, calculateLevel, totalStatPoints, calculateXpGain } from '@/utils/game/character';
+import { castleUpgradeDuration } from '@/utils/game/castle';
+import { EMPTY_PRESTIGE, emberSpent } from '@/utils/game/rebirth';
+import { STARTER_FREE_TILES } from '@/utils/game/tiles';
 import { RING } from '@/utils/biomeRules';
 import { EMPTY_WORLD, MAX_OWNED_TILES, inRange, keyX, keyY, setTiles, tileKey, type Placed } from '@/utils/world';
 import type {

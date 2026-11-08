@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { calculateResourceRates, EMPTY_PRESTIGE } from '@/utils/gameUtils';
+import { calculateResourceRates } from '@/utils/game/income';
+import { EMPTY_PRESTIGE } from '@/utils/game/rebirth';
 import { withSaveEvents } from '@/lib/saveEvents';
 import { gearIncomePct } from '@/lib/gearEconomy';
 import { mulberry32 } from '@/lib/rng';

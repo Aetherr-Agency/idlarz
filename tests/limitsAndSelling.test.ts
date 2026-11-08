@@ -7,9 +7,9 @@ import { plainItem, sellValueOf } from '../src/lib/itemInstance';
 import { limitOf, LIMIT_BONUSES } from '../src/lib/limits';
 import { generateMerchantStock } from '../src/lib/merchant';
 import { receiveDrops } from '../src/lib/loot';
-import { MERCHANT_RESOURCE_PRICES } from '../src/config/gameConfig';
+import { MERCHANT_RESOURCE_PRICES } from '../src/config/merchant';
 import { globalMenuItems } from '../src/lib/globalMenu';
-import { SELL_BONUSES, sellMultiplier, sellPayout } from '../src/utils/gameUtils';
+import { SELL_BONUSES, sellMultiplier, sellPayout } from '../src/utils/game/merchant';
 
 // ---- limits are reusable ---------------------------------------------------------------------------------------------------------
 

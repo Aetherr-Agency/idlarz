@@ -1,6 +1,6 @@
 import { isRecord } from '@/lib/isRecord';
 import { ITEM_CATALOG, RARITIES } from '@/catalog';
-import { MERCHANT_SHOP_ITEMS } from '@/config/gameConfig';
+import { MERCHANT_SHOP_ITEMS } from '@/config/merchant';
 import { addDrop, equipFromBag, gearOf, moveSlot, organizeBag, rebirthKit, removeFromBag, slotQty, stackOf, starterBag, unequip } from '@/lib/inventory';
 import { instanceProblem, plainItem, sellValueOf } from '@/lib/itemInstance';
 import { limitOf } from '@/lib/limits';
@@ -8,7 +8,7 @@ import { isAutoSold } from '@/lib/loot/autoSell';
 import { receiveDrops, type Received } from '@/lib/loot/receive';
 import type { Inventory, InventoryOp } from '@/lib/offline/types';
 import type { PersistedGame } from '@/lib/sanitizeSave';
-import { sellPayout, type MerchantUpgrades, type SellContext } from '@/utils/gameUtils';
+import { sellPayout, type MerchantUpgrades, type SellContext } from '@/utils/game/merchant';
 import type { BagSlot, Drop, Equipment, EquipmentSlot, ItemInstance } from '@/types/game';
 
 // SERVER ONLY. The player's things - the bag, the worn gear, the loot pity and the auto-sell filter - belong to the ledger, not to the save.

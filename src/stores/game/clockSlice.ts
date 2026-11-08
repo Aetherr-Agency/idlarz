@@ -1,8 +1,11 @@
 // clockSlice.ts
 // Split out of gameStore.ts (IDL-14); the actions and their behaviour are unchanged.
 
-import { CASTLE_UPGRADE, MAX_CATCHUP_SEC, RESOURCE_CAP, XP_CAP } from '@/config/gameConfig';
-import { calculateLevel, calculateResourceRates, merchantCombat, totalStatPoints } from '@/utils/gameUtils';
+import { CASTLE_UPGRADE } from '@/config/castle';
+import { MAX_CATCHUP_SEC, RESOURCE_CAP, XP_CAP } from '@/config/economy';
+import { calculateLevel, totalStatPoints } from '@/utils/game/character';
+import { calculateResourceRates } from '@/utils/game/income';
+import { merchantCombat } from '@/utils/game/merchant';
 import { manaRegenPerSec, maxHp, maxMana, regen } from '@/lib/combat';
 import { generateMerchantStock, rotationRng, stockDue } from '@/lib/merchant';
 import { emitSaveEvent } from '@/lib/saveEvents';

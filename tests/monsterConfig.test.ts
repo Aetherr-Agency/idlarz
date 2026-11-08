@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { COMBAT, MONSTERS } from '../src/config/combatConfig';
-import { BIOMES } from '../src/config/gameConfig';
+import { BIOMES } from '../src/config/biomes';
 
 // Every monster is one entry of config/combatConfig: adding a monster (or a biome) later must not need code, so the shape is checked here.
 

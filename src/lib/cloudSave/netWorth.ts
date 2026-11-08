@@ -1,16 +1,11 @@
-import { BUILDING_COST, CASTLE_UPGRADE, MERCHANT_RESOURCE_PRICES, MERCHANT_UPGRADES, type MerchantUpgradeId } from '@/config/gameConfig';
+import { BUILDING_COST } from '@/config/buildings';
+import { CASTLE_UPGRADE } from '@/config/castle';
+import { MERCHANT_RESOURCE_PRICES, MERCHANT_UPGRADES, type MerchantUpgradeId } from '@/config/merchant';
 import { MAX_OWNED_TILES } from '@/utils/world';
-import {
-	buildingCostFactor,
-	calculateTileCost,
-	countBuildings,
-	economyTiles,
-	effectiveTileDiscount,
-	emberEffect,
-	merchantLevel,
-	merchantUpgradeCost,
-	sellPayout,
-} from '@/utils/gameUtils';
+import { buildingCostFactor, calculateTileCost, countBuildings } from '@/utils/game/costs';
+import { economyTiles } from '@/utils/game/tiles';
+import { effectiveTileDiscount, emberEffect } from '@/utils/game/rebirth';
+import { merchantLevel, merchantUpgradeCost, sellPayout } from '@/utils/game/merchant';
 import { castleLevelOf } from '@/lib/castleWard';
 import type { PersistedGame } from '@/lib/sanitizeSave';
 import type { Resources } from '@/types/game';

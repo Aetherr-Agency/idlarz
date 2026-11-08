@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { CASTLE_X, CASTLE_Y, TILE_SIZE } from '@/config/gameConfig';
+import { CASTLE_X, CASTLE_Y } from '@/config/castle';
+import { TILE_SIZE } from '@/config/biomes';
 import { clampPosition, positionForCenter, type Point } from '@/lib/mapView';
 import { useGameStore } from '@/stores/gameStore';
 import { ownedBounds, type World } from '@/utils/world';

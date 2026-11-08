@@ -1,5 +1,6 @@
 import React from 'react';
-import { TILE_SIZE, CASTLE_RANGE, CASTLE_X, CASTLE_Y } from '@/config/gameConfig';
+import { TILE_SIZE } from '@/config/biomes';
+import { CASTLE_RANGE, CASTLE_X, CASTLE_Y } from '@/config/castle';
 import { fortressWallTier } from '@/lib/castleWard';
 import '@/styles/CastleFortress.css';
 

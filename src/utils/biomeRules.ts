@@ -1,4 +1,4 @@
-import { BIOMES, BIOME_SPAWN, SPECIAL_SINGLE_TYPE_BIOMES, EMPTY_BIOMES } from '@/config/gameConfig';
+import { BIOMES, BIOME_SPAWN, SPECIAL_SINGLE_TYPE_BIOMES, EMPTY_BIOMES } from '@/config/biomes';
 import { isLiveBiome } from '@/config/biomeStage';
 import { BIOME_RULES } from '@/config/biomeRules';
 import type { BiomeType, Tile } from '@/types/game';

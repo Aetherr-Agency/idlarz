@@ -1,5 +1,5 @@
 import type { GrantTotals } from '@/lib/offline/ledger';
-import { calculateXpGain } from '@/utils/gameUtils';
+import { calculateXpGain } from '@/utils/game/character';
 import type { SaveSummary } from './summary';
 import type { Snapshot } from './verify';
 

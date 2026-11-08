@@ -1,4 +1,4 @@
-import { CLICK_LIMIT } from '@/config/gameConfig';
+import { CLICK_LIMIT } from '@/config/economy';
 import type { ClickInput } from '@/types/game';
 
 /**

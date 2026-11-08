@@ -1,5 +1,5 @@
 // The map: tile size, biome list and spawn weights, and the ambient critters.
-// Split out of gameConfig.ts (IDL-15); the values are unchanged.
+// Part of the former gameConfig.ts (split in IDL-15); the values are unchanged.
 import { BiomeInfo, BiomeType } from '@/types/game';
 import { BIOME_COLORS } from '@/config/biomePalette';
 import { RESOURCE_ICONS } from './resources';
