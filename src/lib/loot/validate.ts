@@ -69,7 +69,8 @@ export const validateLootData = (data: LootData = LOOT_DATA, { maxCastleLevel = 
 			for (const r of item.allowedRarities ?? []) if (!data.rarities[r]) err(`item ${id}: unknown rarity ${r}`);
 		} else {
 			if (!item.fixedRarity || !data.rarities[item.fixedRarity]) err(`item ${id}: named item needs a known fixedRarity`);
-			if (!item.pools?.length) err(`item ${id}: named item is in no pool`);
+			// a retired item (IDL-55) is deliberately in no pool: it is only kept so owned pieces still load
+			if (!item.pools?.length && !item.retired) err(`item ${id}: named item is in no pool`);
 		}
 		for (const pool of item.pools ?? []) if (!data.pools[pool]) err(`item ${id}: unknown pool ${pool}`);
 	}

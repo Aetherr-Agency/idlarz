@@ -135,19 +135,16 @@ test('rarity sets the affix count', () => {
 	}
 });
 
-test('the Rat King always drops a general roll, a set piece, and every potion', () => {
+test('a boss always drops a general roll and every potion, and never a retired Rattatui piece', () => {
 	const rng = mulberry32(8);
 	for (let i = 0; i < 500; i++) {
 		const { drops } = generateLoot({ sourceId: 'boss', level: 25 }, rng);
 		const items = gear(drops);
 		assert.ok(
-			items.some((g) => LOOT_DATA.items[g.base].pools?.includes('rattatui_set')),
-			'set piece',
-		);
-		assert.ok(
-			items.some((g) => !LOOT_DATA.items[g.base].pools?.includes('rattatui_set') && !LOOT_DATA.items[g.base].pools?.includes('legendary_weapons')),
+			items.some((g) => !LOOT_DATA.items[g.base].pools?.includes('legendary_weapons')),
 			'general roll',
 		);
+		assert.ok(!items.some((g) => LOOT_DATA.items[g.base].retired), 'a retired piece dropped');
 		assert.deepEqual(
 			drops.filter((d) => d.kind === 'consumable').map((d) => (d.kind === 'consumable' ? [d.id, d.qty] : null)),
 			[
@@ -155,28 +152,51 @@ test('the Rat King always drops a general roll, a set piece, and every potion', 
 				['potion_greater', 1],
 			],
 		);
-		for (const g of items.filter((x) => LOOT_DATA.items[x.base].pools?.includes('rattatui_set'))) assert.equal(g.level, 25);
 	}
 });
 
-test('the King prefers set pieces the player does not own yet, then duplicates', () => {
-	const setIds = Object.values(LOOT_DATA.items)
-		.filter((d) => d.pools?.includes('rattatui_set'))
+test('retired items never drop from any source, at any level', () => {
+	const rng = mulberry32(81);
+	for (const [sourceId, levels] of [
+		['monster', [1, 9, 20, 50]],
+		['boss', [12, 25, 60]],
+	] as const)
+		for (const level of levels)
+			for (let i = 0; i < 1500; i++)
+				for (const g of gear(generateLoot({ sourceId, level }, rng).drops))
+					assert.ok(!LOOT_DATA.items[g.base].retired, `${sourceId} L${level} dropped retired ${g.base}`);
+	for (let i = 0; i < 4000; i++)
+		for (const g of gear(generateLoot({ sourceId: 'chest', castleLevel: 1 + (i % 10) }, rng).drops))
+			assert.ok(!LOOT_DATA.items[g.base].retired, `a chest dropped retired ${g.base}`);
+});
+
+test('a table with preferMissing favours the pieces the player does not own yet, then duplicates', () => {
+	// no table in the shipped data uses it since the Rattatui set was retired: the generator feature is kept and tested on the legendary pool
+	const data = copy();
+	data.profiles.boss.bonusTables = [
+		{
+			id: 'pick',
+			poolId: 'legendary_weapons',
+			mode: 'fixed',
+			rolls: { min: 2, max: 2, guaranteed: 1, chancePerRoll: 0.4 },
+			preferMissing: true,
+			itemLevel: { offset: 0, variance: 0 },
+		},
+	];
+	const setIds = Object.values(data.items)
+		.filter((d) => d.pools?.includes('legendary_weapons'))
 		.map((d) => d.id);
-	assert.equal(setIds.length, 12);
+	assert.ok(setIds.length >= 3, `need a few pieces in the pool (${setIds.length})`);
 	const rng = mulberry32(9);
-	const missing = setIds[3];
-	for (let i = 0; i < 200; i++) {
-		const owned = setIds.filter((id) => id !== missing);
-		const first = gear(generateLoot({ sourceId: 'boss', level: 15, owned }, rng).drops).find((g) => setIds.includes(g.base))!;
-		assert.equal(first.base, missing);
-	}
-	const dupe = gear(generateLoot({ sourceId: 'boss', level: 15, owned: setIds }, rng).drops).find((g) => setIds.includes(g.base));
-	assert.ok(dupe, 'all owned still drops one');
+	const missing = setIds[1];
+	const pieces = (owned: string[], level = 40) =>
+		gear(generateLoot({ sourceId: 'boss', level, owned }, rng, data).drops).filter((g) => setIds.includes(g.base));
+	for (let i = 0; i < 200; i++) assert.equal(pieces(setIds.filter((id) => id !== missing))[0].base, missing);
+	assert.ok(pieces(setIds).length > 0, 'all owned still drops one');
 	// Two pieces in one kill are never the same while others are missing
 	for (let i = 0; i < 400; i++) {
-		const pieces = gear(generateLoot({ sourceId: 'boss', level: 15, owned: [] }, rng).drops).filter((g) => setIds.includes(g.base));
-		assert.equal(new Set(pieces.map((p) => p.base)).size, pieces.length);
+		const got = pieces([]);
+		assert.equal(new Set(got.map((p) => p.base)).size, got.length);
 	}
 });
 
@@ -199,8 +219,8 @@ test('a chest item is exactly one thing; a legendary replaces the gear roll inst
 test('a bonus table adds to the general loot and never removes it', () => {
 	const data = copy();
 	data.profiles.normal_monster.rolls = { min: 1, max: 1, guaranteed: 1, chancePerRoll: 1 };
-	data.profiles.normal_monster.bonusTables = [{ id: 'extra_set', poolId: 'rattatui_set', mode: 'fixed', chance: 1 }];
-	data.items = Object.fromEntries(Object.entries(data.items).map(([k, v]) => [k, v.pools?.includes('rattatui_set') ? { ...v, minItemLevel: 1 } : v]));
+	data.profiles.normal_monster.bonusTables = [{ id: 'extra_set', poolId: 'legendary_weapons', mode: 'fixed', chance: 1 }];
+	data.items = Object.fromEntries(Object.entries(data.items).map(([k, v]) => [k, v.pools?.includes('legendary_weapons') ? { ...v, minItemLevel: 1 } : v]));
 	const { drops } = generateLoot({ sourceId: 'monster' }, mulberry32(1), data);
 	assert.equal(gear(drops).length, 2);
 });

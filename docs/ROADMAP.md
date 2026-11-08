@@ -75,7 +75,7 @@ Cross-cutting rules for all of it: additive save fields only (no `SAVE_SCHEMA` b
 Triaged in [RELEASE-PLAN.md](RELEASE-PLAN.md) section 2 (2026-10-29); no open item remains in this table.
 
 - **R7** (`dangerBonus` is 0 or 1 because monsters stand at most 9 tiles out) is decided: per-band danger offsets and spawn tables replace it ([20](20-monster-families-and-rewards.md) section 8, IDL-53); delete this line when IDL-53 ships.
-- **R8** is resolved: the rats and the Rat King are gone, and the Rattatui set is being removed (drops stop with IDL-55, the definitions go at the epoch reset).
+- **R8** is resolved: the rats and the Rat King are gone, and the Rattatui set no longer drops (IDL-55, `retired: true`; the definitions go at the epoch reset, IDL-76).
 - **R9** (local dev needs Supabase and `LOOT_SECRET`) is accepted as is; the README says what is needed.
 - **B6** (chests and clicks are small) is decided (BL1 + BL3 below, IDL-80/197). **B7** (sim bots are simple) is an acceptance line of each release step that changes player choices (class picker, `BUILD_ORDER`, respec, craft-sim; IDL-78).
 - **Open bugs and urgent items are in Linear:** IDL-166 (Urgent: bound the Ember balance by what the last save could have earned), IDL-167 (a flagged save still pays), IDL-168 (merchant upgrades are never paid on the server), IDL-169 (building cost ignores Charisma and Bulk Discount), IDL-170, IDL-172.
@@ -203,5 +203,5 @@ Removed on 2026-10-29 because the release plan answers them ([RELEASE-PLAN.md](R
 ## Combat and items: known limits
 
 - Four biomes of monsters (hills, coast and lake have none yet: rosters decided, IDL-201). There is one weapon per rarity tier; item upgrading is replaced by crafting (R11).
-- Every boss still drops Rattatui pieces until IDL-55 removes the set; bosses then own their drops (IDL-44, docs/20). When gear or monsters change, rerun `npm run fight-sim -- --md` and `npm run monster-ladder -- --md` (`tests/fightBalance.test.ts` pins the tuning).
+- Bosses no longer drop Rattatui pieces (IDL-55); they own their drops from IDL-44 on (docs/20). Several tests still use the retired set as a strong-gear fixture until its definitions are deleted at the epoch reset. When gear or monsters change, rerun `npm run fight-sim -- --md` and `npm run monster-ladder -- --md` (`tests/fightBalance.test.ts` pins the tuning).
 - Crits and weapon speed, Heal and Stun, selling, affixes, item levels, bag expansion (Pack Rat), auto-battle and the battle queue are built; offline-safe combat is the server's.

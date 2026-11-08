@@ -97,7 +97,7 @@ const MonsterTip: React.FC<{ id: number; type: MonsterType; level: number; art?:
 			)}
 			{isBoss(type) && (
 				<div className='px-tip-muted'>
-					Crits {stats.critChance}%, resists Stun {stats.stunResist}%. Beat it within {MONSTERS[type].timeLimitSec} seconds for a Rattatui piece
+					Crits {stats.critChance}%, resists Stun {stats.stunResist}%. Beat it within {MONSTERS[type].timeLimitSec} seconds
 				</div>
 			)}
 			<div className='text-[#f0d27a]'>

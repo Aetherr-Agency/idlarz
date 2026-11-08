@@ -99,6 +99,8 @@ export interface ItemDef {
 	// ---- loot generation (see src/lib/loot and docs/10-loot-system.md); gear only ----
 	/** false takes the item out of every loot pool (and stops saves from holding it); default true */
 	enabled?: boolean;
+	/** true: the item no longer drops, is not in any pool or the shop, but pieces already owned keep loading, equipping and selling (until its definition is deleted at the epoch reset, IDL-76) */
+	retired?: boolean;
 	/** `base`: a generic item that drops at any level inside its window with a rolled rarity. `named`: a fixed-identity item. */
 	generation?: 'base' | 'named';
 	/** Pool selectors: `weapon`, `sword`, `knight`... pools match items by these (or by explicit id) */

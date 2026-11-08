@@ -56,10 +56,10 @@ test('a rat drops gear about 12% of the time at level 1, and the chance is indep
 	assert.ok(Math.abs(drops / n - 0.12) < 0.01, `${drops / n}`);
 });
 
-test('the Rat King always drops a Rattatui piece and every potion that lists him', () => {
+test('a boss always drops the potions that list it, never a Rattatui piece (retired, IDL-55), and a low roll adds a legendary weapon', () => {
 	const king = { type: 'bossGreatAuroch', level: 15 } as const;
 	const r = rollKillLoot(king, ctx, () => 0.999);
-	assert.equal(r.items.filter(isSetPiece).length, 1);
+	assert.equal(r.items.filter(isSetPiece).length, 0);
 	assert.deepEqual(
 		r.items.find((d) => baseOf(d) === 'potion_minor'),
 		{ kind: 'consumable', id: 'potion_minor', qty: 2 },
@@ -70,21 +70,19 @@ test('the Rat King always drops a Rattatui piece and every potion that lists him
 	);
 	assert.equal(r.items.some(isLegendaryWeapon), false);
 	const lucky = rollKillLoot(king, ctx, () => 0).items;
-	assert.equal(lucky.filter(isSetPiece).length, 2);
+	assert.equal(lucky.filter(isSetPiece).length, 0);
 	assert.equal(lucky.filter(isLegendaryWeapon).length, 1, 'a low roll also wins a legendary weapon');
 });
 
-test('the King gives a second set piece 40% of the time and a legendary weapon 5% of the time (the old rates)', () => {
+test('a boss gives a legendary weapon about 5% of the time and no set piece', () => {
 	const rng = mulberry32(32);
 	const n = 40000;
-	let two = 0;
 	let legendary = 0;
 	for (let i = 0; i < n; i++) {
 		const items = rollKillLoot({ type: 'bossGreatAuroch', level: 15 }, ctx, rng).items;
-		if (items.filter(isSetPiece).length === 2) two++;
+		assert.equal(items.filter(isSetPiece).length, 0);
 		if (items.some(isLegendaryWeapon)) legendary++;
 	}
-	assert.ok(Math.abs(two / n - 0.4) < 0.01, `two pieces ${two / n}`);
 	assert.ok(Math.abs(legendary / n - 0.05) < 0.007, `legendary ${legendary / n}`);
 });
 
@@ -111,18 +109,6 @@ test('older rats unlock better material: steel from level 5, obsidian from level
 	assert.ok(!seen(5).has('potion_greater') && seen(7).has('potion_greater'));
 	for (const level of [1, 5, 9])
 		for (const id of seen(level)) assert.ok(!ITEM_CATALOG[id].pools?.length || id.startsWith('potion'), `${id} is not a named item`);
-});
-
-test('the king prefers pieces you do not own yet, and falls back to duplicates once you own all', () => {
-	const king = { type: 'bossGreatAuroch', level: 15 } as const;
-	const all = RATTATUI_SET.pieces;
-	const missing = all[all.length - 1];
-	for (let i = 0; i < 40; i++) {
-		const r = rollKillLoot(king, { ...ctx, owned: all.slice(0, -1) }, () => i / 40);
-		assert.equal(baseOf(r.items.find(isSetPiece)!), missing);
-	}
-	const dupe = rollKillLoot(king, { ...ctx, owned: all }, () => 0.5);
-	assert.ok(dupe.items.some((x) => all.includes(baseOf(x))));
 });
 
 test('gold and xp are seconds of income and scale with the monster level', () => {
