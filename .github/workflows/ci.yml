@@ -4,6 +4,14 @@ on:
   pull_request:
   push:
     branches: [main]
+  # the `generated` job also runs every night on main: two PRs that are each fine alone can still leave the generated docs stale together
+  schedule:
+    - cron: '17 3 * * *'
+
+# A new push to a PR cancels the run of the one before it (main and the nightly run are never cancelled).
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # The jobs run the PR's own code (npm scripts, tsx): read-only token, and the checkout does not keep it in .git/config.
 permissions:
@@ -11,6 +19,7 @@ permissions:
 
 jobs:
   check:
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,30 +36,60 @@ jobs:
       - run: npm test
       - run: npm run build
 
-  # Generated docs and the pacing guard (IDL-9, IDL-17). `npm run docs:gen` reruns every report, including the full sim (about 8 minutes),
-  # and the committed docs/generated must be exactly what it writes: a change to the game config or the sim that was not followed by
-  # `npm run docs:gen` fails here. Then the sim baseline (docs/generated/sim-baseline.json) is compared with the copy on the branch the PR
-  # targets, so regenerating the baseline cannot hide a pacing change: a guarded milestone (the first finish, the rebirths, castle 6/8/10, the
-  # level and tile ladders) that moved by more than 15 % fails the PR. An intended change carries the `pacing-change` label (then re-run the
-  # job): the guard still reports but does not block (a broken baseline file still does).
+  # Generated docs and the pacing guard (IDL-9, IDL-17). `npm run docs:gen` reruns every report, including the full sim, and the committed
+  # docs/generated must be exactly what it writes: a change to the game config or the sim that was not followed by `npm run docs:gen` fails
+  # here. Then the sim baseline (docs/generated/sim-baseline.json) is compared with the copy on the branch the PR targets, so regenerating the
+  # baseline cannot hide a pacing change: a guarded milestone (the first finish, the rebirths, castle 6/8/10, the level and tile ladders) that
+  # moved by more than 15 % fails the PR. An intended change carries the `pacing-change` label (then re-run the job): the guard still reports
+  # but does not block (a broken baseline file still does).
+  #
+  # It takes about 9 minutes, so it only runs when it can matter: on a PR only if the diff touches what the docs are generated from (src,
+  # scripts, docs/generated, the lockfile, tsconfig, this workflow), not on a push to main (the PR already ran it) and every night. The sim
+  # (about 9 minutes alone, 7 of them one profile) runs next to the other generators on the runner's 4 cores.
   generated:
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+          fetch-depth: 2 # on a PR the checkout is the merge commit: HEAD^1 is the base tip, so `git diff HEAD^1 HEAD` is the whole PR
+      - name: Does this PR touch what the docs are generated from?
+        id: scope
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != pull_request ] || ! git rev-parse --verify -q HEAD^2 >/dev/null; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only HEAD^1 HEAD | grep -Eq '^(src/|scripts/|docs/generated/|package-lock\.json$|package\.json$|tsconfig\.json$|\.github/workflows/ci\.yml$)'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No change under src, scripts, docs/generated or the build files: the generated docs cannot differ, skipping."
+          fi
       - uses: actions/setup-node@v4
+        if: steps.scope.outputs.run == 'true'
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
-      - run: npm run docs:gen
+      - if: steps.scope.outputs.run == 'true'
+        run: npm ci
+      - name: Generate the docs (the sim next to the other generators)
+        if: steps.scope.outputs.run == 'true'
+        run: |
+          npm run docs:gen:sim &
+          sim=$!
+          npm run docs:gen:rest &
+          rest=$!
+          status=0
+          wait "$sim" || status=1
+          wait "$rest" || status=1
+          exit $status
       - name: Generated docs are up to date
+        if: steps.scope.outputs.run == 'true'
         run: |
           git add -N docs/generated
           git diff --exit-code docs/generated || { echo '::error::docs/generated is stale: run npm run docs:gen and commit the result'; exit 1; }
       - name: Pacing guard against the base branch
-        if: github.event_name == 'pull_request'
+        if: steps.scope.outputs.run == 'true' && github.event_name == 'pull_request'
         env:
           BASE_REF: ${{ github.base_ref }}
           PACING_CHANGE: ${{ contains(github.event.pull_request.labels.*.name, 'pacing-change') }}
