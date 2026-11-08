@@ -331,11 +331,11 @@ New folder at the repo root: `art_style_reference/` (created with this plan; see
 | **D4** | Target map size per rebirth (BL16), tile price tail | decide with the P5.5 sim run; keep the +12 offset until then | P5 |
 | **D5** | Password reset in P1 or P2? | P1 (small, and it is landing polish) | P1.6 |
 | **D6** | Launch achievements, avatar unlocks, tutorial bundles and tone | I draft the list, you cut it | P2 |
-| **D7** | Home family stats and reward caps | I propose numbers from the sim | P3 |
+| **D7** | Home family stats and reward caps | Decided (IDL-49, IDL-182): home families = the 16 existing monsters. Reward `min(rewardSec x income, cap) x levelMult^(level - refLevel)`, Luck / Gold Find / Kill Rewards % after the cap, normal monsters 1.08 per level with gold caps 300 / 600 / 1,200 / 2,400 (plains / forest / swamp / tundra), bosses 3600 s, 1.03, cap 600,000 gold; numbers from `kill-sim` ([docs/20](20-monster-families-and-rewards.md) section 8), **awaiting owner approval** | P3 |
 | **D8** | Mastery caps and the ladder above 1 trillion | caps as in [22](22-glossary-and-mastery.md), ladder later | P4 |
 | **D9** | Server-priced merchant: schedule it next to crafting or accept flagging only | schedule it right after P11 | enforced crafting |
 | **D10** | Landing wording and whether to show a players-online number | no number in v1 | P1.3 |
-| **D11** | What does the demoted Rat King keep? (a) stays a rare boss-tagged monster, 1000 HP lowered to a fair number, same 3 h timer; (b) becomes a plain strong monster in the normal spawn table | (a) with HP and timer re-tuned by `fight-sim`, since it is the only boss until the biome bosses exist | P3.6 |
+| **D11** | ~~What does the demoted Rat King keep?~~ Moot: the rats and the Rat King are gone (IDL-49); bosses keep their 3 h timer and 75-90 s clocks. Original question:  (a) stays a rare boss-tagged monster, 1000 HP lowered to a fair number, same 3 h timer; (b) becomes a plain strong monster in the normal spawn table | (a) with HP and timer re-tuned by `fight-sim`, since it is the only boss until the biome bosses exist | P3.6 |
 
 ## 8. Risk register (edge cases found in the code and docs)
 

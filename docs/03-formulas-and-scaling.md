@@ -193,10 +193,10 @@ monster level: level = spawnLevel + min(growthLevels, floor(age / growthInterval
 rat level L  : HP = round(100 × 1.5^((L−1)/2))  → level 1 / 3 / 5 / 7 / 9 = 100 / 150 / 225 / 338 / 506     attack = round(4 × 1.25^((L−1)/2))     armor = 0.5 × (L−1)
 King level L : HP, attack = base × levelScale(L) / levelScale(15)  (1000 HP, 11 attack at 15), armor 15 + 0.5 × (L−15), 8 % crit x1.5, 20 % Stun resist
 hit dealt    = max(1, your damage × (1 − armorReduction(armor)))     monster hit = mitigate(attack [× 1.5 on a crit], your armor)
-rewards      : rewardSec = 90 × 1.17^(L−1) (rat), 3600 × 1.03^(L−15) (King)
-               gold = floor(max(10, gold/s × rewardSec × (1 + 0.005 × Luck) × (1 + goldFind%)) × (1 + killRewardPct/100))   Luck = character + merchant + gear
-               xp   = max(5, xp/s × (1 + xpGain%) × rewardSec) × (1 + killRewardPct/100)
-               hide = floor(hide/s × rewardSec × 0.6)      COMBAT.rewards.hideShare; pelts are a share of the farm's income, 0 without deer and pigs; also x3 on a lucky rat
+rewards      : gold = floor(max(10, min(gold/s x rewardSec, goldCap) x levelMult^(L-refLevel) x (1 + 0.005 x Luck) x (1 + goldFind%)) x (1 + killRewardPct/100))   Luck = character + merchant + gear
+               xp   = max(5, min(xp/s x rewardSec, xpCap) x levelMult^(L-refLevel)) x (1 + killRewardPct/100)     (xp/s with the XP Gain %)
+               normal monsters: rewardSec 90-190 by biome, levelMult 1.08, caps in docs/20 section 8; bosses: 3600 s, 1.03, high cap
+               hide = floor(hide/s x rewardSec x levelMult^(L-refLevel) x 0.6)      COMBAT.rewards.hideShare; pelts are a share of the farm's income, 0 without deer and pigs; also x3 on a lucky rat
 drops        : see [10-loot-system.md](10-loot-system.md): profile -> rolls -> source level -> item level -> rarity -> base -> affixes
                rat: gear 12 % + 1 % per level above 1, rarity rolled (Common 70 / Uncommon 22 / Rare 7 / Epic 1 / Legendary 0.2, gated by item level);
                potion 25 % + 1.5 % per level (Greater from level 7)              (level 1: 90 s of income, level 9: ~316 s)

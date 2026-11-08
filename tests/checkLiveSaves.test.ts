@@ -101,9 +101,9 @@ test('the report counts reasons and flags and holds no row data', async () => {
 	addSave(report, ok);
 	addSave(report, old);
 	addSave(report, { ...ok, flags: ['gold_jump', 'xp_jump'], xpClamped: true, midCastleUpgrade: true });
-	addTransition(report, ['gold_jump']);
+	addTransition(report, ['gold_jump', 'xp_jump', 'gems_increase']);
 	addTransition(report, []);
-	addTransition(report, ['castle_jump']);
+	addTransition(report, ['castle_jump', 'playtime_fast']);
 	addLedger(report, true, true);
 	addLedger(report, false, false);
 
@@ -119,8 +119,10 @@ test('the report counts reasons and flags and holds no row data', async () => {
 	assert.equal(report.midCastleUpgrade, 1);
 	assert.equal(report.withoutLedger, 1);
 	assert.equal(report.transitions, 3);
-	assert.deepEqual(report.transitionFlagged, { gold_jump: 1, castle_jump: 1 });
-	assert.equal(report.transitionWouldReject, 1);
+	// grant-dependent flags (gold, XP, gems) are expected on history copies: counted apart, never as "would be refused"
+	assert.deepEqual(report.transitionFlagged, { castle_jump: 1, playtime_fast: 1 });
+	assert.deepEqual(report.transitionUnjudged, { gold_jump: 1, xp_jump: 1, gems_increase: 1 });
+	assert.equal(report.transitionWouldReject, 1); // playtime_fast is on the allowlist and needs no grants
 	assert.equal(report.ledgers, 2);
 	assert.equal(report.ledgersWithoutSave, 1);
 	assert.equal(report.ledgersWithoutInventory, 1);

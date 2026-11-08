@@ -76,6 +76,12 @@ export const judgeSave = async (stored: StoredSave, ledger: Ledger | null): Prom
 	}
 };
 
+/**
+ * Flags whose verdict depends on what the SERVER granted since the last save (kill and chest XP, gems, gold from chests and kills). A history
+ * copy has no ledger, so on a pair of copies these look like jumps for an honest account: the report counts them apart and never as "would be refused".
+ */
+export const GRANT_DEPENDENT: ReadonlySet<SaveFlag> = new Set<SaveFlag>(['xp_jump', 'gems_increase', 'gold_jump']);
+
 /** The flags the transition check raises between two consecutive saves of one account (the newer one is judged at the time it was stored). */
 export const judgeTransition = (older: Snapshot, newer: Snapshot): SaveFlag[] => verifyTransition(older, newer.summary, newer.serverSavedAt);
 
@@ -95,7 +101,11 @@ export interface LiveReport {
 	withoutLedger: number;
 	testAccounts: number;
 	transitions: number;
+	/** Flags that do not depend on server grants, so they mean something on a pair of history copies */
 	transitionFlagged: Partial<Record<SaveFlag, number>>;
+	/** Flags that need the ledger's grants (see GRANT_DEPENDENT): expected on history copies, not evidence of anything */
+	transitionUnjudged: Partial<Record<SaveFlag, number>>;
+	/** Pairs enforcement would refuse, judged on the flags that do not depend on grants only */
 	transitionWouldReject: number;
 	ledgers: number;
 	ledgersWithoutSave: number;
@@ -117,6 +127,7 @@ export const newReport = (): LiveReport => ({
 	testAccounts: 0,
 	transitions: 0,
 	transitionFlagged: {},
+	transitionUnjudged: {},
 	transitionWouldReject: 0,
 	ledgers: 0,
 	ledgersWithoutSave: 0,
@@ -147,8 +158,9 @@ export const addSave = (report: LiveReport, verdict: SaveVerdict): void => {
 
 export const addTransition = (report: LiveReport, flags: readonly SaveFlag[]): void => {
 	report.transitions++;
-	for (const flag of new Set(flags)) bump(report.transitionFlagged, flag);
-	if (rejectedFlags(flags, enforced).length) report.transitionWouldReject++;
+	const judgeable = flags.filter((flag) => !GRANT_DEPENDENT.has(flag));
+	for (const flag of new Set(flags)) bump(GRANT_DEPENDENT.has(flag) ? report.transitionUnjudged : report.transitionFlagged, flag);
+	if (rejectedFlags(judgeable, enforced).length) report.transitionWouldReject++;
 };
 
 /** One ledger row: `hasSave` says whether the same account has a save, `hasInventory` whether the ledger already holds the bag and gear. */
@@ -190,9 +202,12 @@ export const formatReport = (report: LiveReport): string => {
 		`  without a ledger row: ${report.withoutLedger}`,
 		``,
 		`Consecutive history copies compared: ${report.transitions}`,
-		`  would be refused if enforcement were on: ${report.transitionWouldReject}`,
+		`  (a history copy has no ledger: flags that need what the server granted are listed apart and are NOT evidence of cheating)`,
+		`  would be refused if enforcement were on (flags that do not need the grants): ${report.transitionWouldReject}`,
 		`  flagged:`,
 		...flagLines(report.transitionFlagged),
+		`  flagged, not judgeable without the ledger (${[...GRANT_DEPENDENT].join(', ')}):`,
+		...flagLines(report.transitionUnjudged),
 		``,
 		`Ledgers: ${report.ledgers} (${report.ledgersWithoutSave} without a save, ${report.ledgersWithoutInventory} without the inventory yet)`,
 	];

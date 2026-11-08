@@ -92,6 +92,17 @@ export interface MonsterSpawnRule {
  */
 type MonsterBiome = 'plains' | 'forest' | 'swamp' | 'tundra';
 
+export interface RewardPart {
+	rewardSec: number;
+	cap: number;
+}
+export interface MonsterReward {
+	gold: RewardPart;
+	xp: RewardPart;
+	/** Per monster level above `refLevel` */
+	levelMult: number;
+}
+
 /**
  * A kind of monster. The numbers are for `refLevel`; other levels follow `scaling`: `exp` multiplies by the `*PerLevel` factors for
  * every level away from `refLevel`, `gear` follows the item level curve (`levelScale`), so a boss keeps pace with the gear that drops
@@ -115,13 +126,16 @@ export interface MonsterDef {
 	attackSpeed: number;
 	/** Where it may appear. Distances are in tiles (Chebyshev) from the castle: a minimum of 2 keeps it off the castle's neighbours. */
 	spawn: MonsterSpawnRule;
-	/** Gold and XP of a kill are this many seconds of income */
-	rewardSec: number;
+	/**
+	 * What a kill pays (docs/20 section 3): gold and XP are `min(rewardSec x income per second, cap) x levelMult^(level - refLevel)`, then the
+	 * player's Luck, Gold Find and Kill Rewards % on top (lib/loot/kill.ts). Early the income is small, so `rewardSec` decides; later the
+	 * absolute `cap` does, so a weak monster stops mattering. `cap` is in gold / XP at `refLevel`.
+	 */
+	reward: MonsterReward;
 	refLevel: number;
 	scaling: 'exp' | 'gear';
 	hpPerLevel: number;
 	attackPerLevel: number;
-	rewardPerLevel: number;
 	armorPerLevel: number;
 	spawnWindow: { base: number; perCastleLevel: number; spread: number; cap: number };
 	/** Key into LOOT_SOURCES: what it drops */
@@ -141,6 +155,8 @@ type Tier = {
 	attack: number;
 	armor: number;
 	rewardSec: number;
+	/** Absolute cap of the gold and XP a kill pays at its refLevel (see `MonsterDef.reward`) */
+	cap: { gold: number; xp: number };
 	/** The levels a new monster appears at (see `MonsterDef.spawnWindow`): a later biome starts higher and ends higher */
 	window: MonsterDef['spawnWindow'];
 	/** Bosses: the level the numbers are for, the time limit, the HP and the level window */
@@ -149,6 +165,7 @@ type Tier = {
 		attack: number;
 		armor: number;
 		refLevel: number;
+		cap: { gold: number; xp: number };
 		timeLimitSec: number;
 		window: MonsterDef['spawnWindow'];
 		crit: number;
@@ -162,12 +179,14 @@ const BIOME_TIER = {
 		attack: 4,
 		armor: 0,
 		rewardSec: 90,
+		cap: { gold: 300, xp: 42 },
 		window: { base: 1, perCastleLevel: 1, spread: 2, cap: 10 }, // castle 1: level 1-3, castle 8 and up: level 8-10
 		boss: {
 			hp: 1000,
 			attack: 11,
 			armor: 15,
 			refLevel: 15,
+			cap: { gold: 600_000, xp: 45_000 },
 			timeLimitSec: 75,
 			window: { base: 15, perCastleLevel: 0.8, spread: 3, cap: 25 },
 			crit: 8,
@@ -179,12 +198,14 @@ const BIOME_TIER = {
 		attack: 6,
 		armor: 1,
 		rewardSec: 110,
+		cap: { gold: 600, xp: 85 },
 		window: { base: 4, perCastleLevel: 1, spread: 2, cap: 14 },
 		boss: {
 			hp: 1900,
 			attack: 16,
 			armor: 24,
 			refLevel: 20,
+			cap: { gold: 600_000, xp: 45_000 },
 			timeLimitSec: 80,
 			window: { base: 20, perCastleLevel: 0.8, spread: 3, cap: 30 },
 			crit: 9,
@@ -196,12 +217,14 @@ const BIOME_TIER = {
 		attack: 7,
 		armor: 2,
 		rewardSec: 135,
+		cap: { gold: 1200, xp: 171 },
 		window: { base: 8, perCastleLevel: 1, spread: 2, cap: 18 },
 		boss: {
 			hp: 2800,
 			attack: 21,
 			armor: 32,
 			refLevel: 25,
+			cap: { gold: 600_000, xp: 45_000 },
 			timeLimitSec: 85,
 			window: { base: 25, perCastleLevel: 0.8, spread: 3, cap: 35 },
 			crit: 10,
@@ -214,12 +237,14 @@ const BIOME_TIER = {
 		attack: 8,
 		armor: 3,
 		rewardSec: 190,
+		cap: { gold: 2400, xp: 342 },
 		window: { base: 12, perCastleLevel: 0.5, spread: 2, cap: 20 },
 		boss: {
 			hp: 7000,
 			attack: 36,
 			armor: 58,
 			refLevel: 30,
+			cap: { gold: 600_000, xp: 45_000 },
 			timeLimitSec: 90,
 			window: { base: 30, perCastleLevel: 0.8, spread: 3, cap: 40 },
 			crit: 13,
@@ -251,12 +276,11 @@ const normal = (biome: keyof typeof BIOME_TIER, label: string, build: keyof type
 		stunResist: 0,
 		attackSpeed: b.speed,
 		spawn: { biomes: [biome], minCastleDistance: 2, maxCastleDistance: 9 },
-		rewardSec: tier.rewardSec,
+		reward: { gold: { rewardSec: tier.rewardSec, cap: tier.cap.gold }, xp: { rewardSec: tier.rewardSec, cap: tier.cap.xp }, levelMult: 1.08 },
 		refLevel: 1,
 		scaling: 'exp',
 		hpPerLevel: Math.sqrt(1.5), // the old 1.5 per tier (a tier was two levels), so a level 9 plains monster has 506 HP
 		attackPerLevel: Math.sqrt(1.25), // the old 1.25 per tier
-		rewardPerLevel: 1.17,
 		armorPerLevel: 0.5,
 		spawnWindow: tier.window,
 		lootSourceId: 'monster',
@@ -277,12 +301,11 @@ const boss = (biome: keyof typeof BIOME_TIER, label: string, taunts: readonly st
 		stunResist: b.stunResist,
 		attackSpeed: 1 / 3, // one hit every 3 s; armor decides how many hits you survive, potions fill the gap
 		spawn: { biomes: [biome], minCastleDistance: 2, maxCastleDistance: 9 },
-		rewardSec: 3600,
+		reward: { gold: { rewardSec: 3600, cap: b.cap.gold }, xp: { rewardSec: 3600, cap: b.cap.xp }, levelMult: 1.03 },
 		refLevel: b.refLevel,
 		scaling: 'gear',
 		hpPerLevel: 1,
 		attackPerLevel: 1,
-		rewardPerLevel: 1.03,
 		armorPerLevel: 0.5,
 		spawnWindow: b.window,
 		lootSourceId: 'boss',
