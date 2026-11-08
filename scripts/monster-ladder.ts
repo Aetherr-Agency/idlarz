@@ -10,7 +10,6 @@ import { STARTER_EQUIPMENT } from '../src/config/itemCatalog';
 import { MONSTERS } from '../src/config/combatConfig';
 import { atItemLevel, fullSet, simulateMany, spentCharacter } from '../src/lib/fightSim';
 import { spawnLevelRange } from '../src/lib/monsters';
-import { plainItem } from '../src/lib/itemInstance';
 import type { Equipment, MonsterType } from '../src/types/game';
 
 const RUNS = 40;
@@ -19,7 +18,7 @@ const LOADOUTS: { name: string; equipment: Equipment }[] = [
 	{ name: 'woodland + club', equipment: fullSet('woodland', 'wooden_club') },
 	{ name: 'knight + mace', equipment: fullSet('knight', 'steel_mace') },
 	{ name: 'obsidian + maul', equipment: fullSet('obsidian', 'obsidian_maul') },
-	{ name: 'rattatui + titan maul', equipment: { ...fullSet('rattatui'), mainHand: plainItem('titan_maul') } },
+	{ name: 'obsidian + titan maul', equipment: fullSet('obsidian', 'titan_maul') },
 ];
 
 const HERO = spentCharacter({ strength: 12, vitality: 8, dexterity: 5 });

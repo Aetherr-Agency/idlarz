@@ -182,7 +182,7 @@ The eight non-top legendaries can also be crafted late (crafting level 95, 50 Wa
 
 Classic legendaries (`emberbrand`, `starfall_bow`, `titan_maul`) stay as stat-only legendaries without perks.
 
-**Rattatui set removed (2026-11-07, owner):** it was for beta testers while rats existed. Drops stop with IDL-55 (out of every pool and boss source); the definitions are deleted at the epoch reset (IDL-76) because every bag is wiped there, so no `retired` compatibility flag is needed beyond that.
+**Rattatui set removed (2026-11-07, owner):** it was for beta testers while rats existed. Drops stopped with IDL-55 (out of every pool and boss source; `retired: true` on the items and the set keeps owned pieces working); the definitions are deleted at the epoch reset (IDL-76) because every bag is wiped there.
 
 ## 7. New item stats (decided 2026-11-07)
 

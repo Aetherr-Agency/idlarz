@@ -102,7 +102,6 @@ export interface LootSource {
 
 export const LOOT_POOLS: Record<string, PoolDef> = {
 	general_equipment: { id: 'general_equipment', requireTags: ['gear'], excludeTags: ['named'], enabled: true },
-	rattatui_set: { id: 'rattatui_set', enabled: true }, // members list it in their own `pools`
 	legendary_weapons: { id: 'legendary_weapons', enabled: true },
 	potions_rat: {
 		id: 'potions_rat',
@@ -133,15 +132,7 @@ export const LOOT_PROFILES: Record<string, LootProfile> = {
 		rarityWeights: { common: 20, uncommon: 30, rare: 30, epic: 15, legendary: 5 },
 		generalPoolId: 'general_equipment',
 		bonusTables: [
-			// Two rolls: the first always gives a set piece, the second does 40% of the time (as before); missing pieces first
-			{
-				id: 'king_set',
-				poolId: 'rattatui_set',
-				mode: 'fixed',
-				rolls: { min: 2, max: 2, guaranteed: 1, chancePerRoll: 0.4 },
-				preferMissing: true,
-				itemLevel: { offset: 0, variance: 0 },
-			},
+			// The Rattatui set no longer drops (IDL-55); bosses own their drops from IDL-44 on (docs/20)
 			{
 				id: 'king_legendary',
 				poolId: 'legendary_weapons',

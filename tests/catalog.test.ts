@@ -88,9 +88,12 @@ test('shop items exist and cost at least 3x what they sell for (bought as a plai
 	}
 });
 
-test('named items sit in pools that exist, and only the King and chests reach them', () => {
+test('named items sit in pools that exist, and only bosses and chests reach them', () => {
+	// the Rattatui set is retired (IDL-55): the definitions stay so owned pieces load, but no pool lists them and nothing sells them
 	for (const piece of SETS.rattatui.pieces) {
-		assert.deepEqual(ITEM_CATALOG[piece].pools, ['rattatui_set'], piece);
+		assert.equal(ITEM_CATALOG[piece].retired, true, piece);
+		assert.deepEqual(ITEM_CATALOG[piece].pools, [], piece);
+		assert.equal(ITEM_CATALOG[piece].shop, undefined, piece);
 		assert.equal(ITEM_CATALOG[piece].generation, 'named', piece);
 		assert.equal(ITEM_CATALOG[piece].fixedRarity, 'epic', piece);
 	}
@@ -101,7 +104,8 @@ test('named items sit in pools that exist, and only the King and chests reach th
 		Object.values(LOOT_PROFILES)
 			.filter((p) => p.bonusTables.some((t) => t.poolId === poolId))
 			.map((p) => p.id);
-	assert.deepEqual(reach('rattatui_set'), ['boss']);
+	assert.ok(!LOOT_POOLS.rattatui_set, 'the Rattatui pool is gone');
+	assert.deepEqual(reach('legendary_weapons').sort(), ['basic_chest', 'boss'].sort());
 });
 
 test('the resource registry is the one place resources are listed', () => {

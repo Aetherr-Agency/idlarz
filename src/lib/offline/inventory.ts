@@ -98,7 +98,7 @@ export const sellContextOf = (core: Core): SellContext => ({
 
 const bump = (inv: Inventory, change: Partial<Omit<Inventory, 'ver'>>): Inventory => ({ ...inv, ...change, ver: inv.ver + 1 });
 
-/** The ids of the base items the player has, worn or in the bag (the King prefers a Rattatui piece that is still missing). */
+/** The ids of the base items the player has, worn or in the bag (for tables with `preferMissing`). */
 export const ownedBases = (inv: Inventory): string[] =>
 	[...Object.values(inv.equipment).map((item) => item?.base), ...inv.bag.map((slot) => (slot && 'item' in slot ? slot.item.base : slot?.id))].filter(
 		(id): id is string => typeof id === 'string',

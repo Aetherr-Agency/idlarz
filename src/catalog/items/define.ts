@@ -65,6 +65,8 @@ export interface GearOptions {
 	shop?: number;
 	/** false keeps the item out of every loot pool and the shop (see ItemDef.enabled); it stays in the catalog so its id resolves */
 	enabled?: boolean;
+	/** true: no longer dropped or sold, but pieces already owned keep working (see ItemDef.retired) */
+	retired?: boolean;
 	sellValue?: number;
 	/** Attacks per second of a weapon; by default its weapon type's (see catalog/weapons.ts) */
 	attackSpeed?: number;

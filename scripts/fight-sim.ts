@@ -9,7 +9,6 @@ import { atItemLevel, freshCharacter, fullSet, simulateMany, spentCharacter } fr
 import { monsterStats } from '../src/lib/monsters';
 import { armorOf, attacksPerSecond, damagePerHit, damagePerSecond, maxHp } from '../src/lib/combat';
 import { aggregateStats } from '../src/lib/inventory';
-import { plainItem } from '../src/lib/itemInstance';
 import type { Equipment } from '../src/types/game';
 
 const RUNS = 60;
@@ -22,9 +21,8 @@ export const LOADOUTS: { name: string; equipment: Equipment }[] = [
 	{ name: "knight's set + recurve bow", equipment: fullSet('knight', 'recurve_bow') },
 	{ name: 'obsidian set + maul', equipment: fullSet('obsidian', 'obsidian_maul') },
 	{ name: 'obsidian set + longbow', equipment: fullSet('obsidian', 'obsidian_longbow') },
-	{ name: 'rattatui set (fang blade)', equipment: fullSet('rattatui') },
-	{ name: 'rattatui + titan maul', equipment: { ...fullSet('rattatui'), mainHand: plainItem('titan_maul') } },
-	{ name: 'rattatui + starfall bow', equipment: { ...fullSet('rattatui'), mainHand: plainItem('starfall_bow') } },
+	{ name: 'obsidian + titan maul', equipment: fullSet('obsidian', 'titan_maul') },
+	{ name: 'obsidian + starfall bow', equipment: fullSet('obsidian', 'starfall_bow') },
 ];
 
 const MONSTER_ROWS = [
@@ -120,7 +118,7 @@ out();
 out('| Loadout | Kit | Boar level 9 | Great Auroch |');
 out('|---|---|---|---|');
 for (const { name, equipment } of LOADOUTS.filter((l) =>
-	['starter kit', 'woodland set + club', "knight's set + mace", 'obsidian set + maul', 'rattatui + titan maul'].includes(l.name),
+	['starter kit', 'woodland set + club', "knight's set + mace", 'obsidian set + maul', 'obsidian + titan maul'].includes(l.name),
 )) {
 	for (const kit of [
 		{ label: 'nothing', level: 1, potions: [] as { id: string; qty: number }[], autoUse: false },
@@ -144,7 +142,7 @@ const KING_LEVELS = [15, 25, 35];
 const GEARS = [
 	{ name: "knight's set + mace", equipment: fullSet('knight', 'steel_mace') },
 	{ name: 'obsidian set + maul', equipment: fullSet('obsidian', 'obsidian_maul') },
-	{ name: 'rattatui + titan maul', equipment: { ...fullSet('rattatui'), mainHand: plainItem('titan_maul') } },
+	{ name: 'obsidian + titan maul', equipment: fullSet('obsidian', 'titan_maul') },
 ];
 out();
 out('| King level | Loadout | Gear | Result |');

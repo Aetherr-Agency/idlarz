@@ -16,6 +16,8 @@ export interface SetDef {
 	/** One line on what the set is for (the generated item catalog prints it) */
 	theme: string;
 	bonuses: Record<number, ItemStats>;
+	/** true: the set no longer drops or sells (IDL-55); owned pieces keep their bonuses, but guides and lists leave it out */
+	retired?: boolean;
 }
 
 export const SET_DEFS: SetDef[] = [
@@ -33,8 +35,9 @@ export const SET_DEFS: SetDef[] = [
 	},
 	{
 		id: 'rattatui',
+		retired: true,
 		label: 'Rattatui Set',
-		theme: "The Rat King's court: the combat set. Percent damage and health, crits and leech, with a little loot on the side.",
+		theme: "Retired (IDL-55): the beta testers' combat set. It no longer drops or sells; pieces already owned keep working until the epoch reset deletes it.",
 		bonuses: {
 			2: { maxHp: 25, armor: 3 },
 			4: { damagePct: 8, critChance: 4 },

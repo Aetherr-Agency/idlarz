@@ -247,8 +247,7 @@ const Tutorial: React.FC = () => {
 						Winning pays gold and XP worth some seconds of your income, a share of the hide your farm makes, plus a chance of gear and potions. Monsters drop
 						wood, cloth and, from older ones, steel and obsidian gear. A <b>boss</b> (like the Great Auroch: armor, {MONSTERS.bossGreatAuroch.critChance}%
 						crits, resists Stun {MONSTERS.bossGreatAuroch.stunResist}%, a {MONSTERS.bossGreatAuroch.timeLimitSec}s time limit) is hard: it needs real gear and
-						quick clicking. It always drops a piece of the epic Rattatui set (the only place to get it), sometimes a second one or a legendary weapon, and
-						potions.
+						quick clicking. It always drops potions and an item of its own, and sometimes a legendary weapon.
 					</li>
 				</ul>
 			</section>
@@ -271,16 +270,17 @@ const Tutorial: React.FC = () => {
 				<ul className='list-disc pl-5 text-[#d8c8a0] text-xs space-y-1'>
 					<li>
 						<b>Sets</b>: wear several pieces of one set for bonuses that add up (both rings count). Obsidian pays the kingdom (income, XP, kill rewards, away
-						time), Rattatui adds percent damage and health:{' '}
+						time):{' '}
 						{Object.values(SETS)
+							.filter((set) => !set.retired)
 							.map((set) => `${set.label} (${Object.keys(set.bonuses).join(' / ')} pieces)`)
 							.join(', ')}
 						.
 					</li>
 					<li>
 						Wood and leather (common) and Apprentice cloth (common, more HP, regen and luck) drop from monsters and chests; Knight&apos;s steel (uncommon) comes
-						from older monsters and chests, and the merchant&apos;s shelf may carry some; Obsidian (rare) needs tier-5 rats or a good chest; the Rattatui set
-						(epic) is dropped by bosses; legendary weapons are very rare finds.
+						from older monsters and chests, and the merchant&apos;s shelf may carry some; Obsidian (rare) comes from older monsters or a good chest; legendary
+						weapons are very rare finds.
 					</li>
 					<li>
 						Weapons come in many types - swords, maces, mauls, axes, daggers, spears, bows, crossbows, staves and wands. Maces and mauls hit hardest, bows and
@@ -338,7 +338,7 @@ const Tutorial: React.FC = () => {
 					{MERCHANT_GOODS.rotateSec / 60} minutes of play (or at once with Refresh: {MERCHANT_GOODS.refresh.freePerWindow} free every{' '}
 					{MERCHANT_GOODS.refresh.windowSec / 3600} hours of play, after that for gold, doubling each time); hover a Buy button for the price. Below it is your
 					bag to sell spare gear from. <b>Upgrades</b> has click power and the permanent bonuses (Haggler, Bulk Discount, Lucky Charm, Pack Rat). The shelf
-					never holds legendary gear and Rattatui gear is not for sale: bosses drop it.
+					never holds legendary gear.
 				</p>
 				<div className='grid grid-cols-2 md:grid-cols-5 gap-2'>
 					{Object.entries(MERCHANT_RESOURCE_PRICES).map(([r, price]) => (

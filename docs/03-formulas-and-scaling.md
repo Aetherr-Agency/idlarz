@@ -200,7 +200,7 @@ rewards      : rewardSec = 90 × 1.17^(L−1) (rat), 3600 × 1.03^(L−15) (King
 drops        : see [10-loot-system.md](10-loot-system.md): profile -> rolls -> source level -> item level -> rarity -> base -> affixes
                rat: gear 12 % + 1 % per level above 1, rarity rolled (Common 70 / Uncommon 22 / Rare 7 / Epic 1 / Legendary 0.2, gated by item level);
                potion 25 % + 1.5 % per level (Greater from level 7)              (level 1: 90 s of income, level 9: ~316 s)
-               Rat King: 1 item of his own (rolled rarity) + 1 Rattatui piece (missing ones first) + 40 % a second one + 5 % (pity up to 15 %) a legendary weapon + 2 Minor and 1 Greater potion
+               Boss: 1 item of his own (rolled rarity) + 5 % (pity up to 15 %) a legendary weapon + 2 Minor and 1 Greater potion
                chest (item result, 8 % of chests): one item - gear 82 % (rolled rarity) or a potion, 1.9 % a legendary weapon instead
 item level   : a monster's drops are at its own level (rat 1-20, King 15-35); chest 4 and the merchant 4, +3 per castle level; gear power x levelScale(level) = 1 + 0.07 x (level - 1)
 spawn        : first rat 120 s after the start (a valid site must be free: owned land 2-9 tiles from the castle), then every 900 s, at most min(40, 30 % of the free land) waiting per kind; a boss (one at a time) every 10800 s of spawn time (COMBAT.spawn.bossIntervalSec)

@@ -98,11 +98,19 @@ test('an affix with an unknown stat, a typo tag or a bad range is reported', () 
 	assert.ok(has(d, /bad power or roll range/));
 });
 
+test('a named item in no pool is an error unless it is retired', () => {
+	let d = copy();
+	d.items.rattatui_cap.retired = false;
+	assert.ok(has(d, /item rattatui_cap: named item is in no pool/));
+	d = copy();
+	assert.ok(!has(d, /rattatui_cap: named item is in no pool/), 'a retired piece is allowed to be in no pool');
+});
+
 test('an enabled pool with no items is an error', () => {
 	const d = copy();
-	d.pools.rattatui_set.enabled = true;
-	for (const item of Object.values(d.items)) if (item.pools?.includes('rattatui_set')) item.pools = [];
-	assert.ok(has(d, /pool rattatui_set: enabled but has no items/));
+	d.pools.legendary_weapons.enabled = true;
+	for (const item of Object.values(d.items)) if (item.pools?.includes('legendary_weapons')) item.pools = [];
+	assert.ok(has(d, /pool legendary_weapons: enabled but has no items/));
 });
 
 test('every weighted rarity needs an eligible item at every level the source can reach', () => {

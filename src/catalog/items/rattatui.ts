@@ -2,7 +2,8 @@ import type { ItemDef } from '@/types/game';
 import { baseStat, type ItemStats } from '../stats';
 import { gear } from './define';
 
-// The Rattatui set: the best gear in the game, dropped only by the Rat King (see the `ratKing` drop rule). Epic (violet).
+// The Rattatui set (retired, IDL-55): it was the beta testers' gear while the rats existed. It no longer drops anywhere (no pool, no boss table); pieces already
+// owned keep working. The definitions are deleted at the epoch reset (IDL-76). Epic (violet).
 const rattatui = (
 	suffix: string,
 	name: string,
@@ -18,7 +19,7 @@ const rattatui = (
 		art: true,
 		weaponType,
 		named: true,
-		pools: ['rattatui_set'],
+		retired: true,
 	});
 
 export const RATTATUI_ITEMS: ItemDef[] = [

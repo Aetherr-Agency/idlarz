@@ -43,7 +43,7 @@ Pieces: obsidian_aegis, obsidian_helm, obsidian_pauldrons, obsidian_cuirass, obs
 
 ### Rattatui Set (13 slots)
 
-The Rat King's court: the combat set. Percent damage and health, crits and leech, with a little loot on the side.
+Retired (IDL-55): the beta testers' combat set. It no longer drops or sells; pieces already owned keep working until the epoch reset deletes it.
 
 | Pieces worn | Bonus | Total so far |
 |---|---|---|
@@ -72,18 +72,18 @@ Gear is authored at the start of its item level window; bases roll their rarity,
 | Obsidian Cloak | `obsidian_cloak` | accessory | 3 | base | 8-100 | +3 Armor, +5 Max HP, +2.0% Dodge |  | general pool |
 | Obsidian Ring | `obsidian_ring` | accessory | 3 | base | 8-100 | +6 Max HP, +1.5% Crit Chance |  | general pool |
 | Obsidian Charm | `obsidian_charm` | accessory | 3 | base | 8-100 | +1 Armor, +7 Max HP, +1% Super Crit |  | general pool |
-| Rattatui Cap | `rattatui_cap` | armor | 4 | named (Epic) | 10-100 | +6 Armor, +8 Max HP |  | rattatui_set |
-| Rattatui Shoulderpads | `rattatui_shoulderpads` | armor | 4 | named (Epic) | 10-100 | +5 Armor, +7 Max HP |  | rattatui_set |
-| Rattatui Tunic | `rattatui_tunic` | armor | 4 | named (Epic) | 10-100 | +11 Armor, +14 Max HP |  | rattatui_set |
-| Rattatui Gloves | `rattatui_gloves` | armor | 4 | named (Epic) | 10-100 | +4 Armor, +5 Max HP, +1% Crit Chance |  | rattatui_set |
-| Rattatui Trousers | `rattatui_trousers` | armor | 4 | named (Epic) | 10-100 | +8 Armor, +10 Max HP |  | rattatui_set |
-| Rattatui Boots | `rattatui_boots` | armor | 4 | named (Epic) | 10-100 | +5 Armor, +6 Max HP, +0.3/s HP Regen |  | rattatui_set |
-| Rattatui Amulet | `rattatui_amulet` | accessory | 4 | named (Epic) | 10-100 | +2 Armor, +14 Max HP, +2% Crit Chance, +9% Gold Find |  | rattatui_set |
-| Rattatui Cloak | `rattatui_cloak` | accessory | 4 | named (Epic) | 10-100 | +4 Armor, +6 Max HP, +0.5/s HP Regen, +3.0% Dodge |  | rattatui_set |
-| Rattatui Ring | `rattatui_ring` | accessory | 4 | named (Epic) | 10-100 | +10 Max HP, +2% Crit Chance |  | rattatui_set |
-| Rattatui Charm | `rattatui_charm` | accessory | 4 | named (Epic) | 10-100 | +3 Armor, +16 Max HP, +2% Super Crit, +2 Luck |  | rattatui_set |
-| Rattatui Fang Blade | `rattatui_fang_blade` | weapon (sword) | 4 | named (Epic) | 10-100 | +24 Damage, +8% Crit Chance, +4% Super Crit |  | rattatui_set |
-| Rattatui Buckler | `rattatui_buckler` | offhand (shield) | 4 | named (Epic) | 10-100 | +12 Armor, +20 Max HP |  | rattatui_set |
+| Rattatui Cap | `rattatui_cap` | armor | 4 | named (Epic) | 10-100 | +6 Armor, +8 Max HP |  |  |
+| Rattatui Shoulderpads | `rattatui_shoulderpads` | armor | 4 | named (Epic) | 10-100 | +5 Armor, +7 Max HP |  |  |
+| Rattatui Tunic | `rattatui_tunic` | armor | 4 | named (Epic) | 10-100 | +11 Armor, +14 Max HP |  |  |
+| Rattatui Gloves | `rattatui_gloves` | armor | 4 | named (Epic) | 10-100 | +4 Armor, +5 Max HP, +1% Crit Chance |  |  |
+| Rattatui Trousers | `rattatui_trousers` | armor | 4 | named (Epic) | 10-100 | +8 Armor, +10 Max HP |  |  |
+| Rattatui Boots | `rattatui_boots` | armor | 4 | named (Epic) | 10-100 | +5 Armor, +6 Max HP, +0.3/s HP Regen |  |  |
+| Rattatui Amulet | `rattatui_amulet` | accessory | 4 | named (Epic) | 10-100 | +2 Armor, +14 Max HP, +2% Crit Chance, +9% Gold Find |  |  |
+| Rattatui Cloak | `rattatui_cloak` | accessory | 4 | named (Epic) | 10-100 | +4 Armor, +6 Max HP, +0.5/s HP Regen, +3.0% Dodge |  |  |
+| Rattatui Ring | `rattatui_ring` | accessory | 4 | named (Epic) | 10-100 | +10 Max HP, +2% Crit Chance |  |  |
+| Rattatui Charm | `rattatui_charm` | accessory | 4 | named (Epic) | 10-100 | +3 Armor, +16 Max HP, +2% Super Crit, +2 Luck |  |  |
+| Rattatui Fang Blade | `rattatui_fang_blade` | weapon (sword) | 4 | named (Epic) | 10-100 | +24 Damage, +8% Crit Chance, +4% Super Crit |  |  |
+| Rattatui Buckler | `rattatui_buckler` | offhand (shield) | 4 | named (Epic) | 10-100 | +12 Armor, +20 Max HP |  |  |
 
 ## Affixes
 
@@ -127,7 +127,6 @@ Rarity chances are the profile weights normalised over the rarities that pass th
   - bonus `rat_potion` from pool `potions_rat`, chance 0.25
 - **boss level 15** (profile `boss`, item level 15): 61 bases eligible; Common 20.0%, Uncommon 30.0%, Rare 30.0%, Epic 15.0%, Legendary 5.0%
 - **boss level 45** (profile `boss`, item level 45): 34 bases eligible; Common 20.0%, Uncommon 30.0%, Rare 30.0%, Epic 15.0%, Legendary 5.0%
-  - bonus `king_set` from pool `rattatui_set`
   - bonus `king_legendary` from pool `legendary_weapons`, chance 0.05
   - bonus `king_potions` from pool `potions_king`
 - **chest** (profile `basic_chest`, item level 4): 44 bases eligible; Common 65.3%, Uncommon 25.3%, Rare 9.5%
@@ -135,7 +134,7 @@ Rarity chances are the profile weights normalised over the rarities that pass th
   - bonus `chest_potion` from pool `potions_chest`, fallback
 - **merchant** (profile `merchant_stock`, item level 4): 44 bases eligible; Common 60.0%, Uncommon 40.0%
 
-Pools: `general_equipment`, `rattatui_set`, `legendary_weapons`, `potions_rat`, `potions_king`, `potions_chest`
+Pools: `general_equipment`, `legendary_weapons`, `potions_rat`, `potions_king`, `potions_chest`
 
 ## Merchant stock
 

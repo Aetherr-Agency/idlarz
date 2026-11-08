@@ -14,9 +14,8 @@ Cells: win % (mean seconds to win). The streams are seeded, so the table is repr
 | knight's set + recurve bow | 9 | 1 | 9 | 36 | 143 | 15.8 | 5 |
 | obsidian set + maul | 32 | 0.6 | 19.2 | 68 | 243 | 9.8 | 12 |
 | obsidian set + longbow | 20 | 1 | 20 | 68 | 243 | 24.8 | 15 |
-| rattatui set (fang blade) | 32.4 | 1.2 | 38.88 | 63 | 315 | 22.8 | 19 |
-| rattatui + titan maul | 54 | 0.6 | 32.4 | 63 | 290 | 18.8 | 21 |
-| rattatui + starfall bow | 28.8 | 1 | 28.8 | 63 | 290 | 34.8 | 25 |
+| obsidian + titan maul | 50 | 0.6 | 30 | 68 | 243 | 13.8 | 18 |
+| obsidian + starfall bow | 29 | 1 | 29 | 68 | 243 | 29.8 | 22 |
 
 # No potions, no skills
 
@@ -29,9 +28,8 @@ Cells: win % (mean seconds to win). The streams are seeded, so the table is repr
 | knight's set + recurve bow | 100% (11s) | 100% (23s) | 100% (53s) | 0% |
 | obsidian set + maul | 100% (6s) | 100% (12s) | 100% (27s) | 100% (64s) |
 | obsidian set + longbow | 100% (4s) | 100% (9s) | 100% (21s) | 100% (51s) |
-| rattatui set (fang blade) | 100% (3s) | 100% (5s) | 100% (12s) | 100% (26s) |
-| rattatui + titan maul | 100% (3s) | 100% (7s) | 100% (15s) | 100% (35s) |
-| rattatui + starfall bow | 100% (3s) | 100% (6s) | 100% (13s) | 100% (30s) |
+| obsidian + titan maul | 100% (3s) | 100% (7s) | 100% (16s) | 100% (38s) |
+| obsidian + starfall bow | 100% (3s) | 100% (6s) | 100% (14s) | 100% (33s) |
 
 # Level 30 builds
 
@@ -68,9 +66,9 @@ Auto-use drinks a potion below 40% HP, casts Heal below 50% and Stun whenever it
 | obsidian set + maul | nothing | 100% (26s, 79% HP) | 100% (63s, 57% HP) |
 | obsidian set + maul | Heal + Stun | 100% (26s, 88% HP) | 100% (63s, 71% HP) |
 | obsidian set + maul | Heal + Stun + 5 greater potions | 100% (27s, 87% HP) | 100% (64s, 71% HP) |
-| rattatui + titan maul | nothing | 100% (15s, 100% HP) | 100% (34s, 100% HP) |
-| rattatui + titan maul | Heal + Stun | 100% (15s, 100% HP) | 100% (34s, 100% HP) |
-| rattatui + titan maul | Heal + Stun + 5 greater potions | 100% (15s, 100% HP) | 100% (34s, 100% HP) |
+| obsidian + titan maul | nothing | 100% (17s, 87% HP) | 100% (39s, 74% HP) |
+| obsidian + titan maul | Heal + Stun | 100% (17s, 95% HP) | 100% (39s, 84% HP) |
+| obsidian + titan maul | Heal + Stun + 5 greater potions | 100% (17s, 95% HP) | 100% (39s, 84% HP) |
 
 # The Great Auroch by level
 
@@ -80,16 +78,16 @@ A boss: level 15 to 25 when he appears (higher with the castle), up to +10 as he
 |---|---|---|---|
 | 15 (1000 HP, armor 15) | knight's set + mace | at the level | 100% (58s) |
 | 15 (1000 HP, armor 15) | obsidian set + maul | at the level | 100% (50s) |
-| 15 (1000 HP, armor 15) | rattatui + titan maul | at the level | 100% (19s) |
+| 15 (1000 HP, armor 15) | obsidian + titan maul | at the level | 100% (23s) |
 | 25 (1354 HP, armor 20) | knight's set + mace | at the level | 100% (61s) |
 | 25 (1354 HP, armor 20) | knight's set + mace | behind | 0% |
 | 25 (1354 HP, armor 20) | obsidian set + maul | at the level | 100% (56s) |
 | 25 (1354 HP, armor 20) | obsidian set + maul | behind | 65% (71s) |
-| 25 (1354 HP, armor 20) | rattatui + titan maul | at the level | 100% (20s) |
-| 25 (1354 HP, armor 20) | rattatui + titan maul | behind | 100% (28s) |
+| 25 (1354 HP, armor 20) | obsidian + titan maul | at the level | 100% (25s) |
+| 25 (1354 HP, armor 20) | obsidian + titan maul | behind | 100% (33s) |
 | 35 (1707 HP, armor 25) | knight's set + mace | at the level | 100% (68s) |
 | 35 (1707 HP, armor 25) | knight's set + mace | behind | 0% |
 | 35 (1707 HP, armor 25) | obsidian set + maul | at the level | 100% (62s) |
 | 35 (1707 HP, armor 25) | obsidian set + maul | behind | 0% |
-| 35 (1707 HP, armor 25) | rattatui + titan maul | at the level | 100% (22s) |
-| 35 (1707 HP, armor 25) | rattatui + titan maul | behind | 100% (38s) |
+| 35 (1707 HP, armor 25) | obsidian + titan maul | at the level | 100% (27s) |
+| 35 (1707 HP, armor 25) | obsidian + titan maul | behind | 100% (46s) |
