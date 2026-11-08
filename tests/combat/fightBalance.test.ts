@@ -19,9 +19,8 @@ const sim = (equipment: Equipment, monster: Foe = KING, extra: { level?: number;
 
 const OBSIDIAN = fullSet('obsidian', 'obsidian_maul');
 const STEEL = fullSet('knight', 'steel_mace');
-const RATTATUI = fullSet('rattatui');
 const WOOD = fullSet('woodland', 'wooden_club');
-const BEST = { ...RATTATUI, mainHand: plainItem('titan_maul') };
+const BEST = { ...fullSet('obsidian'), mainHand: plainItem('titan_maul') };
 
 test('no item exceeds the damage sanity ceiling', () => {
 	for (const def of Object.values(ITEM_CATALOG)) assert.ok((def.stats?.damage ?? 0) <= COMBAT.maxItemDamage, def.id);
@@ -34,15 +33,12 @@ test('the starter kit and plain wood never beat the king, with or without skills
 	}
 });
 
-test('steel is not enough for the king (the clock beats it), obsidian wins with the clock running down, Rattatui comfortably', () => {
+test('steel is not enough for the king (the clock beats it), obsidian wins with the clock running down, the best loadout comfortably', () => {
 	assert.ok(sim(STEEL).winRate < 0.5, `steel: ${sim(STEEL).winRate}`);
 	const obsidian = sim(OBSIDIAN);
 	assert.ok(obsidian.winRate >= 0.9, `obsidian: ${obsidian.winRate}`);
 	assert.ok(obsidian.meanTimeSec > MONSTERS.bossGreatAuroch.timeLimitSec * 0.5, `${obsidian.meanTimeSec} s: not a pushover`);
-	const rattatui = sim(RATTATUI);
-	assert.ok(rattatui.winRate >= 0.95);
-	assert.ok(rattatui.meanTimeSec < MONSTERS.bossGreatAuroch.timeLimitSec * 0.6, `${rattatui.meanTimeSec} s`);
-	assert.ok(sim(BEST).meanTimeSec > sim(RATTATUI).meanTimeSec * 0.8 || sim(BEST).winRate === 1, 'the best loadout wins too');
+	assert.ok(sim(BEST).winRate >= 0.95, `the best loadout: ${sim(BEST).winRate}`);
 });
 
 test('no loadout trivialises the king: even the best gear needs several seconds', () => {
@@ -52,7 +48,7 @@ test('no loadout trivialises the king: even the best gear needs several seconds'
 test('rats are basic enemies: a level 1 rat falls to the starter kit, a level 9 rat does not, and good gear wins either way', () => {
 	assert.equal(sim(STARTER_EQUIPMENT, { type: 'thistleBoar', level: 1 }).winRate, 1);
 	assert.equal(sim(STARTER_EQUIPMENT, { type: 'thistleBoar', level: 9 }).winRate, 0);
-	assert.equal(sim(RATTATUI, { type: 'thistleBoar', level: 9 }).winRate, 1);
+	assert.equal(sim(OBSIDIAN, { type: 'thistleBoar', level: 9 }).winRate, 1);
 });
 
 test('a faster weapon kills sooner at the same damage per second: the engine really swings at the weapon speed', () => {
@@ -106,7 +102,7 @@ test('auto-use never replaces gear: steel still does not beat the king with Heal
 
 test('auto-use only ever helps, and costs no time: skills do no damage', () => {
 	const rat = { type: 'thistleBoar', level: 9 } as const;
-	for (const gear of [STEEL, OBSIDIAN, RATTATUI]) {
+	for (const gear of [STEEL, OBSIDIAN]) {
 		const plain = sim(gear, rat);
 		const skilled = sim(gear, rat, { level: 30, autoUse: true });
 		assert.ok(skilled.winRate >= plain.winRate);

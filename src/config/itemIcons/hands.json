@@ -2,6 +2,5 @@
 	{"icon": "item_leather_gloves", "item": "leather_gloves", "file": null, "slot": "hands", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
 	{"icon": "item_cloth_gloves", "item": "cloth_gloves", "file": null, "slot": "hands", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
 	{"icon": "item_steel_gauntlets", "item": "steel_gauntlets", "file": null, "slot": "hands", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
-	{"icon": "item_obsidian_gauntlets", "item": "obsidian_gauntlets", "file": null, "slot": "hands", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
-	{"icon": "item_rattatui_gloves", "item": "rattatui_gloves", "file": null, "slot": "hands", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
+	{"icon": "item_obsidian_gauntlets", "item": "obsidian_gauntlets", "file": null, "slot": "hands", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
 ]

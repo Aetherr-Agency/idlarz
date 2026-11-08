@@ -2,6 +2,5 @@
 	{"icon": "item_leather_cap", "item": "leather_cap", "file": null, "slot": "head", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
 	{"icon": "item_cloth_hat", "item": "cloth_hat", "file": null, "slot": "head", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
 	{"icon": "item_steel_helm", "item": "steel_helm", "file": null, "slot": "head", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
-	{"icon": "item_obsidian_helm", "item": "obsidian_helm", "file": null, "slot": "head", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
-	{"icon": "item_rattatui_cap", "item": "rattatui_cap", "file": null, "slot": "head", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
+	{"icon": "item_obsidian_helm", "item": "obsidian_helm", "file": null, "slot": "head", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
 ]

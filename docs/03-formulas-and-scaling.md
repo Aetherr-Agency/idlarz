@@ -208,7 +208,7 @@ Rat King     : level 15: 1000 HP behind 15 armor, attack 11 every 3 s, 75 s limi
 ```
 
 The King's numbers were tuned with `npm run fight-sim` (a bot with the real combat rules; tables in [generated/fight-sim.md](generated/fight-sim.md)) and are
-held by `tests/combat/fightBalance.test.ts`: the starter kit and plain wood never win, full steel does not, full obsidian wins with seconds to spare, the Rattatui set comfortably,
+held by `tests/combat/fightBalance.test.ts`: the starter kit and plain wood never win, full steel does not, full obsidian wins with seconds to spare, obsidian with a legendary maul comfortably,
 and no loadout trivialises him. Rats are basic enemies and are not tuned around him.
 
 Set bonuses (`catalog/sets.ts`) may carry the set-only stats `incomePct`, `xpPct`, `killRewardPct`, `offlineEff`, `offlineCapHours`, `clickPct`, `damagePct` and `maxHpPct`; `xpGain% = attributes + set XP %`, the away limits add the set's away hours and efficiency points. The two sets are generated into [generated/item-catalog.md](generated/item-catalog.md), with where every effect is applied.

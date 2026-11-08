@@ -40,6 +40,7 @@ import { healAmount } from '../../src/lib/skills';
 import { merchantCombat } from '../../src/utils/game/merchant';
 import { playerProfile } from '../../src/lib/offline/profile';
 import { fullSet, simSetup } from '../../src/lib/fightSim';
+import { withSetBonus } from '../setBonus';
 import { runCombat } from '../../src/lib/offline/fight';
 import { weaponDps } from '../../src/catalog/weapons';
 import type { CharacterStats, Equipment, EquipmentSlot, ItemInstance } from '../../src/types/game';
@@ -165,20 +166,6 @@ const SET_TOTALS: Record<string, Partial<Record<StatKey, number>>> = {
 		offlineCapHours: 3,
 		superCrit: 6,
 	},
-	rattatui: {
-		maxHp: 25,
-		armor: 3,
-		damagePct: 35,
-		critChance: 4,
-		maxHpPct: 25,
-		lifeLeech: 3,
-		goldFind: 10,
-		superCrit: 8,
-		regen: 2,
-		luck: 5,
-		killRewardPct: 10,
-		xpPct: 10,
-	},
 };
 
 test('sets: every threshold applies and adds up (2 / 4 / 6 / 9 / 12-13 pieces), checked at every possible piece count', () => {
@@ -196,8 +183,7 @@ test('sets: every threshold applies and adds up (2 / 4 / 6 / 9 / 12-13 pieces), 
 
 test('sets: the full-set totals are the ones in the design, and both rings count', () => {
 	assert.equal(SETS.obsidian.size, 12);
-	assert.equal(SETS.rattatui.size, 13);
-	assert.deepEqual(Object.keys(SETS).sort(), ['obsidian', 'rattatui'].sort());
+	assert.deepEqual(Object.keys(SETS), ['obsidian']);
 	for (const id of Object.keys(SET_TOTALS)) {
 		const eq = fullSet(id);
 		assert.equal(setCounts(eq)[id], SETS[id].size, `${id}: both rings must count`);
@@ -270,14 +256,13 @@ test('damage: flat gear damage x (1 + attribute% + merchant%) x (1 + set damage 
 			);
 		}
 	// the set's percent damage is its own multiplicative bucket
-	// the full Rattatui set includes its own weapon: swapping it for another weapon drops the piece count to 12 and the 13-piece bonus with it
-	const rat = fullSet('rattatui');
-	const c = character({ strength: 15 });
-	const gear = aggregateStats(rat);
-	assert.equal(setCounts(rat).rattatui, 13);
-	assert.equal(gear.damagePct, 35);
-	assert.equal(aggregateStats(fullSet('rattatui', 'wooden_sword')).damagePct, 20, 'replacing the set weapon loses the 13-piece damage bonus');
-	assert.equal(damagePerHit(rat, c), Math.max(1, round1(gear.damage * (1 + o.physicalPct(15) / 100) * 1.35)));
+	withSetBonus('obsidian', 12, { damagePct: 35 }, () => {
+		const full = fullSet('obsidian');
+		const c = character({ strength: 15 });
+		const gear = aggregateStats(full);
+		assert.equal(gear.damagePct, 35);
+		assert.equal(damagePerHit(full, c), Math.max(1, round1(gear.damage * (1 + o.physicalPct(15) / 100) * 1.35)));
+	});
 });
 
 test('attack speed: weapon speed table x (1 + Dex% + Swift%), rounded to 2 places; gear, level and quality never change it', () => {
@@ -367,11 +352,13 @@ test('max HP: (85 + 3 per Vit + 0.25 per Cha + gear) x (1 + set Max HP %), round
 		const c = character(attrs);
 		assert.equal(maxHp(c, PLAIN), Math.round(85 + c.vitality * 3 + c.charisma * 0.25 + flat(PLAIN, 'maxHp')), JSON.stringify(attrs));
 	}
-	const rat = fullSet('rattatui');
-	const gear = aggregateStats(rat);
-	assert.equal(gear.maxHpPct, 25);
-	const c = character({ vitality: 40 });
-	assert.equal(maxHp(c, rat), Math.round((85 + 40 * 3 + 1.25 + gear.maxHp) * 1.25));
+	withSetBonus('obsidian', 12, { maxHpPct: 25 }, () => {
+		const full = fullSet('obsidian');
+		const gear = aggregateStats(full);
+		assert.equal(gear.maxHpPct, 25);
+		const c = character({ vitality: 40 });
+		assert.equal(maxHp(c, full), Math.round((85 + 40 * 3 + 1.25 + gear.maxHp) * 1.25));
+	});
 });
 
 test('mana and regen: 20 + 4 per Int and 0.5 + 0.05 per Int (FULL Int), plus gear; Heal = 25 % of max HP x (1 + magic %) x (1 + Spell Power %)', () => {
@@ -396,7 +383,7 @@ const merchantSets: Record<string, number>[] = [{}, { might: 8, swift: 8, keen: 
 test('display parity: the character window (effectiveStats) and the server profile (playerProfile) agree on every shared number', () => {
 	for (const attrs of ATTRS)
 		for (const merchant of merchantSets)
-			for (const equipment of [{}, PLAIN, fullSet('obsidian', 'wooden_sword'), fullSet('rattatui', 'wooden_sword')] as Equipment[]) {
+			for (const equipment of [{}, PLAIN, fullSet('obsidian', 'wooden_sword')] as Equipment[]) {
 				const c = character(attrs);
 				const ui = effectiveStats({ characterStats: c, equipment, merchantUpgrades: merchant });
 				const server = playerProfile({

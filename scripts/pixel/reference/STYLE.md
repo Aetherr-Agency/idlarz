@@ -70,9 +70,8 @@ Reference images in this folder: `icons.png` (icon set), `characters.png` (heroe
   cream buck teeth, one glowing red eye. Shown through `MonsterArt` (CSS sheet animation, 520 ms per frame) on the map tile (red glow, tier badge)
   and in the fight modal (3-5x).
 - **Slots and items**: four more empty-slot silhouettes (`equip_shoulder/hands/cape/charm`: pauldrons, gauntlet, cloak with clasp, bead on a cord).
-  Item icons are `item_*` 40px sprites: `item_potion_hp` (red flask, cork), the wooden starter kit (`item_wooden_sword/shield`) and the 12
-  **Rattatui** set icons (`item_rattatui_<piece>`), which are the slot icons re-skinned through `_skin()` in `sprites_monsters.py`
-  (steel -> `rat_fur`, gold -> `rat_tan`, cloth -> `rat_pink`, leather -> `rat_fur_dk`, shield face -> `cheese`; the fang blade is bone).
+  Item icons are `item_*` 40px sprites: `item_potion_hp` (red flask, cork) and the wooden starter kit (`item_wooden_sword/shield`), the slot
+  icons re-skinned through `_skin()` in `sprites_monsters.py`. The rat materials stay for the rat monsters.
   New materials: `rat_fur`, `rat_fur_dk`, `rat_pink`, `rat_tan`, `cheese`, `glass`.
 - **Character HUD** (`LevelDetails.tsx`): 144x112 stone alcove scene shown at 2x - the hero (class sprite, idle bob) standing on the floor under a name plate (double-click = rename),
   two flickering torches (3-frame strip), HP/MP flasks flanking him, stony XP bar along the floor with a flowing emerald
@@ -221,7 +220,7 @@ slot icons of `sprites_equipment.py` through material remaps (`_skin`, optional 
 - **Steel**: `plate` (cool silver) with `steel` rims, `banner_blue` cloth, `crystal` gems.
 - **Obsidian** (the fanciest): `obsidian` (near-black glass, violet specular) with `obsidian_edge` (violet-cyan light) trims and gems, horns, spikes and a glowing core.
 - **Weapons** are new geometry (swords, daggers, mace, maul, axe, spear, bow, crossbow, staff, wand, tome) rendered on a roomy canvas, then shrunk to fit 40x40 (`_done`);
-  the Rattatui Fang Blade keeps its bone re-skin. **Legendary** weapons burn in `ember` (orange) with `glow` and gold.
+  **Legendary** weapons burn in `ember` (orange) with `glow` and gold.
 - Glints only on metal and glass (steel, obsidian, gems); none on wood, leather, cloth or fur.
 - Rarity is shown by the item frame glow in the UI (`catalog/rarity.ts`), never baked into the sprite.
 - New materials: `obsidian`, `obsidian_edge`, `ember`, `linen`. The potion pair: `item_potion_hp` (small red flask) and `item_potion_greater` (bigger flask, gold band, star stud).

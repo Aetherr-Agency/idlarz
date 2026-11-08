@@ -15,7 +15,7 @@ export interface KillContext {
 	goldFind?: number;
 	/** Kill Rewards of the gear's set bonus, in %: extra kill gold and XP */
 	killRewardPct?: number;
-	/** Base item ids the player already has (bag + worn): a table with `preferMissing` favours the pieces that are still missing (no table uses it since the Rattatui set was retired) */
+	/** Base item ids the player already has (bag + worn): a table with `preferMissing` favours the pieces that are still missing (no table uses it today) */
 	owned?: readonly string[];
 	/** Bad-luck counters from the save */
 	pity?: Readonly<Record<string, number>>;

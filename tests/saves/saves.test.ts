@@ -163,10 +163,10 @@ const combatSave = (mutate: (raw: any) => void) => {
 	freshGame();
 	growTo(8);
 	const bag = emptyBag();
-	bag[3] = { item: plainItem('rattatui_tunic') };
+	bag[3] = { item: plainItem('obsidian_cuirass') };
 	bag[4] = { id: 'potion_minor', qty: 20 };
 	store.setState({
-		equipment: { ...STARTER_EQUIPMENT, ring1: plainItem('rattatui_ring'), ring2: plainItem('rattatui_ring'), head: plainItem('rattatui_cap') },
+		equipment: { ...STARTER_EQUIPMENT, ring1: plainItem('obsidian_ring'), ring2: plainItem('obsidian_ring'), head: plainItem('obsidian_helm') },
 		bag,
 		playerHp: 50,
 		monsters: [rat()],
@@ -210,8 +210,8 @@ test('forged inventories and HP are rejected', () => {
 	};
 	bad((r) => (r.equipment.head = 'mythic_crown'), 'a bare item id (the old format) is not an item');
 	bad((r) => (r.equipment.head = plainItem('wooden_sword')), 'sword in the head slot');
-	bad((r) => (r.equipment.mainHand = plainItem('rattatui_ring')), 'ring item in the weapon slot');
-	bad((r) => (r.equipment.ring1 = plainItem('rattatui_cap')), 'cap in a ring slot');
+	bad((r) => (r.equipment.mainHand = plainItem('obsidian_ring')), 'ring item in the weapon slot');
+	bad((r) => (r.equipment.ring1 = plainItem('obsidian_helm')), 'cap in a ring slot');
 	bad((r) => (r.equipment.head = { ...plainItem('leather_cap'), base: 'potion_minor' }), 'potion equipped');
 	bad((r) => (r.equipment.bogus = plainItem('wooden_sword')), 'unknown equipment slot');
 	bad((r) => (r.equipment.head = { ...plainItem('leather_cap'), base: 'nope' }), 'unknown base item');
@@ -240,10 +240,10 @@ test('forged inventories and HP are rejected', () => {
 		(r) => (r.equipment.head = { ...plainItem('leather_cap'), rarity: 'uncommon', affixes: [{ id: 'maxHp_prefix', roll: 5, value: 9999 }] }),
 		'a value smuggled into an affix',
 	);
-	bad((r) => (r.equipment.head = { ...plainItem('rattatui_cap'), rarity: 'common' }), 'a named item with another rarity');
+	bad((r) => (r.equipment.mainHand = { ...plainItem('emberbrand'), rarity: 'common' }), 'a named item with another rarity');
 	bad((r) => (r.bag[3].item.rarity = 'mythic'), 'a bag item with an unknown rarity');
-	bad((r) => (r.bag[3] = { item: plainItem('rattatui_tunic'), extra: 1 }), 'a stray key on a gear entry');
-	bad((r) => (r.bag[3] = { id: 'rattatui_tunic', qty: 1 }), 'gear stored as a stack (the old format)');
+	bad((r) => (r.bag[3] = { item: plainItem('obsidian_cuirass'), extra: 1 }), 'a stray key on a gear entry');
+	bad((r) => (r.bag[3] = { id: 'obsidian_cuirass', qty: 1 }), 'gear stored as a stack (the old format)');
 	bad((r) => (r.lootPity = { 'boss:nope': 1 }), 'pity for an unknown table');
 	bad((r) => (r.lootPity = { 'boss:king_legendary': -1 }), 'negative pity');
 	bad((r) => (r.lootPity = { 'boss:king_legendary': 1e9 }), 'absurd pity');

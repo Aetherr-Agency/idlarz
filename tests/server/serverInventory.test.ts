@@ -106,8 +106,8 @@ test("an uploaded save cannot change the bag, the gear, the pity or the auto-sel
 	const forged: PersistedGame = {
 		...state,
 		playSeconds: state.playSeconds + 120,
-		equipment: { ...state.equipment, head: plainItem('rattatui_cap'), chest: plainItem('rattatui_tunic') },
-		bag: addDrop(state.bag, { kind: 'gear', item: plainItem('rattatui_fang_blade') }).bag,
+		equipment: { ...state.equipment, head: plainItem('obsidian_helm'), chest: plainItem('obsidian_cuirass') },
+		bag: addDrop(state.bag, { kind: 'gear', item: plainItem('obsidian_blade') }).bag,
 		lootPity: { [PITY_KEY]: 3 },
 		autoSellUpTo: 'uncommon',
 	};

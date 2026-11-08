@@ -100,10 +100,13 @@ test('an affix with an unknown stat, a typo tag or a bad range is reported', () 
 
 test('a named item in no pool is an error unless it is retired', () => {
 	let d = copy();
-	d.items.rattatui_cap.retired = false;
-	assert.ok(has(d, /item rattatui_cap: named item is in no pool/));
+	d.items.emberbrand.pools = [];
+	d.items.emberbrand.retired = false;
+	assert.ok(has(d, /item emberbrand: named item is in no pool/));
 	d = copy();
-	assert.ok(!has(d, /rattatui_cap: named item is in no pool/), 'a retired piece is allowed to be in no pool');
+	d.items.emberbrand.pools = [];
+	d.items.emberbrand.retired = true;
+	assert.ok(!has(d, /emberbrand: named item is in no pool/), 'a retired piece is allowed to be in no pool');
 });
 
 test('an enabled pool with no items is an error', () => {

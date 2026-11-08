@@ -14,6 +14,5 @@
 	{"icon": "item_leather_leggings", "item": "leather_leggings", "file": null, "slot": "legs", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
 	{"icon": "item_cloth_trousers", "item": "cloth_trousers", "file": null, "slot": "legs", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
 	{"icon": "item_steel_greaves", "item": "steel_greaves", "file": null, "slot": "legs", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
-	{"icon": "item_obsidian_greaves", "item": "obsidian_greaves", "file": null, "slot": "legs", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
-	{"icon": "item_rattatui_trousers", "item": "rattatui_trousers", "file": null, "slot": "legs", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
+	{"icon": "item_obsidian_greaves", "item": "obsidian_greaves", "file": null, "slot": "legs", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
 ]

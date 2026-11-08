@@ -14,12 +14,12 @@ const playedGame = (): PersistedGame => {
 	api().resetGame();
 	growTo(16);
 	const bag = emptyBag();
-	bag[2] = { item: plainItem('rattatui_tunic') };
+	bag[2] = { item: plainItem('obsidian_cuirass') };
 	store.setState((s) => {
 		const lots = gridCells(s.tiles).filter(({ t }) => t.isOwned && t.biome !== 'castle');
 		let tiles = setTile(s.tiles, lots[0].x, lots[0].y, { biome: 'forest', isOwned: true, building: 'tavern' });
 		tiles = patchTile(tiles, lots[1].x, lots[1].y, { hasChest: true });
-		return { tiles, activeChests: 1, bag, equipment: { ...STARTER_EQUIPMENT, head: plainItem('rattatui_cap') }, playerName: 'Zoë' } as never;
+		return { tiles, activeChests: 1, bag, equipment: { ...STARTER_EQUIPMENT, head: plainItem('obsidian_helm') }, playerName: 'Zoë' } as never;
 	});
 	api().tick(60_000);
 	return structuredClone(pickPersisted(api()));

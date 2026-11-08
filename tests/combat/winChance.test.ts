@@ -15,7 +15,7 @@ const LOADOUTS: { name: string; equipment: Equipment }[] = [
 	{ name: 'woodland + club', equipment: fullSet('woodland', 'wooden_club') },
 	{ name: "knight's + mace", equipment: fullSet('knight', 'steel_mace') },
 	{ name: 'obsidian + maul', equipment: fullSet('obsidian', 'obsidian_maul') },
-	{ name: 'rattatui + fang blade', equipment: fullSet('rattatui') },
+	{ name: 'rattatui + fang blade', equipment: fullSet('obsidian') },
 ];
 const MONSTERS: { type: MonsterType; level: number }[] = [
 	{ type: 'thistleBoar', level: 1 },

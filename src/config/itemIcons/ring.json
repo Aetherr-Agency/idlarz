@@ -13,6 +13,5 @@
 	{"icon": "item_wooden_ring", "item": "wooden_ring", "file": null, "slot": "ring", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
 	{"icon": "item_cloth_ring", "item": "cloth_ring", "file": null, "slot": "ring", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
 	{"icon": "item_steel_ring", "item": "steel_ring", "file": null, "slot": "ring", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
-	{"icon": "item_obsidian_ring", "item": "obsidian_ring", "file": null, "slot": "ring", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
-	{"icon": "item_rattatui_ring", "item": "rattatui_ring", "file": null, "slot": "ring", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
+	{"icon": "item_obsidian_ring", "item": "obsidian_ring", "file": null, "slot": "ring", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
 ]

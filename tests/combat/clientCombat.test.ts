@@ -6,7 +6,8 @@ import { COMBAT, MONSTERS } from '../../src/config/combatConfig';
 import { CASTLE_X, CASTLE_Y } from '../../src/config/castle';
 import { REBIRTH } from '../../src/config/rebirth';
 import { ITEM_CATALOG } from '../../src/catalog';
-import { BASIC_GEAR, RATTATUI_SET } from '../../src/config/itemCatalog';
+import { BASIC_GEAR } from '../../src/config/itemCatalog';
+import { SETS } from '../../src/catalog';
 import { emptyBag, stackOf } from '../../src/lib/inventory';
 import { plainItem, sellValueOf } from '../../src/lib/itemInstance';
 import { calculateCombatStats } from '../../src/utils/game/character';
@@ -137,7 +138,7 @@ test("a won fight pays gold and xp exactly once, shows what the server stored, a
 	assert.ok(ids.includes('potion_minor'));
 	assert.ok(ids.some((id) => (BASIC_GEAR as readonly string[]).includes(id)));
 	assert.equal(
-		ids.some((id) => RATTATUI_SET.pieces.includes(id)),
+		ids.some((id) => SETS.obsidian.pieces.includes(id)),
 		false,
 		'a rat drops no Rattatui piece',
 	);

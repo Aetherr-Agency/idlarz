@@ -13,6 +13,5 @@
 	{"icon": "art_royal_lion_crest", "item": "royal_lion_crest", "file": "offHand/royal_lion_crest", "slot": "offHand", "weapon": "shield", "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
 	{"icon": "item_wooden_shield", "item": "wooden_shield", "file": null, "slot": "offHand", "weapon": "shield", "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
 	{"icon": "item_steel_shield", "item": "steel_shield", "file": null, "slot": "offHand", "weapon": "shield", "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
-	{"icon": "item_obsidian_aegis", "item": "obsidian_aegis", "file": null, "slot": "offHand", "weapon": "shield", "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
-	{"icon": "item_rattatui_buckler", "item": "rattatui_buckler", "file": null, "slot": "offHand", "weapon": "shield", "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
+	{"icon": "item_obsidian_aegis", "item": "obsidian_aegis", "file": null, "slot": "offHand", "weapon": "shield", "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
 ]

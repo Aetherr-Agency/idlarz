@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { freshGame, api } from '../helpers';
-import { SETS, formatStat } from '../../src/catalog';
+import { formatStat } from '../../src/catalog';
 import { fullSet } from '../../src/lib/fightSim';
+import { plainItem } from '../../src/lib/itemInstance';
 import { gearEconomy, gearIncomePct, xpGainPct, NO_GEAR_ECONOMY } from '../../src/lib/gearEconomy';
 import { summarize, DEFAULT_DERIVED } from '../../src/lib/cloudSave/summary';
 import { pickPersisted } from '../../src/lib/sanitizeSave';
@@ -11,11 +12,11 @@ import { damagePerHit, maxHp } from '../../src/lib/combat';
 import { offlineCapHours, offlineEfficiency } from '../../src/lib/offline/limits';
 import { computeOfflineGrant, zeroGrant } from '../../src/lib/offline/grant';
 import { calculateResourceRates } from '../../src/utils/game/income';
+import { withSetBonus } from '../setBonus';
 import { useGameStore } from '../../src/stores/gameStore';
 import type { Equipment } from '../../src/types/game';
 
 const obsidian = () => fullSet('obsidian');
-const rattatui = () => fullSet('rattatui');
 
 /** Puts gear on the character the way a loaded save does, with the rates that go with it. */
 const wear = (equipment: Equipment) =>
@@ -82,16 +83,17 @@ test('an absence pays more with the set: a longer cap and a better efficiency', 
 	assert.equal(geared.resources.gold, 10 * 11 * 3600 * 0.65);
 });
 
-test('the Rattatui set is the combat set: percent damage and health reach the shared combat code the server fights with', () => {
+test('percent damage and health of a set reach the shared combat code the server fights with', () => {
 	freshGame();
 	const stats = api().characterStats;
-	const full = rattatui();
-	const flatHp = maxHp(stats, {});
-	assert.ok(maxHp(stats, full) > flatHp * 1.25, 'more than 25% of the bare HP, the gear and the +25% included');
-	const withSet = damagePerHit(full, stats);
-	const noSet = damagePerHit({ mainHand: full.mainHand }, stats);
-	assert.ok(withSet > noSet * 1.3, `${withSet} vs ${noSet}`);
-	assert.ok(SETS.rattatui.bonuses[13].damagePct! > 0 && SETS.rattatui.bonuses[13].maxHpPct! > 0);
+	withSetBonus('obsidian', 12, { damagePct: 15, maxHpPct: 10 }, () => {
+		const full = { ...obsidian(), mainHand: plainItem('obsidian_blade') };
+		const flatHp = maxHp(stats, {});
+		assert.ok(maxHp(stats, full) > flatHp * 1.1, 'more than 10% of the bare HP, the gear and the +10% included');
+		const withSet = damagePerHit(full, stats);
+		const noSet = damagePerHit({ mainHand: full.mainHand }, stats);
+		assert.ok(withSet > noSet * 1.1, `${withSet} vs ${noSet}`);
+	});
 });
 
 test('set-only stats print like every other stat', () => {

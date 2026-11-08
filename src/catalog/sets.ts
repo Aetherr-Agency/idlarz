@@ -33,17 +33,4 @@ export const SET_DEFS: SetDef[] = [
 			12: { incomePct: 12, xpPct: 15, killRewardPct: 25, offlineCapHours: 3, goldFind: 20, armor: 10, superCrit: 6 },
 		},
 	},
-	{
-		id: 'rattatui',
-		retired: true,
-		label: 'Rattatui Set',
-		theme: "Retired (IDL-55): the beta testers' combat set. It no longer drops or sells; pieces already owned keep working until the epoch reset deletes it.",
-		bonuses: {
-			2: { maxHp: 25, armor: 3 },
-			4: { damagePct: 8, critChance: 4 },
-			6: { maxHpPct: 15, lifeLeech: 3, goldFind: 10 },
-			9: { damagePct: 12, superCrit: 8, regen: 2, luck: 5 },
-			13: { damagePct: 15, maxHpPct: 10, killRewardPct: 10, xpPct: 10 },
-		},
-	},
 ];

@@ -41,20 +41,6 @@ The prospector's set: it pays the kingdom (income, XP, kill rewards, away time) 
 
 Pieces: obsidian_aegis, obsidian_helm, obsidian_pauldrons, obsidian_cuirass, obsidian_gauntlets, obsidian_greaves, obsidian_sabatons, obsidian_pendant, obsidian_cloak, obsidian_ring, obsidian_charm
 
-### Rattatui Set (13 slots)
-
-Retired (IDL-55): the beta testers' combat set. It no longer drops or sells; pieces already owned keep working until the epoch reset deletes it.
-
-| Pieces worn | Bonus | Total so far |
-|---|---|---|
-| 2 | +25 Max HP, +3 Armor | +3 Armor, +25 Max HP |
-| 4 | +8% Damage, +4% Crit Chance | +3 Armor, +25 Max HP, +4% Crit Chance, +8% Damage |
-| 6 | +15% Max HP, +3.0% Life Leech, +10% Gold Find | +3 Armor, +25 Max HP, +4% Crit Chance, +10% Gold Find, +3.0% Life Leech, +8% Damage, +15% Max HP |
-| 9 | +12% Damage, +8% Super Crit, +2.0/s HP Regen, +5 Luck | +3 Armor, +25 Max HP, +4% Crit Chance, +8% Super Crit, +2.0/s HP Regen, +5 Luck, +10% Gold Find, +3.0% Life Leech, +20% Damage, +15% Max HP |
-| 13 | +15% Damage, +10% Max HP, +10% Kill Rewards, +10% XP Gain | +3 Armor, +25 Max HP, +4% Crit Chance, +8% Super Crit, +2.0/s HP Regen, +5 Luck, +10% Gold Find, +3.0% Life Leech, +35% Damage, +25% Max HP, +10% XP Gain, +10% Kill Rewards |
-
-Pieces: rattatui_cap, rattatui_shoulderpads, rattatui_tunic, rattatui_gloves, rattatui_trousers, rattatui_boots, rattatui_amulet, rattatui_cloak, rattatui_ring, rattatui_charm, rattatui_fang_blade, rattatui_buckler
-
 ## Set items
 
 Gear is authored at the start of its item level window; bases roll their rarity, named items have a fixed one.
@@ -72,18 +58,6 @@ Gear is authored at the start of its item level window; bases roll their rarity,
 | Obsidian Cloak | `obsidian_cloak` | accessory | 3 | base | 8-100 | +3 Armor, +5 Max HP, +2.0% Dodge |  | general pool |
 | Obsidian Ring | `obsidian_ring` | accessory | 3 | base | 8-100 | +6 Max HP, +1.5% Crit Chance |  | general pool |
 | Obsidian Charm | `obsidian_charm` | accessory | 3 | base | 8-100 | +1 Armor, +7 Max HP, +1% Super Crit |  | general pool |
-| Rattatui Cap | `rattatui_cap` | armor | 4 | named (Epic) | 10-100 | +6 Armor, +8 Max HP |  |  |
-| Rattatui Shoulderpads | `rattatui_shoulderpads` | armor | 4 | named (Epic) | 10-100 | +5 Armor, +7 Max HP |  |  |
-| Rattatui Tunic | `rattatui_tunic` | armor | 4 | named (Epic) | 10-100 | +11 Armor, +14 Max HP |  |  |
-| Rattatui Gloves | `rattatui_gloves` | armor | 4 | named (Epic) | 10-100 | +4 Armor, +5 Max HP, +1% Crit Chance |  |  |
-| Rattatui Trousers | `rattatui_trousers` | armor | 4 | named (Epic) | 10-100 | +8 Armor, +10 Max HP |  |  |
-| Rattatui Boots | `rattatui_boots` | armor | 4 | named (Epic) | 10-100 | +5 Armor, +6 Max HP, +0.3/s HP Regen |  |  |
-| Rattatui Amulet | `rattatui_amulet` | accessory | 4 | named (Epic) | 10-100 | +2 Armor, +14 Max HP, +2% Crit Chance, +9% Gold Find |  |  |
-| Rattatui Cloak | `rattatui_cloak` | accessory | 4 | named (Epic) | 10-100 | +4 Armor, +6 Max HP, +0.5/s HP Regen, +3.0% Dodge |  |  |
-| Rattatui Ring | `rattatui_ring` | accessory | 4 | named (Epic) | 10-100 | +10 Max HP, +2% Crit Chance |  |  |
-| Rattatui Charm | `rattatui_charm` | accessory | 4 | named (Epic) | 10-100 | +3 Armor, +16 Max HP, +2% Super Crit, +2 Luck |  |  |
-| Rattatui Fang Blade | `rattatui_fang_blade` | weapon (sword) | 4 | named (Epic) | 10-100 | +24 Damage, +8% Crit Chance, +4% Super Crit |  |  |
-| Rattatui Buckler | `rattatui_buckler` | offhand (shield) | 4 | named (Epic) | 10-100 | +12 Armor, +20 Max HP |  |  |
 
 ## Affixes
 

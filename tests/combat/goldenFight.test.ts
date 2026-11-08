@@ -136,7 +136,7 @@ const autoSweep = () =>
 const clickQueue = () =>
 	play(
 		{
-			equipment: fullSet('rattatui'),
+			equipment: fullSet('obsidian', 'titan_maul'),
 			level: 30,
 			potions: [{ id: 'potion_minor', qty: 3 }],
 			monsters: [
@@ -228,7 +228,7 @@ const kingAndRest = () => {
 const bossClock = () =>
 	play(
 		{
-			equipment: { ...fullSet('rattatui'), mainHand: undefined },
+			equipment: { ...fullSet('obsidian'), mainHand: undefined },
 			character: spentCharacter({ vitality: 25 }),
 			level: 30,
 			potions: [{ id: 'potion_minor', qty: 9 }],

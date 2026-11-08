@@ -4,7 +4,7 @@ import { rollKillLoot } from '../../src/lib/loot';
 import { emitCombat } from '../../src/lib/combatFx';
 import { COMBAT } from '../../src/config/combatConfig';
 import { ITEM_CATALOG } from '../../src/catalog';
-import { BASIC_GEAR, RATTATUI_SET } from '../../src/config/itemCatalog';
+import { BASIC_GEAR } from '../../src/config/itemCatalog';
 import { generateLoot } from '../../src/lib/loot/generate';
 import { LOOT_DATA } from '../../src/lib/loot/data';
 import { eligibleCandidates } from '../../src/lib/loot/pools';
@@ -18,7 +18,6 @@ const T1 = { type: 'thistleBoar', level: 1 } as const;
 const baseOf = (d: Drop) => (d.kind === 'gear' ? d.item.base : d.id);
 const gearOnly = (items: Drop[]) => items.filter((d) => d.kind === 'gear');
 const isLegendaryWeapon = (d: Drop) => ITEM_CATALOG[baseOf(d)].pools?.includes('legendary_weapons') ?? false;
-const isSetPiece = (d: Drop) => RATTATUI_SET.pieces.includes(baseOf(d));
 
 test('rng 0 drops a piece of plain gear and a potion from a rat, rng 0.999 drops nothing', () => {
 	const lucky = rollKillLoot(T1, ctx, () => 0);
@@ -29,12 +28,11 @@ test('rng 0 drops a piece of plain gear and a potion from a rat, rng 0.999 drops
 	assert.deepEqual(rollKillLoot(T1, ctx, () => 0.999).items, []);
 });
 
-test('rats never drop Rattatui pieces or the legendary weapons, whatever the rng', () => {
+test('rats never drop the legendary weapons, whatever the rng', () => {
 	for (const level of [1, 5, 9, 20] as const) {
 		for (let i = 0; i < 200; i++) {
 			const r = rollKillLoot({ type: 'thistleBoar', level }, ctx, () => i / 200);
 			for (const item of r.items) {
-				assert.equal(isSetPiece(item), false, baseOf(item));
 				assert.equal(isLegendaryWeapon(item), false, baseOf(item));
 			}
 		}
@@ -56,10 +54,9 @@ test('a rat drops gear about 12% of the time at level 1, and the chance is indep
 	assert.ok(Math.abs(drops / n - 0.12) < 0.01, `${drops / n}`);
 });
 
-test('a boss always drops the potions that list it, never a Rattatui piece (retired, IDL-55), and a low roll adds a legendary weapon', () => {
+test('a boss always drops the potions that list it, and a low roll adds a legendary weapon', () => {
 	const king = { type: 'bossGreatAuroch', level: 15 } as const;
 	const r = rollKillLoot(king, ctx, () => 0.999);
-	assert.equal(r.items.filter(isSetPiece).length, 0);
 	assert.deepEqual(
 		r.items.find((d) => baseOf(d) === 'potion_minor'),
 		{ kind: 'consumable', id: 'potion_minor', qty: 2 },
@@ -70,17 +67,15 @@ test('a boss always drops the potions that list it, never a Rattatui piece (reti
 	);
 	assert.equal(r.items.some(isLegendaryWeapon), false);
 	const lucky = rollKillLoot(king, ctx, () => 0).items;
-	assert.equal(lucky.filter(isSetPiece).length, 0);
 	assert.equal(lucky.filter(isLegendaryWeapon).length, 1, 'a low roll also wins a legendary weapon');
 });
 
-test('a boss gives a legendary weapon about 5% of the time and no set piece', () => {
+test('a boss gives a legendary weapon about 5% of the time', () => {
 	const rng = mulberry32(32);
 	const n = 40000;
 	let legendary = 0;
 	for (let i = 0; i < n; i++) {
 		const items = rollKillLoot({ type: 'bossGreatAuroch', level: 15 }, ctx, rng).items;
-		assert.equal(items.filter(isSetPiece).length, 0);
 		if (items.some(isLegendaryWeapon)) legendary++;
 	}
 	assert.ok(Math.abs(legendary / n - 0.05) < 0.007, `legendary ${legendary / n}`);
@@ -89,7 +84,7 @@ test('a boss gives a legendary weapon about 5% of the time and no set piece', ()
 test('the King now also rolls one general item of his own (rolled rarity, at the King level)', () => {
 	const rng = mulberry32(33);
 	for (let i = 0; i < 300; i++) {
-		const general = gearOnly(rollKillLoot({ type: 'bossGreatAuroch', level: 15 }, ctx, rng).items).filter((d) => !isSetPiece(d) && !isLegendaryWeapon(d));
+		const general = gearOnly(rollKillLoot({ type: 'bossGreatAuroch', level: 15 }, ctx, rng).items).filter((d) => !isLegendaryWeapon(d));
 		assert.equal(general.length, 1);
 		assert.equal(general[0].kind === 'gear' ? general[0].item.level : 0, 15);
 	}

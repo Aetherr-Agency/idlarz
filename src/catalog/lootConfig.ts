@@ -132,7 +132,7 @@ export const LOOT_PROFILES: Record<string, LootProfile> = {
 		rarityWeights: { common: 20, uncommon: 30, rare: 30, epic: 15, legendary: 5 },
 		generalPoolId: 'general_equipment',
 		bonusTables: [
-			// The Rattatui set no longer drops (IDL-55); bosses own their drops from IDL-44 on (docs/20)
+			// Bosses own their drops from IDL-44 on (docs/20)
 			{
 				id: 'king_legendary',
 				poolId: 'legendary_weapons',

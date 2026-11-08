@@ -16,6 +16,5 @@
 	{"icon": "item_wooden_sword", "item": "wooden_sword", "file": null, "slot": "mainHand", "weapon": "sword", "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
 	{"icon": "item_iron_sword", "item": "iron_sword", "file": null, "slot": "mainHand", "weapon": "sword", "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
 	{"icon": "item_obsidian_blade", "item": "obsidian_blade", "file": null, "slot": "mainHand", "weapon": "sword", "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
-	{"icon": "item_rattatui_fang_blade", "item": "rattatui_fang_blade", "file": null, "slot": "mainHand", "weapon": "sword", "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
 	{"icon": "item_emberbrand", "item": "emberbrand", "file": null, "slot": "mainHand", "weapon": "sword", "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
 ]

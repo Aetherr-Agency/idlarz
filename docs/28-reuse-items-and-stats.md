@@ -13,7 +13,7 @@
 
 ## 2. Items with a catalog entry
 
-Tier 1-4 are the material tiers of `catalog/stats.ts` (1 wood/cloth, 2 steel, 3 obsidian, 4 Rattatui-level). Stats use only the 13 existing item stat keys.
+Tier 1-4 are the material tiers of `catalog/stats.ts` (1 wood/cloth, 2 steel, 3 obsidian, 4 reserve gear). Stats use only the 13 existing item stat keys.
 
 | Id | Name | Slot / type | Tier | Stats | Art |
 | --- | --- | --- | --- | --- | --- |
@@ -182,7 +182,7 @@ The eight non-top legendaries can also be crafted late (crafting level 95, 50 Wa
 
 Classic legendaries (`emberbrand`, `starfall_bow`, `titan_maul`) stay as stat-only legendaries without perks.
 
-**Rattatui set removed (2026-11-07, owner):** it was for beta testers while rats existed. Drops stopped with IDL-55 (out of every pool and boss source; `retired: true` on the items and the set keeps owned pieces working); the definitions are deleted at the epoch reset (IDL-76) because every bag is wiped there.
+**Rattatui set removed (2026-11-07, owner):** it was for beta testers while rats existed. Drops stopped with IDL-55 (out of every pool and boss source; `retired: true` on the items and the set keeps owned pieces working); the definitions and icons were deleted from the catalog on 2026-11-08 (owner), so a save that still holds a piece is rejected by `sanitizeSave` (check `npm run check-live-saves` before releasing).
 
 ## 7. New item stats (decided 2026-11-07)
 
