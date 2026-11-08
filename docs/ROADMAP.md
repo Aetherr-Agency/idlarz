@@ -182,6 +182,8 @@ The five T2 materials of the rebirth biomes (Hardwood, Cloth, Honey, Ichor, War 
 
 Measure with `npm run sim -- --seeds=3`, never from numbers copied into prose: [generated/sim-milestones.md](generated/sim-milestones.md). Keep the targets of [06](06-pacing-targets.md).
 
+**The pacing guard.** `npm run sim` writes `docs/generated/sim-baseline.json`; CI (job `generated`) runs `scripts/pacing-guard.ts`, which compares it with the copy on the base branch and fails the PR when a guarded milestone moves by more than ±15 %. Regenerating the baseline cannot hide a change, because the comparison is against the base branch. An intended pacing change carries the `pacing-change` label: the guard then prints the report and passes. The label only takes effect on a new run, so **re-run the job after adding it**.
+
 | # | Topic | Observation | Idea |
 | --- | --- | --- | --- |
 | BL1 + BL3 | **Active vs idle gap, and chests and map clicks are small** (decided 2026-11-07, IDL-80) | gold is not the limiter (casual sits on 11-27M unspent gold; casual vs idle is only 4-20 % apart on pacing) | gold click ladder and chest gold stay; chest bundles get a bigger resource share and size (build task IDL-197); the click Idol and ranger passive give resources or chest speed, never gold; target casual 15-25 % faster than idle |
