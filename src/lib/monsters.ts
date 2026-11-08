@@ -36,23 +36,30 @@ export const spawnLevelRange = (type: MonsterType, castleLevel = 1): { min: numb
 /**
  * The level a new monster starts at. Rolled from a generator seeded by its id and nothing else, so it takes no number from
  * Math.random (the rest of the game's randomness is the same with or without it) and the same monster always rolls the same.
+ * `levelCap` (optional) is the highest level the player can still beat (see offline/spawnWeights.ts): a roll above it comes down to it, never below `min`.
  */
-export const rollSpawnLevel = (type: MonsterType, castleLevel: number, monsterId: number, distance = 0): number => {
+export const rollSpawnLevel = (type: MonsterType, castleLevel: number, monsterId: number, distance = 0, levelCap?: number): number => {
 	const { min, max } = spawnLevelRange(type, castleLevel);
 	const bonus = dangerBonus(distance);
 	const cap = MONSTERS[type].spawnWindow.cap;
-	return randomInt(mulberry32(monsterId * 2654435761 + 17), Math.min(cap, min + bonus), Math.min(cap, max + bonus));
+	const lo = Math.min(cap, min + bonus);
+	const rolled = randomInt(mulberry32(monsterId * 2654435761 + 17), lo, Math.min(cap, max + bonus));
+	// a weak player's cap pulls the roll down, but never below the bottom of the window (the roll itself is the same with or without a cap)
+	return levelCap === undefined ? rolled : Math.max(lo, Math.min(rolled, levelCap));
 };
 
 /** Levels added to a monster that appears `distance` tiles (Chebyshev) from the castle: danger grows toward the frontier. */
 export const dangerBonus = (distance: number): number => Math.floor(Math.max(0, Number.isFinite(distance) ? distance : 0) / COMBAT.spawn.dangerStep);
 
+/** How many levels a monster can grow: the growth limit, or less when the server capped it for a weak player (`growCap`, set when it appeared). */
+const growthLevels = (ctx: LimitContext, growCap?: number): number => Math.min(limitOf('monsterGrowthLevels', ctx), growCap ?? Infinity);
+
 /** The highest level a monster that appeared at `spawnLevel` can grow to. */
-export const maxLevelOf = (spawnLevel: number, ctx: LimitContext = {}): number => spawnLevel + limitOf('monsterGrowthLevels', ctx);
+export const maxLevelOf = (spawnLevel: number, ctx: LimitContext = {}, growCap?: number): number => spawnLevel + growthLevels(ctx, growCap);
 
 /** The level of a monster of this age: its spawn level plus one per growth interval, up to the growth limit. */
-export const levelAtAge = (spawnLevel: number, ageSec: number, ctx: LimitContext = {}): number =>
-	spawnLevel + Math.min(limitOf('monsterGrowthLevels', ctx), Math.floor(Math.max(0, ageSec) / limitOf('monsterGrowthIntervalSec', ctx)));
+export const levelAtAge = (spawnLevel: number, ageSec: number, ctx: LimitContext = {}, growCap?: number): number =>
+	spawnLevel + Math.min(growthLevels(ctx, growCap), Math.floor(Math.max(0, ageSec) / limitOf('monsterGrowthIntervalSec', ctx)));
 
 /** Rounds .5 up even when the power of an irrational growth factor lands a hair below it (337.4999... is 338, like the old exact 1.5 per tier). */
 const roundHalfUp = (value: number): number => Math.round(value + 1e-9);
@@ -124,7 +131,7 @@ export const pickSpawnTile = (
 export const advanceMonsters = (monsters: Monster[], dtSec: number, ctx: LimitContext = {}): Monster[] =>
 	monsters.map((mon) => {
 		const ageSec = mon.ageSec + dtSec;
-		return { ...mon, ageSec, level: levelAtAge(mon.spawnLevel, ageSec, ctx) };
+		return { ...mon, ageSec, level: levelAtAge(mon.spawnLevel, ageSec, ctx, mon.growCap) };
 	});
 
 /** Where a monster is on its way to full size: its top level, whether it is there, the time to the next level and the share of this level's wait that has passed. */
@@ -136,8 +143,8 @@ export interface GrowthInfo {
 	fraction: number;
 }
 
-export const growthInfo = (mon: Pick<Monster, 'level' | 'spawnLevel' | 'ageSec'>, ctx: LimitContext = {}): GrowthInfo => {
-	const max = maxLevelOf(mon.spawnLevel, ctx);
+export const growthInfo = (mon: Pick<Monster, 'level' | 'spawnLevel' | 'ageSec' | 'growCap'>, ctx: LimitContext = {}): GrowthInfo => {
+	const max = maxLevelOf(mon.spawnLevel, ctx, mon.growCap);
 	if (mon.level >= max) return { max, maxed: true, leftSec: null, fraction: 1 };
 	const interval = limitOf('monsterGrowthIntervalSec', ctx);
 	const leftSec = Math.max(0, interval * (mon.level - mon.spawnLevel + 1) - mon.ageSec);
@@ -146,7 +153,7 @@ export const growthInfo = (mon: Pick<Monster, 'level' | 'spawnLevel' | 'ageSec'>
 
 /** Seconds until a monster gains its next level; null at the growth limit. */
 export const growthSecondsLeft = (mon: Monster, ctx: LimitContext = {}): number | null => {
-	if (mon.level >= maxLevelOf(mon.spawnLevel, ctx)) return null;
+	if (mon.level >= maxLevelOf(mon.spawnLevel, ctx, mon.growCap)) return null;
 	const interval = limitOf('monsterGrowthIntervalSec', ctx);
 	return interval * (mon.level - mon.spawnLevel + 1) - mon.ageSec;
 };

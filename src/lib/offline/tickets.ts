@@ -38,6 +38,8 @@ export interface MonsterTicket {
 	x?: number;
 	y?: number;
 	spawnLevel?: number;
+	/** Growth levels it may gain, when the player was weak enough at placement for the server to cap it (left out: the full growth limit) */
+	growCap?: number;
 	/** Which monster it is, chosen with the tile (placement.ts). Left out in rows from the days of rats: see `monsterTypeOf` */
 	type?: MonsterType;
 }

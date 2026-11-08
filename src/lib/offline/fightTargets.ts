@@ -33,7 +33,7 @@ export const pickTarget = (
 	/** Auto-battle only: whether the player is expected to win against this monster (left out: no check) */
 	winnable?: (type: MonsterType, level: number) => boolean,
 ): Target | null => {
-	const levelOf = (ticket: MonsterTicket) => levelAtAge(ticket.spawnLevel ?? 1, tSec - ticket.at);
+	const levelOf = (ticket: MonsterTicket) => levelAtAge(ticket.spawnLevel ?? 1, tSec - ticket.at, {}, ticket.growCap);
 	const ready = (ticket: MonsterTicket, kind: 'rat' | 'king') =>
 		isPlaced(ticket) && tSec >= (combat.retryAt[ticket.n] ?? 0) && (!winnable || winnable(monsterTypeOf(ticket, kind), levelOf(ticket)));
 	const rats = ledger.bank.rats
@@ -127,5 +127,12 @@ export const queueView = (ledger: Ledger, c: CombatState): { n: number; type: Mo
 	(c.queue ?? []).flatMap((n) => {
 		const target = placedTarget(ledger, n);
 		if (!target) return [];
-		return [{ n, type: target.type, level: levelAtAge(target.ticket.spawnLevel ?? 1, c.at - target.ticket.at), lucky: !!target.ticket.lucky }];
+		return [
+			{
+				n,
+				type: target.type,
+				level: levelAtAge(target.ticket.spawnLevel ?? 1, c.at - target.ticket.at, {}, target.ticket.growCap),
+				lucky: !!target.ticket.lucky,
+			},
+		];
 	});

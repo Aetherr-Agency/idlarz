@@ -31,7 +31,7 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, level, building, canA
 	const monsterKey = game((state) => {
 		const m = monsterAt(state.monsters, x, y);
 		return m
-			? `${m.id}:${m.type}:${m.level}:${m.lucky ? 1 : 0}:${maxLevelOf(m.spawnLevel, { merchantUpgrades: state.merchantUpgrades, prestige: state.prestige })}:${m.art ?? ''}`
+			? `${m.id}:${m.type}:${m.level}:${m.lucky ? 1 : 0}:${maxLevelOf(m.spawnLevel, { merchantUpgrades: state.merchantUpgrades, prestige: state.prestige }, m.growCap)}:${m.art ?? ''}`
 			: '';
 	});
 	const [monsterId, monsterType, monsterLevel, monsterLucky, monsterMax, monsterArt] = monsterKey ? monsterKey.split(':') : [];

@@ -48,12 +48,23 @@ export const reconcileTickets = (
 	let strongest = 0;
 	const monsters: Monster[] = waiting.map((t) => {
 		const ageSec = Math.max(0, serverNowSec - t.at);
-		const level = levelAtAge(t.spawnLevel, ageSec, limits);
+		const level = levelAtAge(t.spawnLevel, ageSec, limits, t.growCap);
 		if (!standing.has(t.n)) {
 			placedMonsters++;
 			strongest = Math.max(strongest, level);
 		}
-		return { id: t.n, type: t.type, level, spawnLevel: t.spawnLevel, x: t.x, y: t.y, ageSec, ticket: t.n, ...(t.lucky ? { lucky: true } : {}) };
+		return {
+			id: t.n,
+			type: t.type,
+			level,
+			spawnLevel: t.spawnLevel,
+			...(t.growCap !== undefined ? { growCap: t.growCap } : {}),
+			x: t.x,
+			y: t.y,
+			ageSec,
+			ticket: t.n,
+			...(t.lucky ? { lucky: true } : {}),
+		};
 	});
 	const removedMonsters = state.monsters.filter((mon) => !waiting.some((t) => t.n === mon.ticket)).length;
 

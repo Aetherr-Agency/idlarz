@@ -45,7 +45,7 @@ const MonsterTip: React.FC<{ id: number; type: MonsterType; level: number; art?:
 			{monster && (
 				<div className='px-tip-muted'>
 					Level {formatCompact(level)} of{' '}
-					{formatCompact(maxLevelOf(monster.spawnLevel, { merchantUpgrades: state.merchantUpgrades, prestige: state.prestige }))}
+					{formatCompact(maxLevelOf(monster.spawnLevel, { merchantUpgrades: state.merchantUpgrades, prestige: state.prestige }, monster.growCap))}
 					{nextLevel !== null ? `, grows in ${Math.max(1, Math.ceil(nextLevel / 60))} min` : ' - fully grown'}
 				</div>
 			)}
