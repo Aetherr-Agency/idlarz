@@ -192,12 +192,12 @@ None of these exists yet; adding one means `STAT_DEFS`, `STAT_BASE_BY_TIER`, a c
 | --- | --- | --- | --- |
 | Crit Damage % | rings, neck | `critDamagePercent` in the fight engine (attributes only today) | easy |
 | Armor Penetration % | main-hand weapons | monster armor in the damage step | matters once monsters carry real armor |
-| Thorns % | shields | monster-swing step in `fight.ts` | needs balance against fast monsters |
+| Thorns % | shields | monster-swing step in `fightSteps.ts` | needs balance against fast monsters |
 | Build Speed % | hands, chest | castle upgrade timer | shares the -60 % combined cap with Embers and Idols (IDL-149); legendary perk of the same family |
 | Tile Discount % | cape, neck | `effectiveTileDiscount` | stays under the 45 % cap with Charisma and Bulk |
 | Farm Yield % | hands | `calculateFarmOutput` | client maths today; the server only rebuilds rates |
 | Heal on Kill % | rings, charm | kill step (`payKill`) in the server fight engine | sustains auto-battle |
-| Boss Timer +s | head, shoulder | boss clock in `fight.ts` (180 s) | needs a cap |
+| Boss Timer +s | head, shoulder | boss clock in `fightSteps.ts` (180 s) | needs a cap |
 | Potion Cooldown %, Bag Slots | belt | already decided in IDL-138 | floor 4 s; small capped bag slots |
 
 **Accessory themes and affix rules (decided 2026-11-07, IDL-164, IDL-45, IDL-176):**
