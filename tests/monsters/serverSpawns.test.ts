@@ -171,7 +171,7 @@ test('a lucky monster pays three times the gold and XP and adds a gear roll', ()
 	const ctx = { goldPerSec: 10, xpPerSec: 2, luck: 0 };
 	const plain = rollKillLoot({ type: 'thistleBoar', level: 3 }, ctx, mulberry32(5));
 	const lucky = rollKillLoot({ type: 'thistleBoar', level: 3 }, { ...ctx, lucky: true }, mulberry32(5));
-	assert.equal(lucky.gold, plain.gold * 3);
+	assert.ok(Math.abs(lucky.gold - plain.gold * 3) < 3, 'the gold is floored once, so three times a floored number is off by less than 3');
 	assert.equal(lucky.xp, plain.xp * 3);
 	let more = 0;
 	for (let seed = 1; seed <= 300; seed++) {

@@ -444,14 +444,14 @@
 				"heal": 168,
 				"potion": 280
 			},
-			"digest": "7128b22825a2e059abedb5bdabd0b52827493178",
+			"digest": "d6bbc71581b2a7511d0cb0c44aabae3966ae0312",
 			"results": [
 				"1|1000000|engage||||1|thistleBoar|2",
 				"2|1000000.1|stun|10|||||",
-				"24|1000015.9|won||||1|thistleBoar|2 reward={\"gold\":105,\"xp\":105.3,\"hide\":0,\"items\":[\"{\\\"kind\\\":\\\"consumable\\\",\\\"id\\\":\\\"potion_minor\\\",\\\"qty\\\":1}\"],\"stored\":[{\"kind\":\"consumable\",\"id\":\"potion_minor\",\"qty\":1}],\"convertedGold\":0,\"autoSold\":{\"count\":0,\"gold\":0},\"pity\":{},\"lucky\":false}",
+				"24|1000015.9|won||||1|thistleBoar|2 reward={\"gold\":97,\"xp\":45.36,\"hide\":0,\"items\":[\"{\\\"kind\\\":\\\"consumable\\\",\\\"id\\\":\\\"potion_minor\\\",\\\"qty\\\":1}\"],\"stored\":[{\"kind\":\"consumable\",\"id\":\"potion_minor\",\"qty\":1}],\"convertedGold\":0,\"autoSold\":{\"count\":0,\"gold\":0},\"pity\":{},\"lucky\":false}",
 				"25|1000015.9|engage||||3|thistleBoar|4",
 				"49|1000030.1|stun|10|||||",
-				"65|1000041.8|won||||3|thistleBoar|4 reward={\"gold\":432,\"xp\":432.4355099999999,\"hide\":0,\"items\":[\"{\\\"kind\\\":\\\"gear\\\",\\\"item\\\":{\\\"base\\\":\\\"cloth_trousers\\\",\\\"level\\\":3,\\\"rarity\\\":\\\"common\\\",\\\"quality\\\":11,\\\"affixes\\\":[]}}\"],\"stored\":[{\"kind\":\"gear\",\"item\":{\"base\":\"cloth_trousers\",\"level\":3,\"rarity\":\"common\",\"quality\":11,\"affixes\":[]}}],\"convertedGold\":0,\"autoSold\":{\"count\":0,\"gold\":0},\"pity\":{},\"lucky\":true}",
+				"65|1000041.8|won||||3|thistleBoar|4 reward={\"gold\":340,\"xp\":158.72371200000003,\"hide\":0,\"items\":[\"{\\\"kind\\\":\\\"gear\\\",\\\"item\\\":{\\\"base\\\":\\\"cloth_trousers\\\",\\\"level\\\":3,\\\"rarity\\\":\\\"common\\\",\\\"quality\\\":11,\\\"affixes\\\":[]}}\"],\"stored\":[{\"kind\":\"gear\",\"item\":{\"base\":\"cloth_trousers\",\"level\":3,\"rarity\":\"common\",\"quality\":11,\"affixes\":[]}}],\"convertedGold\":0,\"autoSold\":{\"count\":0,\"gold\":0},\"pity\":{},\"lucky\":true}",
 				"66|1000071.6|engage||||2|thistleBoar|9",
 				"67|1000071.7|stun|10|||||",
 				"93|1000089.7|heal|28|||||",
@@ -464,7 +464,7 @@
 				"177|1000137.7|potion|35||potion_minor|||",
 				"191|1000145.7|potion|35||potion_minor|||",
 				"193|1000146.6|stun|10|||||",
-				"195|1000146.6|won||||2|thistleBoar|9 reward={\"gold\":316,\"xp\":316.0307948221424,\"hide\":0,\"items\":[\"{\\\"kind\\\":\\\"consumable\\\",\\\"id\\\":\\\"potion_minor\\\",\\\"qty\\\":1}\"],\"stored\":[{\"kind\":\"consumable\",\"id\":\"potion_minor\",\"qty\":1}],\"convertedGold\":0,\"autoSold\":{\"count\":0,\"gold\":0},\"pity\":{},\"lucky\":false}",
+				"195|1000146.6|won||||2|thistleBoar|9 reward={\"gold\":166,\"xp\":77.73906883183906,\"hide\":0,\"items\":[\"{\\\"kind\\\":\\\"consumable\\\",\\\"id\\\":\\\"potion_minor\\\",\\\"qty\\\":1}\"],\"stored\":[{\"kind\":\"consumable\",\"id\":\"potion_minor\",\"qty\":1}],\"convertedGold\":0,\"autoSold\":{\"count\":0,\"gold\":0},\"pity\":{},\"lucky\":false}",
 				"196|1000164.6|engage||||4|bossGreatAuroch|15",
 				"214|1000176.6|stun|10|||||",
 				"228|1000186.7|heal|28|||||",
@@ -482,7 +482,7 @@
 			"mp": "56",
 			"kills": 3,
 			"granted": {
-				"gold": 853,
+				"gold": 603,
 				"wood": 0,
 				"stone": 0,
 				"coal": 0,
@@ -491,7 +491,7 @@
 				"eggs": 0,
 				"milk": 0,
 				"hide": 0,
-				"xp": 853.7663048221423,
+				"xp": 281.8227808318391,
 				"gems": 0
 			},
 			"ratsLeft": [],
@@ -688,16 +688,16 @@
 				"hit": 2110.7,
 				"hurt": 116
 			},
-			"digest": "34a17500ed470be1de3e2f5a45b403c72e2d561c",
+			"digest": "4bdc540dd1d415c6411d634d15bc73a5c5242063",
 			"results": [
 				"1|1000000|engage||||1|thistleBoar|11",
 				"2|1000000.1|stun|10|||||",
-				"26|1000016.7|won||||1|thistleBoar|11 reward={\"gold\":432,\"xp\":432.6145550320307,\"hide\":0,\"items\":[],\"stored\":[],\"convertedGold\":0,\"autoSold\":{\"count\":0,\"gold\":0},\"pity\":{},\"lucky\":false}",
+				"26|1000016.7|won||||1|thistleBoar|11 reward={\"gold\":194,\"xp\":90.6748498854571,\"hide\":0,\"items\":[],\"stored\":[],\"convertedGold\":0,\"autoSold\":{\"count\":0,\"gold\":0},\"pity\":{},\"lucky\":false}",
 				"27|1000016.7|engage||||2|thistleBoar|12",
 				"49|1000030.1|stun|10|||||",
-				"60|1000037.6|won||||2|thistleBoar|12 reward={\"gold\":506,\"xp\":506.1590293874759,\"hide\":0,\"items\":[\"{\\\"kind\\\":\\\"consumable\\\",\\\"id\\\":\\\"potion_minor\\\",\\\"qty\\\":1}\"],\"stored\":[{\"kind\":\"consumable\",\"id\":\"potion_minor\",\"qty\":1}],\"convertedGold\":0,\"autoSold\":{\"count\":0,\"gold\":0},\"pity\":{},\"lucky\":false}",
+				"60|1000037.6|won||||2|thistleBoar|12 reward={\"gold\":209,\"xp\":97.92883787629367,\"hide\":0,\"items\":[\"{\\\"kind\\\":\\\"consumable\\\",\\\"id\\\":\\\"potion_minor\\\",\\\"qty\\\":1}\"],\"stored\":[{\"kind\":\"consumable\",\"id\":\"potion_minor\",\"qty\":1}],\"convertedGold\":0,\"autoSold\":{\"count\":0,\"gold\":0},\"pity\":{},\"lucky\":false}",
 				"61|1000037.6|engage||||4|thistleBoar|11",
-				"94|1000056.8|won||||4|thistleBoar|11 reward={\"gold\":432,\"xp\":432.6145550320307,\"hide\":0,\"items\":[\"{\\\"kind\\\":\\\"consumable\\\",\\\"id\\\":\\\"potion_greater\\\",\\\"qty\\\":1}\"],\"stored\":[{\"kind\":\"consumable\",\"id\":\"potion_greater\",\"qty\":1}],\"convertedGold\":0,\"autoSold\":{\"count\":0,\"gold\":0},\"pity\":{},\"lucky\":false}",
+				"94|1000056.8|won||||4|thistleBoar|11 reward={\"gold\":194,\"xp\":90.6748498854571,\"hide\":0,\"items\":[\"{\\\"kind\\\":\\\"consumable\\\",\\\"id\\\":\\\"potion_greater\\\",\\\"qty\\\":1}\"],\"stored\":[{\"kind\":\"consumable\",\"id\":\"potion_greater\",\"qty\":1}],\"convertedGold\":0,\"autoSold\":{\"count\":0,\"gold\":0},\"pity\":{},\"lucky\":false}",
 				"95|1000091|engage||||5|bossGreatAuroch|15",
 				"96|1000091.1|stun|10|||||",
 				"133|1000116.9|won||||5|bossGreatAuroch|15 reward={\"gold\":3600,\"xp\":3600,\"hide\":0,\"items\":[\"{\\\"kind\\\":\\\"gear\\\",\\\"item\\\":{\\\"base\\\":\\\"leather_vest\\\",\\\"level\\\":15,\\\"rarity\\\":\\\"epic\\\",\\\"quality\\\":76,\\\"affixes\\\":[{\\\"id\\\":\\\"regen_prefix\\\",\\\"roll\\\":53},{\\\"id\\\":\\\"manaRegen_prefix\\\",\\\"roll\\\":10},{\\\"id\\\":\\\"goldFind_prefix\\\",\\\"roll\\\":22}]}}\",\"{\\\"kind\\\":\\\"consumable\\\",\\\"id\\\":\\\"potion_minor\\\",\\\"qty\\\":2}\",\"{\\\"kind\\\":\\\"consumable\\\",\\\"id\\\":\\\"potion_greater\\\",\\\"qty\\\":1}\"],\"stored\":[{\"kind\":\"gear\",\"item\":{\"base\":\"leather_vest\",\"level\":15,\"rarity\":\"epic\",\"quality\":76,\"affixes\":[{\"id\":\"regen_prefix\",\"roll\":53},{\"id\":\"manaRegen_prefix\",\"roll\":10},{\"id\":\"goldFind_prefix\",\"roll\":22}]}},{\"kind\":\"consumable\",\"id\":\"potion_minor\",\"qty\":2},{\"kind\":\"consumable\",\"id\":\"potion_greater\",\"qty\":1}],\"convertedGold\":0,\"autoSold\":{\"count\":0,\"gold\":0},\"pity\":{\"boss:king_legendary\":1},\"lucky\":false}"
@@ -708,7 +708,7 @@
 			"mp": "40",
 			"kills": 4,
 			"granted": {
-				"gold": 4970,
+				"gold": 4197,
 				"wood": 0,
 				"stone": 0,
 				"coal": 0,
@@ -717,7 +717,7 @@
 				"eggs": 0,
 				"milk": 0,
 				"hide": 0,
-				"xp": 4971.388139451537,
+				"xp": 3879.278537647208,
 				"gems": 0
 			},
 			"ratsLeft": [3],
@@ -776,12 +776,12 @@
 				"hurt": 236,
 				"crit": 8.7
 			},
-			"digest": "3d44ea770276fd49f6325832bd8647d319a2d9c3",
+			"digest": "c8b87dc57ca3a298d15334be7b9090bbe7ed65ab",
 			"results": [
 				"1|1000000|engage||||2|bossGreatAuroch|15",
 				"52|1000033|defeated||||2|bossGreatAuroch|15",
 				"53|1000083.8|engage||||1|thistleBoar|1",
-				"78|1000098|won||||1|thistleBoar|1 reward={\"gold\":90,\"xp\":90,\"hide\":0,\"items\":[],\"stored\":[],\"convertedGold\":0,\"autoSold\":{\"count\":0,\"gold\":0},\"pity\":{},\"lucky\":false}",
+				"78|1000098|won||||1|thistleBoar|1 reward={\"gold\":90,\"xp\":42,\"hide\":0,\"items\":[],\"stored\":[],\"convertedGold\":0,\"autoSold\":{\"count\":0,\"gold\":0},\"pity\":{},\"lucky\":false}",
 				"79|1000633|engage||||2|bossGreatAuroch|15",
 				"90|1000640|retreat||||2|bossGreatAuroch|15",
 				"91|1000700|engage||||2|bossGreatAuroch|15",
@@ -806,7 +806,7 @@
 				"eggs": 0,
 				"milk": 0,
 				"hide": 0,
-				"xp": 90,
+				"xp": 42,
 				"gems": 0
 			},
 			"ratsLeft": [],

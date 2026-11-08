@@ -51,7 +51,10 @@ test('each biome is a step up: its monsters and its boss start at higher levels,
 });
 
 test('the plains monster and boss carry the numbers of the old rat and Rat King (the balance sims keep their meaning)', () => {
-	assert.deepEqual([MONSTERS.thistleBoar.hp, MONSTERS.thistleBoar.attack, MONSTERS.thistleBoar.attackSpeed, MONSTERS.thistleBoar.rewardSec], [100, 4, 0.5, 90]);
+	assert.deepEqual(
+		[MONSTERS.thistleBoar.hp, MONSTERS.thistleBoar.attack, MONSTERS.thistleBoar.attackSpeed, MONSTERS.thistleBoar.reward.gold.rewardSec],
+		[100, 4, 0.5, 90],
+	);
 	assert.deepEqual(
 		[MONSTERS.bossGreatAuroch.hp, MONSTERS.bossGreatAuroch.attack, MONSTERS.bossGreatAuroch.armor, MONSTERS.bossGreatAuroch.timeLimitSec],
 		[1000, 11, 15, 75],
@@ -61,7 +64,7 @@ test('the plains monster and boss carry the numbers of the old rat and Rat King 
 test('every monster attacks at a speed (attacks per second, like a weapon), has a loot source and a reward', () => {
 	for (const [id, def] of Object.entries(MONSTERS)) {
 		assert.ok(def.attackSpeed > 0 && def.attackSpeed < 10, `${id} attack speed`);
-		assert.ok(def.rewardSec > 0);
+		assert.ok(def.reward.gold.rewardSec > 0 && def.reward.xp.rewardSec > 0 && def.reward.gold.cap > 0 && def.reward.xp.cap > 0 && def.reward.levelMult > 1);
 		assert.ok(def.lootSourceId.length > 0);
 	}
 });

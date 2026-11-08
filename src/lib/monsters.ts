@@ -19,7 +19,6 @@ export interface MonsterStats {
 	stunResist: number;
 	/** Attacks per second */
 	attackSpeed: number;
-	rewardSec: number;
 }
 
 export const monsterDef = (type: MonsterType): MonsterDef => MONSTERS[type];
@@ -64,7 +63,7 @@ export const levelAtAge = (spawnLevel: number, ageSec: number, ctx: LimitContext
 /** Rounds .5 up even when the power of an irrational growth factor lands a hair below it (337.4999... is 338, like the old exact 1.5 per tier). */
 const roundHalfUp = (value: number): number => Math.round(value + 1e-9);
 
-/** HP, attack, armor, crit, stun resistance and reward of a monster at a level. Reward is income-based, so it does not scale with the world. */
+/** HP, attack, armor, crit and stun resistance of a monster at a level (the reward is `monsterReward`). */
 export const monsterStats = (type: MonsterType, level: number): MonsterStats => {
 	const d = monsterDef(type);
 	const steps = Math.max(1, Math.floor(level)) - d.refLevel;
@@ -77,8 +76,13 @@ export const monsterStats = (type: MonsterType, level: number): MonsterStats => 
 		critMult: d.critMult,
 		stunResist: d.stunResist,
 		attackSpeed: d.attackSpeed,
-		rewardSec: d.rewardSec * Math.pow(d.rewardPerLevel, steps),
 	};
+};
+
+/** The reward block of a monster at a level: the multiplier `levelMult^(level - refLevel)` that applies to its gold and XP (see `MonsterDef.reward`). */
+export const rewardLevelMult = (type: MonsterType, level: number): number => {
+	const d = monsterDef(type);
+	return Math.pow(d.reward.levelMult, Math.max(1, Math.floor(level)) - d.refLevel);
 };
 
 export const monsterAt = (monsters: Monster[], x: number, y: number): Monster | undefined => monsters.find((mon) => mon.x === x && mon.y === y);

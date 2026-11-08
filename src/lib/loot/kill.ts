@@ -1,6 +1,6 @@
 import { COMBAT } from '@/config/combatConfig';
 import { CHEST, LUCK } from '@/config/spawns';
-import { monsterDef, monsterStats } from '@/lib/monsters';
+import { monsterDef, rewardLevelMult } from '@/lib/monsters';
 import type { Rng } from '@/lib/rng';
 import type { Drop, Monster } from '@/types/game';
 import { generateLoot } from './generate';
@@ -38,15 +38,20 @@ export interface KillLoot {
  * item level; this adapter only adds the gold and XP and keeps the call the game and the tests have always made.
  */
 export const killIncome = (monster: Pick<Monster, 'type' | 'level'>, ctx: KillContext): { gold: number; xp: number; hide: number } => {
-	const { rewardSec } = monsterStats(monster.type, monster.level);
+	const { reward } = monsterDef(monster.type);
+	const levelMult = rewardLevelMult(monster.type, monster.level);
 	const luckBonus = 1 + ctx.luck * CHEST.luckBonusPerPoint;
 	const goldFind = 1 + (ctx.goldFind ?? 0) / 100;
 	const bonus = ctx.lucky ? LUCK.luckyRat.rewardMultiplier : 1;
 	const kills = 1 + (ctx.killRewardPct ?? 0) / 100;
+	// the monster's part first (income share, capped, times its level), the player's investment (Luck, Gold Find, Kill Rewards %) after the cap
+	const goldBase = Math.min(ctx.goldPerSec * reward.gold.rewardSec, reward.gold.cap) * levelMult;
+	const xpBase = Math.min(ctx.xpPerSec * reward.xp.rewardSec, reward.xp.cap) * levelMult;
 	return {
-		gold: Math.floor(Math.max(COMBAT.rewards.minGold, ctx.goldPerSec * rewardSec * luckBonus * goldFind) * bonus * kills),
-		xp: Math.max(COMBAT.rewards.minXp, ctx.xpPerSec * rewardSec) * bonus * kills,
-		hide: Math.floor((ctx.hidePerSec ?? 0) * rewardSec * COMBAT.rewards.hideShare * bonus),
+		gold: Math.floor(Math.max(COMBAT.rewards.minGold, goldBase * luckBonus * goldFind) * bonus * kills),
+		xp: Math.max(COMBAT.rewards.minXp, xpBase) * bonus * kills,
+		// pelts stay a share of the farm's hide income (uncapped; goods per family are a separate task)
+		hide: Math.floor((ctx.hidePerSec ?? 0) * reward.gold.rewardSec * levelMult * COMBAT.rewards.hideShare * bonus),
 	};
 };
 
