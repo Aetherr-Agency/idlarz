@@ -1,6 +1,9 @@
 # 29 · The end-to-end test account
 
-**Every test that needs a real login uses one account: `lepryko@gmail.com`.** No other account is used for browser tests, manual checks of the server, or experiments with saves. The account lives in the Supabase project that `.env.local` points at; its password is never in the repo and never typed by an assistant or a script: **the person running the test signs in by hand each time**.
+**Every test that needs a real login uses one account: `lepryko@gmail.com`.** No other account is used for browser tests, manual checks of the server, or experiments with saves. The account lives in the Supabase project that `.env.local` points at. Its password is never in the repo. Two ways to sign in:
+
+- **By hand** (the default): the test opens Chrome and waits for the person to sign in.
+- **From `.env.local`**: put `E2E_TEST_PASSWORD=...` in your git-ignored `.env.local` (the empty entry is in `.env.example`). `npm run e2e` then signs in through the app's own `/api/auth/login` route. `E2E_MANUAL_LOGIN=1` forces the by-hand path. Traces are off so the request body (the password) is never recorded. **Run this yourself in your own terminal; an assistant does not read `.env.local` or run the test with the password set.**
 
 ## Run a browser test
 
@@ -13,7 +16,7 @@
 
    It needs `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (environment or `.env.local`); check which project they point at.
 
-2. **Run the smoke test** and sign in when the browser window opens (the test waits up to ten minutes for the session and fails if it is not the test account):
+2. **Run the smoke test**; without `E2E_TEST_PASSWORD` sign in when the browser window opens (the test waits up to ten minutes for the session). It fails if the account is not the test account:
 
    ```bash
    npm run e2e

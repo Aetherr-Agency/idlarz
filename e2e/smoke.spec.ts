@@ -48,9 +48,16 @@ const waitForGame = async () => {
 const owned = () => page.evaluate(() => (window as unknown as GameWindow).__game!.getState().tiles.stats.owned);
 const gold = () => page.evaluate(() => (window as unknown as GameWindow).__game!.getState().resources.gold);
 
-test('sign in as the test account (by hand)', async () => {
+test('sign in as the test account', async () => {
+	// E2E_TEST_PASSWORD (git-ignored .env.local) signs in through the app's own login route; without it a person signs in by hand.
+	// E2E_MANUAL_LOGIN=1 forces the by-hand path even when the password is set.
+	const password = process.env.E2E_MANUAL_LOGIN ? '' : (process.env.E2E_TEST_PASSWORD ?? '');
+	if (password) {
+		const login = await page.request.post('/api/auth/login', { data: { email: TEST_ACCOUNT_EMAIL, password } });
+		expect(login.status(), `sign-in as ${TEST_ACCOUNT_EMAIL} failed: is E2E_TEST_PASSWORD right for this Supabase project?`).toBe(200);
+	}
 	await page.goto('/');
-	console.log(`\n>>> Sign in as ${TEST_ACCOUNT_EMAIL} in the browser window that just opened (the test waits up to 10 minutes).\n`);
+	if (!password) console.log(`\n>>> Sign in as ${TEST_ACCOUNT_EMAIL} in the browser window that just opened (the test waits up to 10 minutes).\n`);
 	await expect
 		.poll(async () => (await page.request.get('/api/auth/me')).status(), { timeout: SIGN_IN_WAIT_MS, intervals: [1000], message: 'nobody signed in' })
 		.toBe(200);
