@@ -63,7 +63,7 @@ The `merchant` source (level 4 + 3 per castle level above 1, like a chest) runs 
 
 ## Player-facing
 
-- **Pity**: the King's legendary weapon table adds +1 % per miss up to +10 %; a drop resets it. Set pieces already prefer ones you do not own.
+- **Pity**: the King's legendary weapon table adds +1 % per miss up to +10 %; a drop resets it.
 - **Auto-sell**: *Merchant → Goods → Sell items → Auto-sell new gear up to ...* sells matching drops the moment they drop (with the Haggler bonus), so a bigger drop volume does not clog the bag. Never offered for the two rarest tiers.
 
 ## Perk families and caps (decided 2026-11-07, IDL-149; sim checks pending)
@@ -72,7 +72,7 @@ Legendary perks and set bonuses use the same families. Each percent family is it
 
 | Family | Common | Rare | Top | Gear cap | Combines with |
 | --- | --- | --- | --- | --- | --- |
-| Income | 8 % | 15 % | 25 % | 50 % | Embers (+6 % each), Paragon: separate buckets |
+| Income | 8 % | 15 % | 25 % | 50 % | Embers (`0.1 × earned^0.6`), Paragon: separate buckets |
 | XP | 8 % | 15 % | 25 % | 40 % | Paragon account bucket |
 | Kill reward | 8 % | 15 % | 25 % | 60 % | Luck / Gold Find apply after the monster reward cap |
 | Click gold | 8 % | 15 % | 25 % | 40 % | click Idol |
@@ -100,7 +100,7 @@ A kill sometimes drops a **chest item** into the bag, opened later from the inve
 
 Salvage / materials and reroll / upgrade (real gear sinks), set bonuses that follow the item level (today a set bonus is a fixed amount, bigger on purpose so it matters before the first rebirth), `requiredLevel`, elite monsters and premium chests, and rebalancing the monsters with the world level (see [ROADMAP](ROADMAP.md)).
 
-A monster source has no level of its own: `LootRequest.level` is the monster's level, and the source's `levels` range (rat 1-20, King 15-35) is what `validateLootData` checks the pools against. Per-level chances (`chancePerLevel`) replace the old per-tier ones (half the size: a tier was two levels). A boss is a monster def with `grade: 'boss'` whose `lootSourceId` names its own source and profile, so boss-only drops need data only.
+A monster source has no level of its own: `LootRequest.level` is the monster's level, and the source's `levels` range (monster 1-30, boss 15-45) is what `validateLootData` checks the pools against. Per-level chances (`chancePerLevel`) replace the old per-tier ones (half the size: a tier was two levels). A boss is a monster def with `grade: 'boss'` whose `lootSourceId` names its own source and profile, so boss-only drops need data only.
 
 ## What gear is worth
 
