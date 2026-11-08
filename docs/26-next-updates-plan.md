@@ -16,7 +16,7 @@ The old-save support, the duplicate helpers and the dead code were removed befor
 
 ## Phase A · Core you can read (M-L in total, no behaviour change)
 
-Built and removed from this table: A1 (line endings, Prettier, `format:check` in CI), A2 (the store split into slices, `src/stores/game/*`), A3 (the config split by domain, `src/config/*`, and the game maths split by domain, `src/utils/game/*`; the old `gameConfig.ts` and `gameUtils.ts` are gone). Left: A4-A8 (Linear IDL-16, IDL-7, IDL-8, IDL-9, IDL-17).
+Built and removed from this table: A1 (line endings, Prettier, `format:check` in CI), A2 (the store split into slices, `src/stores/game/*`), A3 (the config split by domain, `src/config/*`, and the game maths split by domain, `src/utils/game/*`; the old `gameConfig.ts` and `gameUtils.ts` are gone), A6 (`Tile.tsx` split into `Tile`, `TileMonster`, `TileMenu` and `TileTooltip`; the Tutorial split is dropped because the guided tutorial, IDL-74, replaces `Tutorial.tsx`). Left: A4, A5, A7, A8 (Linear IDL-16, IDL-7, IDL-9, IDL-17).
 
 Rule for every step: **no gameplay change, the sim and the generated docs stay identical** (`npm run sim -- --no-write human hardcore` before and after), one PR each.
 
@@ -24,7 +24,6 @@ Rule for every step: **no gameplay change, the sim and the generated docs stay i
 |---|---|---|---|
 | A4 | **Split `fight.ts`.** `runCombat` is one 300-line closure. Pull out `profile`, `targets` (pickTarget, queue), `steps` (swings, skills, potions) and the view; keep the closure only as the orchestrator. | M | `tests/fightEngine.test.ts` and `battleQueue.test.ts` pin it. |
 | A5 | **Rename the rat leftovers.** `bank.rats`, `TicketKind 'rat'`, `LUCK.luckyRat`, `ratsMinted`, `luckyRatChance`, `monster_rat` icons: say `monsters` / `normal` / golden monster (the golden variant itself stays, see the section below). The ledger bank is stored JSON: no reader for the old names is needed (the ledger is reset), so rename, bump `SAVE_SCHEMA` if the save changes, and run `npm run reset-players` with that release. | M | Replaces the "additive ledger columns first" rule of [14](14-server-audit-and-data-plan.md) for this step. |
-| A6 | **Component hygiene.** `Tile.tsx` (the tile, the monster, the menu, the tooltip) into `Tile`, `TileMonster`, `TileMenu`; `Tutorial.tsx` (400 lines of prose with numbers) onto the guided-tutorial data format of [21](21-classes-avatars-achievements-offline-report.md) section 7 when that is built, until then split per section. | M | |
 | A7 | **Tests and generated docs.** One folder per area (`tests/combat`, `tests/economy`, `tests/saves`, ...), a shared builder for ledgers/monsters (`tests/builders.ts`), `npm run docs:gen` in CI with a "no diff" check so the generated tables cannot rot (item catalog, fight-sim, monster ladder, loot-sim). | S-M | The catalog doc test already shows the pattern. The frozen old-save fixtures are gone; `tests/helpers.ts` `rawSnapshot` now builds the `land` layout. |
 | A8 | **Make the pacing guard blocking** once A2-A4 land (the sim job in CI fails a PR that moves the first rebirth by more than ±15 %). | S | The job exists and is informational. |
 
