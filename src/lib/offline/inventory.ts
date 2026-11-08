@@ -159,6 +159,7 @@ const EQUIPMENT_SLOTS: readonly string[] = [
 	'ring1',
 	'ring2',
 	'charm',
+	'belt',
 	'mainHand',
 	'offHand',
 ];

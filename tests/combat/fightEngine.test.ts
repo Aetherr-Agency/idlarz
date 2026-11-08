@@ -4,7 +4,8 @@ import { COMBAT, MONSTERS } from '../../src/config/combatConfig';
 import { STARTER_EQUIPMENT } from '../../src/config/itemCatalog';
 import { SKILLS } from '../../src/catalog/skills';
 import { attacksPerSecond } from '../../src/lib/combat';
-import { fullSet, simSetup, spentCharacter, type SimSetup } from '../../src/lib/fightSim';
+import { simSetup, spentCharacter, type SimSetup } from '../../src/lib/fightSim';
+import { STRONG_KIT } from '../builders';
 import { plainItem } from '../../src/lib/itemInstance';
 import { runCombat } from '../../src/lib/offline/fight';
 import type { FightEvent } from '../../src/lib/offline/fightTypes';
@@ -21,7 +22,7 @@ import type { Equipment } from '../../src/types/game';
 
 const DAGGER: Equipment = { ...STARTER_EQUIPMENT, mainHand: plainItem('steel_dagger') };
 const MAUL: Equipment = { ...STARTER_EQUIPMENT, mainHand: plainItem('obsidian_maul') };
-const STRONG = fullSet('obsidian', 'titan_maul');
+const STRONG = STRONG_KIT;
 
 const setup = (over: Partial<SimSetup> = {}) =>
 	simSetup({ equipment: STARTER_EQUIPMENT, monsters: [{ type: 'thistleBoar', level: 1 }], seed: 'engine', ...over });

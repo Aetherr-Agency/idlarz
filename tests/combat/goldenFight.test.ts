@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { COMBAT } from '../../src/config/combatConfig';
 import { STARTER_EQUIPMENT } from '../../src/config/itemCatalog';
 import { fullSet, simSetup, spentCharacter, type SimSetup } from '../../src/lib/fightSim';
+import { STRONG_KIT } from '../builders';
 import { bagCountOf } from '../../src/lib/offline/inventory';
 import { combatView, restThrough, runCombat } from '../../src/lib/offline/fight';
 import { COSMETIC_EVENTS, type CombatCommand, type FightEvent } from '../../src/lib/offline/fightTypes';
@@ -136,7 +137,7 @@ const autoSweep = () =>
 const clickQueue = () =>
 	play(
 		{
-			equipment: fullSet('obsidian', 'titan_maul'),
+			equipment: STRONG_KIT,
 			level: 30,
 			potions: [{ id: 'potion_minor', qty: 3 }],
 			monsters: [

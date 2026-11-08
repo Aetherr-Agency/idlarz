@@ -220,6 +220,8 @@ export const EQUIPMENT_PIXEL_ICONS: Record<string, PixelIconName> = {
 	feet: 'equip_feet',
 	ring1: 'equip_ring',
 	ring2: 'equip_ring',
+	// No belt sprite yet: the charm's stands in until pass 2 draws `equip_belt` (docs/ROADMAP.md, item art in three passes)
+	belt: 'equip_charm',
 };
 
 // Farm animal id -> sprite

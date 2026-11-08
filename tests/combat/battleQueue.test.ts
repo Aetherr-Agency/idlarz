@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { COMBAT } from '../../src/config/combatConfig';
 import { STARTER_EQUIPMENT } from '../../src/config/itemCatalog';
 import { limitOf } from '../../src/lib/limits';
-import { fullSet, simSetup, type SimSetup } from '../../src/lib/fightSim';
+import { simSetup, type SimSetup } from '../../src/lib/fightSim';
+import { STRONG_KIT } from '../builders';
 import { combatView, dismissTicket, restThrough, runCombat } from '../../src/lib/offline/fight';
 import type { FightEvent } from '../../src/lib/offline/fightTypes';
 import type { Ledger } from '../../src/lib/offline/ledger';
@@ -13,7 +14,7 @@ import type { Ledger } from '../../src/lib/offline/ledger';
 // the win-chance gate is for auto-battle only and has its own tests; a queued fight ignores it by design, but the help below also fights with auto-battle on
 (COMBAT.auto as { minWinChance: number }).minWinChance = 0;
 
-const STRONG = fullSet('obsidian', 'titan_maul');
+const STRONG = STRONG_KIT;
 const boars = (count: number, level = 1) => Array.from({ length: count }, () => ({ type: 'thistleBoar' as const, level }));
 // the sim helper switches auto-battle on (it lets the engine pick the monsters); here only the queue and the clicks decide, so it starts off
 const setup = (over: Partial<SimSetup> = {}) => {

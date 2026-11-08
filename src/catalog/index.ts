@@ -71,7 +71,7 @@ export const EQUIPMENT_LAYOUT: {
 	bottom: EquipmentSlot[];
 } = {
 	left: ['head', 'shoulder', 'chest', 'hands', 'legs', 'feet'],
-	right: ['neck', 'cape', 'ring1', 'ring2', 'charm'],
+	right: ['neck', 'cape', 'ring1', 'ring2', 'charm', 'belt'],
 	bottom: ['mainHand', 'offHand'],
 };
 
@@ -87,6 +87,7 @@ export const EQUIPMENT_SLOT_LABEL: Record<EquipmentSlot, string> = {
 	ring1: 'Ring',
 	ring2: 'Ring',
 	charm: 'Charm',
+	belt: 'Belt',
 	mainHand: 'Main Hand',
 	offHand: 'Off Hand',
 };

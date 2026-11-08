@@ -29,7 +29,7 @@ export interface AffixDef {
 }
 
 const WEAPON = ['weapon'];
-const DEFENCE = ['head', 'shoulder', 'chest', 'hands', 'legs', 'feet', 'offhand', 'cape'];
+const DEFENCE = ['head', 'shoulder', 'chest', 'hands', 'legs', 'feet', 'offhand', 'cape', 'belt'];
 const TRINKET = ['neck', 'ring', 'charm', 'cape'];
 const MAGIC = ['staff', 'wand', 'tome'];
 

@@ -27,10 +27,15 @@ export const spentCharacter = (spend: Partial<Pick<CharacterStats, 'strength' | 
 	return Object.assign(stats, calculateCombatStats(stats));
 };
 
-/** Every piece of a set worn, plus a weapon (and the set's own off hand is part of the set). Both rings are filled. Items are plain: their authored level, neutral quality, no affixes. */
+/**
+ * Every piece of a set worn, plus a weapon (and the set's own off hand is part of the set). Both rings are filled. Items are plain: their
+ * authored level, neutral quality, no affixes. Disabled pieces (the Obsidian belt, until the belt is live) are left out: this is the kit
+ * the game's balance is tested against, and a piece nobody can get is not part of it; `ladderKit` (tests/builders.ts) wears them.
+ */
 export const fullSet = (setId: string, weapon?: string): Equipment => {
 	const eq: Equipment = {};
 	for (const id of familyPieces(setId)) {
+		if (ITEM_CATALOG[id].enabled === false) continue;
 		const slot = ITEM_CATALOG[id].slot!;
 		if (slot === 'ring') eq.ring1 = eq.ring2 = plainItem(id);
 		else eq[slot as EquipmentSlot] = plainItem(id);

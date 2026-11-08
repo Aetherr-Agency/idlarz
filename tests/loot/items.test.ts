@@ -26,9 +26,9 @@ test('gear has a slot, consumables have healHp and stackMax', () => {
 	}
 });
 
-test('layout lists all 13 equipment slots exactly once', () => {
-	assert.equal(ALL_SLOTS.length, 13);
-	assert.equal(new Set(ALL_SLOTS).size, 13);
+test('layout lists all 14 equipment slots exactly once', () => {
+	assert.equal(ALL_SLOTS.length, 14);
+	assert.equal(new Set(ALL_SLOTS).size, 14);
 });
 
 test('the Obsidian set covers every slot but the weapon (the ring item covers ring1 and ring2)', () => {
@@ -45,14 +45,15 @@ test('the Obsidian set covers every slot but the weapon (the ring item covers ri
 		}
 	}
 	assert.deepEqual([...covered].sort(), ALL_SLOTS.filter((slot) => slot !== 'mainHand').sort());
-	assert.equal(SETS.obsidian.size, 12);
-	assert.equal(SETS.obsidian.pieces.length, 11);
+	assert.equal(SETS.obsidian.size, 13);
+	assert.equal(SETS.obsidian.pieces.length, 12);
 });
 
 test('only weapons carry damage, none exceeds COMBAT.maxItemDamage, and the starter weapon deals 6', () => {
 	for (const def of Object.values(ITEM_CATALOG)) {
 		if (def.slot === 'mainHand') {
-			assert.ok((def.stats?.damage ?? 0) >= 1 && def.stats!.damage! <= COMBAT.maxItemDamage, def.id);
+			// the disabled grade ladder is authored at its own, higher item levels (catalog/items/ladder.ts)
+			assert.ok((def.stats?.damage ?? 0) >= 1 && (def.enabled === false || def.stats!.damage! <= COMBAT.maxItemDamage), def.id);
 		} else assert.equal(def.stats?.damage, undefined, `${def.id} is not a weapon`);
 	}
 	assert.equal(ITEM_CATALOG[STARTER_EQUIPMENT.mainHand!.base].stats?.damage, 6);
@@ -74,7 +75,14 @@ const SLOTS_OF = (set: string) => {
 
 test('every armour family fills every armour and accessory slot plus the off hand (weapons come separately)', () => {
 	const expected = ALL_SLOTS.filter((slot) => slot !== 'mainHand').sort();
-	for (const set of ['woodland', 'apprentice', 'knight', 'obsidian']) assert.deepEqual([...SLOTS_OF(set)].sort(), expected, set);
+	// the belt exists from the Obsidian set on; the wood, cloth and steel families have none (the ladder's G1-G5 belts are separate items)
+	for (const set of ['woodland', 'apprentice', 'knight'])
+		assert.deepEqual(
+			[...SLOTS_OF(set)].sort(),
+			expected.filter((slot) => slot !== 'belt'),
+			set,
+		);
+	assert.deepEqual([...SLOTS_OF('obsidian')].sort(), expected);
 });
 
 test('rarity follows the family: wood and cloth common, steel uncommon, obsidian rare, three legendaries', () => {
@@ -167,7 +175,7 @@ test('every weapon swings at a positive attack speed and nothing else has one', 
 test('weapon DPS rises with the tier within a weapon type', () => {
 	const best = new Map<string, number>(); // weaponType -> DPS of the previous (lower) tier
 	const weapons = Object.values(ITEM_CATALOG)
-		.filter((d) => d.slot === 'mainHand')
+		.filter((d) => d.slot === 'mainHand' && d.enabled !== false) // the ladder is checked in tests/catalog/ladder.test.ts
 		.sort((a, b) => a.tier - b.tier);
 	const byType = new Map<string, typeof weapons>();
 	for (const w of weapons) byType.set(w.weaponType!, [...(byType.get(w.weaponType!) ?? []), w]);

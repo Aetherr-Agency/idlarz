@@ -156,7 +156,7 @@ Header (one compact row: the hero's **avatar with the level orb** (click: the ch
 
 ## 16. Items and the Equipment tab
 
-The **Equipment tab** has no hero scene (that is the Character tab): a compact bar with the level orb and the XP bar on top (hover for the time to the next level), the **HP and MP bars** directly under it (half the width each, with their numbers), a small **ilvl** badge (the average item level of all worn pieces, empty slots left out; the merchant sells nothing more than 5 above it), the 13 slots in groups (Armor, Jewelry, Hands, and the **Skills** Heal and Stun beside the Hands), the Damage / Armor / Max HP / Crit / Regen readouts, and the bag beside it.
+The **Equipment tab** has no hero scene (that is the Character tab): a compact bar with the level orb and the XP bar on top (hover for the time to the next level), the **HP and MP bars** directly under it (half the width each, with their numbers), a small **ilvl** badge (the average item level of all worn pieces, empty slots left out; the merchant sells nothing more than 5 above it), the 14 slots (the belt included) in groups (Armor, Jewelry, Hands, and the **Skills** Heal and Stun beside the Hands), the Damage / Armor / Max HP / Crit / Regen readouts, and the bag beside it.
 
 **Notices** all use one stack at the top centre of the screen, under the header (`.notice-stack` in `GameApp`): chest rewards and the short messages of the shared toast (`showToast`: saves, bag messages, every merchant sale, purchase and refresh, a full bag). Nothing is shown inside a window, so a message never moves the buttons under the cursor.
 

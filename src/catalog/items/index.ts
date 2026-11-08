@@ -1,6 +1,7 @@
 import type { ItemDef } from '@/types/game';
 import { CLOTH_ITEMS } from './cloth';
 import { CONSUMABLES } from './consumables';
+import { LADDER_ITEMS } from './ladder';
 import { LEGENDARY_ITEMS } from './legendary';
 import { OBSIDIAN_ITEMS } from './obsidian';
 import { RESERVE_ITEMS } from './reuse';
@@ -17,4 +18,6 @@ export const ITEMS: ItemDef[] = [
 	...LEGENDARY_ITEMS,
 	// disabled: art and stats are ready, nothing drops them yet (catalog/items/reuse.ts)
 	...RESERVE_ITEMS,
+	// disabled: the grade ladder G1-G9 and the special sets S1-S3, placeholder numbers (catalog/items/ladder.ts)
+	...LADDER_ITEMS,
 ];

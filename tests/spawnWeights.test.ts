@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import { api, freshGame, growTo } from './helpers';
 import { STARTER_EQUIPMENT } from '../src/config/itemCatalog';
 import { MONSTERS } from '../src/config/combatConfig';
-import { atItemLevel, fullSet, simSetup, spentCharacter } from '../src/lib/fightSim';
+import { atItemLevel, simSetup, spentCharacter } from '../src/lib/fightSim';
+import { STRONG_KIT } from './builders';
 import { levelAtAge, maxLevelOf, rollSpawnLevel, spawnLevelRange } from '../src/lib/monsters';
 import { placeTickets } from '../src/lib/offline/placement';
 import { playerProfile } from '../src/lib/offline/profile';
@@ -29,7 +30,7 @@ import type { MonsterType } from '../src/types/game';
 const profileOf = (equipment: Parameters<typeof simSetup>[0]['equipment'], level: number, character = spentCharacter({})): PlayerProfile =>
 	playerProfile(simSetup({ equipment, character, level, monsters: [], seed: 'w' }).stored.core as Record<string, unknown>);
 const rookie = () => profileOf(STARTER_EQUIPMENT, 1);
-const veteran = () => profileOf(atItemLevel(fullSet('obsidian', 'titan_maul'), 30), 30, spentCharacter({ strength: 12, vitality: 8, dexterity: 5 }));
+const veteran = () => profileOf(atItemLevel(STRONG_KIT, 30), 30, spentCharacter({ strength: 12, vitality: 8, dexterity: 5 }));
 
 /** A hero nothing on the map can hurt: every type looks the same to the weights. */
 const invincible = (): PlayerProfile => ({ ...veteran(), hit: 1e6, maxHp: 1e6, armor: 1e5 });

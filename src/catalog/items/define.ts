@@ -22,6 +22,7 @@ const KIND_OF_SLOT: Record<EquipmentSlot | 'ring', ItemKind> = {
 	ring1: 'accessory',
 	ring2: 'accessory',
 	charm: 'accessory',
+	belt: 'accessory',
 };
 
 /**
@@ -38,13 +39,21 @@ const LEVEL_WINDOW_BY_TIER: Record<number, readonly [number, number]> = {
 	5: [3, MAX_ITEM_LEVEL],
 };
 
-/** What affixes and pools match an item by: its category, slot, weapon type and set (or plain family). */
-const tagsFor = (kind: ItemKind, slot: string, weaponType: WeaponType | undefined, set: string | undefined, named: boolean): string[] => [
+/** What affixes and pools match an item by: its category, slot, weapon type, set (or plain family) and ladder grade. */
+const tagsFor = (
+	kind: ItemKind,
+	slot: string,
+	weaponType: WeaponType | undefined,
+	set: string | undefined,
+	named: boolean,
+	grade: string | undefined,
+): string[] => [
 	'gear',
 	kind,
 	slot.toLowerCase(),
 	...(weaponType ? [weaponType] : []),
 	...(set ? [set] : []),
+	...(grade ? [`grade:${grade}`] : []),
 	...(named ? ['named'] : []),
 ];
 
@@ -70,6 +79,10 @@ export interface GearOptions {
 	sellValue?: number;
 	/** Attacks per second of a weapon; by default its weapon type's (see catalog/weapons.ts) */
 	attackSpeed?: number;
+	/** The ladder grade (G1-G9, S1-S3, see items/ladder.ts): becomes the tag `grade:G3` that pools and recipes can select by */
+	grade?: string;
+	/** Item level window in place of the one of the material tier (the ladder's grades have their own windows) */
+	levelWindow?: readonly [number, number];
 }
 
 export const gear = (
@@ -78,7 +91,7 @@ export const gear = (
 	slot: NonNullable<ItemDef['slot']>,
 	rarity: EquipmentRarity,
 	stats: ItemStats,
-	{ tier, art, icon, sellValue, attackSpeed, named = false, pools, ...rest }: GearOptions,
+	{ tier, art, icon, sellValue, attackSpeed, named = false, pools, grade, levelWindow, ...rest }: GearOptions,
 ): ItemDef => ({
 	id,
 	name,
@@ -87,9 +100,9 @@ export const gear = (
 	rarity,
 	tier,
 	generation: named ? 'named' : 'base',
-	tags: tagsFor(KIND_OF_SLOT[slot], slot, rest.weaponType, rest.set ?? rest.family, named),
-	minItemLevel: LEVEL_WINDOW_BY_TIER[tier][0],
-	maxItemLevel: LEVEL_WINDOW_BY_TIER[tier][1],
+	tags: tagsFor(KIND_OF_SLOT[slot], slot, rest.weaponType, rest.set ?? rest.family, named, grade),
+	minItemLevel: (levelWindow ?? LEVEL_WINDOW_BY_TIER[tier])[0],
+	maxItemLevel: (levelWindow ?? LEVEL_WINDOW_BY_TIER[tier])[1],
 	...(named ? { fixedRarity: rarity, pools: pools ?? [] } : { allowedRarities: Object.keys(RARITIES) }),
 	poolWeight: named ? 1 : 10,
 	...(KIND_OF_SLOT[slot] === 'weapon' ? { attackSpeed: attackSpeed ?? (rest.weaponType && WEAPON_ATTACK_SPEED[rest.weaponType]) ?? 1 } : {}),
