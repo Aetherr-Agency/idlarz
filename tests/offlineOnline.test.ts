@@ -7,7 +7,7 @@ import { acceptSave, type SaveRepo, type StatsRow, type StoredSave, type WorldPa
 import type { Ledger, LedgerRepo } from '../src/lib/offline/ledger';
 import { claimOffline, type ServiceDeps } from '../src/lib/offline/service';
 import { fightStep, redeemChest, syncTickets, type Online } from '../src/lib/offline/online';
-import { castleDistance } from '../src/lib/monsters';
+import { castleDistance } from '../src/lib/distance';
 import { MONSTERS } from '../src/config/combatConfig';
 import type { FightReply } from '../src/lib/offline/types';
 

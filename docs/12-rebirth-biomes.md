@@ -9,7 +9,7 @@ Related: [02 mechanics](02-mechanics.md) (current biome rules), [11 server autho
 - 7 biomes plus the castle: forest, plains, hills, swamp, tundra, lake, coast (`BIOMES` in `config/biomes.ts`). A purchase rolls the biome of the new tile in the browser (`rollBiome`, `utils/biomeRules.ts`) from `BIOME_RULES` (`config/biomeRules.ts`): unlock by purchase count (swamp 6, tundra 10), conflicts, `needsWater`, cluster-copy chance, buddy rule, saddle rule, weights (`BIOME_SPAWN`).
 - The player picks the *tile*, the game rolls the *biome*. Tile price depends on the **number of owned tiles, not on distance**.
 - The saved map is compact runs of one **letter per biome** (`BIOME_CODES` in `lib/saveFormat.ts`, frozen: `K g f p h s t l c` are taken). `sanitizeSave` accepts any key of `BIOMES`.
-- The server reads the saved map to place monsters (`lib/offline/placement.ts`). `castleDistance(spot)` (Chebyshev, `lib/monsters.ts`) is already the shared distance counter; `MonsterDef.spawn` already has `biomes`, `minCastleDistance`, `maxCastleDistance`, `minRebirths`.
+- The server reads the saved map to place monsters (`lib/offline/placement.ts`). `castleDistance(spot)` (Chebyshev, `lib/distance.ts`) is already the shared distance counter; `MonsterDef.spawn` already has `biomes`, `minCastleDistance`, `maxCastleDistance`, `minRebirths`.
 - Art: a procedural pixel pipeline in `scripts/pixel/` (`terrain_art.py` palettes and textures, `terrain_logic.py` layer order, `terrain_props.py`, `sprites_animals.py`, `ui_art.py`) with a line-for-line TypeScript port (`utils/terrain.ts`) guarded by a parity test.
 
 ## 2. The five biomes

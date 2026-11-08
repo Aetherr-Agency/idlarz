@@ -1,7 +1,7 @@
 import { COMBAT, MONSTERS, type MonsterDef } from '@/config/combatConfig';
 import { levelScale } from '@/catalog/stats';
-import { CASTLE_X, CASTLE_Y } from '@/config/castle';
 import { castleLevelOf, isInWard } from '@/lib/castleWard';
+import { castleDistance } from '@/lib/distance';
 import { limitOf, type LimitContext } from '@/lib/limits';
 import { mulberry32, randomInt } from '@/lib/rng';
 import type { Monster, MonsterType } from '@/types/game';
@@ -46,9 +46,6 @@ export const rollSpawnLevel = (type: MonsterType, castleLevel: number, monsterId
 
 /** Levels added to a monster that appears `distance` tiles (Chebyshev) from the castle: danger grows toward the frontier. */
 export const dangerBonus = (distance: number): number => Math.floor(Math.max(0, Number.isFinite(distance) ? distance : 0) / COMBAT.spawn.dangerStep);
-
-/** How far a tile is from the castle, the way the chest placement and the danger bonus measure it. */
-export const castleDistance = (spot: { x: number; y: number }): number => Math.max(Math.abs(spot.x - CASTLE_X), Math.abs(spot.y - CASTLE_Y));
 
 /** The highest level a monster that appeared at `spawnLevel` can grow to. */
 export const maxLevelOf = (spawnLevel: number, ctx: LimitContext = {}): number => spawnLevel + limitOf('monsterGrowthLevels', ctx);

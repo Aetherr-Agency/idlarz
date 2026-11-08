@@ -1,7 +1,8 @@
 import { castleLevelOf, isInWard } from '@/lib/castleWard';
 import { chestSpots, pickChestSpot } from '@/lib/chests';
 import { MONSTERS } from '@/config/combatConfig';
-import { canSpawnOn, castleDistance, rollSpawnLevel, spawnTiles } from '@/lib/monsters';
+import { castleDistance } from '@/lib/distance';
+import { canSpawnOn, rollSpawnLevel, spawnTiles } from '@/lib/monsters';
 import { monsterTypeOf, type ChestTicket, type MonsterTicket, type TicketBank } from '@/lib/offline/tickets';
 import type { Rng } from '@/lib/rng';
 import { unpackBody, type SaveBody } from '@/lib/saveFormat';
