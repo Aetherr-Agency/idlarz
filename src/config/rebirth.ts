@@ -6,9 +6,10 @@ import { Resources } from '@/types/game';
 export const REBIRTH = {
 	minCastleLevel: 6,
 	minTiles: 400, // the first rebirth also needs this much territory (300+ tiles come before castle level 6, so it has to be more than that)
-	tilesPerRebirth: 25, // every rebirth done so far raises the territory the next one needs by this much
+	tilesPerRebirth: 50, // every rebirth done so far raises the territory the next one needs by this much (was 25: the medium-map decision, IDL-181)
 	surplusPerTile: 0.02, // every tile above the requirement adds this to the tile term of the Embers (times the castle term)
-	gainScale: 3, // Embers = gainScale x (castle level - 5) x (sqrt(tiles / 10) + surplusPerTile x tiles over the requirement), rounded down
+	castleExponent: 1.3, // the castle term is (castle level - 5) ^ castleExponent: castle 10 pays about 1.6 x what a linear term did (IDL-183, decision IDL-132)
+	gainScale: 3, // Embers = gainScale x (castle level - 5) ^ castleExponent x (sqrt(tiles / 10) + surplusPerTile x tiles over the requirement), rounded down
 	/** Tiles the next rebirth needs, after `rebirths` of them */
 	tilesNeeded: (rebirths: number) => REBIRTH.minTiles + REBIRTH.tilesPerRebirth * Math.max(0, rebirths),
 	// income bonus = incomePerPoint x (Embers ever earned) ^ incomeExponent (spending points never lowers it). It was linear, +6 % per Ember,
@@ -20,7 +21,11 @@ export const REBIRTH = {
 	// Embers granted for a rebirth with this castle level and territory
 	gain: (castleLevel: number, tiles: number, rebirths = 0) => {
 		const surplus = Math.max(0, tiles - REBIRTH.tilesNeeded(rebirths));
-		return Math.floor(REBIRTH.gainScale * Math.max(0, castleLevel - 5) * (Math.sqrt(Math.max(0, tiles) / 10) + REBIRTH.surplusPerTile * surplus));
+		return Math.floor(
+			REBIRTH.gainScale *
+				Math.pow(Math.max(0, castleLevel - 5), REBIRTH.castleExponent) *
+				(Math.sqrt(Math.max(0, tiles) / 10) + REBIRTH.surplusPerTile * surplus),
+		);
 	},
 };
 

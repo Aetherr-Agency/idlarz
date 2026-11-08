@@ -186,7 +186,7 @@ Measure with `npm run sim -- --seeds=3`, never from numbers copied into prose: [
 | --- | --- | --- | --- |
 | BL1 + BL3 | **Active vs idle gap, and chests and map clicks are small** (decided 2026-11-07, IDL-80) | gold is not the limiter (casual sits on 11-27M unspent gold; casual vs idle is only 4-20 % apart on pacing) | gold click ladder and chest gold stay; chest bundles get a bigger resource share and size (build task IDL-197); the click Idol and ranger passive give resources or chest speed, never gold; target casual 15-25 % faster than idle |
 | BL4 | **Meat/food is the strongest engine** (decided 2026-11-07, IDL-81) | farm is about 60 % of sellable income; `costScaling` +0.10 moves it only to 55 % (food piles up, the pen cap limits the count) | no cost change, no upkeep; the Harvest Scarecrow Idol adds inside the existing farm bracket, hard cap +25 % |
-| BL16 (incl. BL7) | **Late tile price and map scale** (decided 2026-11-07, IDL-79; the config change is still to build) | price tail `tailFrom` 300, exponent 4.5 in the code today | exponent 4.5 -> 3.5, rebirth needs 400 + 50 per rebirth, target about 600 tiles at rebirth 0 and 800-1000 by rebirth 5, keep doubles (no big-number library), keep the +12 distance offset until the biome work |
+| BL16 (incl. BL7) | **Late tile price and map scale** (decided 2026-11-07, IDL-79; applied in IDL-181) | price tail `tailFrom` 300, exponent 3.5 in the code | exponent was 4.5, now 3.5; rebirth needs 400 + 50 per rebirth, target about 600 tiles at rebirth 0 and 800-1000 by rebirth 5, keep doubles (no big-number library), keep the +12 distance offset until the biome work |
 
 The magnitude targets these rows are checked against are in [06](06-pacing-targets.md) (IDL-128).
 

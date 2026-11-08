@@ -8,7 +8,7 @@ What pace the economy is tuned for, why, and how to check it. The measured numbe
 | --- | --- |
 | First ~100 tiles | easy: hours for an active bot, between a day and a half and two days for the `human` profile (the four free start tiles make the first hours a little slower than the old 3x3 start) |
 | 200-300 tiles | a 2-3 day project |
-| After 300 tiles | clearly steeper (`(n/300)^4.5` tail, [03 §1](03-formulas-and-scaling.md#1-tile-cost)); a map of tens of thousands of tiles stays buyable |
+| After 300 tiles | clearly steeper (`(n/300)^3.5` tail, [03 §1](03-formulas-and-scaling.md#1-tile-cost)); a map of tens of thousands of tiles stays buyable |
 | First Rebirth (castle 6 + 100 tiles) | available around day 5-7 for a person who checks in a few times a day (**to become about day 4-6** when the shorter castle timers and cheaper early castle costs of [19](19-first-build-steps.md) ship; the sim measured 4.6 d for the `human` profile) |
 | Every later run | faster than the run before it (castle 6 again in roughly 60-70 % of the first run), flattening after the third run because the castle timers bound it |
 | Level 80 / 100 | about the 3rd / 10th rebirth (the level curve is lifetime and carries over a rebirth, [03 §2](03-formulas-and-scaling.md#2-xp-and-levels)) |
@@ -39,16 +39,16 @@ Measured with the real store (`casual`, trace to day 16; `human-rebirth8`, `hard
 
 | Checkpoint | Gold per second | Income multiplier | Lifetime Embers | Unspent gold |
 | --- | --- | --- | --- | --- |
-| Run 1, castle 10 (day ~13, ~850 tiles) | 2,500 to 5,000 (today ~3,300) | x1 | 0 | <= 4 h of income |
-| Rebirth 5 (run 6 at castle 10) | x3 to x6 of run 1 | **x4** | 150 to 350 | <= 4 h |
-| Rebirth 10 (run 11 at castle 10) | x7 to x15 of run 1 | **x10** | 500 to 1,000 | <= 4 h |
+| Run 1, castle 10 (day ~13, ~850 tiles) | 3,000 to 6,000 (today ~4,500 to 5,500; was 2,500 to 5,000 before the gentler tile tail, IDL-181) | x1 | 0 | <= 4 h |
+| Rebirth 5 (run 6 at castle 10) | x3 to x6 of run 1 | **x4** | about 90 to 140 with rebirths at castle 6, 350 to 500 at castle 8 | <= 4 h |
+| Rebirth 10 (run 11 at castle 10) | x7 to x15 of run 1 | **x10** | about 190 to 300 with rebirths at castle 6 | <= 4 h |
 
-- **Embers per rebirth:** castle 6 about 20 to 30, castle 8 about 50 to 70, castle 10 about 80 to 130 (after the castle term (castle - 5)^1.3, IDL-183).
+- **Embers per rebirth** (moved 2026-11-08 to fit the decided formula `3 x (castle - 5)^1.3 x (sqrt(tiles / 10) + 0.02 x surplus)`, IDL-183, with the +50 tiles per rebirth of IDL-181): castle 6 about 18 to 28 (400 to 460 tiles), castle 8 about 70 to 100 (450 tiles), castle 10 about 400 to 650 (850 to 1,000 tiles; it was 80 to 130, which no territory reaches with this formula). The lifetime-Embers column above follows from these (about n x the per-rebirth band).
 - **Stocks:** any non-gold resource at most 24 hours of its production rate at castle 10; above it the sim warns (today food reaches about 15 hours, 235M at day 12). The merchant, autoSell and the Monument are the sinks.
 - **Ember path alone** (`1 + 0.1 x E^0.6`): x4 to x6 at 300 to 600 lifetime Embers; capped gear, Idols and the Monument add about x2.5 on top, which is how x10 at rebirth 10 is reached without Paragon doing the heavy lifting.
 - **Finding to keep in mind:** `human-rebirth8` finishes run 2 in 99 % of run 1's time (castle timers set the pace), while hardcore falls to 48 to 72 %. The run-2 ratio of 60 to 70 % is therefore a hardcore-profile target; humans feel the Ember gain as bigger numbers and a larger map, not as shorter runs.
 - **Sim print (built, IDL-128):** `npm run sim` adds a "Magnitude targets" section to `generated/sim-milestones.md`: per profile, gold per second, unspent gold and the biggest stock at castle 10 of run 1, Embers per rebirth by castle level, lifetime Embers after rebirth 5 and 10, and the income multiplier, each with its band and a status; lines outside a band are also printed as `WARNING` on stderr (the run does not fail). The bands are `MAGNITUDE_BANDS` in `scripts/sim.ts`: change them here and there together. The multiplier compares the same castle level in two runs because the bots rebirth before castle 10, so it is an indication. The existing +-15 % pacing guard (IDL-17) is separate.
-- **What it says on 2026-11-08 (13 lines outside, mostly pending work):** the Ember rows (rebirth at castle 10 pays 334 against 80 to 130, castle 6 pays 19 to 21 against 20 to 30, lifetime Embers after rebirth 5 are 100 to 118 against 150 to 350) are the Ember curve of IDL-183 and the map change of IDL-181, which are not applied yet. **Unspent gold at castle 10 is 390 to 1,050 hours of income for every bot but `casual`**: there is no gold sink at that stage (the Monument IDL-185, Ember-priced autobuyers and more are planned), and the `human` bot also hoards 139 hours of hide. Gold per second at castle 10 is 4,700 to 5,100 (band 2,500 to 5,000).
+- **What it says now (2026-11-08, after IDL-183, IDL-181 and the moved bands; 8 lines outside):** the Ember rows are inside their bands; the lines still outside are the late-game gold (unspent gold at castle 10 is 467 to 1,966 hours of income for every bot except `casual`, band 4, the food stock reaches 63 hours for the hardcore bots and the `human` bot hoards 145 hours of hide, band 24: cheaper late tiles are bought sooner and nothing absorbs the gold; Monument IDL-185, autobuyers IDL-195). The income multiplier is only judged at castle 10 (the bots rebirth at castle 6, so those rows show the ratio as an indication with no status; the full-game sources, capped gear, Idols and the Monument, are not built yet). Tiles 10 to 300 did not move with IDL-181; level 80 comes sooner (hardcore 13.2 to 9.1 days) because the cheaper late tiles give more tile XP.
 
 ## Caveats
 
