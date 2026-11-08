@@ -606,6 +606,9 @@ test('a resting hero with a queue is remembered: the minimized icon shows the re
 	api().applyFightReply(reply(view({ eventNo: 0, queue, resting: true, restSec: 42, autoBattle: false })));
 	assert.equal(api().combat.resting, true);
 	assert.equal(api().combat.restSec, 42);
+	// the browser counts the rest down itself between answers: it knows when the rest is over by its own clock
+	const endsIn = (api().combat.restEndsAt ?? 0) - Date.now();
+	assert.ok(endsIn > 41_000 && endsIn <= 42_000, `the rest ends in about 42 s (${endsIn} ms)`);
 	assert.deepEqual(
 		api().combat.queue.map((q) => q.n),
 		[2, 3],
@@ -622,5 +625,6 @@ test('a resting hero with a queue is remembered: the minimized icon shows the re
 		),
 	);
 	assert.equal(api().combat.resting, false);
+	assert.equal(api().combat.restEndsAt, null, 'no countdown once the fight is open');
 	assert.equal(api().combat.restSec, 0);
 });

@@ -176,6 +176,29 @@ test('a resting hero with a queue is asked about again when the rest is over, no
 	}
 });
 
+test('after a win at 40 % HP the queue rests (the view says so), and the next fight starts by itself at the poll the view asked for', () => {
+	const s = setup({ monsters: boars(2) });
+	const maxHp = combatView(s.ledger, s.env(s.start), 0, false, null).maxHp;
+	const hurt: Ledger = { ...s.ledger, combat: { ...s.ledger.combat!, hp: Math.round(maxHp * 0.4) } };
+	let r = at(s, hurt, 0.1, fight(1));
+	r = at(s, r.ledger, 0.2, fight(2));
+	assert.deepEqual(r.ledger.combat!.queue, [2]);
+	// poll every 2 s like the browser does with the panel open, until the first fight is won
+	let t = 0.2;
+	while (wins(r.ledger).length === 0 && t < 120) {
+		t += 2;
+		r = at(s, r.ledger, t);
+	}
+	assert.deepEqual(wins(r.ledger), [1]);
+	const view = combatView(r.ledger, s.env(s.start + t), 0, false, null);
+	assert.equal(view.resting, true, 'no fight is open and the queue waits: the view says resting');
+	assert.ok((view.restSec ?? 0) > 0);
+	// the next poll comes when the view said (restSec + 1): the queued fight has started by then, without a click
+	t += view.nextPollSec;
+	r = at(s, r.ledger, t);
+	assert.deepEqual(engaged(r.ledger), [1, 2]);
+});
+
 test('with nothing queued the view is not resting', () => {
 	const s = setup({ monsters: boars(1) });
 	const view = combatView(s.ledger, s.env(s.start + 1), 0, false, null);

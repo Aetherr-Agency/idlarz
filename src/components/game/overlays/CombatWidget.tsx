@@ -10,12 +10,15 @@ import { autoBattleUnlocked } from '@/lib/combat';
 import { monsterDef, monsterStats } from '@/lib/monsters';
 import { COMBAT_EVENT, hitNumberText, type CombatFx } from '@/lib/combatFx';
 import audioManager from '@/utils/audioManager';
+import { formatRest, useRestCountdown } from '@/hooks/useRestCountdown';
 import MonsterArt from '../MonsterArt';
 import NotifyDot from '../NotifyDot';
 import CombatPanel, { drainMs, type FloatNumber } from './CombatPanel';
 import PixelIcon from '../PixelIcon';
 import type { FightView } from '@/lib/offline/fightTypes';
 import type { MonsterType } from '@/types/game';
+
+/** "1 min 12 s" or "45 s" */
 
 const typingInField = (target: EventTarget | null): boolean => {
 	const el = target as HTMLElement | null;
@@ -79,6 +82,8 @@ const CombatWidget: React.FC = () => {
 	const fight = combat.fight;
 	const pending = combat.pending;
 	const notice = combat.notice;
+	// the rest before the queue's next fight, counted down here between the server's answers (it says how long, not every second)
+	const restLeft = useRestCountdown(combat.resting && combat.queue.length > 0 ? combat.restEndsAt : null);
 	const pushNumber = useCallback((text: string, kind: FloatNumber['kind']) => {
 		const id = nextId.current++;
 		setNumbers((prev) => [...prev.slice(-8), { id, text, kind, x: 20 + Math.random() * 60 }]);
@@ -177,7 +182,8 @@ const CombatWidget: React.FC = () => {
 	// The hero rests before the queue's next monster (it starts by itself): the queue and the rest stay on screen, as a small icon in either mode
 	if (combat.maxHp > 0 && !fight && !pending && !notice && combat.resting && combat.queue.length > 0) {
 		const next = combat.queue[0];
-		const wait = combat.restSec >= 60 ? `${Math.floor(combat.restSec / 60)} min ${combat.restSec % 60} s` : `${combat.restSec} s`;
+		const left = restLeft ?? combat.restSec;
+		const wait = formatRest(left);
 		return (
 			<div className='combat-icon-wrap'>
 				<button
@@ -194,7 +200,7 @@ const CombatWidget: React.FC = () => {
 						<i style={{ width: `${Math.max(0, Math.min(100, (playerHp / combat.maxHp) * 100))}%` }} />
 					</span>
 					<span className='combat-icon-rest' aria-hidden>
-						Rest {combat.restSec}s
+						Rest {left}s
 					</span>
 				</button>
 				<QueueChips queue={combat.queue} max={combat.queueMax} />
@@ -281,6 +287,8 @@ const CombatWidget: React.FC = () => {
 			shake={shake}
 			queue={combat.queue}
 			queueMax={combat.queueMax}
+			restSec={!fight && restLeft !== null && combat.queue.length > 0 ? restLeft : null}
+			restLabel={combat.queue[0] ? monsterDef(combat.queue[0].type).label : undefined}
 			onUnqueue={unqueueMonster}
 			onFlee={flee}
 			onCloseResult={clearNotice}
