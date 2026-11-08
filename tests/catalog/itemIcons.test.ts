@@ -25,7 +25,7 @@ test('registry entries are well formed and the icon name is unique', () => {
 		for (const e of entries) {
 			assert.ok(!seen.has(e.icon), `duplicate icon ${e.icon}`);
 			seen.add(e.icon);
-			assert.equal(`${e.slot}${e.weapon ? `-${e.weapon}` : ''}`, fileName, `${e.icon} sits in the wrong registry file`);
+			if (fileName !== 'placeholders') assert.equal(`${e.slot}${e.weapon ? `-${e.weapon}` : ''}`, fileName, `${e.icon} sits in the wrong registry file`);
 			assert.match(e.icon, e.file ? /^art_/ : /^item_/, `${e.icon}: art_ for supplied files, item_ for built icons`);
 			if (e.grade !== null) assert.match(e.grade, /^(G[1-9]|S[1-3])$/, `${e.icon} grade`);
 			assert.ok(e.provenance.trim().length > 0, `${e.icon} needs a provenance`);

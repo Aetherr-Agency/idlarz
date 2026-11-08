@@ -23,6 +23,7 @@ import mainHandWand from './mainHand-wand.json';
 import neck from './neck.json';
 import offHandShield from './offHand-shield.json';
 import offHandTome from './offHand-tome.json';
+import placeholders from './placeholders.json';
 import ring from './ring.json';
 import shoulder from './shoulder.json';
 
@@ -64,6 +65,7 @@ export const ITEM_ICON_FILES: Record<string, ItemIconEntry[]> = {
 	'mainHand-sword': mainHandSword,
 	'mainHand-wand': mainHandWand,
 	neck,
+	placeholders,
 	'offHand-shield': offHandShield,
 	'offHand-tome': offHandTome,
 	ring,
