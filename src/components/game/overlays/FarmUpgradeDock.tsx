@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
-import { FARM_UPGRADES, type FarmUpgradeId } from '@/config/gameConfig';
-import { canAffordBundle, farmUpgradeCost, farmUpgradeLevel } from '@/utils/gameUtils';
+import { FARM_UPGRADES, type FarmUpgradeId } from '@/config/farm';
+import { canAffordBundle } from '@/utils/game/costs';
+import { farmUpgradeCost, farmUpgradeLevel } from '@/utils/game/farm';
 import audioManager from '@/utils/audioManager';
 import CostList from '../CostList';
 import { TipButton } from './Merchant/TipButton';

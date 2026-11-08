@@ -1,5 +1,5 @@
 // The farm: animals, pen and farm upgrades.
-// Split out of gameConfig.ts (IDL-15); the values are unchanged.
+// Part of the former gameConfig.ts (split in IDL-15); the values are unchanged.
 import { Animal, Resources } from '@/types/game';
 import { FARM_KEYS, type FarmKey } from '@/catalog/resourceKeys';
 

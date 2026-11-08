@@ -1,5 +1,5 @@
 import { COMBAT, FALLBACK_BOSS, FALLBACK_MONSTER, MONSTERS } from '@/config/combatConfig';
-import { SPAWN_LIMIT } from '@/config/gameConfig';
+import { SPAWN_LIMIT } from '@/config/spawns';
 import { chestIntervalSec, luckyRatChance } from '@/lib/luck';
 import type { Rng } from '@/lib/rng';
 import type { MonsterType } from '@/types/game';

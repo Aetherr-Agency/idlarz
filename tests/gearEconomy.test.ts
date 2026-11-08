@@ -10,7 +10,7 @@ import { killIncome } from '../src/lib/loot/kill';
 import { damagePerHit, maxHp } from '../src/lib/combat';
 import { offlineCapHours, offlineEfficiency } from '../src/lib/offline/limits';
 import { computeOfflineGrant, zeroGrant } from '../src/lib/offline/grant';
-import { calculateResourceRates } from '../src/utils/gameUtils';
+import { calculateResourceRates } from '../src/utils/game/income';
 import { useGameStore } from '../src/stores/gameStore';
 import type { Equipment } from '../src/types/game';
 

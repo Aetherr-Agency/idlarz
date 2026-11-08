@@ -4,8 +4,8 @@ import { api, growTo, store } from './helpers';
 import { pickPersisted, type PersistedGame } from '../src/lib/sanitizeSave';
 import { encodeSave } from '../src/lib/saveFormat';
 import { acceptSave, type SaveRepo, type StoredSave } from '../src/lib/cloudSave/pipeline';
-import { CASTLE_X, CASTLE_Y } from '../src/config/gameConfig';
-import { calculateLevel, totalStatPoints } from '../src/utils/gameUtils';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
+import { calculateLevel, totalStatPoints } from '../src/utils/game/character';
 import { patchTile } from '../src/utils/world';
 
 export type Verdict = 'rejected' | 'clamped' | 'flagged' | 'silent';

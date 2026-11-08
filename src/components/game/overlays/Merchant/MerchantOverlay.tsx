@@ -6,7 +6,7 @@ import { MerchantTabButtons } from './MerchantTabButtons';
 import { MerchantItemsSection } from './MerchantItemsSection';
 import { MerchantGoods, MerchantUpgradeCards } from './MerchantShop';
 import { MerchantResources } from './MerchantResources';
-import { CLICK_LADDER } from '@/config/gameConfig';
+import { CLICK_LADDER } from '@/config/economy';
 import { cn } from '@/lib/utils';
 import ResourceIcon from '../../ResourceIcon';
 

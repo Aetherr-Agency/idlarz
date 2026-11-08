@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import './helpers';
 import { BIOME_COLORS } from '../src/config/biomePalette';
-import { CASTLE_X, CASTLE_Y } from '../src/config/gameConfig';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
 import {
 	CASTLE_MARKER_COLOR,
 	CHEST_COLOR,
@@ -21,7 +21,7 @@ import {
 	tileToMinimap,
 	viewRectangle,
 } from '../src/lib/minimap';
-import { createInitialWorld } from '../src/utils/gameUtils';
+import { createInitialWorld } from '../src/utils/game/tiles';
 import { COORD_LIMIT, EMPTY_WORLD, ownedBounds, ownedEntries, patchTile, setTile, worldFromRows, type World } from '../src/utils/world';
 import { syntheticWorld } from '../src/utils/worldGen';
 import type { Tile } from '../src/types/game';

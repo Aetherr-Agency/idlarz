@@ -2,8 +2,9 @@
 // Split out of gameStore.ts (IDL-14); the actions and their behaviour are unchanged.
 
 import { PLAYER_CLASSES, type PlayerClassId } from '@/config/playerClasses';
-import { DEFAULT_PLAYER_NAME } from '@/config/gameConfig';
-import { calculateCombatStats, calculateLevel, calculateResourceRates, reconcileCharacter } from '@/utils/gameUtils';
+import { DEFAULT_PLAYER_NAME } from '@/config/character';
+import { calculateCombatStats, calculateLevel, reconcileCharacter } from '@/utils/game/character';
+import { calculateResourceRates } from '@/utils/game/income';
 import { gearIncomePct } from '@/lib/gearEconomy';
 import type { CharacterStats } from '@/types/game';
 import { BASE_STATS, type GameGet, type GameSet } from './base';

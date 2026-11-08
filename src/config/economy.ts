@@ -1,5 +1,5 @@
 // Tile prices and XP, the resource caps, clicks and the starting gems: the numbers the economy runs on.
-// Split out of gameConfig.ts (IDL-15); the values are unchanged.
+// Part of the former gameConfig.ts (split in IDL-15); the values are unchanged.
 import { amounts } from '@/catalog/resourceKeys';
 
 // Game Constants

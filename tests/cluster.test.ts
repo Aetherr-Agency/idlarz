@@ -1,7 +1,7 @@
 import test, { mock } from 'node:test';
 import assert from 'node:assert/strict';
 import './helpers';
-import { BIOMES } from '../src/config/gameConfig';
+import { BIOMES } from '../src/config/biomes';
 import { BIOME_COLORS, HIGHLIGHT_COLORS, MIST_COLOR, YARD_COLOR, biomeColor, highlightColor } from '../src/config/biomePalette';
 import { HIGHLIGHT_MS, useUiStore } from '../src/stores/uiStore';
 import { connectedCluster } from '../src/utils/cluster';

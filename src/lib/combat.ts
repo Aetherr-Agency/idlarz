@@ -25,7 +25,7 @@ export const weaponDamageType = (equipment: Equipment): DamageType => {
 };
 
 /**
- * What the merchant's upgrades add to the fight (see `merchantCombat` in utils/gameUtils.ts), every number in the unit of its readout (percent,
+ * What the merchant's upgrades add to the fight (see `merchantCombat` in utils/game/merchant.ts), every number in the unit of its readout (percent,
  * percentage points, HP per second). Each function below takes it as an optional last argument: without it nothing changes.
  */
 export interface CombatBonus {

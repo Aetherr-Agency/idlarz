@@ -1,4 +1,4 @@
-import { GEMS_CAP } from '@/config/gameConfig';
+import { GEMS_CAP } from '@/config/economy';
 import type { StoredSave } from '@/lib/cloudSave/pipeline';
 import { rollChestLoot } from '@/lib/chests';
 import { rollGemFind } from '@/lib/luck';

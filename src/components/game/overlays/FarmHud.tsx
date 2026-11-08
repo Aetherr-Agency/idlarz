@@ -1,8 +1,8 @@
 import React from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { formatNumber, formatPercent } from '@/utils/formatters';
-import { FARM_PRODUCT_KEYS } from '@/config/gameConfig';
-import { countOwnedBiomeTypes } from '@/utils/gameUtils';
+import { FARM_PRODUCT_KEYS } from '@/config/farm';
+import { countOwnedBiomeTypes } from '@/utils/game/tiles';
 import ResourceIcon from '../ResourceIcon';
 import StableNumber from '../StableNumber';
 

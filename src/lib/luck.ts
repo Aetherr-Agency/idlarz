@@ -1,4 +1,4 @@
-import { CHEST, LUCK } from '@/config/gameConfig';
+import { CHEST, LUCK } from '@/config/spawns';
 import type { Rng } from '@/lib/rng';
 
 // What Luck does beyond the gold multipliers in chests.ts / loot/kill.ts. Pure; the server and the Character window use the same numbers.

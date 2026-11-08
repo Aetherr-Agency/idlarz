@@ -1,5 +1,5 @@
 import type { Tile } from '@/types/game';
-import { CASTLE_X, CASTLE_Y } from '@/config/gameConfig';
+import { CASTLE_X, CASTLE_Y } from '@/config/castle';
 import { getTile, hasOwnedNeighbour, inRange, setTile, type World } from '@/utils/world';
 import type { Cell } from './dragPaint';
 

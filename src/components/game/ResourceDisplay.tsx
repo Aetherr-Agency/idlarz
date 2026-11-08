@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { useUiStore } from '@/stores/uiStore';
 import { RESOURCES, RESOURCE_TIERS, resourcesInTier, type ResourceKey, type ResourceTier } from '@/catalog';
-import { RESOURCE_ICONS } from '@/config/gameConfig';
+import { RESOURCE_ICONS } from '@/config/resources';
 import { RESOURCE_PIXEL_ICONS, SHINE_SHEETS } from '@/config/pixelIcons';
 import { formatHeaderAmount, formatPercent, formatRateAuto } from '@/utils/formatters';
 import { cn } from '@/lib/utils';

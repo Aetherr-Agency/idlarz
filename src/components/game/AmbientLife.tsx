@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSettingsStore } from '@/stores/settingsStore';
-import { AMBIENT_LIFE } from '@/config/gameConfig';
+import { AMBIENT_LIFE } from '@/config/biomes';
 import { nextSpawnDelay, pickAmbientCritter, type AmbientCritter, type Viewport } from '@/lib/ambientLife';
 import '@/styles/Ambient.css';
 import { useMapGame } from './mapSource';

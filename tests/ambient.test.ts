@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, worldFromRows } from './helpers';
-import { AMBIENT_LIFE, TILE_SIZE } from '../src/config/gameConfig';
+import { AMBIENT_LIFE, TILE_SIZE } from '../src/config/biomes';
 import { nextSpawnDelay, pickAmbientCritter, type Viewport } from '../src/lib/ambientLife';
 import type { Tile } from '../src/types/game';
 

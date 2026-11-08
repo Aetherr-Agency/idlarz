@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { BIOMES } from '@/config/gameConfig';
+import { BIOMES } from '@/config/biomes';
 import { MONSTER_CATALOG } from '@/catalog/monsters';
 import { hitNumberText } from '@/lib/combatFx';
 import CombatPanel, { type FloatNumber } from '@/components/game/overlays/CombatPanel';

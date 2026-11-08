@@ -1,12 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, setResources, store, owned } from './helpers';
-import { CASTLE_X, CASTLE_Y, RESOURCE_CAP } from '../src/config/gameConfig';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
+import { RESOURCE_CAP } from '../src/config/economy';
 import { pickPersisted } from '../src/lib/sanitizeSave';
 import { spawnCap } from '../src/lib/spawnLimits';
 import { spawnTiles } from '../src/lib/monsters';
 import { decodeSave, encodeSave } from '../src/lib/saveFormat';
-import { calculateTileCost, calculateXpGain, economyTiles } from '../src/utils/gameUtils';
+import { calculateTileCost } from '../src/utils/game/costs';
+import { calculateXpGain } from '../src/utils/game/character';
+import { economyTiles } from '../src/utils/game/tiles';
 import { COORD_LIMIT, MAX_OWNED_TILES, getTile, isOwnedAt, ownedBounds, ownedCount, ownedRowMajor, setTile } from '../src/utils/world';
 import { syntheticWorld } from '../src/utils/worldGen';
 

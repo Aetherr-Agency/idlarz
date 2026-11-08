@@ -1,6 +1,6 @@
 # 03 · Formulas & scaling
 
-Constants: [`src/config/gameConfig.ts`](../src/config/gameConfig.ts) (re-exports the domain files next to it: economy, character, castle, biomes, buildings, merchant, farm, rebirth, spawns, resources) · maths: [`src/utils/gameUtils.ts`](../src/utils/gameUtils.ts) · actions: [`src/stores/gameStore.ts`](../src/stores/gameStore.ts) (slices in [`src/stores/game/`](../src/stores/game)). Full tables: [generated/balance-tables.md](generated/balance-tables.md) (`npm run report`); pacing: [generated/sim-milestones.md](generated/sim-milestones.md) (`npm run sim`).
+Constants: [`src/config/`](../src/config) (one file per domain: economy, character, castle, biomes, buildings, merchant, farm, rebirth, spawns, resources) · maths: [`src/utils/game/`](../src/utils/game) · actions: [`src/stores/gameStore.ts`](../src/stores/gameStore.ts) (slices in [`src/stores/game/`](../src/stores/game)). Full tables: [generated/balance-tables.md](generated/balance-tables.md) (`npm run report`); pacing: [generated/sim-milestones.md](generated/sim-milestones.md) (`npm run sim`).
 
 Notation: `n` = tiles owned (castle included), `L` = player level, `C` = castle level.
 
@@ -34,7 +34,7 @@ awardedXP   = tileXP × (1 + xpGainMultiplier/100)
 xpGainMultiplier (%) = 0.2·INT + 0.25·CHA
 passive xp/s = rates.total.xp × (1 + xpGainMultiplier/100)
 XP to leave level N = xpToNextLevel(N): from anchors (level → total XP) 10 → 1.4e5, 30 → 1e8, 80 → 3e9, 90 → 6.5e9, 100 → 1.85e10,
-                       every step a constant factor above the one before inside a segment; level 100 is the maximum (LEVELING in gameConfig.ts)
+                       every step a constant factor above the one before inside a segment; level 100 is the maximum (LEVELING in config/character.ts)
 stat points = 1 per level, +2 for levels 2..30 (totalStatPoints)
 level, lifetime XP and attributes carry over a rebirth
 ```
@@ -62,7 +62,7 @@ The merchant's Skinner upgrade (+5 % per level) multiplies the farm's meat and h
 
 The old hidden +10 % gold / +25 % XP modifier is gone (modifiers start at 0). Everything is additive inside the single `(1 + Σ)`.
 
-`calculateResourceBreakdown` (`src/utils/gameUtils.ts`) is the one place this formula lives: per resource it returns the pieces (realm start, farm, biome tiles, buildings, castle-level XP), the bonuses (castle, plains, attributes, the Ember factor) and the totals, and `calculateResourceRates` is built on it (`tests/uiActions.test.ts` checks that base, modifier and total are identical and that the pieces add up). The Character tab's *Where the income comes from* section shows exactly these numbers per resource.
+`calculateResourceBreakdown` (`src/utils/game/income.ts`) is the one place this formula lives: per resource it returns the pieces (realm start, farm, biome tiles, buildings, castle-level XP), the bonuses (castle, plains, attributes, the Ember factor) and the totals, and `calculateResourceRates` is built on it (`tests/uiActions.test.ts` checks that base, modifier and total are identical and that the pieces add up). The Character tab's *Where the income comes from* section shows exactly these numbers per resource.
 
 **New game**: the castle plus the 4 free start tiles (a random mix of plains and forest) give roughly 2-3 gold/s, about 0.1 wood and 0.2 stone/s and a few food per second, under the castle's +45 % modifier (+32.5 % stone), and about 1.2 xp/s. The exact rows for one fixed ring are in [generated/balance-tables.md §7](generated/balance-tables.md).
 
@@ -142,7 +142,7 @@ Click limiter (gold clicks): burst bucket 8 tokens refilling 5/s × stamina buck
 
 ## 7. Character-derived stats
 
-`calculateCombatStats` (`gameUtils.ts`; the combat parts come from `lib/statBonuses.ts`, the same functions the server's fights use, and count the points above the starting 5): physicalAtk % = 2·(STR−5); magicAtk % = 2.4·(INT−5); hp = 3·VIT + 0.25·CHA (on top of the base 85); mp = 20 + 4·INT; def = 0.5·(DEX−5) + 0.5·(VIT−5) + 0.25·(STR−5); luck = CHA; critChance % = 0.25·DEX + 0.5·CHA; atkSpeed % = 0.25·(DEX−5); **xpGainMultiplier** = 0.2·INT + 0.25·CHA and **tileCostDiscount** = 0.5·CHA (max 25) as above. Damage, armor, crit damage and attack speed feed the fight engine (§10), luck feeds chests and kills, xpGainMultiplier and tileCostDiscount the economy.
+`calculateCombatStats` (`utils/game/character.ts`; the combat parts come from `lib/statBonuses.ts`, the same functions the server's fights use, and count the points above the starting 5): physicalAtk % = 2·(STR−5); magicAtk % = 2.4·(INT−5); hp = 3·VIT + 0.25·CHA (on top of the base 85); mp = 20 + 4·INT; def = 0.5·(DEX−5) + 0.5·(VIT−5) + 0.25·(STR−5); luck = CHA; critChance % = 0.25·DEX + 0.5·CHA; atkSpeed % = 0.25·(DEX−5); **xpGainMultiplier** = 0.2·INT + 0.25·CHA and **tileCostDiscount** = 0.5·CHA (max 25) as above. Damage, armor, crit damage and attack speed feed the fight engine (§10), luck feeds chests and kills, xpGainMultiplier and tileCostDiscount the economy.
 
 ## 8. What the pacing looks like
 
@@ -239,8 +239,8 @@ cost (gold / wood / stone) = floor(base x factor x (1 - Thrift))     base = 500 
 | 40 | 25.9 | 12,941 |
 
 The price follows the tile curve in shape (steep, then gentler, then gentler again) but starts lower, so a building is a fraction of a tile at the same point of the game.
-`src/config/gameConfig.ts` `BUILDING_COST` and `buildingCostFactor` in `src/utils/gameUtils.ts`; `tests/buildOnTile.test.ts` holds the shape.
+`src/config/buildings.ts` `BUILDING_COST` and `buildingCostFactor` in `src/utils/game/costs.ts`; `tests/buildOnTile.test.ts` holds the shape.
 
 ## 12. Limits and bonus hooks (what upgrades and rebirth will extend)
 
-Bounds that progression is meant to raise live in `src/config/limits.ts` (`LIMITS`: monster growth levels and interval, merchant shelf size, rotation and refresh cost, bag size) with a `HARD_LIMITS` ceiling for what a save may hold. Code reads them through `limitOf(key, ctx)` (`src/lib/limits.ts`), which adds the bonuses registered in `LIMIT_BONUSES` (today only Pack Rat on the bag size); a new upgrade or Ember effect is one entry there and every reader follows. Likewise every gold payout for something the player sells goes through `sellMultiplier(ctx)` / `sellPayout` (`utils/gameUtils.ts`) with the bonuses in `SELL_BONUSES` (today Haggler): resources, bag gear, junk, auto-sold drops, the merchant previews and the cloud net-worth check all use it, so a "+20 % selling" effect applies to all of them alike (`tests/limitsAndSelling.test.ts` proves it with a registered bonus).
+Bounds that progression is meant to raise live in `src/config/limits.ts` (`LIMITS`: monster growth levels and interval, merchant shelf size, rotation and refresh cost, bag size) with a `HARD_LIMITS` ceiling for what a save may hold. Code reads them through `limitOf(key, ctx)` (`src/lib/limits.ts`), which adds the bonuses registered in `LIMIT_BONUSES` (today only Pack Rat on the bag size); a new upgrade or Ember effect is one entry there and every reader follows. Likewise every gold payout for something the player sells goes through `sellMultiplier(ctx)` / `sellPayout` (`utils/game/merchant.ts`) with the bonuses in `SELL_BONUSES` (today Haggler): resources, bag gear, junk, auto-sold drops, the merchant previews and the cloud net-worth check all use it, so a "+20 % selling" effect applies to all of them alike (`tests/limitsAndSelling.test.ts` proves it with a registered bonus).

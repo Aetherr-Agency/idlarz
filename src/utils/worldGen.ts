@@ -1,5 +1,5 @@
 import type { BiomeType, Tile } from '@/types/game';
-import { CASTLE_X, CASTLE_Y } from '@/config/gameConfig';
+import { CASTLE_X, CASTLE_Y } from '@/config/castle';
 import { EMPTY_WORLD, isOwnedAt, ownedEntries, setTiles, tileKey, type Placed, type World } from './world';
 
 /**

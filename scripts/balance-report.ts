@@ -8,53 +8,22 @@
  */
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import {
-	ANIMALS,
-	BASE_GENERATION_RATES,
-	LEVELING,
-	BIOME_YIELD,
-	BIOMES,
-	BUILDING_COST,
-	CASTLE_BASE_RATES,
-	CASTLE_UPGRADE,
-	CHARACTER_STAT_CONFIG,
-	CLICK_LADDER,
-	FARM,
-	FARM_UPGRADES,
-	type FarmUpgradeId,
-	MERCHANT_SHOP_ITEMS,
-	MERCHANT_UPGRADES,
-	type MerchantUpgradeId,
-	EMBER_UPGRADES,
-	REBIRTH,
-	type EmberUpgradeId,
-	INITIAL_CHARACTER_STATS,
-	MERCHANT_BUY_MULTIPLIER,
-	MERCHANT_RESOURCE_PRICES,
-	TILE_RESOURCE_COST,
-	TILE_PRICE,
-	RESOURCE_CAP,
-	SCALING_CONFIG,
-	XP_TILE,
-} from '../src/config/gameConfig';
-import {
-	calculateAnimalCost,
-	calculateAnimalProduction,
-	calculateCombatStats,
-	calculateResourceRates,
-	calculateStatResourceModifiers,
-	calculateTileCost,
-	buildingCostFactor,
-	calculateXpGain,
-	castleModifier,
-	createInitialWorld,
-	farmUpgradeCost,
-	merchantUpgradeCost,
-	emberGain,
-	emberUpgradeCost,
-	cumulativeXp,
-	xpToNextLevel,
-} from '../src/utils/gameUtils';
+import { ANIMALS, FARM, FARM_UPGRADES, type FarmUpgradeId } from '../src/config/farm';
+import { BASE_GENERATION_RATES, BIOME_YIELD, CLICK_LADDER, TILE_RESOURCE_COST, TILE_PRICE, RESOURCE_CAP, SCALING_CONFIG, XP_TILE } from '../src/config/economy';
+import { LEVELING, CHARACTER_STAT_CONFIG, INITIAL_CHARACTER_STATS } from '../src/config/character';
+import { BIOMES } from '../src/config/biomes';
+import { BUILDING_COST } from '../src/config/buildings';
+import { CASTLE_BASE_RATES, CASTLE_UPGRADE } from '../src/config/castle';
+import { MERCHANT_SHOP_ITEMS, MERCHANT_UPGRADES, type MerchantUpgradeId, MERCHANT_BUY_MULTIPLIER, MERCHANT_RESOURCE_PRICES } from '../src/config/merchant';
+import { EMBER_UPGRADES, REBIRTH, type EmberUpgradeId } from '../src/config/rebirth';
+import { calculateAnimalCost, calculateAnimalProduction, farmUpgradeCost } from '../src/utils/game/farm';
+import { calculateCombatStats, calculateStatResourceModifiers, calculateXpGain, cumulativeXp, xpToNextLevel } from '../src/utils/game/character';
+import { calculateResourceRates } from '../src/utils/game/income';
+import { calculateTileCost, buildingCostFactor } from '../src/utils/game/costs';
+import { castleModifier } from '../src/utils/game/castle';
+import { createInitialWorld } from '../src/utils/game/tiles';
+import { merchantUpgradeCost } from '../src/utils/game/merchant';
+import { emberGain, emberUpgradeCost } from '../src/utils/game/rebirth';
 import { ITEM_CATALOG } from '../src/catalog';
 import { formatTime } from '../src/utils/formatters';
 import { mulberry32 } from '../src/lib/rng';

@@ -81,7 +81,7 @@ Income, XP and the arrival of chests/monsters use the efficiency; **castle build
 
 A ticket is the server's record of a chest or monster waiting on the map (chests and monsters share one numbering). Chests come every `600 s / (1 + 0.004 x Luck)` (floor 0.6x), the first rat after 120 s then one per 900 s, a King every 10800 s while none waits. At most `min(40, 30 % of the free land)` tickets wait; with no room the timers sit at 0 like the old client timers. Monsters carry their ticket number (`Monster.ticket`) and `lucky`; their age (and so their level) is measured from the ticket's `at`.
 
-## Luck (`src/lib/luck.ts`, `LUCK` in `gameConfig.ts`)
+## Luck (`src/lib/luck.ts`, `LUCK` in `config/spawns.ts`)
 
 Luck = Charisma + the merchant's Lucky Charm + gear. Besides the gold multipliers it now gives: faster chests, rare-and-better gear odds (x`1 + 0.004 Luck`, cap 1.6), a higher monster gear drop chance, a bonus **gem roll** on every chest (`3 % + 0.06 % x Luck`, cap 15 %, 5 to 50 gems skewed low) and **lucky rats** (`2 % + 0.05 % x Luck`, cap 10 %: golden, x3 gold and XP, one extra gear roll). `npm run loot-sim` prints the effect per Luck level ([generated/loot-sim.md](generated/loot-sim.md)).
 

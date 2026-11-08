@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import './helpers';
-import { CASTLE_X, CASTLE_Y, TILE_SIZE } from '../src/config/gameConfig';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
+import { TILE_SIZE } from '../src/config/biomes';
 import { ARROW_MARGIN, castleScreenPoint, compassArrow, isCastleOnScreen, NO_INSETS, type Insets, type ViewLike } from '../src/lib/castleFinder';
 import { positionForCenter } from '../src/lib/mapView';
 import { useViewStore } from '../src/stores/viewStore';

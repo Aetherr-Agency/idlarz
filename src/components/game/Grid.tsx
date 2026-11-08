@@ -1,10 +1,13 @@
 import React, { useRef, useEffect, useState, useCallback, useMemo, JSX } from 'react';
-import { CASTLE_FORTRESS, CASTLE_RANGE, TILE_SIZE } from '@/config/gameConfig';
+import { CASTLE_FORTRESS, CASTLE_RANGE } from '@/config/castle';
+import { TILE_SIZE } from '@/config/biomes';
 import { castleLevelOf, castleRangeRadius } from '@/lib/castleWard';
 import { visibleTileRange } from '@/lib/mapView';
 import { pointerToTile } from '@/lib/dragPaint';
 import { useMapSource } from './mapSource';
-import { calculateTileCost, canAffordBundle, economyTiles, effectiveTileDiscount, tileCostAsResources } from '@/utils/gameUtils';
+import { calculateTileCost, canAffordBundle, tileCostAsResources } from '@/utils/game/costs';
+import { economyTiles } from '@/utils/game/tiles';
+import { effectiveTileDiscount } from '@/utils/game/rebirth';
 import { getTile, hasOwnedNeighbour } from '@/utils/world';
 import Tile from './Tile';
 import AmbientLife from './AmbientLife';

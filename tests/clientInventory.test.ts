@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { api, freshGame, setResources, store } from './helpers';
 import { emptyBag, addDrop, stackOf } from '../src/lib/inventory';
 import { plainItem, sellValueOf } from '../src/lib/itemInstance';
-import { sellPayout } from '../src/utils/gameUtils';
+import { sellPayout } from '../src/utils/game/merchant';
 import { applyOp, parseOp } from '../src/lib/offline/inventory';
 import { requestSync } from '../src/lib/rewardsClient';
 import type { Inventory, InventoryReply } from '../src/lib/offline/types';

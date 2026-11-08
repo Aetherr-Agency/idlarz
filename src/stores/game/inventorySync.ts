@@ -1,7 +1,7 @@
 // inventorySync.ts
 // Split out of gameStore.ts (IDL-14); the actions and their behaviour are unchanged.
 
-import { RESOURCE_CAP } from '@/config/gameConfig';
+import { RESOURCE_CAP } from '@/config/economy';
 import { maxHp, maxMana } from '@/lib/combat';
 import type { Inventory, InventoryOp, InventoryReply } from '@/lib/offline/types';
 import { newClaimId } from '@/lib/offlineClient';

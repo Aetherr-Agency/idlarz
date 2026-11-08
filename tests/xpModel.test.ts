@@ -7,8 +7,8 @@ import { acceptSave, storedToText, type SaveRepo, type StoredSave, type WorldPar
 import { summarize, type SaveSummary } from '../src/lib/cloudSave/summary';
 import { verifyTransition } from '../src/lib/cloudSave/verify';
 import { XP_MODEL, purchasedOf, settleXp, tileXp } from '../src/lib/cloudSave/xpModel';
-import { calculateLevel, calculateXpGain, cumulativeXp, reconcileCharacter, totalStatPoints } from '../src/utils/gameUtils';
-import { INITIAL_CHARACTER_STATS } from '../src/config/gameConfig';
+import { calculateLevel, calculateXpGain, cumulativeXp, reconcileCharacter, totalStatPoints } from '../src/utils/game/character';
+import { INITIAL_CHARACTER_STATS } from '../src/config/character';
 import { zeroTotals } from '../src/lib/offline/ledger';
 
 // The server's model of XP (cloudSave/xpModel.ts): the XP two saves can explain, from the tiles bought, the time played and what the server paid.

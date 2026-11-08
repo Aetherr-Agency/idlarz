@@ -2,25 +2,24 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, closeFight, freshGame, growTo, openFight, setResources, store, rawSnapshot } from './helpers';
 import { COMBAT } from '../src/config/combatConfig';
+import { FARM_PRODUCT_KEYS } from '../src/config/farm';
 import {
-	FARM_PRODUCT_KEYS,
 	MERCHANT_BUYABLE,
 	MERCHANT_BUY_MULTIPLIER,
 	MERCHANT_RESOURCE_PRICES,
 	MERCHANT_SHOP_ITEMS,
-	CASTLE_X,
-	CASTLE_Y,
 	MERCHANT_UPGRADES,
-	REBIRTH,
 	type MerchantUpgradeId,
-} from '../src/config/gameConfig';
+} from '../src/config/merchant';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
+import { REBIRTH } from '../src/config/rebirth';
 import { ITEM_CATALOG, RARITY_ORDER } from '../src/catalog';
 import { BASIC_GEAR, RATTATUI_SET } from '../src/config/itemCatalog';
 import { emptyBag, gearOf, slotItemId, stackOf } from '../src/lib/inventory';
 import { plainItem, sellValueOf } from '../src/lib/itemInstance';
 import type { ItemInstance } from '../src/types/game';
 import { sanitizeSave } from '../src/lib/sanitizeSave';
-import { merchantUpgradeCost, sellMultiplier } from '../src/utils/gameUtils';
+import { merchantUpgradeCost, sellMultiplier } from '../src/utils/game/merchant';
 import { patchTile } from '../src/utils/world';
 
 const MAX_HAGGLER = 1 + MERCHANT_UPGRADES.haggler.maxLevel * MERCHANT_UPGRADES.haggler.effectPerLevel;

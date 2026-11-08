@@ -26,7 +26,7 @@ import {
 } from '../src/lib/combat';
 import { effectiveStats } from '../src/lib/effectiveStats';
 import { healAmount } from '../src/lib/skills';
-import { merchantCombat } from '../src/utils/gameUtils';
+import { merchantCombat } from '../src/utils/game/merchant';
 import { playerProfile } from '../src/lib/offline/profile';
 import { fullSet, simSetup } from '../src/lib/fightSim';
 import { runCombat } from '../src/lib/offline/fight';

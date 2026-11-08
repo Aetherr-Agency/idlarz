@@ -2,7 +2,7 @@ import type { BonusTable, ItemLevelDef, LootProfile, RollsDef, SourceLevelDef } 
 import type { RarityDef } from '@/catalog/rarity';
 import { MAX_ITEM_LEVEL, clampItemLevel } from '@/catalog/stats';
 import { affixFits } from '@/lib/itemInstance';
-import { LUCK } from '@/config/gameConfig';
+import { LUCK } from '@/config/spawns';
 import { dropChanceMultiplier, rarityLuckMultiplier } from '@/lib/luck';
 import { randomInt, weightedPick, type Rng } from '@/lib/rng';
 import type { Drop, ItemDef, ItemInstance } from '@/types/game';

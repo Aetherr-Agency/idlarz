@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, growTo, setResources, store, tileAt, gridCells, rowsOf } from './helpers';
-import { BIOMES, BUILDINGS, BUILDING_COST, CASTLE_X, CASTLE_Y } from '../src/config/gameConfig';
-import { buildingCostFactor, calculateBuildingCost, canBuildAt, canBuildOn, countBuildings } from '../src/utils/gameUtils';
+import { BIOMES } from '../src/config/biomes';
+import { BUILDINGS, BUILDING_COST } from '../src/config/buildings';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
+import { buildingCostFactor, calculateBuildingCost, canBuildAt, canBuildOn, countBuildings } from '../src/utils/game/costs';
 import { allPads, isBuilt, terrainKey } from '../src/utils/terrain';
 import { pickChestSpot } from '../src/lib/chests';
 import { SELECTABLE_BIOMES } from '../src/utils/biomeRules';

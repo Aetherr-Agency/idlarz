@@ -1,4 +1,5 @@
-import { CASTLE_X, CASTLE_Y, TILE_SIZE } from '@/config/gameConfig';
+import { CASTLE_X, CASTLE_Y } from '@/config/castle';
+import { TILE_SIZE } from '@/config/biomes';
 import type { Point, Size } from '@/lib/mapView';
 
 /**

@@ -3,16 +3,13 @@
 
 import { LIMITS } from '@/config/limits';
 import { DEFAULT_PLAYER_CLASS } from '@/config/playerClasses';
-import { STARTING_GEMS, DEFAULT_PLAYER_NAME, CASTLE_X, CASTLE_Y, INITIAL_CHARACTER_STATS } from '@/config/gameConfig';
-import {
-	calculateCombatStats,
-	calculateLevel,
-	calculateResourceRates,
-	createInitialWorld,
-	EMPTY_PRESTIGE,
-	STARTER_FREE_TILES,
-	startingResources,
-} from '@/utils/gameUtils';
+import { STARTING_GEMS } from '@/config/economy';
+import { DEFAULT_PLAYER_NAME, INITIAL_CHARACTER_STATS } from '@/config/character';
+import { CASTLE_X, CASTLE_Y } from '@/config/castle';
+import { calculateCombatStats, calculateLevel } from '@/utils/game/character';
+import { calculateResourceRates } from '@/utils/game/income';
+import { createInitialWorld, STARTER_FREE_TILES } from '@/utils/game/tiles';
+import { EMPTY_PRESTIGE, startingResources } from '@/utils/game/rebirth';
 import { type ChestLoot } from '@/lib/chests';
 import { createClickLimiter } from '@/lib/clickLimiter';
 import { maxHp, maxMana } from '@/lib/combat';

@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { BUILDINGS, INITIAL_RESOURCES } from '../src/config/gameConfig';
+import { BUILDINGS } from '../src/config/buildings';
+import { INITIAL_RESOURCES } from '../src/config/economy';
 import { BUILDING_GLOW, BUILDING_PIXEL_ICONS, PIXEL_ICON_SIZES, RESERVED_RESOURCES, RESOURCE_PIXEL_ICONS, pixelIconSrc } from '../src/config/pixelIcons';
 
 const ICON_DIR = resolve(__dirname, '..', 'public');

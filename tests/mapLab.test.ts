@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { brushCells, createStroke, lineCells, pointerToTile, MAX_STROKE_CELLS, type Cell } from '../src/lib/dragPaint';
 import { applyStroke, chestTool, eraseTool, extendRing, extendTool, paintTool, unchestTool } from '../src/lib/mapEdit';
-import { CASTLE_X, CASTLE_Y } from '../src/config/gameConfig';
-import { createInitialWorld } from '../src/utils/gameUtils';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
+import { createInitialWorld } from '../src/utils/game/tiles';
 import { getTile, isOwnedAt } from '../src/utils/world';
 
 const world = () => createInitialWorld(() => 0.5);

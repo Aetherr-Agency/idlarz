@@ -1,4 +1,4 @@
-import { CASTLE_X, CASTLE_Y } from '@/config/gameConfig';
+import { CASTLE_X, CASTLE_Y } from '@/config/castle';
 import { BIOME_COLORS } from '@/config/biomePalette';
 import { BUILDING_GLOW } from '@/config/pixelIcons';
 import type { Size } from '@/lib/mapView';

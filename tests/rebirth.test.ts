@@ -1,30 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, growTo, owned, setResources, store, tileAt, rawSnapshot } from './helpers';
-import {
-	CASTLE_UPGRADE,
-	CLICK_LADDER,
-	CASTLE_X,
-	CASTLE_Y,
-	INITIAL_RESOURCES,
-	EMBER_UPGRADES,
-	REBIRTH,
-	STARTING_GEMS,
-	type EmberUpgradeId,
-} from '../src/config/gameConfig';
-import {
-	calculateBuildingCost,
-	calculateTileCost,
-	castleUpgradeDuration,
-	effectiveTileDiscount,
-	calculateLevel,
-	emberGain,
-	rebirthStatus,
-	totalStatPoints,
-	emberSpent,
-	emberUpgradeCost,
-	emberIncomeBonus,
-} from '../src/utils/gameUtils';
+import { CASTLE_UPGRADE, CASTLE_X, CASTLE_Y } from '../src/config/castle';
+import { CLICK_LADDER, INITIAL_RESOURCES, STARTING_GEMS } from '../src/config/economy';
+import { EMBER_UPGRADES, REBIRTH, type EmberUpgradeId } from '../src/config/rebirth';
+import { calculateBuildingCost, calculateTileCost } from '../src/utils/game/costs';
+import { castleUpgradeDuration } from '../src/utils/game/castle';
+import { effectiveTileDiscount, emberGain, rebirthStatus, emberSpent, emberUpgradeCost, emberIncomeBonus } from '../src/utils/game/rebirth';
+import { calculateLevel, totalStatPoints } from '../src/utils/game/character';
 import { sanitizeSave } from '../src/lib/sanitizeSave';
 import { patchTile } from '../src/utils/world';
 

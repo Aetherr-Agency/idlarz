@@ -1,8 +1,10 @@
 // merchantSlice.ts
 // Split out of gameStore.ts (IDL-14); the actions and their behaviour are unchanged.
 
-import { MERCHANT_BUYABLE, MERCHANT_RESOURCE_PRICES, MERCHANT_SHOP_ITEMS, MERCHANT_UPGRADES, type MerchantUpgradeId, RESOURCE_CAP } from '@/config/gameConfig';
-import { calculateResourceRates, buyCost, merchantLevel, merchantUpgradeCost, sellPayout } from '@/utils/gameUtils';
+import { MERCHANT_BUYABLE, MERCHANT_RESOURCE_PRICES, MERCHANT_SHOP_ITEMS, MERCHANT_UPGRADES, type MerchantUpgradeId } from '@/config/merchant';
+import { RESOURCE_CAP } from '@/config/economy';
+import { calculateResourceRates } from '@/utils/game/income';
+import { buyCost, merchantLevel, merchantUpgradeCost, sellPayout } from '@/utils/game/merchant';
 import { afterRefresh, freeRefreshesLeft, generateMerchantStock, refreshCooldown, refreshCost, shopPriceOf } from '@/lib/merchant';
 import { emitSaveEvent } from '@/lib/saveEvents';
 import { gearIncomePct } from '@/lib/gearEconomy';

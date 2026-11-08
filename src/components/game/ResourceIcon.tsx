@@ -1,6 +1,6 @@
 import React from 'react';
 import { RESOURCE_PIXEL_ICONS } from '@/config/pixelIcons';
-import { RESOURCE_ICONS } from '@/config/gameConfig';
+import { RESOURCE_ICONS } from '@/config/resources';
 import PixelIcon from './PixelIcon';
 
 interface ResourceIconProps {

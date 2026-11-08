@@ -1,7 +1,11 @@
 import React, { memo, useMemo } from 'react';
 import { BiomeType, Resources } from '@/types/game';
-import { BIOMES, CASTLE_AREA_BONUS, BUILDINGS, BuildingType } from '@/config/gameConfig';
-import { calculateTileOutput, canBuildAt, castleModifier } from '@/utils/gameUtils';
+import { BIOMES } from '@/config/biomes';
+import { CASTLE_AREA_BONUS } from '@/config/castle';
+import { BUILDINGS, BuildingType } from '@/config/buildings';
+import { calculateTileOutput } from '@/utils/game/income';
+import { canBuildAt } from '@/utils/game/costs';
+import { castleModifier } from '@/utils/game/castle';
 import { castleAreaBonus, castleLevelOf, castleRangeRadius } from '@/lib/castleWard';
 import { getTile } from '@/utils/world';
 import { formatPercent, formatNumber, formatTime } from '@/utils/formatters';

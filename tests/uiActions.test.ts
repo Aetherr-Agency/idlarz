@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, growTo, openFight, store, gridCells } from './helpers';
 import { emptyBag } from '../src/lib/inventory';
-import { calculateResourceBreakdown, calculateResourceRates } from '../src/utils/gameUtils';
+import { calculateResourceBreakdown, calculateResourceRates } from '../src/utils/game/income';
 import { useUiStore } from '../src/stores/uiStore';
 import { PREF_DEFAULTS, readPref, writePref } from '../src/lib/uiPrefs';
 import type { BagSlot, Monster } from '../src/types/game';

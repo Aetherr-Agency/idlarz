@@ -14,7 +14,7 @@ import { castleWorld, character, oracle, pinEconomy, prestigeWith, PINNED_BASE }
 import { ITEMS, SETS } from '../src/catalog';
 import { plainItem, resolveItem } from '../src/lib/itemInstance';
 import { armorOf, armorReduction, attacksPerSecond, critOdds, damagePerHit, damagePerSecond, maxHp } from '../src/lib/combat';
-import { calculateResourceBreakdown } from '../src/utils/gameUtils';
+import { calculateResourceBreakdown } from '../src/utils/game/income';
 import { COMBAT } from '../src/config/combatConfig';
 import type { Equipment } from '../src/types/game';
 

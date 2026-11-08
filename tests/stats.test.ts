@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { COMBAT, STAT_RULES } from '../src/config/combatConfig';
-import { INITIAL_CHARACTER_STATS } from '../src/config/gameConfig';
+import { INITIAL_CHARACTER_STATS } from '../src/config/character';
 import { STARTER_EQUIPMENT } from '../src/config/itemCatalog';
 import {
 	armorOf,
@@ -19,7 +19,7 @@ import {
 } from '../src/lib/combat';
 import { atkSpeedPercent, critDamagePercent, magicDamagePercent, physicalDamagePercent, statArmor, statManaRegen, statMaxMana } from '../src/lib/statBonuses';
 import { plainItem } from '../src/lib/itemInstance';
-import { calculateCombatStats, getStatDescription, getStatDescriptionGroups } from '../src/utils/gameUtils';
+import { calculateCombatStats, getStatDescription, getStatDescriptionGroups } from '../src/utils/game/character';
 import { AFFIX_CATALOG } from '../src/catalog/affixes';
 import { resolveItem } from '../src/lib/itemInstance';
 import type { CharacterStats, Equipment, ItemInstance } from '../src/types/game';

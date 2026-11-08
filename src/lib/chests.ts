@@ -1,4 +1,5 @@
-import { CHEST, CASTLE_X, CASTLE_Y } from '@/config/gameConfig';
+import { CHEST } from '@/config/spawns';
+import { CASTLE_X, CASTLE_Y } from '@/config/castle';
 import { addDrop } from '@/lib/inventory';
 import { generateLoot } from '@/lib/loot/generate';
 import { isAutoSold } from '@/lib/loot/autoSell';

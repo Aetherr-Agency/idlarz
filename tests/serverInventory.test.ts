@@ -10,7 +10,7 @@ import { fightStep, inventoryStep, redeemChest, syncTickets, type Online } from 
 import { applyOp, bagCountOf, inventoryFromCore, parseOp, stampInventory } from '../src/lib/offline/inventory';
 import { addDrop, emptyBag } from '../src/lib/inventory';
 import { plainItem, sellValueOf } from '../src/lib/itemInstance';
-import { sellPayout } from '../src/utils/gameUtils';
+import { sellPayout } from '../src/utils/game/merchant';
 import { LOOT_PROFILES } from '../src/catalog';
 import type { Inventory } from '../src/lib/offline/types';
 import type { BagSlot } from '../src/types/game';

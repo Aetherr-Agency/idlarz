@@ -1,5 +1,5 @@
 import type { Tile } from '@/types/game';
-import { CASTLE_FORTRESS } from '@/config/gameConfig';
+import { CASTLE_FORTRESS } from '@/config/castle';
 import atlasJson from '@/config/terrainAtlas.json';
 import { getTile, inRange, tileKey, type World } from './world';
 

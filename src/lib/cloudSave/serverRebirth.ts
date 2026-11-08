@@ -1,5 +1,5 @@
-import { REBIRTH } from '@/config/gameConfig';
-import { emberGain } from '@/utils/gameUtils';
+import { REBIRTH } from '@/config/rebirth';
+import { emberGain } from '@/utils/game/rebirth';
 import type { SaveSummary } from './summary';
 
 /**

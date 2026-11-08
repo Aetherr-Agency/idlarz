@@ -1,9 +1,9 @@
 import React from 'react';
 import { useGameStore } from '@/stores/gameStore';
-import { ANIMALS, FARM_UPGRADES } from '@/config/gameConfig';
+import { ANIMALS, FARM_UPGRADES } from '@/config/farm';
 import { ANIMAL_PIXEL_ICONS } from '@/config/pixelIcons';
 import { formatNumber } from '@/utils/formatters';
-import { animalBatchCost, animalOutput, calculateAnimalCost, farmCap, farmUpgradeLevel } from '@/utils/gameUtils';
+import { animalBatchCost, animalOutput, calculateAnimalCost, farmCap, farmUpgradeLevel } from '@/utils/game/farm';
 import type { Animal } from '@/types/game';
 import audioManager from '@/utils/audioManager';
 import PixelIcon from '../PixelIcon';

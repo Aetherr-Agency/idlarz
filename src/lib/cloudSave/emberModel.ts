@@ -1,5 +1,7 @@
-import { CASTLE_UPGRADE, MERCHANT_UPGRADES, REBIRTH } from '@/config/gameConfig';
-import { emberGain, emberSpent } from '@/utils/gameUtils';
+import { CASTLE_UPGRADE } from '@/config/castle';
+import { MERCHANT_UPGRADES } from '@/config/merchant';
+import { REBIRTH } from '@/config/rebirth';
+import { emberGain, emberSpent } from '@/utils/game/rebirth';
 import type { PrestigeState } from '@/types/game';
 import type { Snapshot } from './verify';
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { ANIMALS, FARM } from '@/config/gameConfig';
+import { ANIMALS, FARM } from '@/config/farm';
 import { ANIMAL_PIXEL_ICONS } from '@/config/pixelIcons';
 import { mulberry32 } from '@/lib/rng';
 import { Animal } from '@/types/game';

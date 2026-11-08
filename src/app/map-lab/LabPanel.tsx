@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useRef, useState } from 'react';
-import { BIOMES, CASTLE_UPGRADE, CASTLE_X, CASTLE_Y } from '@/config/gameConfig';
+import { BIOMES } from '@/config/biomes';
+import { CASTLE_UPGRADE, CASTLE_X, CASTLE_Y } from '@/config/castle';
 import { biomeColor } from '@/config/biomePalette';
 import PixelIcon from '@/components/game/PixelIcon';
 import { WIP_MONSTERS } from './CombatPreview';

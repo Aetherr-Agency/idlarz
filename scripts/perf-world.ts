@@ -15,12 +15,13 @@ import { pickChestSpot } from '../src/lib/chests';
 import { castleLevelOf } from '../src/lib/castleWard';
 import { minimapLayout, minimapMarkers, paintChestGlow, paintMinimap } from '../src/lib/minimap';
 import { gearIncomePct } from '../src/lib/gearEconomy';
-import { calculateResourceRates, calculateXpGain } from '../src/utils/gameUtils';
+import { calculateResourceRates } from '../src/utils/game/income';
+import { calculateXpGain } from '../src/utils/game/character';
 import { connectedCluster } from '../src/utils/cluster';
 import { chunkSignature, chunkSprites } from '../src/utils/terrain';
 import { hasOwnedNeighbour, isOwnedAt, ownedBounds, ownedCount, ownedEntries, patchTile } from '../src/utils/world';
 import { syntheticWorld } from '../src/utils/worldGen';
-import { XP_CAP } from '../src/config/gameConfig';
+import { XP_CAP } from '../src/config/economy';
 
 const api = () => useGameStore.getState();
 

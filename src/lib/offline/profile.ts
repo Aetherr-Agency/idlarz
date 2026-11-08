@@ -1,12 +1,13 @@
 import { isRecord } from '@/lib/isRecord';
-import { INITIAL_CHARACTER_STATS } from '@/config/gameConfig';
+import { INITIAL_CHARACTER_STATS } from '@/config/character';
 import { aggregateStats } from '@/lib/inventory';
 import { attacksPerSecond, critOdds, damagePerHit, dodgeChance, lifeLeechPercent, manaRegenPerSec, maxHp, maxMana, armorOf } from '@/lib/combat';
 import { healAmount } from '@/lib/skills';
 import { critDamagePercent } from '@/lib/statBonuses';
 import type { PlayerProfile } from '@/lib/offline/fightTypes';
 import type { CharacterStats, Equipment } from '@/types/game';
-import { calculateCombatStats, calculateLevel, merchantCombat } from '@/utils/gameUtils';
+import { calculateCombatStats, calculateLevel } from '@/utils/game/character';
+import { merchantCombat } from '@/utils/game/merchant';
 
 // What the server knows about the player's fighting strength: worked out from the last accepted save with the same functions the game's
 // own readouts use, so the numbers in the character window are the numbers the fight runs on.

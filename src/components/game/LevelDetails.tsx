@@ -1,8 +1,8 @@
 import React from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { formatCompact, formatNumber } from '@/utils/formatters';
-import { MAX_LEVEL } from '@/config/gameConfig';
-import { xpToNextLevel } from '@/utils/gameUtils';
+import { MAX_LEVEL } from '@/config/character';
+import { xpToNextLevel } from '@/utils/game/character';
 import { LevelUpTimer } from './LevelUpTimer';
 import { PLAYER_CLASSES, DEFAULT_PLAYER_CLASS } from '@/config/playerClasses';
 import CharacterPortrait from './CharacterPortrait';

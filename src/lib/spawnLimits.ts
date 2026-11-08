@@ -1,4 +1,5 @@
-import { CASTLE_FORTRESS, CASTLE_RANGE, SPAWN_LIMIT } from '@/config/gameConfig';
+import { CASTLE_FORTRESS, CASTLE_RANGE } from '@/config/castle';
+import { SPAWN_LIMIT } from '@/config/spawns';
 import type { World } from '@/utils/world';
 
 // How many monsters and chests the map can hold: a share of the land they could stand on, so a small map never fills up

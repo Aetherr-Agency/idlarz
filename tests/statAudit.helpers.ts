@@ -3,9 +3,12 @@
 // The oracles below are written from the SPEC (docs and the audit plan), with every constant spelled out. They deliberately
 // do not import the production formulas, so a wrong production number cannot hide behind a copy of itself.
 import assert from 'node:assert/strict';
-import { BASE_GENERATION_RATES, BIOMES, CASTLE_UPGRADE, CASTLE_X, CASTLE_Y, INITIAL_CHARACTER_STATS } from '../src/config/gameConfig';
+import { BASE_GENERATION_RATES } from '../src/config/economy';
+import { BIOMES } from '../src/config/biomes';
+import { CASTLE_UPGRADE, CASTLE_X, CASTLE_Y } from '../src/config/castle';
+import { INITIAL_CHARACTER_STATS } from '../src/config/character';
 import { EMPTY_WORLD, setTiles, type World } from '../src/utils/world';
-import { calculateCombatStats } from '../src/utils/gameUtils';
+import { calculateCombatStats } from '../src/utils/game/character';
 import type { CharacterStats, PrestigeState, Resources, Tile } from '../src/types/game';
 
 /** The flat base income of every resource in the strict environment. It is never raised: only modifiers may move a total. */

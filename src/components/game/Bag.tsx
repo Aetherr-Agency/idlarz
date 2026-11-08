@@ -7,7 +7,7 @@ import { clearDrag, getDrag, setDrag } from '@/lib/inventoryDrag';
 import { useUiStore, type ContextMenuItem } from '@/stores/uiStore';
 import { openMenuAt } from '@/lib/globalMenu';
 import { formatNumber } from '@/utils/formatters';
-import { sellPayout } from '@/utils/gameUtils';
+import { sellPayout } from '@/utils/game/merchant';
 import ItemSlot from './ItemSlot';
 import OrganizeButton from './OrganizeButton';
 import { slotProps } from './itemUi';

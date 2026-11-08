@@ -5,7 +5,7 @@ import { PLAYER_CLASSES, DEFAULT_PLAYER_CLASS } from '@/config/playerClasses';
 import { archiveForNewGame, resetSave, type SavePeek } from '@/lib/saveStorage';
 import { newGameCloud } from '@/lib/cloudClient';
 import type { CloudInfo } from '@/lib/startPlan';
-import { countOwnedTiles } from '@/utils/gameUtils';
+import { countOwnedTiles } from '@/utils/game/tiles';
 import PixelModal from '@/components/game/PixelModal';
 import PixelIcon from '@/components/game/PixelIcon';
 

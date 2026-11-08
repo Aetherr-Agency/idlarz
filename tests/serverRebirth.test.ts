@@ -3,9 +3,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, growTo, store } from './helpers';
-import { CASTLE_X, CASTLE_Y } from '../src/config/gameConfig';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
 import { patchTile } from '../src/utils/world';
-import { calculateLevel, totalStatPoints } from '../src/utils/gameUtils';
+import { calculateLevel, totalStatPoints } from '../src/utils/game/character';
 
 /** A game that meets the first rebirth's requirements on the server's reading: castle level 6 and more than 400 tiles bought (purchases + 1 count). */
 const rebirthReadyGame = (): PersistedGame => {
@@ -31,7 +31,7 @@ import { EMBER_MODEL, settleEmbers } from '../src/lib/cloudSave/emberModel';
 import { summarize } from '../src/lib/cloudSave/summary';
 import { rebirthKit } from '../src/lib/inventory';
 import { plainItem } from '../src/lib/itemInstance';
-import { emberGain } from '../src/utils/gameUtils';
+import { emberGain } from '../src/utils/game/rebirth';
 import type { RebirthReply } from '../src/lib/offline/types';
 
 const memory = () => {

@@ -1,8 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, growTo, openFight, store } from './helpers';
-import { CASTLE_X, CASTLE_Y, INITIAL_CHARACTER_STATS, REBIRTH } from '../src/config/gameConfig';
-import { totalStatPoints } from '../src/utils/gameUtils';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
+import { INITIAL_CHARACTER_STATS } from '../src/config/character';
+import { REBIRTH } from '../src/config/rebirth';
+import { totalStatPoints } from '../src/utils/game/character';
 import { ITEM_CATALOG } from '../src/catalog';
 import { STARTER_EQUIPMENT } from '../src/config/itemCatalog';
 import { emptyBag, gearOf, rebirthKit } from '../src/lib/inventory';

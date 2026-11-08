@@ -1,4 +1,4 @@
-import { AMBIENT_LIFE, TILE_SIZE, type AmbientCritterType } from '@/config/gameConfig';
+import { AMBIENT_LIFE, TILE_SIZE, type AmbientCritterType } from '@/config/biomes';
 import { getTile, ownedBounds, type World } from '@/utils/world';
 
 type AmbientType = AmbientCritterType;

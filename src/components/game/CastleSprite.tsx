@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { CASTLE_FORTRESS, CASTLE_UPGRADE } from '@/config/gameConfig';
+import { CASTLE_FORTRESS, CASTLE_UPGRADE } from '@/config/castle';
 import { castleIconName } from '@/config/pixelIcons';
 import PixelIcon from './PixelIcon';
 

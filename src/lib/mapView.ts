@@ -1,4 +1,4 @@
-import { TILE_SIZE } from '@/config/gameConfig';
+import { TILE_SIZE } from '@/config/biomes';
 import type { Bounds } from '@/utils/world';
 
 /**

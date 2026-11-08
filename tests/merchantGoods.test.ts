@@ -1,14 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, growTo, rawSnapshot, store } from './helpers';
-import { CASTLE_X, CASTLE_Y, MERCHANT_GOODS, MERCHANT_UPGRADES, REBIRTH } from '../src/config/gameConfig';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
+import { MERCHANT_GOODS, MERCHANT_UPGRADES } from '../src/config/merchant';
+import { REBIRTH } from '../src/config/rebirth';
 import { ITEM_CATALOG, RARITIES } from '../src/catalog';
 import { averageItemLevel, emptyBag, gearOf } from '../src/lib/inventory';
 import { plainItem, sellValueOf } from '../src/lib/itemInstance';
 import { afterAbsence, generateMerchantStock, refreshCost, secondsToRotation, shelfLevels, shopPriceOf, stockDue } from '../src/lib/merchant';
 import { mulberry32 } from '../src/lib/rng';
 import { sanitizeSave } from '../src/lib/sanitizeSave';
-import { sellPayout } from '../src/utils/gameUtils';
+import { sellPayout } from '../src/utils/game/merchant';
 import { patchTile } from '../src/utils/world';
 import type { Equipment, MerchantStock } from '../src/types/game';
 

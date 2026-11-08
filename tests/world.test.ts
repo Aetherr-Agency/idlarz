@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import './helpers';
 import type { BiomeType, Tile } from '../src/types/game';
-import { CASTLE_X, CASTLE_Y } from '../src/config/gameConfig';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
 import {
 	COORD_LIMIT,
 	EMPTY_WORLD,

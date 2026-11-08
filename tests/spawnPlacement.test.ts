@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, growTo, patchTileAt } from './helpers';
-import { CASTLE_X, CASTLE_Y } from '../src/config/gameConfig';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
 import { MONSTERS } from '../src/config/combatConfig';
 import { castleDistance } from '../src/lib/monsters';
 import { isChestPlaced, isPlaced, needsLook, placeTickets, siteKey, worldFromPart } from '../src/lib/offline/placement';

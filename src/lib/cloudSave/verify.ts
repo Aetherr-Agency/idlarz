@@ -1,4 +1,4 @@
-import { MERCHANT_RESOURCE_PRICES } from '@/config/gameConfig';
+import { MERCHANT_RESOURCE_PRICES } from '@/config/merchant';
 import type { GrantTotals } from '@/lib/offline/ledger';
 import type { Resources } from '@/types/game';
 import type { SaveSummary } from './summary';

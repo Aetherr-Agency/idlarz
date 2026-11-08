@@ -25,7 +25,7 @@ src/
 │   ├── layout.tsx, globals.css
 │   └── api/                  auth/{login,logout,me,profile,register}, save (cloud save), offline (claim an absence), spawn (tickets + combat view), chest (open a chest), inventory (equip, sell, move, buy ...), fight (start / hotkey / auto switches / dismiss)
 ├── config/
-│   ├── gameConfig.ts         ALL tunable economy constants (costs, curves, biomes, castle, animals, merchant, click limiter, chests, stats, rebirth, offline, luck)
+│   ├── economy, resources, character, castle, biomes, buildings, merchant, farm, rebirth, spawns .ts   the tunable constants by domain (costs, curves, biomes, castle, animals, merchant, stats, rebirth, chests, luck); one file each since IDL-15
 │   ├── combatConfig.ts       COMBAT + MONSTERS + STAT_RULES: HP, regen, armor, spawn, monster defs (level scaling, armor, crit, Stun resist, grade)
 │   ├── limits.ts             the limits registry (`limitOf('bagSize')` etc.: base value + effects like Pack Rat)
 │   ├── biomeRules.ts, biomePalette.ts, playerClasses.ts, pixelIcons.ts, terrainAtlas.json
@@ -41,7 +41,7 @@ src/
 │   ├── settingsStore.ts      sound / volume / ambient-life preferences (localStorage `idlarz-settings`, not game state)
 │   └── rewardPendingStore.ts the chest being opened (waiting for the server) and its animation
 ├── utils/
-│   ├── gameUtils.ts          pure maths: rates, costs, level curve, stat modifiers, tooltip text helpers
+│   ├── game/                 pure maths by domain: income.ts (rates and breakdown), costs.ts, character.ts (level curve, stat modifiers, tooltip text), farm.ts, merchant.ts, rebirth.ts (Embers), castle.ts, tiles.ts
 │   ├── world.ts              THE map: a sparse immutable `World` (explored tiles by numeric key, incremental counters + bounds), copy-on-write setTile/patchTile, row adapters for tests
 │   └── biomeRules.ts, growWorld.ts, worldGen.ts, cluster.ts, terrain.ts (dual-grid terrain, port of scripts/pixel/terrain_logic.py), water.ts, formatters.ts, audioManager.ts
 ├── lib/
@@ -116,7 +116,7 @@ Not saved: `monsters` and the open fight (`combat`) are the server's picture and
 
 ## Rebirth
 
-`rebirth()` asks `rebirthStatus` (the one place the requirements live; the header button and the Rebirth window read it too), takes the Embers it computes, and rebuilds the state with `createInitialData(prestige)` (the starting bundle from the *Provisions* upgrade is applied there). **Kept:** name, class, play time, prestige, Embers, the character (lifetime XP, level, attributes with unspent points), `equipment`, `bag` (and the room Pack Rat made), `gems`, `lootPity`, `autoSellUpTo`. **Reset:** the map, resources, castle, farm, chests, the other merchant upgrades. Prestige effects are passed as an optional argument into `calculateResourceRates`, `calculateTileCost`, `calculateBuildingCost` and `castleUpgradeDuration`, so the maths stays in `gameUtils.ts`.
+`rebirth()` asks `rebirthStatus` (the one place the requirements live; the header button and the Rebirth window read it too), takes the Embers it computes, and rebuilds the state with `createInitialData(prestige)` (the starting bundle from the *Provisions* upgrade is applied there). **Kept:** name, class, play time, prestige, Embers, the character (lifetime XP, level, attributes with unspent points), `equipment`, `bag` (and the room Pack Rat made), `gems`, `lootPity`, `autoSellUpTo`. **Reset:** the map, resources, castle, farm, chests, the other merchant upgrades. Prestige effects are passed as an optional argument into `calculateResourceRates`, `calculateTileCost`, `calculateBuildingCost` and `castleUpgradeDuration`, so the maths stays in `utils/game/*`.
 
 ## Ambient life
 

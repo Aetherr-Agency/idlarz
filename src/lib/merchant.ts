@@ -1,4 +1,4 @@
-import { MERCHANT_GOODS } from '@/config/gameConfig';
+import { MERCHANT_GOODS } from '@/config/merchant';
 import { LOOT_SOURCES } from '@/catalog/lootConfig';
 import { limitOf, type LimitContext } from '@/lib/limits';
 import { generateLoot, resolveSourceLevel } from '@/lib/loot';

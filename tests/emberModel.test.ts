@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { EMBER_MODEL, clampPrestige, settleEmbers } from '../src/lib/cloudSave/emberModel';
 import { DEFAULT_DERIVED, type SaveSummary } from '../src/lib/cloudSave/summary';
 import type { Snapshot } from '../src/lib/cloudSave/verify';
-import { emberGain, emberSpent } from '../src/utils/gameUtils';
+import { emberGain, emberSpent } from '../src/utils/game/rebirth';
 
 interface Before {
 	castleLevel?: number;

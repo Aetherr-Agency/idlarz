@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, growTo, store } from './helpers';
-import { STARTING_GEMS } from '../src/config/gameConfig';
-import { calculateLevel, totalStatPoints } from '../src/utils/gameUtils';
+import { STARTING_GEMS } from '../src/config/economy';
+import { calculateLevel, totalStatPoints } from '../src/utils/game/character';
 import { pickPersisted, type PersistedGame } from '../src/lib/sanitizeSave';
 import { encodeSave } from '../src/lib/saveFormat';
 import { acceptSave, type SaveRepo, type StatsRow, type StoredSave, type WorldPart } from '../src/lib/cloudSave/pipeline';

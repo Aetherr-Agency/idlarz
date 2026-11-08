@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { isLiveBiome } from '@/config/biomeStage';
-import { BIOMES, CASTLE_UPGRADE, CASTLE_X, CASTLE_Y, INITIAL_CHARACTER_STATS } from '@/config/gameConfig';
+import { BIOMES } from '@/config/biomes';
+import { CASTLE_UPGRADE, CASTLE_X, CASTLE_Y } from '@/config/castle';
+import { INITIAL_CHARACTER_STATS } from '@/config/character';
 import type { MapGameState } from '@/components/game/mapSource';
 import type { Cell } from '@/lib/dragPaint';
 import { applyStroke, chestTool, eraseTool, extendRing, extendTool, paintTool, unchestTool, type StrokeTool } from '@/lib/mapEdit';
@@ -9,7 +11,9 @@ import { castleLevelOf, isInWard } from '@/lib/castleWard';
 import { MONSTER_CATALOG } from '@/catalog/monsters';
 import { MONSTERS } from '@/config/combatConfig';
 import type { Monster, MonsterType } from '@/types/game';
-import { calculateCombatStats, createInitialWorld, EMPTY_PRESTIGE, STARTER_FREE_TILES, startingResources } from '@/utils/gameUtils';
+import { calculateCombatStats } from '@/utils/game/character';
+import { createInitialWorld, STARTER_FREE_TILES } from '@/utils/game/tiles';
+import { EMPTY_PRESTIGE, startingResources } from '@/utils/game/rebirth';
 import { growWorld } from '@/utils/growWorld';
 import { createWorld, getTile, ownedEntries, patchTile, setTiles, type World } from '@/utils/world';
 

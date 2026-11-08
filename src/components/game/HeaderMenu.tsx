@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { formatHeaderAmount, formatNumber } from '@/utils/formatters';
-import { MAX_LEVEL } from '@/config/gameConfig';
-import { rebirthStatus, xpToNextLevel } from '@/utils/gameUtils';
+import { MAX_LEVEL } from '@/config/character';
+import { rebirthStatus } from '@/utils/game/rebirth';
+import { xpToNextLevel } from '@/utils/game/character';
 import { useMenuAttention } from '@/hooks/useMenuAttention';
 import { useUiStore } from '@/stores/uiStore';
 import { useWindowStore, type WinId } from '@/stores/windowStore';

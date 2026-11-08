@@ -19,7 +19,7 @@ On every rebirth:
 4. Map, **biomes**, resources, castle, farm and all Producers/Extractors reset as today (the map is always rolled anew).
 5. **Kept and growing**: Idol levels ([18](18-biome-buildings-and-material-tiers.md) section 6: persistent, re-placed for free at their level, cap 5 raised with Embers) and the other soft caps; they are the long-term sinks for legacy points (Embers).
 
-Total attribute points available after a rebirth: `totalStatPoints(level) + 20 x rebirths` (`totalStatPoints` in `utils/gameUtils.ts`: 87 at level 30, 157 at level 100).
+Total attribute points available after a rebirth: `totalStatPoints(level) + 20 x rebirths` (`totalStatPoints` in `utils/game/character.ts`: 87 at level 30, 157 at level 100).
 
 ## 3. Impact on the game (what to check before building)
 

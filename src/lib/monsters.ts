@@ -1,6 +1,6 @@
 import { COMBAT, MONSTERS, type MonsterDef } from '@/config/combatConfig';
 import { levelScale } from '@/catalog/stats';
-import { CASTLE_X, CASTLE_Y } from '@/config/gameConfig';
+import { CASTLE_X, CASTLE_Y } from '@/config/castle';
 import { castleLevelOf, isInWard } from '@/lib/castleWard';
 import { limitOf, type LimitContext } from '@/lib/limits';
 import { mulberry32, randomInt } from '@/lib/rng';

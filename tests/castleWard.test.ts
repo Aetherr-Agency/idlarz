@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, growTo, store, tileAt } from './helpers';
-import { CASTLE_FORTRESS, CASTLE_RANGE, CASTLE_X, CASTLE_Y } from '../src/config/gameConfig';
+import { CASTLE_FORTRESS, CASTLE_RANGE, CASTLE_X, CASTLE_Y } from '../src/config/castle';
 import { castleAreaBonus, castleLevelOf, castleRangeRadius, fortressWallTier, inCastleRange, isInWard, MAX_CASTLE_RANGE_RADIUS } from '../src/lib/castleWard';
-import { calculateResourceBreakdown, calculateTileOutput } from '../src/utils/gameUtils';
+import { calculateResourceBreakdown, calculateTileOutput } from '../src/utils/game/income';
 import { groundOf } from '../src/utils/terrain';
 import { pickSpawnTile } from '../src/lib/monsters';
 import { EMPTY_WORLD, patchTile, setTile } from '../src/utils/world';

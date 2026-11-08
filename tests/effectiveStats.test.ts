@@ -1,13 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { COMBAT } from '../src/config/combatConfig';
-import { INITIAL_CHARACTER_STATS, EMBER_UPGRADES } from '../src/config/gameConfig';
+import { INITIAL_CHARACTER_STATS } from '../src/config/character';
+import { EMBER_UPGRADES } from '../src/config/rebirth';
 import { STARTER_EQUIPMENT } from '../src/config/itemCatalog';
 import { aggregateStats } from '../src/lib/inventory';
 import { plainItem } from '../src/lib/itemInstance';
 import { critOdds, damagePerHit, maxHp } from '../src/lib/combat';
 import { effectiveStats } from '../src/lib/effectiveStats';
-import { calculateCombatStats } from '../src/utils/gameUtils';
+import { calculateCombatStats } from '../src/utils/game/character';
 import type { CharacterStats, Equipment, PrestigeState } from '../src/types/game';
 
 const character = (over: Partial<CharacterStats> = {}): CharacterStats => {

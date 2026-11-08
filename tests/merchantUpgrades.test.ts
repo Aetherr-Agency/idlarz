@@ -1,16 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, growTo, rawSnapshot, store } from './helpers';
-import {
-	ANIMALS,
-	CASTLE_X,
-	CASTLE_Y,
-	INITIAL_CHARACTER_STATS,
-	MERCHANT_UPGRADES,
-	MERCHANT_UPGRADE_GROUPS,
-	REBIRTH,
-	type MerchantUpgradeId,
-} from '../src/config/gameConfig';
+import { ANIMALS } from '../src/config/farm';
+import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
+import { INITIAL_CHARACTER_STATS } from '../src/config/character';
+import { MERCHANT_UPGRADES, MERCHANT_UPGRADE_GROUPS, type MerchantUpgradeId } from '../src/config/merchant';
+import { REBIRTH } from '../src/config/rebirth';
 import { COMBAT, STAT_RULES } from '../src/config/combatConfig';
 import { STARTER_EQUIPMENT } from '../src/config/itemCatalog';
 import { effectiveStats } from '../src/lib/effectiveStats';
@@ -19,7 +14,10 @@ import { plainItem } from '../src/lib/itemInstance';
 import { shelfCells } from '../src/lib/merchant';
 import { playerProfile } from '../src/lib/offline/profile';
 import { sanitizeSave } from '../src/lib/sanitizeSave';
-import { calculateCombatStats, calculateResourceRates, emberGain, merchantCombat, merchantIncomeMultiplier, merchantUpgradeCost } from '../src/utils/gameUtils';
+import { calculateCombatStats } from '../src/utils/game/character';
+import { calculateResourceRates } from '../src/utils/game/income';
+import { emberGain } from '../src/utils/game/rebirth';
+import { merchantCombat, merchantIncomeMultiplier, merchantUpgradeCost } from '../src/utils/game/merchant';
 import { patchTile } from '../src/utils/world';
 import type { CharacterStats, Equipment, MerchantStock } from '../src/types/game';
 

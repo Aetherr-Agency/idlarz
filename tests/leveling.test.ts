@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, growTo, store } from './helpers';
-import { INITIAL_CHARACTER_STATS, LEVELING, MAX_LEVEL, XP_CAP } from '../src/config/gameConfig';
-import { calculateLevel, cumulativeXp, totalStatPoints, xpToNextLevel } from '../src/utils/gameUtils';
+import { INITIAL_CHARACTER_STATS, LEVELING, MAX_LEVEL } from '../src/config/character';
+import { XP_CAP } from '../src/config/economy';
+import { calculateLevel, cumulativeXp, totalStatPoints, xpToNextLevel } from '../src/utils/game/character';
 import { decodeSave, encodeSave } from '../src/lib/saveFormat';
 import { pickPersisted } from '../src/lib/sanitizeSave';
 

@@ -1,8 +1,10 @@
 // rebirthSlice.ts
 // Split out of gameStore.ts (IDL-14); the actions and their behaviour are unchanged.
 
-import { EMBER_UPGRADES, type EmberUpgradeId } from '@/config/gameConfig';
-import { calculateCombatStats, calculateLevel, calculateResourceRates, rebirthStatus, emberUpgradeCost, totalStatPoints } from '@/utils/gameUtils';
+import { EMBER_UPGRADES, type EmberUpgradeId } from '@/config/rebirth';
+import { calculateCombatStats, calculateLevel, totalStatPoints } from '@/utils/game/character';
+import { calculateResourceRates } from '@/utils/game/income';
+import { rebirthStatus, emberUpgradeCost } from '@/utils/game/rebirth';
 import { maxHp, maxMana } from '@/lib/combat';
 import { gearIncomePct } from '@/lib/gearEconomy';
 import { rebirthKit } from '@/lib/inventory';

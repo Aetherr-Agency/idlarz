@@ -1,4 +1,4 @@
-import { MERCHANT_UPGRADES, type MerchantUpgradeId } from '@/config/gameConfig';
+import { MERCHANT_UPGRADES, type MerchantUpgradeId } from '@/config/merchant';
 import type { Resources } from '@/types/game';
 import type { SaveSummary } from './summary';
 

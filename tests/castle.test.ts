@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { api, freshGame, setResources, tileAt, rawSnapshot, landAt } from './helpers';
-import { CASTLE_UPGRADE, CASTLE_X, CASTLE_Y, MAX_CATCHUP_SEC } from '../src/config/gameConfig';
-import { castleModifier, castleUpgradeDuration } from '../src/utils/gameUtils';
+import { CASTLE_UPGRADE, CASTLE_X, CASTLE_Y } from '../src/config/castle';
+import { MAX_CATCHUP_SEC } from '../src/config/economy';
+import { castleModifier, castleUpgradeDuration } from '../src/utils/game/castle';
 import { sanitizeSave } from '../src/lib/sanitizeSave';
 
 const castleLevel = () => tileAt(api().tiles, CASTLE_X, CASTLE_Y).level ?? 1;
