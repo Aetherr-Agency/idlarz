@@ -258,7 +258,7 @@ const BUILD = {
 	even: { hp: 1, attack: 1, speed: 0.5 }, // a bite every 2 s
 	tough: { hp: 1.3, attack: 0.8, speed: 0.4 },
 	fierce: { hp: 0.8, attack: 1.25, speed: 0.6 },
-	// a real challenge: it needs gear collected first (more of it is coming); +6 armor on top of the biome's
+	// a real challenge: it needs gear collected first (more of it is coming); armor 8 (the biome's own armor comes on top)
 	elite: { hp: 2, attack: 1.5, speed: 0.45, armor: 8 },
 } as const;
 

@@ -93,7 +93,7 @@ line();
 	line();
 	line(
 		`Past ${TILE_PRICE.tailFrom} tiles the price grows like (n / ${TILE_PRICE.tailFrom})^${TILE_PRICE.tailExponent} instead of ×${SCALING_CONFIG.growthEndgame} per tile, capped at ${TILE_PRICE.ceiling.toExponential(0).replace('e+', 'e')}; ` +
-			`XP per tile has the same shape past ${XP_TILE.growthUntil} tiles (exponent ${XP_TILE.tailExponent}). Knobs: \`TILE_PRICE\`, \`XP_TILE\`, \`RESOURCE_CAP\` (${fmt(RESOURCE_CAP)}). See docs/05 BL16.`,
+			`XP per tile has the same shape past ${XP_TILE.growthUntil} tiles (exponent ${XP_TILE.tailExponent}). Knobs: \`TILE_PRICE\`, \`XP_TILE\`, \`RESOURCE_CAP\` (${fmt(RESOURCE_CAP)}).`,
 	);
 	line();
 	const late: (string | number)[][] = [];

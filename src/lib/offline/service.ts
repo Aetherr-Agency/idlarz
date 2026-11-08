@@ -1,6 +1,6 @@
 import { PINNED_KEEP, type SaveRepo, type StoredSave } from '@/lib/cloudSave/pipeline';
 import { POISON_FLAGS } from '@/lib/cloudSave/verify';
-import { computeOfflineGrant } from '@/lib/offline/grant';
+import { UNCLAIMED_SEC, computeOfflineGrant } from '@/lib/offline/grant';
 import type { ClaimResult, PublicTickets } from '@/lib/offline/types';
 import { addTotals, resetLedger, seedLedger, type Ledger, type LedgerRepo } from '@/lib/offline/ledger';
 import { restThrough } from '@/lib/offline/fight';
@@ -26,8 +26,7 @@ export interface ServiceDeps {
 
 export type { ClaimResult, PublicTickets };
 
-/** An online call is refused with `claim_first` when more than this long passed since the player was last seen (the absence is claimed first). */
-export const UNCLAIMED_SEC = 900;
+export { UNCLAIMED_SEC };
 
 /** The tickets as the browser may see them: a monster or chest shows once the server has given it a tile. */
 export const publicTickets = (bank: TicketBank, opened?: number): PublicTickets => ({

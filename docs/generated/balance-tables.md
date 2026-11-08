@@ -81,7 +81,7 @@
 
 ### Late tiles (the polynomial tail)
 
-Past 300 tiles the price grows like (n / 300)^3.5 instead of ×1.007 per tile, capped at 1e19; XP per tile has the same shape past 300 tiles (exponent 1.5). Knobs: `TILE_PRICE`, `XP_TILE`, `RESOURCE_CAP` (1.00Sx). See docs/05 BL16.
+Past 300 tiles the price grows like (n / 300)^3.5 instead of ×1.007 per tile, capped at 1e19; XP per tile has the same shape past 300 tiles (exponent 1.5). Knobs: `TILE_PRICE`, `XP_TILE`, `RESOURCE_CAP` (1.00Sx).
 
 | n | gold | cumulative gold | XP gained |
 | --- | --- | --- | --- |

@@ -31,10 +31,10 @@ export const getStatDescription = (stat: keyof Omit<CharacterStats, 'availablePo
 		// Resource, XP and discount effects come from CHARACTER_STAT_CONFIG (the same constants the maths uses)
 		// Every number below is read from STAT_RULES / CHARACTER_STAT_CONFIG: the text cannot drift from the maths. Combat bonuses count points above 5.
 		strength: `${resourceEffect('strength')} / +${R.physicalDamagePerStrength}% damage with physical weapons per point above ${R.base} / +${R.armorPerStrength} DEF per point above ${R.base} / +${R.critDamagePerPoint.strength}% Crit DMG per point above ${R.base}`,
-		dexterity: `${resourceEffect('dexterity')} / +${R.armorPerDexterity} DEF per point above ${R.base} / +${R.atkSpeedPerDexterity}% ATK Speed per point above ${R.base} / +0.25% Crit Chance per point / +${R.critDamagePerPoint.dexterity}% Crit DMG per point above ${R.base}`,
+		dexterity: `${resourceEffect('dexterity')} / +${R.armorPerDexterity} DEF per point above ${R.base} / +${R.atkSpeedPerDexterity}% ATK Speed per point above ${R.base} / +${CHARACTER_STAT_CONFIG.critChancePercentPerPoint.dexterity}% Crit Chance per point / +${R.critDamagePerPoint.dexterity}% Crit DMG per point above ${R.base}`,
 		intelligence: `${resourceEffect('intelligence')} / +${R.magicDamagePerIntelligence}% damage with magic weapons (staves, wands) per point above ${R.base} / +${R.mana.perIntelligence} Max Mana per point / +${R.mana.regenPerIntelligence} Mana Regen per second per point`,
-		vitality: `${resourceEffect('vitality')} / +3 HP per point / +${R.armorPerVitality} DEF per point above ${R.base}`,
-		charisma: `${resourceEffect('charisma')} / +${CHARACTER_STAT_CONFIG.tileDiscountPercentPerCharisma}% Tile Cost Discount per point (max ${CHARACTER_STAT_CONFIG.tileDiscountCapPercent}%) / +1 Luck per point (bigger chests) / +0.25 HP per point / +0.5% Crit Chance per point / +${R.critDamagePerPoint.charisma}% Crit DMG per point above ${R.base}`,
+		vitality: `${resourceEffect('vitality')} / +${CHARACTER_STAT_CONFIG.hpPerPoint.vitality} HP per point / +${R.armorPerVitality} DEF per point above ${R.base}`,
+		charisma: `${resourceEffect('charisma')} / +${CHARACTER_STAT_CONFIG.tileDiscountPercentPerCharisma}% Tile Cost Discount per point (max ${CHARACTER_STAT_CONFIG.tileDiscountCapPercent}%) / +1 Luck per point (bigger chests) / +${CHARACTER_STAT_CONFIG.hpPerPoint.charisma} HP per point / +${CHARACTER_STAT_CONFIG.critChancePercentPerPoint.charisma}% Crit Chance per point / +${R.critDamagePerPoint.charisma}% Crit DMG per point above ${R.base}`,
 		// Combat stats
 		physicalAtk: 'Bonus damage with physical weapons: swords, daggers, maces, mauls, axes, spears, bows and crossbows. Grows with Strength.',
 		magicAtk: 'Bonus damage with magic weapons: staves and wands. Grows with Intelligence, a little faster than Strength does for physical ones.',
@@ -217,11 +217,12 @@ export const calculateCombatStats = (stats: CharacterStats): Partial<CharacterSt
 		// the combat ones come from lib/statBonuses.ts (the same functions the fight uses); bonuses count points above 5
 		physicalAtk: physicalDamagePercent(stats),
 		magicAtk: magicDamagePercent(stats),
-		hp: stats.vitality * 3 + stats.charisma * 0.25, // +3 per vitality, +0.25 per charisma
+		hp: stats.vitality * CHARACTER_STAT_CONFIG.hpPerPoint.vitality + stats.charisma * CHARACTER_STAT_CONFIG.hpPerPoint.charisma,
 		mp: statMaxMana(stats),
 		def: statArmor(stats),
 		luck: stats.charisma, // +1 per charisma
-		critChance: stats.dexterity * 0.25 + stats.charisma * 0.5, // +0.25% per dex, +0.5% per cha
+		critChance:
+			stats.dexterity * CHARACTER_STAT_CONFIG.critChancePercentPerPoint.dexterity + stats.charisma * CHARACTER_STAT_CONFIG.critChancePercentPerPoint.charisma,
 		atkSpeedIncrease: atkSpeedPercent(stats),
 		xpGainMultiplier:
 			stats.intelligence * CHARACTER_STAT_CONFIG.xpGainPercentPerPoint.intelligence + stats.charisma * CHARACTER_STAT_CONFIG.xpGainPercentPerPoint.charisma,

@@ -37,6 +37,9 @@ export interface OfflineGrant {
 	castle: { toLevel: number; finished: boolean } | null;
 }
 
+/** The longest gap the server treats as the same session: past it an online call is refused with `claim_first`, and the hero rests (heals fully) through the gap. The client uses the same number, so the picture never jumps back. */
+export const UNCLAIMED_SEC = 900;
+
 export const zeroGrant = (): Resources => zeroResources();
 
 /**

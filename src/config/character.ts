@@ -73,6 +73,9 @@ export const CHARACTER_STAT_CONFIG = {
 	// Percent of tile cost removed per Charisma point, and the cap
 	tileDiscountPercentPerCharisma: 0.5,
 	tileDiscountCapPercent: 25,
+	// Max HP per point of Vitality / Charisma, and crit chance (percent) per point of Dexterity / Charisma
+	hpPerPoint: { vitality: 3, charisma: 0.25 },
+	critChancePercentPerPoint: { dexterity: 0.25, charisma: 0.5 },
 	// Plains: meat modifier per owned Plains tile (fraction)
 	plainsMeatModifier: 0.05,
 };

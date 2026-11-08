@@ -4,7 +4,7 @@ The game is played with an account only (there is no offline or guest play). The
 player's game is also copied to Supabase so it follows them to another browser and survives cleared site data. The server verifies what it stores
 and derives the numbers a leaderboard or offline progress needs. What the server *decides* (spawns, fights, rewards, gems, the XP ceiling) is in [11](11-server-authority.md).
 
-## Tables (`supabase/schema.sql`; an older project adds `autosave_history_by_time`, then `offline_ledger`, then `combat_ledger`, then `inventory_ledger` from `supabase/migrations/`, in that order)
+## Tables (`supabase/schema.sql`; an older project adds `autosave_history_by_time`, then `offline_ledger`, then `combat_ledger`, then `inventory_ledger`, `rebirth_history` and `season_reset` from `supabase/migrations/`, in that order; `rebirth_history` and `app_settings` are tables too)
 
 The save is split by how it is used, not stored as one blob:
 
@@ -58,7 +58,7 @@ The server still enforces its own floor of one accepted save per 10 s, whatever 
      An honest bot that spends everything on land sits at 0.10 to 0.27 of the limit (15 min to 24 h); the slack is 3x for clicks, chests and loot.
    - **Trusted economy** (`trustedEconomy.ts`, IDL-167): a save flagged `castle_jump` or `networth_exceeds` is stored as claimed, but the rates, the castle level and the running castle upgrade the server pays from (offline income, kill and chest gold) are those of the last trusted save of the same run; unpaid merchant levels (IDL-168: `merchantGoldSpent` is part of the net-worth floor, Pack Rat excepted) go back to that save's too. With no baseline (a first save, the first of a new run) the rates are cut by `required / allowed`. The claim stays out of range, so the next upload is judged the same way: the cheat is frozen, not rewarded at the second try.
    - `gold_jump` (IDL-167): income over the time played + the **stock the previous save held** (`derived.stockWorth`, so selling it is no burst) + a burst of at most the real time between the saves + a floor of 1,000 gold + 2 % of the previous balance + the server's grants, with a relative tolerance for doubles past 2^53. The old flat 10,000 per save allowed ~2.9 million gold a day at the 5-minute heartbeat.
-   - `playtime_fast`, `playtime_regress`, `gold_jump`, `xp_jump`, `gems_increase`, `prestige_regress`, `castle_jump`, `baseline_rich` (`verify.ts`, from summaries, with the **server's** clock). `castle_jump` is the castle timer on the server's clock: a new castle level needs an upgrade that was running in the previous save with its remaining time covered by the real time between the saves, one level at a time, and a running timer cannot lose more seconds than passed (so `remainingSec: 0` in a save, or a level the timer never paid for, is flagged). The cost of the upgrade is still paid in the browser; a server-run upgrade (start, cost and finish time in the ledger) is part of the economy actions in the [ROADMAP](ROADMAP.md).
+   - `playtime_fast`, `playtime_regress`, `gold_jump`, `xp_jump`, `gems_increase`, `prestige_regress`, `castle_jump`, `ember_jump` (clamp), `baseline_rich` (`verify.ts`, from summaries, with the **server's** clock). `castle_jump` is the castle timer on the server's clock: a new castle level needs an upgrade that was running in the previous save with its remaining time covered by the real time between the saves, one level at a time, and a running timer cannot lose more seconds than passed (so `remainingSec: 0` in a save, or a level the timer never paid for, is flagged). The cost of the upgrade is still paid in the browser; a server-run upgrade (start, cost and finish time in the ledger) is part of the economy actions in the [ROADMAP](ROADMAP.md).
 7. `trusted` (leaderboard eligibility) = the account's first save was a young game (`fresh_start`, at most 15 min of play) **and** no poisonous flag was ever raised (`ever_flagged`; going back to an older save is not poisonous).
 
 Tune `VERIFY` / `NETWORTH` on real data: `select flags, audit_ratio from player_saves`, then turn chosen flags into rejections.
@@ -76,7 +76,7 @@ The dev cheat panel and the `window.__game` console handle exist only when `NODE
 - The save text is not signed (its check code is a plain FNV hash for catching typos), so editing an exported save or localStorage is easy. The server, not the file, is what is trusted: edits that go beyond the spending bound are flagged and unranked. Server-signed checkpoints and server-owned actions are the next step ([ROADMAP](ROADMAP.md)).
 - Gear and bag contents cannot be verified (drops are random): never rank by items.
 - The first save of an existing player cannot be delta-checked; its play time is taken as claimed. That is why such accounts are not ranking-eligible (`fresh_start`).
-- Gem increases are flagged, not rejected: restoring an older save in the hub can legitimately raise gems relative to a newer cloud save.
+- A gem increase is flagged, and its policy is `reject` behind the switched-off `ENFORCEMENT` (see Checks). With a ledger the save's gems are replaced by the server's anyway, because restoring an older save in the hub can legitimately raise gems relative to a newer cloud save.
 
 ## Start flow (`src/lib/startPlan.ts`, `components/auth/SaveHub.tsx`)
 
