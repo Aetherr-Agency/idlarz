@@ -111,6 +111,7 @@ export const createCombatSync = (set: GameSet, get: GameGet, inv: InventorySync,
 				queue: view.queue ?? [],
 				resting: !!view.resting,
 				restSec: view.restSec ?? 0,
+				restEndsAt: view.resting ? Date.now() + (view.restSec ?? 0) * 1000 : null,
 				queueMax: view.queueMax ?? state.combat.queueMax,
 			},
 		});

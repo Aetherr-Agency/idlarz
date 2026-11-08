@@ -1,5 +1,6 @@
 import React, { useCallback, useLayoutEffect, useRef } from 'react';
 import { formatCompact, formatNumber } from '@/utils/formatters';
+import { formatRest } from '@/hooks/useRestCountdown';
 import { COMBAT } from '@/config/combatConfig';
 import { SKILLS, SKILL_IDS, skillDescription } from '@/catalog/skills';
 import { MONSTER_CATALOG, monsterArtUrl } from '@/catalog/monsters';
@@ -177,6 +178,9 @@ export interface CombatPanelProps {
 	queue?: { n: number; type: MonsterType; level: number; lucky?: boolean }[];
 	queueMax?: number;
 	onUnqueue?: (n: number) => void;
+	/** The hero rests before the queue's next fight: seconds left (counted down by the caller) and the next monster's name; left out in the lab */
+	restSec?: number | null;
+	restLabel?: string;
 	onFlee: () => void;
 	onCloseResult: () => void;
 	onMinimize: () => void;
@@ -240,17 +244,12 @@ const CombatPanel: React.FC<CombatPanelProps> = (p) => {
 				</>
 			)}
 			<div className='combat-switches'>
-				<label
-					title={
-						p.autoLocked
-							? 'Unlocks after your first rebirth'
-							: 'After a fight the server sends you against the next monster, one at a time. Off: click a monster to fight it'
-					}
-					data-locked={p.autoLocked}
-				>
-					<input type='checkbox' checked={p.autoBattle && !p.autoLocked} disabled={p.autoLocked} onChange={(e) => p.onAutoBattle(e.target.checked)} />{' '}
-					Auto-battle
-				</label>
+				{/* only shown once it is unlocked (the first rebirth): no greyed-out switch before that */}
+				{!p.autoLocked && (
+					<label title='After a fight the server sends you against the next monster, one at a time. Off: click a monster to fight it'>
+						<input type='checkbox' checked={p.autoBattle} onChange={(e) => p.onAutoBattle(e.target.checked)} /> Auto-battle
+					</label>
+				)}
 				{p.autoBattle && !fight && p.autoNote === 'no_winnable' && (
 					<span className='px-tip-muted text-xs' title='Click a monster to fight it anyway'>
 						Waiting: no monster looks winnable
@@ -377,6 +376,11 @@ const CombatPanel: React.FC<CombatPanelProps> = (p) => {
 								)}
 							</span>
 						))}
+					</div>
+				)}
+				{p.restSec != null && (
+					<div className='fight-rest' role='status' title='The next queued fight starts by itself once your HP is back to the resume line'>
+						Resting before the next fight{p.restLabel ? ` (${p.restLabel})` : ''}: {formatRest(p.restSec)}
 					</div>
 				)}
 				{controls(!!over)}

@@ -223,6 +223,8 @@ export interface CombatClientState {
 	/** No fight is open and the hero rests before the queue's next monster (it starts by itself), and for how many seconds more at the server's answer */
 	resting: boolean;
 	restSec: number;
+	/** When that rest is over by this browser's clock (epoch ms), for the countdown; null when no rest is going on */
+	restEndsAt: number | null;
 }
 
 export interface TileProps {

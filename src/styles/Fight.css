@@ -383,6 +383,15 @@
 	border: 1px solid #5a3c00;
 }
 
+.fight-rest {
+	margin-top: 6px;
+	padding: 3px 6px;
+	font-size: 0.72rem;
+	color: #9ec9ff;
+	background: rgba(0, 0, 0, 0.35);
+	border: 1px solid #2c4a70;
+}
+
 .fight-queue-title {
 	padding: 0 3px;
 	font-weight: 700;
