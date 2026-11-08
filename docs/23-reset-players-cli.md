@@ -10,6 +10,7 @@ npm run reset-players -- --yes              # really reset everyone
 npm run reset-players -- --yes --user <uuid> [--user <uuid> ...]   # only these players
 npm run reset-players -- --yes --purge-history   # also delete save_history (rollback copies)
 npm run reset-players -- --yes --no-backup       # skip the JSON backup (not recommended)
+npm run reset-players -- --yes --reset-gems      # the gems go back to the starting amount too (used by reset-test-account, doc 29)
 ```
 
 Needs `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`, read from the environment or `.env.local`. They decide which project is wiped: check them first. Try one account with `--user` before running it for everyone.

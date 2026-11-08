@@ -22,6 +22,7 @@ npm run dev      # http://localhost:3000 (dev build shows a cheat/debug panel bo
 npm run build
 npm run lint
 npm test         # node:test over tests/**/*.test.ts
+npm run e2e      # browser smoke test with the test account; you sign in by hand (docs/29-e2e-test-account.md)
 ```
 
 ## Accounts and server setup (Supabase)

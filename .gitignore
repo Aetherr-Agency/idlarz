@@ -53,3 +53,7 @@ __pycache__/
 
 # player-data dumps written by scripts/reset-players.ts
 /backups/
+
+# playwright
+/test-results/
+/playwright-report/

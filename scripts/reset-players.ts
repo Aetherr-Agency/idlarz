@@ -7,6 +7,7 @@
  *   npm run reset-players -- --yes --hard      also delete save_history (the rollback copies) and every leftover row; nothing but names, classes and gems stays
  *   npm run reset-players -- --yes --purge-history   only delete save_history; default keeps it
  *   npm run reset-players -- --yes --no-backup       skip the JSON backup (not recommended)
+ *   npm run reset-players -- --yes --reset-gems      the gems go back to the starting amount too (the test account uses this, see scripts/reset-test-account.ts)
  *
  * Needs SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (read from the environment or from .env.local).
  *
@@ -27,6 +28,7 @@ import { resolve } from 'node:path';
 import { createClient } from '@supabase/supabase-js';
 import { newLedger, resetLedger } from '../src/lib/offline/ledger';
 import { writeLastReset } from '../src/lib/offline/season';
+import { STARTING_GEMS } from '../src/config/economy';
 
 const args = process.argv.slice(2);
 const flag = (name: string) => args.includes(name);
@@ -38,6 +40,7 @@ const execute = flag('--yes');
 const hard = flag('--hard');
 const purgeHistory = flag('--purge-history') || hard;
 const backup = !flag('--no-backup');
+const resetGems = flag('--reset-gems');
 
 for (const file of ['.env.local', '.env']) {
 	try {
@@ -102,7 +105,7 @@ const main = async () => {
 		const save = saves.find((s) => s.user_id === id);
 		const gems = ledgerOf.get(id)?.gems ?? save?.gems ?? 0;
 		console.log(
-			`  ${(names.get(id) ?? '?').padEnd(10)} ${id}  level ${save?.level ?? '-'}  rebirths ${save?.rebirths ?? '-'}  gems kept: ${gems}  ledger anchor ${ledgerOf.get(id)?.anchor_at ?? '-'}`,
+			`  ${(names.get(id) ?? '?').padEnd(10)} ${id}  level ${save?.level ?? '-'}  rebirths ${save?.rebirths ?? '-'}  ${resetGems ? `gems reset to ${STARTING_GEMS} (were ${gems})` : `gems kept: ${gems}`}  ledger anchor ${ledgerOf.get(id)?.anchor_at ?? '-'}`,
 		);
 	}
 	if (!execute) {
@@ -125,7 +128,7 @@ const main = async () => {
 	let done = 0;
 	for (const id of ids) {
 		const old = ledgerOf.get(id);
-		const gems = old?.gems ?? saves.find((s) => s.user_id === id)?.gems ?? 0;
+		const gems = resetGems ? STARTING_GEMS : (old?.gems ?? saves.find((s) => s.user_id === id)?.gems ?? 0);
 
 		// 1. the ledger: everything back to a new game's values (timers at now, nothing granted, no bag, no fight), except the gems (and a bumped run_id / ver)
 		const fresh = resetLedger({ ...newLedger(now, 0), ver: old?.ver ?? 0, runId: old?.run_id ?? 0, gems }, now);
@@ -180,13 +183,16 @@ const main = async () => {
 	// check what is left: no save, a fresh anchor, the gems as they were
 	const leftSaves = await fetchAll<{ user_id: string }>('player_saves', 'user_id');
 	const after = await fetchAll<LedgerInfo>('player_ledger', 'user_id, gems, run_id, ver, anchor_at');
-	const stale = after.filter((l) => ids.includes(l.user_id) && (Date.parse(l.anchor_at) < now - 1000 || l.gems !== (ledgerOf.get(l.user_id)?.gems ?? l.gems)));
+	const stale = after.filter(
+		(l) =>
+			ids.includes(l.user_id) && (Date.parse(l.anchor_at) < now - 1000 || l.gems !== (resetGems ? STARTING_GEMS : (ledgerOf.get(l.user_id)?.gems ?? l.gems))),
+	);
 	if (leftSaves.length > 0 || stale.length > 0) {
 		console.error(`CHECK FAILED: ${leftSaves.length} save(s) left, ${stale.length} ledger(s) not fresh.`);
 		process.exit(1);
 	}
 	console.log(
-		`Reset ${done} player(s). Names, classes and gems kept.${purgeHistory ? ' save_history purged.' : ' save_history kept (rollback copies).'} Check passed: no saves left, ledgers anchored at the reset.`,
+		`Reset ${done} player(s). Names and classes kept, gems ${resetGems ? `reset to ${STARTING_GEMS}` : 'kept'}.${purgeHistory ? ' save_history purged.' : ' save_history kept (rollback copies).'} Check passed: no saves left, ledgers anchored at the reset.`,
 	);
 	console.log('Reminder: a browser that still holds the old game locally must choose "New game" in the start hub.');
 };

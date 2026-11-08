@@ -11,6 +11,8 @@
 		"perf": "tsx scripts/perf-world.ts",
 		"test": "tsx --test \"tests/**/*.test.ts\"",
 		"report": "tsx scripts/balance-report.ts",
+		"reset-test-account": "tsx scripts/reset-test-account.ts",
+		"e2e": "playwright test",
 		"stat-audit": "tsx scripts/stat-audit.ts",
 		"reset-players": "tsx scripts/reset-players.ts",
 		"fight-sim": "tsx scripts/fight-sim.ts",
@@ -37,6 +39,7 @@
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3",
+		"@playwright/test": "1.52.0",
 		"@types/node": "^20",
 		"@types/react": "^19",
 		"@types/react-dom": "^19",
