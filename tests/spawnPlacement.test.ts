@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { api, freshGame, growTo, patchTileAt } from './helpers';
 import { CASTLE_X, CASTLE_Y } from '../src/config/castle';
 import { MONSTERS } from '../src/config/combatConfig';
-import { castleDistance } from '../src/lib/monsters';
+import { castleDistance } from '../src/lib/distance';
 import { isChestPlaced, isPlaced, needsLook, placeTickets, siteKey, worldFromPart } from '../src/lib/offline/placement';
 import { emptyBank, monsterTypeOf, type TicketBank } from '../src/lib/offline/tickets';
 import { sealedRng } from '../src/lib/offline/seal';
