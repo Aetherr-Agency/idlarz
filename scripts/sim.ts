@@ -97,6 +97,7 @@ const main = async () => {
 
 	const md = renderMarkdown(results, legacy, seeds > 1 ? spreads : undefined);
 	console.log(md);
+	for (const w of renderMagnitudes(selected).warnings) console.error(`WARNING outside the docs/06 band: ${w}`);
 	if (!legacy && !args.includes('--no-write')) {
 		const target = resolve(dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '../docs/generated/sim-milestones.md');
 		mkdirSync(dirname(target), { recursive: true });
@@ -121,6 +122,9 @@ interface Profile {
 }
 
 type Milestones = Record<string, number | null>; // key -> game day (fractional), null if never
+
+/** Magnitudes measured per profile (docs/06 "Magnitude targets", IDL-128): gold/s, stock hours, Embers; rendered and checked against the bands by `renderMagnitudes`. The last seed of a profile wins. */
+const magnitudes: Record<string, Record<string, number | string>> = {};
 
 /** Minutes the income needs to pay each part of the next tile, read at tile counts (the hide-versus-gold diagnostic). */
 const tileWaits: Record<string, Record<string, Record<string, number>>> = {};
@@ -176,6 +180,27 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 	api().resetGame();
 
 	const milestones: Milestones = {};
+	const mag: Record<string, number | string> = (magnitudes[name] = {});
+	/** Gold per second, unspent gold and stocks (in hours of their production), Embers and tiles at this moment, under the key prefix. Once per prefix. */
+	const recordMagnitude = (prefix: string) => {
+		if (`${prefix}.gps` in mag) return;
+		const s = api();
+		const total = s.resourceRates.total as unknown as Record<string, number>;
+		const stock = s.resources as unknown as Record<string, number>;
+		mag[`${prefix}.gps`] = total.gold;
+		mag[`${prefix}.goldH`] = total.gold > 0 ? stock.gold / total.gold / 3600 : 0;
+		let worst = 0;
+		let what = '-';
+		for (const r of Object.keys(total)) {
+			if (r === 'gold' || r === 'xp' || !(r in stock) || !(total[r] > 0)) continue;
+			const hours = stock[r] / total[r] / 3600;
+			if (hours > worst) [worst, what] = [hours, r];
+		}
+		mag[`${prefix}.stockH`] = worst;
+		mag[`${prefix}.stockRes`] = what;
+		mag[`${prefix}.embers`] = s.prestige.legacyEarned;
+		mag[`${prefix}.tiles`] = utils.economyTiles(s.tiles, s.freeTiles);
+	};
 	let run = 1; // 1 = first run; after a rebirth keys get an `rN.` prefix and are relative to the rebirth
 	let runStart = 0;
 	const mark = (key: string, t: number) => {
@@ -284,6 +309,7 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 			if (api().upgradeCastle()) s = api();
 		}
 		mark(`castle${castle.level ?? 1}`, t);
+		if ([6, 8, 10].includes(castle.level ?? 1)) recordMagnitude(`r${run}.c${castle.level}`);
 
 		// Click power
 		const nextClick = cfg.CLICK_LADDER[s.clickLevel + 1];
@@ -572,6 +598,9 @@ function runProfile(name: string, profile: Profile, ctx: Ctx, legacy: boolean, s
 				if (api().rebirth()) {
 					milestones[`lvlAtRebirth${run}`] = levelBefore;
 					milestones[`embers${run}`] = api().prestige.legacyEarned - before;
+					mag[`r${run}.gain`] = api().prestige.legacyEarned - before;
+					mag[`r${run}.gainCastle`] = castleNow;
+					mag[`lifetime.${run}`] = api().prestige.legacyEarned;
 					milestones[`rebirthDay${run}`] = t / 86400;
 					milestones[`xpAtRebirth${run}`] = xpBefore;
 					run++;
@@ -637,6 +666,92 @@ const ORDER = [
 	'level100',
 	'finished',
 ];
+
+/** The bands of docs/06 "Magnitude targets" (IDL-128). Change them there and here together. */
+const MAGNITUDE_BANDS = {
+	gpsRun1Castle10: [2500, 5000],
+	unspentGoldHours: 4,
+	stockHours: 24,
+	embersPerRebirth: { 6: [20, 30], 8: [50, 70], 10: [80, 130] } as Record<number, [number, number]>,
+	lifetimeEmbers: { 5: [150, 350], 10: [500, 1000] } as Record<number, [number, number]>,
+	incomeMultiplier: { 5: [3, 6], 10: [7, 15] } as Record<number, [number, number]>,
+};
+
+/** The magnitude table of docs/06, per profile, with a status per line; `warnings` lists the lines outside their band. */
+function renderMagnitudes(names: string[]): { lines: string[]; warnings: string[] } {
+	const rows: string[] = [];
+	const warnings: string[] = [];
+	const num = (profile: string, key: string) => {
+		const v = magnitudes[profile]?.[key];
+		return typeof v === 'number' ? v : null;
+	};
+	const fmt = (v: number) => (Math.abs(v) >= 100 ? Math.round(v).toLocaleString('en') : String(Math.round(v * 10) / 10));
+	const row = (profile: string, what: string, value: number, band: string, ok: boolean) => {
+		rows.push(`| ${profile} | ${what} | ${fmt(value)} | ${band} | ${ok ? 'ok' : '**outside**'} |`);
+		if (!ok) warnings.push(`${profile}: ${what} = ${fmt(value)}, band ${band}`);
+	};
+	const inBand = (v: number, [lo, hi]: readonly [number, number]) => v >= lo && v <= hi;
+	for (const p of names) {
+		// run 1 at castle 10
+		const gps = num(p, 'r1.c10.gps');
+		if (gps != null) {
+			const [lo, hi] = MAGNITUDE_BANDS.gpsRun1Castle10;
+			row(p, 'run 1, castle 10: gold per second', gps, `${lo}-${hi}`, inBand(gps, [lo, hi]));
+			const goldH = num(p, 'r1.c10.goldH') ?? 0;
+			row(p, 'run 1, castle 10: unspent gold (hours of income)', goldH, `<= ${MAGNITUDE_BANDS.unspentGoldHours}`, goldH <= MAGNITUDE_BANDS.unspentGoldHours);
+			const stockH = num(p, 'r1.c10.stockH') ?? 0;
+			row(
+				p,
+				`run 1, castle 10: biggest stock (${magnitudes[p]['r1.c10.stockRes']}, hours of production)`,
+				stockH,
+				`<= ${MAGNITUDE_BANDS.stockHours}`,
+				stockH <= MAGNITUDE_BANDS.stockHours,
+			);
+		}
+		// Embers per rebirth, by the castle level it happened at
+		for (let run = 1; num(p, `r${run}.gain`) != null; run++) {
+			const castle = num(p, `r${run}.gainCastle`)!;
+			const band = MAGNITUDE_BANDS.embersPerRebirth[castle];
+			if (band)
+				row(p, `rebirth ${run} at castle ${castle}: Embers gained`, num(p, `r${run}.gain`)!, `${band[0]}-${band[1]}`, inBand(num(p, `r${run}.gain`)!, band));
+		}
+		// lifetime Embers after the 5th and the 10th rebirth
+		for (const [n, band] of Object.entries(MAGNITUDE_BANDS.lifetimeEmbers)) {
+			const v = num(p, `lifetime.${n}`);
+			if (v != null) row(p, `after rebirth ${n}: lifetime Embers`, v, `${band[0]}-${band[1]}`, inBand(v, band));
+		}
+		// income multiplier: run N+1 against run 1 at the highest castle level both reached (docs/06 defines it at castle 10; the sim bot rebirths earlier)
+		for (const [n, band] of Object.entries(MAGNITUDE_BANDS.incomeMultiplier)) {
+			const run = Number(n) + 1;
+			for (const c of [10, 8, 6]) {
+				const first = num(p, `r1.c${c}.gps`);
+				const later = num(p, `r${run}.c${c}.gps`);
+				if (first && later != null) {
+					row(
+						p,
+						`after rebirth ${n}: income multiplier at castle ${c} (run ${run} over run 1)`,
+						later / first,
+						`x${band[0]}-${band[1]}`,
+						inBand(later / first, band),
+					);
+					break;
+				}
+			}
+		}
+	}
+	const lines = ['', '## Magnitude targets (docs/06, IDL-128)', ''];
+	if (rows.length === 0) {
+		lines.push('No selected profile reached a checkpoint (castle 10 in run 1, a rebirth, lifetime Embers at rebirth 5 or 10).', '');
+		return { lines, warnings };
+	}
+	lines.push(
+		'Measured with the real store at the checkpoints of docs/06; the last seed of each profile. The income multiplier compares the same castle level in two runs (the bots rebirth before castle 10), so treat it as an indication.',
+		'',
+	);
+	lines.push('| profile | checkpoint | measured | band | status |', '| --- | --- | --- | --- | --- |', ...rows, '');
+	if (warnings.length) lines.push(`${warnings.length} line${warnings.length > 1 ? 's' : ''} outside the band.`, '');
+	return { lines, warnings };
+}
 
 function renderMarkdown(results: Record<string, Milestones>, legacy: boolean, spreads?: Record<string, Record<string, [number, number]>>): string {
 	const names = Object.keys(results);
@@ -711,6 +826,7 @@ function renderMarkdown(results: Record<string, Milestones>, legacy: boolean, sp
 			),
 		);
 	}
+	lines.push(...renderMagnitudes(names).lines);
 	lines.push(
 		'Profiles: idle = never clicks; casual = 1 click/s for 3 h/day; hardcore = 4 clicks/s for 8 h/day; ' +
 			'autoclicker = 20 clicks/s 24 h/day (the limiter should keep it at roughly hardcore pace).',
