@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { test } from 'node:test';
-import { ITEM_ART } from '../../src/config/itemArt';
+import { ITEM_ICONS } from '../../src/config/itemIcons';
 import { ITEM_ART_SIZE, PIXEL_ICON_SIZES, isItemArt, pixelIconSrc, type PixelIconName } from '../../src/config/pixelIcons';
 import { ITEM_CATALOG } from '../../src/catalog';
 import { RESERVE_ITEMS } from '../../src/catalog/items/reuse';
@@ -25,8 +25,9 @@ test('reserve items are all in the catalog, all disabled, and each has its 64 px
 });
 
 test('item art files sit under public/pixel/items at exactly 64x64', () => {
-	for (const id of Object.keys(ITEM_ART)) {
-		const name = `art_${id}` as PixelIconName;
+	for (const { icon } of ITEM_ICONS.filter((e) => e.file)) {
+		const name = icon as PixelIconName;
+		const id = name;
 		const src = pixelIconSrc(name);
 		assert.ok(src.startsWith('/pixel/items/'), `${id}: ${src}`);
 		const file = resolve(PUBLIC, src.slice(1));

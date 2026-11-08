@@ -44,7 +44,7 @@ Stats are derived at load and never stored, so retuning the curve retunes every 
 
 ## Adding content (data only)
 
-- **A base item**: add `gear(id, name, slot, rarity, stats, { tier, ... })` to a file in `src/catalog/items/`. Its stats are authored at the first level of its tier's window (`LEVEL_WINDOW_BY_TIER`). It joins the general pool automatically (tags `gear`, not `named`). Register its icon in `src/config/pixelIcons.ts` if it has art.
+- **A base item**: add `gear(id, name, slot, rarity, stats, { tier, ... })` to a file in `src/catalog/items/`. Its stats are authored at the first level of its tier's window (`LEVEL_WINDOW_BY_TIER`). It joins the general pool automatically (tags `gear`, not `named`). Register its icon as one line in `src/config/itemIcons/<slot>.json` if it has art (see its README).
 - **A named item** (fixed identity and rarity): same builder with `named: true, pools: ['some_pool']`, then put the pool in a profile's `bonusTables`.
 - **An affix**: one row in `src/catalog/affixes.ts` (`pair(...)` makes a prefix and a suffix of a stat).
 - **A rarity**: one row in `RARITIES`, then a weight for it in each profile that should drop it, and `allowedRarities` already includes every rarity key for bases. No generator change (`tests/loot/lootGenerate.test.ts` proves it with a fake rarity).

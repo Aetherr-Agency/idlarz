@@ -1,0 +1,3 @@
+[
+	{"icon": "item_apprentice_tome", "item": "apprentice_tome", "file": null, "slot": "offHand", "weapon": "tome", "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
+]

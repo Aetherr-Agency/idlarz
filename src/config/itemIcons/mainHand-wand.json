@@ -1,0 +1,4 @@
+[
+	{"icon": "art_frostbloom_fan", "item": "frostbloom_fan", "file": "legendary/frostbloom_fan", "slot": "mainHand", "weapon": "wand", "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "item_apprentice_wand", "item": "apprentice_wand", "file": null, "slot": "mainHand", "weapon": "wand", "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
+]

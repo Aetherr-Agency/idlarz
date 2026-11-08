@@ -1,0 +1,8 @@
+[
+	{"icon": "art_stone_hammer", "item": "stone_hammer", "file": "mainHand/maul/stone_hammer", "slot": "mainHand", "weapon": "maul", "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_iron_warhammer", "item": "iron_warhammer", "file": "mainHand/maul/iron_warhammer", "slot": "mainHand", "weapon": "maul", "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_runed_warhammer", "item": "runed_warhammer", "file": "mainHand/maul/runed_warhammer", "slot": "mainHand", "weapon": "maul", "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_runeforged_titanhammer", "item": "runeforged_titanhammer", "file": "legendary/runeforged_titanhammer", "slot": "mainHand", "weapon": "maul", "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "item_obsidian_maul", "item": "obsidian_maul", "file": null, "slot": "mainHand", "weapon": "maul", "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
+	{"icon": "item_titan_maul", "item": "titan_maul", "file": null, "slot": "mainHand", "weapon": "maul", "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
+]

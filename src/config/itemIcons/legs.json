@@ -1,0 +1,19 @@
+[
+	{"icon": "art_verdant_greaves", "item": "verdant_greaves", "file": "legs/verdant_greaves", "slot": "legs", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_patched_trousers", "item": "patched_trousers", "file": "legs/patched_trousers", "slot": "legs", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_drover_breeches", "item": "drover_breeches", "file": "legs/drover_breeches", "slot": "legs", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_tanned_leather_pants", "item": "tanned_leather_pants", "file": "legs/tanned_leather_pants", "slot": "legs", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_chainmail_leggings", "item": "chainmail_leggings", "file": "legs/chainmail_leggings", "slot": "legs", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_ranger_pants", "item": "ranger_pants", "file": "legs/ranger_pants", "slot": "legs", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_runed_skirt", "item": "runed_skirt", "file": "legs/runed_skirt", "slot": "legs", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_shadow_trousers", "item": "shadow_trousers", "file": "legs/shadow_trousers", "slot": "legs", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_knightly_legguards", "item": "knightly_legguards", "file": "legs/knightly_legguards", "slot": "legs", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_steel_legplates", "item": "steel_legplates", "file": "legs/steel_legplates", "slot": "legs", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_royal_silk_trousers", "item": "royal_silk_trousers", "file": "legs/royal_silk_trousers", "slot": "legs", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_fur_trimmed_leggings", "item": "fur_trimmed_leggings", "file": "legs/fur_trimmed_leggings", "slot": "legs", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "item_leather_leggings", "item": "leather_leggings", "file": null, "slot": "legs", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
+	{"icon": "item_cloth_trousers", "item": "cloth_trousers", "file": null, "slot": "legs", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
+	{"icon": "item_steel_greaves", "item": "steel_greaves", "file": null, "slot": "legs", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
+	{"icon": "item_obsidian_greaves", "item": "obsidian_greaves", "file": null, "slot": "legs", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
+	{"icon": "item_rattatui_trousers", "item": "rattatui_trousers", "file": null, "slot": "legs", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
+]

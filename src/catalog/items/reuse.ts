@@ -3,7 +3,7 @@ import type { EquipmentRarity, ItemDef } from '@/types/game';
 import { baseStat } from '../stats';
 import { gear, type GearOptions } from './define';
 
-// Reserve items: the second equipment art pass (64 px art under public/pixel/items, config/itemArt.ts). Every item here is
+// Reserve items: the second equipment art pass (64 px art under public/pixel/items, config/itemIcons/). Every item here is
 // DISABLED: it is in the catalog so its id, icon and stats can be checked, but no loot pool, shop or chest hands it out and
 // the legacy items above still carry the game. Enabling a category is one flag (`enabled`) plus the tuning in
 // docs/28-reuse-items-and-stats.md. Names and set homes are a proposal there too.

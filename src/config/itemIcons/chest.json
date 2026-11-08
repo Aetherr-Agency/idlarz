@@ -1,0 +1,7 @@
+[
+	{"icon": "item_leather_vest", "item": "leather_vest", "file": null, "slot": "chest", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
+	{"icon": "item_cloth_robe", "item": "cloth_robe", "file": null, "slot": "chest", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
+	{"icon": "item_steel_cuirass", "item": "steel_cuirass", "file": null, "slot": "chest", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
+	{"icon": "item_obsidian_cuirass", "item": "obsidian_cuirass", "file": null, "slot": "chest", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
+	{"icon": "item_rattatui_tunic", "item": "rattatui_tunic", "file": null, "slot": "chest", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
+]
