@@ -62,7 +62,6 @@ Slots: head, neck, shoulder, chest, hands, legs, feet, cape, ring, charm, main h
 | Leather | cap, vest, pauldrons, cloak, gloves, leggings, boots |
 | Steel | helm, cuirass, pauldrons, gauntlets, greaves, sabatons, gorget, ring, charm, cloak, shield, sword, dagger, mace, spear |
 | Obsidian | helm, cuirass, pauldrons, gauntlets, greaves, sabatons, cloak, pendant, ring, charm, aegis, blade, kris, maul, staff, longbow, crossbow |
-| Rattatui (rat set) | cap, tunic, shoulderpads, gloves, trousers, boots, cloak, amulet, ring, charm, buckler, fang blade |
 | Legendary | Emberbrand, Starfall Bow, Titan Maul, Battle Axe, Iron Sword |
 | Slot placeholders | `equip_*.png` (12 slot silhouettes) |
 
@@ -146,7 +145,6 @@ One batch = one slot family in one material, so the variants of a batch are inte
 | E2 Leather armour | `Icons of brown leather armour pieces, stitched and buckled: cap, vest, pauldrons, gloves, boots, single object, centered` |
 | E3 Cloth gear | `Icons of cloth mage gear, blue and cream with gold trim: pointed hat, robe, gloves, slippers, mantle, single object, centered` |
 | E4 Obsidian gear | `Icons of black obsidian armour and weapons with glowing red cracks: helm, cuirass, gauntlets, blade, maul, staff, single object, centered` |
-| E5 Rat set | `Icons of crude scavenger gear made from rat fur, tails and teeth, grey and pink and tan: cap, tunic, buckler, fang blade, boots, single object, centered` |
 | E6 Melee weapons | `Icons of fantasy melee weapons in different materials: sword, axe, mace, spear, dagger, shield, single object, centered` |
 | E7 Ranged and magic weapons | `Icons of fantasy bows, crossbows, staves, wands and tomes, wood and gold and glowing gems, single object, centered` |
 | E8 Jewellery and charms | `Icons of fantasy rings, amulets and charms, gold and silver with a coloured gem, single object, centered` |
@@ -160,7 +158,6 @@ One batch = one slot family in one material, so the variants of a batch are inte
 | E2 Leather armour | `Icons of leather armour` |
 | E3 Cloth gear | `Icons of mage cloth clothing` |
 | E4 Obsidian gear | `Icons of black obsidian armour with glowing red cracks` |
-| E5 Rat set | `Icons of crude scavenger gear made from animal fur and bones` |
 | E6 Melee weapons | `Icons of fantasy melee weapons` |
 | E7 Ranged and magic weapons | `Icons of fantasy bows and magic staves` |
 | E8 Jewellery and charms | `Icons of fantasy jewellery` |
