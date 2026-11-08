@@ -347,7 +347,8 @@ table(
 line('## 9. Rebirth and Embers');
 line();
 line(
-	`Rebirth needs castle level ≥ ${REBIRTH.minCastleLevel} and ≥ ${REBIRTH.minTiles} tiles. Embers = \`floor(${REBIRTH.gainScale} × (castle − 5) × sqrt(tiles / 10))\`; ` +
+	`Rebirth needs castle level ≥ ${REBIRTH.minCastleLevel} and ≥ ${REBIRTH.minTiles} tiles. Embers = \`floor(${REBIRTH.gainScale} × (castle − 5)^${REBIRTH.castleExponent} × (sqrt(tiles / 10) + ${REBIRTH.surplusPerTile} × tiles above the requirement))\` ` +
+		`(the requirement is ${REBIRTH.minTiles} tiles, +${REBIRTH.tilesPerRebirth} per rebirth done; the table is a first rebirth); ` +
 		`all Embers earned together give +${REBIRTH.incomePerPoint * 100}% × earned^${REBIRTH.incomeExponent} income for ever.`,
 );
 line();

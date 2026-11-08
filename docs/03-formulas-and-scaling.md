@@ -18,9 +18,9 @@ discount%= min(0.5 × Charisma, 25)
 
 | n | 1 | 10 | 20 | 30 | 50 | 75 | 100 | 150 | 200 | 300 | 400 | 500 | 1,000 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| gold (cha 5) | 60 | 181 | 469 | 925 | 3.6 K | 19.4 K | 105 K | 150 K | 212 K | 426 K | 1.6 M | 4.2 M | 96 M |
+| gold (cha 5) | 60 | 181 | 469 | 925 | 3.6 K | 19.4 K | 105 K | 150 K | 212 K | 426 K | 1.2 M | 2.5 M | 28.8 M |
 
-Cumulative gold for the first 100 / 200 / 300 / 400 / 500 tiles: 1.6 M / 17 M / 48 M / 138 M / 412 M (the extra wood, stone, coal and food shares come on top).
+Cumulative gold for the first 100 / 200 / 300 / 400 / 500 tiles: 1.6 M / 17 M / 48 M / 125 M / 308 M (the extra wood, stone, coal and food shares come on top).
 
 **The tail (no tile limit).** Up to 300 tiles the price is the three exponential stages (×1.13 to 15 tiles, ×1.07 to 100, then only ×1.007 per tile, the soft middle). Past `TILE_PRICE.tailFrom` (300) it grows like `(n / 300)^3.5` (`TILE_PRICE.tailExponent`, 4.5 before IDL-181), clearly steeper than the stretch before, and is capped at `TILE_PRICE.ceiling` (`RESOURCE_CAP / 100`), so it is always finite and a map of tens of thousands of tiles stays buyable (table in [generated/balance-tables.md](generated/balance-tables.md)). `RESOURCE_CAP` was raised from 1e15 to 1e21 for it. There is no tile limit any more (see 02 §1, map). The numbers are tuned with `npm run sim` against the pacing targets in [06](06-pacing-targets.md) (100 tiles within the first day, 200-300 tiles in 2-3 days, a visibly harder climb after 300) for a game that will later be built around rebirths (bigger starting resources, much bigger maps); the tail is also on the balance backlog in [ROADMAP](ROADMAP.md).
 
@@ -163,9 +163,9 @@ provisions  : start each run with level × (1500 gold, 400 wood, 400 stone)
 
 | castle | 100 tiles | 200 tiles | 300 tiles |
 | --- | --- | --- | --- |
-| 6 | 14 | 20 | 24 |
-| 8 | 42 | 60 | 73 |
-| 10 | 71 | 100 | 123 |
+| 6 | 9 | 13 | 16 |
+| 8 | 39 | 55 | 68 |
+| 10 | 76 | 108 | 133 |
 
 Conservation rule used by the save check: `legacyPoints + Σ shop spending = legacyEarned`, and `rebirths = 0` implies `legacyEarned = 0` ([07](07-saves-and-security.md)). More tables in [generated/balance-tables.md](generated/balance-tables.md).
 

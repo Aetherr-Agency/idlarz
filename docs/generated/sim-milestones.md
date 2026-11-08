@@ -170,7 +170,7 @@ Minutes the income needs to cover what is still missing of each part of the next
 
 ## Magnitude targets (docs/06, IDL-128)
 
-Measured with the real store at the checkpoints of docs/06; the last seed of each profile. The income multiplier compares the same castle level in two runs (the bots rebirth before castle 10), so treat it as an indication.
+Measured with the real store at the checkpoints of docs/06; the last seed of each profile. The income multiplier compares the same castle level in two runs (the bots rebirth before castle 10), so below castle 10 it is an indication with no status.
 
 | profile | checkpoint | measured | band | status |
 | --- | --- | --- | --- | --- |
@@ -199,7 +199,7 @@ Measured with the real store at the checkpoints of docs/06; the last seed of eac
 | hardcore-rebirth6-x10 | rebirth 4 at castle 6: Embers gained | 22 | 18-28 | ok |
 | hardcore-rebirth6-x10 | rebirth 5 at castle 6: Embers gained | 23 | 18-28 | ok |
 | hardcore-rebirth6-x10 | after rebirth 5 at castle 6: lifetime Embers | 121 | 90-140 | ok |
-| hardcore-rebirth6-x10 | after rebirth 5: income multiplier at castle 6 (run 6 over run 1) | 3.6 | x3-6 | ok |
+| hardcore-rebirth6-x10 | after rebirth 5: income multiplier at castle 6 (run 6 over run 1) | 3.6 | (x3-6 is for castle 10) | n/a |
 | human | run 1, castle 10: gold per second | 4,712 | 3000-6000 | ok |
 | human | run 1, castle 10: unspent gold (hours of income) | 467 | <= 4 | **outside** |
 | human | run 1, castle 10: biggest stock (hide, hours of production) | 145 | <= 24 | **outside** |
@@ -209,12 +209,12 @@ Measured with the real store at the checkpoints of docs/06; the last seed of eac
 | human-rebirth6 | rebirth 4 at castle 6: Embers gained | 22 | 18-28 | ok |
 | human-rebirth6 | rebirth 5 at castle 6: Embers gained | 23 | 18-28 | ok |
 | human-rebirth6 | after rebirth 5 at castle 6: lifetime Embers | 105 | 90-140 | ok |
-| human-rebirth6 | after rebirth 5: income multiplier at castle 6 (run 6 over run 1) | 2 | x3-6 | **outside** |
+| human-rebirth6 | after rebirth 5: income multiplier at castle 6 (run 6 over run 1) | 2 | (x3-6 is for castle 10) | n/a |
 | human-rebirth8 | rebirth 1 at castle 8: Embers gained | 81 | 70-100 | ok |
 | human-rebirth8 | rebirth 2 at castle 8: Embers gained | 86 | 70-100 | ok |
 | human-rebirth8 | rebirth 3 at castle 8: Embers gained | 90 | 70-100 | ok |
 | human-rebirth8 | rebirth 4 at castle 8: Embers gained | 93 | 70-100 | ok |
 
-9 lines outside the band.
+8 lines outside the band.
 
 Profiles: idle = never clicks; casual = 1 click/s for 3 h/day; hardcore = 4 clicks/s for 8 h/day; autoclicker = 20 clicks/s 24 h/day (the limiter should keep it at roughly hardcore pace).

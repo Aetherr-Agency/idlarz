@@ -688,9 +688,10 @@ function renderMagnitudes(names: string[]): { lines: string[]; warnings: string[
 		return typeof v === 'number' ? v : null;
 	};
 	const fmt = (v: number) => (Math.abs(v) >= 100 ? Math.round(v).toLocaleString('en') : String(Math.round(v * 10) / 10));
-	const row = (profile: string, what: string, value: number, band: string, ok: boolean) => {
-		rows.push(`| ${profile} | ${what} | ${fmt(value)} | ${band} | ${ok ? 'ok' : '**outside**'} |`);
-		if (!ok) warnings.push(`${profile}: ${what} = ${fmt(value)}, band ${band}`);
+	const row = (profile: string, what: string, value: number, band: string, ok: boolean | null) => {
+		// null: no band applies (shown as a plain number, never a warning)
+		rows.push(`| ${profile} | ${what} | ${fmt(value)} | ${band} | ${ok == null ? 'n/a' : ok ? 'ok' : '**outside**'} |`);
+		if (ok === false) warnings.push(`${profile}: ${what} = ${fmt(value)}, band ${band}`);
 	};
 	const inBand = (v: number, [lo, hi]: readonly [number, number]) => v >= lo && v <= hi;
 	for (const p of names) {
@@ -735,8 +736,8 @@ function renderMagnitudes(names: string[]): { lines: string[]; warnings: string[
 						p,
 						`after rebirth ${n}: income multiplier at castle ${c} (run ${run} over run 1)`,
 						later / first,
-						`x${band[0]}-${band[1]}`,
-						inBand(later / first, band),
+						c === 10 ? `x${band[0]}-${band[1]}` : `(x${band[0]}-${band[1]} is for castle 10)`,
+						c === 10 ? inBand(later / first, band) : null,
 					);
 					break;
 				}
@@ -749,7 +750,7 @@ function renderMagnitudes(names: string[]): { lines: string[]; warnings: string[
 		return { lines, warnings };
 	}
 	lines.push(
-		'Measured with the real store at the checkpoints of docs/06; the last seed of each profile. The income multiplier compares the same castle level in two runs (the bots rebirth before castle 10), so treat it as an indication.',
+		'Measured with the real store at the checkpoints of docs/06; the last seed of each profile. The income multiplier compares the same castle level in two runs (the bots rebirth before castle 10), so below castle 10 it is an indication with no status.',
 		'',
 	);
 	lines.push('| profile | checkpoint | measured | band | status |', '| --- | --- | --- | --- | --- |', ...rows, '');

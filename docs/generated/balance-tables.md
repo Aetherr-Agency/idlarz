@@ -379,7 +379,7 @@ A real game rolls its 4 start tiles at random; this table uses one fixed ring (s
 
 ## 9. Rebirth and Embers
 
-Rebirth needs castle level ≥ 6 and ≥ 400 tiles. Embers = `floor(3 × (castle − 5) × sqrt(tiles / 10))`; all Embers earned together give +10% × earned^0.6 income for ever.
+Rebirth needs castle level ≥ 6 and ≥ 400 tiles. Embers = `floor(3 × (castle − 5)^1.3 × (sqrt(tiles / 10) + 0.02 × tiles above the requirement))` (the requirement is 400 tiles, +50 per rebirth done; the table is a first rebirth); all Embers earned together give +10% × earned^0.6 income for ever.
 
 | castle level | 100 tiles | 150 tiles | 200 tiles | 300 tiles | 500 tiles |
 | --- | --- | --- | --- | --- | --- |
