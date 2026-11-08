@@ -38,7 +38,7 @@ export const resumeHpOf = (profile: PlayerProfile): number => (profile.maxHp * C
 /** Opens the fight against a monster: the start of both an automatic and a chosen fight. The player's profile is frozen into it. */
 export const startFight = (ctx: FightCtx, t: number, target: { ticket: MonsterTicket; type: MonsterType }): boolean => {
 	const c = ctx.c;
-	const level = levelAtAge(target.ticket.spawnLevel ?? 1, t - target.ticket.at);
+	const level = levelAtAge(target.ticket.spawnLevel ?? 1, t - target.ticket.at, {}, target.ticket.growCap);
 	const stats = monsterStats(target.type, level);
 	const profile: PlayerProfile = ctx.profileNow;
 	c.hp = Math.min(c.hp, profile.maxHp);

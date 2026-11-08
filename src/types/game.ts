@@ -161,6 +161,8 @@ export interface Monster {
 	level: number;
 	/** The level it appeared at */
 	spawnLevel: number;
+	/** Fewer growth levels than the limit, when the server capped the monster for a weak player (left out: the full limit) */
+	growCap?: number;
 	x: number;
 	y: number;
 	ageSec: number;

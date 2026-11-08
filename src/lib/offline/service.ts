@@ -6,6 +6,8 @@ import { addTotals, resetLedger, seedLedger, type Ledger, type LedgerRepo } from
 import { restThrough } from '@/lib/offline/fight';
 import { coreWithInventory, fitInventory, inventoryFromCore } from '@/lib/offline/inventory';
 import { isChestPlaced, isPlaced, needsLook, placeTickets, siteKey, worldFromPart } from '@/lib/offline/placement';
+import { playerProfile } from '@/lib/offline/profile';
+import { powerKey } from '@/lib/offline/spawnWeights';
 import { sealedRng } from '@/lib/offline/seal';
 import { advanceBank, type BankContext, type TicketBank } from '@/lib/offline/tickets';
 import { offlineMinGapSec } from '@/lib/offline/limits';
@@ -31,9 +33,16 @@ export const UNCLAIMED_SEC = 900;
 export const publicTickets = (bank: TicketBank, opened?: number): PublicTickets => ({
 	chests: bank.chests.filter(isChestPlaced).map(({ n, x, y }) => ({ n, x: x!, y: y! })),
 	...(opened === undefined ? {} : { opened }),
-	rats: bank.rats
-		.filter(isPlaced)
-		.map(({ n, at, lucky, x, y, spawnLevel, type }) => ({ n, at, lucky, x: x!, y: y!, spawnLevel: spawnLevel!, ...(type ? { type } : {}) })),
+	rats: bank.rats.filter(isPlaced).map(({ n, at, lucky, x, y, spawnLevel, type, growCap }) => ({
+		n,
+		at,
+		lucky,
+		x: x!,
+		y: y!,
+		spawnLevel: spawnLevel!,
+		...(type ? { type } : {}),
+		...(growCap !== undefined ? { growCap } : {}),
+	})),
 	king:
 		bank.king && isPlaced(bank.king)
 			? {
@@ -72,9 +81,12 @@ export const lookAtMap = async (
 	stored: StoredSave,
 	rollFor: (kind: string, n: number) => Rng,
 ): Promise<TicketBank> => {
-	if (!needsLook(bank, siteKey(stored.summary))) return bank;
+	// the player's strength is part of the key: new gear is a new look, so the spawns still to come are weighted for the player as they are now
+	const hero = playerProfile(stored.core);
+	const power = `:${powerKey(hero)}`;
+	if (!needsLook(bank, siteKey(stored.summary) + power)) return bank;
 	const map = await loadMap();
-	return map ? placeTickets(bank, map.world, map.key, map.rebirths, rollFor) : bank;
+	return map ? placeTickets(bank, map.world, map.key + power, map.rebirths, rollFor, hero) : bank;
 };
 
 /**

@@ -43,6 +43,8 @@ interface PublicMonster {
 	x: number;
 	y: number;
 	spawnLevel: number;
+	/** Growth levels it may gain, when capped for a weak player (left out: the full growth limit) */
+	growCap?: number;
 	/** Which monster it is (left out by older servers: a rat or the Rat King) */
 	type?: import('@/types/game').MonsterType;
 }

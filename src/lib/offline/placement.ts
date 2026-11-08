@@ -3,6 +3,8 @@ import { chestSpots, pickChestSpot } from '@/lib/chests';
 import { MONSTERS } from '@/config/combatConfig';
 import { castleDistance } from '@/lib/distance';
 import { canSpawnOn, rollSpawnLevel, spawnTiles } from '@/lib/monsters';
+import type { PlayerProfile } from '@/lib/offline/fightTypes';
+import { growthCap, pickWeighted, spawnLevelCap, typeWeights } from '@/lib/offline/spawnWeights';
 import { monsterTypeOf, type ChestTicket, type MonsterTicket, type TicketBank } from '@/lib/offline/tickets';
 import type { Rng } from '@/lib/rng';
 import { unpackBody, type SaveBody } from '@/lib/saveFormat';
@@ -61,8 +63,17 @@ export const needsLook = (bank: TicketBank, key: string): boolean => {
  * again), and gives every waiting monster a tile and the level it appears at and every waiting chest a tile. Tickets with no tile left stay hidden until the land
  * grows. `rollFor('spawnpos', n)` picks the tile of monster ticket `n` and `rollFor('chestpos', n)` the one of chest `n` (the server seals
  * them with a secret; tests pass a seeded one). A chest leans toward the edge of the land and away from other chests (`pickChestSpot`).
+ * With the player's profile (`hero`) a new monster's type is weighted by how beatable it is (spawnWeights.ts) and its level and growth are capped
+ * near what the player can beat; without it every type is equally likely and nothing is capped. Bosses are never weighted or capped.
  */
-export const placeTickets = (bank: TicketBank, world: World, key: string, rebirths: number, rollFor: (kind: string, n: number) => Rng): TicketBank => {
+export const placeTickets = (
+	bank: TicketBank,
+	world: World,
+	key: string,
+	rebirths: number,
+	rollFor: (kind: string, n: number) => Rng,
+	hero?: PlayerProfile,
+): TicketBank => {
 	const castleLevel = castleLevelOf(world);
 	const noneTaken = new Set<string>();
 	// how many tiles some monster of the kind may stand on (a tile several monsters could use counts once)
@@ -104,10 +115,23 @@ export const placeTickets = (bank: TicketBank, world: World, key: string, rebirt
 			.map((type) => ({ type, free: spawnTiles(type, world, taken, rebirths) }))
 			.filter((entry) => entry.free.length > 0);
 		if (open.length === 0) return ticket;
-		const { type, free } = open.length === 1 ? open[0] : open[Math.floor(rollFor('spawntype', ticket.n)() * open.length) % open.length];
+		const rat = !!hero && kind === 'rat';
+		const weights =
+			rat && open.length > 1
+				? typeWeights(
+						hero,
+						open.map((entry) => entry.type),
+						castleLevel,
+					)
+				: null;
+		const roll = open.length === 1 ? 0 : rollFor('spawntype', ticket.n)();
+		const { type, free } = open[weights ? pickWeighted(weights, roll) : Math.floor(roll * open.length) % open.length];
 		const spot = free[Math.floor(rollFor('spawnpos', ticket.n)() * free.length) % free.length];
 		taken.add(`${spot.x},${spot.y}`);
-		return { ...ticket, type, x: spot.x, y: spot.y, spawnLevel: rollSpawnLevel(type, castleLevel, ticket.n, castleDistance(spot)) };
+		const cap = rat ? spawnLevelCap(hero, type, castleLevel) : Infinity;
+		const spawnLevel = rollSpawnLevel(type, castleLevel, ticket.n, castleDistance(spot), Number.isFinite(cap) ? cap : undefined);
+		const grow = rat ? growthCap(hero, type, spawnLevel) : undefined;
+		return { ...ticket, type, x: spot.x, y: spot.y, spawnLevel, ...(grow !== undefined ? { growCap: grow } : {}) };
 	};
 
 	const settledRats = bank.rats.map((ticket) => settle(ticket, 'rat'));
