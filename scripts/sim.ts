@@ -98,11 +98,21 @@ const main = async () => {
 	const md = renderMarkdown(results, legacy, seeds > 1 ? spreads : undefined);
 	console.log(md);
 	for (const w of renderMagnitudes(selected).warnings) console.error(`WARNING outside the docs/06 band: ${w}`);
+	// The milestones of every selected profile as data (game days, rounded so a rerun on another machine writes the same bytes): scripts/pacing-guard.ts compares it against the base branch's copy
+	const json = JSON.stringify(
+		{
+			note: 'Written by npm run sim (scripts/sim.ts); compared by scripts/pacing-guard.ts. Game days, rounded to 6 significant digits.',
+			profiles: results,
+		},
+		(_key, value) => (typeof value === 'number' ? Number(value.toPrecision(6)) : value),
+		1,
+	);
 	if (!legacy && !args.includes('--no-write')) {
-		const target = resolve(dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '../docs/generated/sim-milestones.md');
-		mkdirSync(dirname(target), { recursive: true });
-		writeFileSync(target, md);
-		console.error(`Wrote ${target}`);
+		const dir = resolve(dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '../docs/generated');
+		mkdirSync(dir, { recursive: true });
+		writeFileSync(resolve(dir, 'sim-milestones.md'), md);
+		writeFileSync(resolve(dir, 'sim-baseline.json'), json + '\n');
+		console.error(`Wrote ${resolve(dir, 'sim-milestones.md')} and sim-baseline.json`);
 	}
 };
 

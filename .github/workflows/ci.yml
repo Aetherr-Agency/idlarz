@@ -5,11 +5,17 @@ on:
   push:
     branches: [main]
 
+# The jobs run the PR's own code (npm scripts, tsx): read-only token, and the checkout does not keep it in .git/config.
+permissions:
+  contents: read
+
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -21,19 +27,43 @@ jobs:
       - run: npm test
       - run: npm run build
 
-  # Pacing report: the real store driven by the bot (scripts/sim.ts). Informational for now (it never fails the PR); make it blocking
-  # once the castle timers and the Ember curve are settled (docs/ROADMAP.md, balancing pass). --no-write keeps docs/generated untouched.
-  pacing:
+  # Generated docs and the pacing guard (IDL-9, IDL-17). `npm run docs:gen` reruns every report, including the full sim (about 8 minutes),
+  # and the committed docs/generated must be exactly what it writes: a change to the game config or the sim that was not followed by
+  # `npm run docs:gen` fails here. Then the sim baseline (docs/generated/sim-baseline.json) is compared with the copy on the branch the PR
+  # targets, so regenerating the baseline cannot hide a pacing change: a guarded milestone (the first finish, the rebirths, castle 6/8/10, the
+  # level and tile ladders) that moved by more than 15 % fails the PR. An intended change carries the `pacing-change` label (then re-run the
+  # job): the guard still reports but does not block (a broken baseline file still does).
+  generated:
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
-      - name: Sim (hardcore, 30 days) and rebirth ratios
+      - run: npm run docs:gen
+      - name: Generated docs are up to date
         run: |
-          npx tsx scripts/sim.ts --no-write --maxdays=30 hardcore | tee -a "$GITHUB_STEP_SUMMARY"
-          npx tsx scripts/sim.ts --no-write --maxdays=60 hardcore-rebirth6 | tee -a "$GITHUB_STEP_SUMMARY"
+          git add -N docs/generated
+          git diff --exit-code docs/generated || { echo '::error::docs/generated is stale: run npm run docs:gen and commit the result'; exit 1; }
+      - name: Pacing guard against the base branch
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          PACING_CHANGE: ${{ contains(github.event.pull_request.labels.*.name, 'pacing-change') }}
+        run: |
+          git fetch --depth=1 origin "$BASE_REF"
+          if ! git cat-file -e "origin/$BASE_REF:docs/generated/sim-baseline.json" 2>/dev/null; then
+            echo "::notice::$BASE_REF has no docs/generated/sim-baseline.json yet (this PR introduces it): nothing to compare against"
+            exit 0
+          fi
+          git show "origin/$BASE_REF:docs/generated/sim-baseline.json" > "$RUNNER_TEMP/base-baseline.json"
+          # the label excuses violations only (--allow-violations); an unreadable file or a crash still fails the job
+          if [ "$PACING_CHANGE" = true ]; then
+            npx tsx scripts/pacing-guard.ts --base="$RUNNER_TEMP/base-baseline.json" --allow-violations
+          else
+            npx tsx scripts/pacing-guard.ts --base="$RUNNER_TEMP/base-baseline.json"
+          fi

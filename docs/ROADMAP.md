@@ -107,7 +107,7 @@ Notes from reading the code (not measured against the live project):
 
 | Item | Size | Acceptance |
 |---|---|---|
-| CI: a GitHub Action running `tsc`, `lint`, `test`, `build`, plus `sim -- --maxdays=30 hardcore` as a pacing guard (✅ `.github/workflows/ci.yml`; the sim job is informational until the timers and the Ember curve settle, then make it fail the PR) | S | PR fails when the first-finish time of a profile moves by more than ±15 % |
+| CI: a GitHub Action running `tsc`, `lint`, `test`, `build`, plus the `generated` job (✅ `.github/workflows/ci.yml`, IDL-9 and IDL-17): `npm run docs:gen` must leave `docs/generated` unchanged, and `scripts/pacing-guard.ts` compares `docs/generated/sim-baseline.json` with the base branch's copy | S | PR fails when a guarded milestone (first finish, rebirths, castle 6/8/10, level and tile ladders) of any profile moves by more than ±15 %; an intended change carries the `pacing-change` label |
 | Playwright smoke test (IDL-124): new game, click, buy tile, open Settings and Rebirth, reload keeps state (no UI tests exist) | M | runs in CI; uses `window.__game` only in dev builds |
 | Framework upgrades (IDL-125) one at a time: Next 16, TypeScript 7, ESLint 10, `@types/node` 26 (held back on purpose; Next 16 fixes two PostCSS advisories bundled in 15; check `typescript-eslint` / `eslint-config-next` peer ranges) | M | build, tests and sim output unchanged |
 
