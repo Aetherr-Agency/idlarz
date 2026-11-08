@@ -187,7 +187,7 @@ test('no source can lower income: every modifier bracket is at least 1 and total
 // ---------------------------------------------------------------------------
 // Costs
 
-test('tile price: three exponential stages then the (n/300)^4.5 tail, against an independent oracle', () => {
+test('tile price: three exponential stages then the (n/300)^3.5 tail, against an independent oracle', () => {
 	for (const owned of [1, 2, 10, 15, 16, 50, 99, 100, 101, 200, 299, 300, 301, 400, 600, 1000, 5000]) {
 		assert.equal(calculateTileCost(owned, 0).gold, oracle.tilePrice(owned), `gold price at ${owned} tiles`);
 	}
@@ -239,7 +239,7 @@ test('MISMATCH 1: building cost takes no Charisma and no Bulk Discount, so Bulk 
 // ---------------------------------------------------------------------------
 // Rebirth and Embers
 
-test('Ember gain: 3 x (castle - 5) x (sqrt(tiles / 10) + 0.02 x tiles over the requirement), then +5 % per Tithe level', () => {
+test('Ember gain: 3 x (castle - 5)^1.3 x (sqrt(tiles / 10) + 0.02 x tiles over the requirement), then +5 % per Tithe level', () => {
 	for (const castle of [5, 6, 7, 8, 9, 10])
 		for (const tiles of [399, 400, 450, 500, 600, 1000, 3000])
 			for (const rebirths of [0, 1, 5])
@@ -250,11 +250,11 @@ test('Ember gain: 3 x (castle - 5) x (sqrt(tiles / 10) + 0.02 x tiles over the r
 						`castle ${castle}, ${tiles} tiles, rebirth ${rebirths}, Tithe ${tithe}`,
 					);
 				}
-	// pinned values the plan quotes (castle 6 / 400 tiles = 18, 6 / 500 = 27, 8 / 500 = 81, 10 / 600 = 176)
+	// pinned values the plan quotes (castle 6 / 400 tiles = 18, 6 / 500 = 27, 8 / 500 = 113, 10 / 600 = 285; the castle term is (castle - 5)^1.3, IDL-183)
 	assert.equal(emberGain(6, 400), 18);
 	assert.equal(emberGain(6, 500), 27);
-	assert.equal(emberGain(8, 500), 81);
-	assert.equal(emberGain(10, 600), 176);
+	assert.equal(emberGain(8, 500), 113);
+	assert.equal(emberGain(10, 600), 285);
 });
 
 test('Ember income bonus: +10 % x earned^0.6, from Embers ever EARNED (spending never lowers it)', () => {
@@ -263,13 +263,13 @@ test('Ember income bonus: +10 % x earned^0.6, from Embers ever EARNED (spending 
 	near(emberIncomeMultiplier(spentSome), oracle.ember(47), 'spent Embers still count');
 });
 
-test('rebirth gates: castle 6, 400 + 25 per past rebirth in tiles, no upgrade running, gain of at least 1', () => {
+test('rebirth gates: castle 6, 400 + 50 per past rebirth in tiles, no upgrade running, gain of at least 1', () => {
 	const base = { tiles: worldWithTiles(10, 'plains', undefined, 6), freeTiles: 1, castleUpgrade: null, merchantUpgrades: {}, prestige: prestigeWith(0, {}, 0) };
 	const status = (over: object) => rebirthStatus({ ...base, ...over } as never);
 	// 10 extra tiles is far from 400: the tile requirement fails
 	assert.equal(status({}).canRebirth, false);
 	assert.equal(status({}).requirements.find((r) => r.id === 'tiles')?.needed, 400);
-	assert.equal(status({ prestige: prestigeWith(18, {}, 4) }).requirements.find((r) => r.id === 'tiles')?.needed, 500);
+	assert.equal(status({ prestige: prestigeWith(18, {}, 4) }).requirements.find((r) => r.id === 'tiles')?.needed, 600);
 	assert.equal(status({ castleUpgrade: { toLevel: 7, remainingSec: 10 } }).requirements.find((r) => r.id === 'idle')?.met, false);
 });
 

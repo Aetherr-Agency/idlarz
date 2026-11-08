@@ -107,7 +107,7 @@ export const oracle = {
 	tilePrice: (owned: number) => {
 		const n = Math.min(owned, 300);
 		let price = 55 * 1.13 ** Math.min(n, 15) * 1.07 ** Math.max(Math.min(n, 100) - 15, 0) * 1.007 ** Math.max(n - 100, 0);
-		if (owned > 300) price *= (owned / 300) ** 4.5;
+		if (owned > 300) price *= (owned / 300) ** 3.5;
 		return Math.floor(Math.min(price, 1e21 / 100));
 	},
 	/** Extra resource costs of a tile: [from tile, resource, share of the gold price] */
@@ -129,8 +129,8 @@ export const oracle = {
 
 	/** Embers for a rebirth */
 	emberGain: (castle: number, tiles: number, rebirths: number, titheLevel: number) => {
-		const needed = 400 + 25 * rebirths;
-		const base = Math.floor(3 * Math.max(0, castle - 5) * (Math.sqrt(Math.max(0, tiles) / 10) + 0.02 * Math.max(0, tiles - needed)));
+		const needed = 400 + 50 * rebirths;
+		const base = Math.floor(3 * Math.max(0, castle - 5) ** 1.3 * (Math.sqrt(Math.max(0, tiles) / 10) + 0.02 * Math.max(0, tiles - needed)));
 		return Math.floor(base * (1 + 0.05 * titheLevel));
 	},
 	/** Cost in Embers of the next level of a shop upgrade */

@@ -59,7 +59,7 @@ test('tile price: past the tail start the climb is steeper than before it, then 
 	}
 	// 100 tiles past the fill line cost clearly more than the 100 before it
 	const stretch = (from: number) => Array.from({ length: 100 }, (_, i) => SCALING_CONFIG.costFormula(from + i)).reduce((a, b) => a + b, 0);
-	assert.ok(stretch(TILE_PRICE.tailFrom) > 2.5 * stretch(TILE_PRICE.tailFrom - 100));
+	assert.ok(stretch(TILE_PRICE.tailFrom) > 2.2 * stretch(TILE_PRICE.tailFrom - 100)); // about 2.45x with the tail exponent 3.5
 });
 
 test('XP per tile: the growth formula up to the tail start, finite and slow after it', () => {

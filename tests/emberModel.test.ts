@@ -85,7 +85,8 @@ test('a first save holds a history: rebirths are bounded by the play time, Ember
 	const hours = (h: number) => h * 3600;
 	const three = settleEmbers(null, claim(3, 1_000_000, hours(3 * 5)));
 	assert.equal(three.rebirths, 3);
-	assert.ok(three.clamped && three.legacyEarned < 3 * 800, `${three.legacyEarned}`);
+	// the best rebirth the game can pay (castle 10, the first-save territory, Tithe maxed) three times over
+	assert.ok(three.clamped && three.legacyEarned === 3 * emberGain(10, EMBER_MODEL.firstSaveTiles, { tithe: 10 }, 0), `${three.legacyEarned}`);
 	assert.equal(settleEmbers(null, claim(3, 60, hours(3 * 5))).clamped, false, 'an honest early player is untouched');
 	assert.equal(EMBER_MODEL.minRunSec, 4 * 3600);
 });

@@ -81,18 +81,18 @@
 
 ### Late tiles (the polynomial tail)
 
-Past 300 tiles the price grows like (n / 300)^4.5 instead of ×1.007 per tile, capped at 1e19; XP per tile has the same shape past 300 tiles (exponent 1.5). Knobs: `TILE_PRICE`, `XP_TILE`, `RESOURCE_CAP` (1.00Sx). See docs/05 BL16.
+Past 300 tiles the price grows like (n / 300)^3.5 instead of ×1.007 per tile, capped at 1e19; XP per tile has the same shape past 300 tiles (exponent 1.5). Knobs: `TILE_PRICE`, `XP_TILE`, `RESOURCE_CAP` (1.00Sx). See docs/05 BL16.
 
 | n | gold | cumulative gold | XP gained |
 | --- | --- | --- | --- |
 | 100 | 105.48K | 1.61M | 8232 |
 | 157 | 156.98K | 9.02M | 39.81K |
 | 300 | 425.65K | 47.67M | 1.26M |
-| 1000 | 95.94M | 17.52B | 7.67M |
-| 3000 | 13.46B | 7.35T | 39.81M |
-| 10000 | 3.03T | 5.52Qa | 242.16M |
-| 30000 | 425.66T | 2.32Qi | 1.26B |
-| 50000 | 4.24Qa | 38.55Qi | 2.71B |
+| 1000 | 28.78M | 6.43B | 7.67M |
+| 3000 | 1.35B | 898.05B | 39.81M |
+| 10000 | 91.02B | 202.31T | 242.16M |
+| 30000 | 4.26T | 28.38Qa | 1.26B |
+| 50000 | 25.44T | 282.69Qa | 2.71B |
 
 ## 2. Level curve
 
@@ -384,10 +384,10 @@ Rebirth needs castle level ≥ 6 and ≥ 400 tiles. Embers = `floor(3 × (castle
 | castle level | 100 tiles | 150 tiles | 200 tiles | 300 tiles | 500 tiles |
 | --- | --- | --- | --- | --- | --- |
 | 6 | 9 | 11 | 13 | 16 | 27 |
-| 7 | 18 | 23 | 26 | 32 | 54 |
-| 8 | 28 | 34 | 40 | 49 | 81 |
-| 9 | 37 | 46 | 53 | 65 | 108 |
-| 10 | 47 | 58 | 67 | 82 | 136 |
+| 7 | 23 | 28 | 33 | 40 | 67 |
+| 8 | 39 | 48 | 55 | 68 | 113 |
+| 9 | 57 | 70 | 81 | 99 | 164 |
+| 10 | 76 | 94 | 108 | 133 | 220 |
 
 Shop (cost in points of the next level, by current level):
 

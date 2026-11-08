@@ -17,7 +17,7 @@
 | click2 | 1.2 d | 21.6 h | 12.7 h | 9.3 h | 12.7 h | 12.7 h | 12.7 h | 1.2 d | 1.2 d | 1.2 d |
 | castle4 | 16.3 h | 16.3 h | 14.4 h | 11.7 h | 14.4 h | 14.4 h | 14.4 h | 1.0 d | 1.0 d | 1.0 d |
 | tiles35 | 0.6 h | 0.6 h | 0.6 h | 0.1 h | 0.6 h | 0.6 h | 0.6 h | 4.0 h | 4.0 h | 4.0 h |
-| click3 | 3.8 d | 3.3 d | 19.2 h | 16.0 h | 19.2 h | 19.2 h | 19.2 h | 2.8 d | 2.8 d | 2.8 d |
+| click3 | 3.9 d | 3.4 d | 19.2 h | 16.0 h | 19.2 h | 19.2 h | 19.2 h | 2.8 d | 2.8 d | 2.8 d |
 | castle5 | 1.8 d | 1.8 d | 1.3 d | 23.9 h | 1.3 d | 1.3 d | 1.3 d | 2.1 d | 2.1 d | 2.1 d |
 | tiles40 | 0.7 h | 0.7 h | 0.7 h | 0.1 h | 0.7 h | 0.7 h | 0.7 h | 14.0 h | 14.0 h | 14.0 h |
 | tiles50 | 1.1 h | 1.1 h | 1.1 h | 0.2 h | 1.1 h | 1.1 h | 1.1 h | 18.0 h | 18.0 h | 18.0 h |
@@ -26,105 +26,91 @@
 | tiles150 | 23.4 h | 1.1 d | 15.5 h | 14.1 h | 15.5 h | 15.5 h | 15.5 h | 2.6 d | 2.6 d | 2.6 d |
 | tiles200 | 1.6 d | 1.4 d | 20.9 h | 19.8 h | 20.9 h | 20.9 h | 20.9 h | 3.6 d | 3.6 d | 3.6 d |
 | tiles300 | 2.2 d | 1.9 d | 1.3 d | 1.1 d | 1.3 d | 1.3 d | 1.3 d | 5.1 d | 5.1 d | 5.1 d |
-| tiles400 | 3.3 d | 2.8 d | 1.8 d | 1.7 d | 1.8 d | 1.8 d | 1.8 d | 7.1 d | 7.1 d | 7.1 d |
-| castle6 | 3.7 d | 3.2 d | 2.3 d | 2.0 d | 2.3 d | 2.3 d | 2.3 d | 3.1 d | 3.1 d | 3.1 d |
-| castle7 | 5.4 d | 4.9 d | 3.8 d | 3.5 d | — | 3.8 d | — | 4.8 d | — | 4.8 d |
-| castle8 | 7.5 d | 7.1 d | 5.8 d | 5.5 d | — | 5.8 d | — | 6.8 d | — | 6.8 d |
-| castle9 | 10.2 d | 9.7 d | 8.3 d | 8.0 d | — | 8.3 d | — | 9.6 d | — | — |
-| castle10 | 13.8 d | 13.3 d | 11.8 d | 11.5 d | — | 11.8 d | — | 13.1 d | — | — |
+| tiles400 | 3.2 d | 2.6 d | 1.7 d | 1.6 d | 1.7 d | 1.7 d | 1.7 d | 7.1 d | 7.1 d | 7.1 d |
+| castle6 | 3.8 d | 3.3 d | 2.3 d | 2.0 d | 2.3 d | 2.3 d | 2.3 d | 3.1 d | 3.1 d | 3.1 d |
+| castle7 | 5.5 d | 5.0 d | 3.8 d | 3.5 d | — | 3.8 d | — | 4.8 d | — | 4.8 d |
+| castle8 | 7.6 d | 7.1 d | 5.8 d | 5.5 d | — | 5.8 d | — | 6.8 d | — | 6.8 d |
+| castle9 | 10.3 d | 9.7 d | 8.3 d | 8.0 d | — | 8.3 d | — | 9.6 d | — | — |
+| castle10 | 13.9 d | 13.3 d | 11.8 d | 11.5 d | — | 11.8 d | — | 13.1 d | — | — |
 | level10 | 4.6 h | 4.6 h | 4.6 h | 1.0 h | 4.6 h | 4.6 h | 4.6 h | 18.0 h | 18.0 h | 18.0 h |
 | level20 | 1.4 d | 1.2 d | 18.8 h | 18.2 h | 18.8 h | 18.8 h | 18.8 h | 2.8 d | 2.8 d | 2.8 d |
 | level30 | 2.3 d | 1.9 d | 1.3 d | 1.2 d | 1.3 d | 1.3 d | 1.3 d | 5.6 d | 5.6 d | 5.6 d |
-| level50 | 6.5 d | 5.2 d | 3.9 d | 3.7 d | 3.7 d | 3.9 d | 3.7 d | 9.2 d | 20.2 d | 18.0 d |
-| level80 | — | 13.2 d | 9.4 d | 9.5 d | — | 9.4 d | 8.5 d | — | — | — |
-| level90 | — | — | — | — | — | — | 130.5 d | — | — | — |
+| level50 | 5.5 d | 4.4 d | 3.1 d | 3.0 d | 3.3 d | 3.1 d | 3.3 d | 9.2 d | 19.1 d | 15.0 d |
+| level80 | 11.4 d | 9.1 d | 7.6 d | 7.5 d | — | 7.6 d | 7.2 d | — | 43.0 d | 34.0 d |
+| level90 | — | — | — | — | — | 12.4 d | 220.2 d | — | — | — |
 | level100 | — | — | — | — | — | — | — | — | — | — |
-| finished | 3.8 d | 3.3 d | 2.3 d | 2.0 d | 2.3 d | 2.3 d | 2.3 d | 7.1 d | 7.1 d | 7.1 d |
-| embers1 | — | — | — | — | 22 | 334 | 22 | — | 19 | 58 |
-| embers2 | — | — | — | — | 26 | — | 26 | — | 19 | 58 |
-| embers3 | — | — | — | — | 24 | — | 24 | — | 20 | 62 |
-| embers4 | — | — | — | — | — | — | 23 | — | 21 | 63 |
-| embers5 | — | — | — | — | — | — | 23 | — | 21 | — |
-| embers6 | — | — | — | — | — | — | 23 | — | — | — |
-| embers7 | — | — | — | — | — | — | 22 | — | — | — |
-| killsbossGreatAuroch | — | — | — | — | — | — | — | 33 | 170 | 134 |
-| killsthistleBoar | — | — | — | — | — | — | — | 371 | 1311 | 1067 |
+| finished | 3.9 d | 3.4 d | 2.3 d | 2.0 d | 2.3 d | 2.3 d | 2.3 d | 7.1 d | 7.1 d | 7.1 d |
+| embers1 | — | — | — | — | 24 | 606 | 24 | — | 19 | 81 |
+| embers2 | — | — | — | — | 26 | — | 26 | — | 20 | 86 |
+| embers3 | — | — | — | — | 26 | — | 26 | — | 21 | 90 |
+| embers4 | — | — | — | — | — | — | 22 | — | 22 | 93 |
+| embers5 | — | — | — | — | — | — | 23 | — | 23 | — |
+| killsbossGreatAuroch | — | — | — | — | — | — | — | 33 | 187 | 144 |
+| killsthistleBoar | — | — | — | — | — | — | — | 371 | 1456 | 1153 |
 | lvl@1h | 4 | 4 | 4 | 9 | 4 | 4 | 4 | 1 | 1 | 1 |
 | lvl@4.5h | 9 | 9 | 9 | 12 | 9 | 9 | 9 | 9 | 9 | 9 |
 | lvl@24h | 17 | 17 | 23 | 25 | 23 | 23 | 23 | 12 | 12 | 12 |
-| lvl@72h | 33 | 37 | 44 | 45 | 41 | 44 | 41 | 20 | 20 | 20 |
-| lvl@168h | 52 | 58 | 67 | 68 | — | 67 | 70 | 36 | 35 | 36 |
-| lvl@336h | — | — | — | — | — | — | 88 | — | 44 | 45 |
-| lvl@576h | — | — | — | — | — | — | 88 | — | 57 | 61 |
-| lvlAtRebirth1 | — | — | — | — | 38 | 85 | 38 | — | 37 | 37 |
-| lvlAtRebirth2 | — | — | — | — | 52 | — | 52 | — | 46 | 49 |
-| lvlAtRebirth3 | — | — | — | — | 62 | — | 62 | — | 56 | 60 |
-| lvlAtRebirth4 | — | — | — | — | — | — | 70 | — | 65 | 71 |
-| lvlAtRebirth5 | — | — | — | — | — | — | 78 | — | 74 | — |
-| lvlAtRebirth6 | — | — | — | — | — | — | 84 | — | — | — |
-| lvlAtRebirth7 | — | — | — | — | — | — | 86 | — | — | — |
-| r2.castle6 | — | — | — | — | 1.6 d | 22.4 h | 1.6 d | — | 2.5 d | 2.5 d |
-| r2.finished | — | — | — | — | 1.6 d | 22.4 h | 1.6 d | — | 7.0 d | 7.0 d |
-| r2.tiles100 | — | — | — | — | 1.3 h | 0.3 h | 1.3 h | — | 2.0 d | 2.0 d |
-| r3.castle6 | — | — | — | — | 1.5 d | — | 1.5 d | — | 2.3 d | 2.0 d |
-| r3.finished | — | — | — | — | 1.5 d | — | 1.5 d | — | 7.3 d | 7.3 d |
-| r3.tiles100 | — | — | — | — | 0.6 h | — | 0.6 h | — | 1.8 d | 1.8 d |
-| r4.castle6 | — | — | — | — | 1.4 d | — | 1.4 d | — | 2.6 d | 1.8 d |
-| r4.finished | — | — | — | — | 1.4 d | — | 1.4 d | — | 7.0 d | 7.0 d |
-| r4.tiles100 | — | — | — | — | 1.9 h | — | 1.9 h | — | 1.8 d | 1.8 d |
-| r5.castle6 | — | — | — | — | — | — | 1.2 d | — | 2.4 d | 1.9 d |
-| r5.finished | — | — | — | — | — | — | 1.2 d | — | 7.4 d | 7.4 d |
-| r5.tiles100 | — | — | — | — | — | — | 0.5 h | — | 2.0 d | 2.0 d |
-| r6.castle6 | — | — | — | — | — | — | 1.3 d | — | 2.4 d | — |
-| r6.finished | — | — | — | — | — | — | 1.3 d | — | 7.4 d | — |
-| r6.tiles100 | — | — | — | — | — | — | 1.8 h | — | 2.0 d | — |
-| r7.castle6 | — | — | — | — | — | — | 1.1 d | — | — | — |
-| r7.finished | — | — | — | — | — | — | 1.1 d | — | — | — |
-| r7.tiles100 | — | — | — | — | — | — | 0.5 h | — | — | — |
-| r8.castle6 | — | — | — | — | — | — | 1.1 d | — | — | — |
-| r8.finished | — | — | — | — | — | — | 1.1 d | — | — | — |
-| r8.tiles100 | — | — | — | — | — | — | 0.7 h | — | — | — |
+| lvl@72h | 34 | 39 | 49 | 49 | 44 | 49 | 44 | 20 | 20 | 20 |
+| lvl@168h | 59 | 68 | 76 | 77 | — | 76 | 78 | 36 | 35 | 36 |
+| lvl@336h | — | — | — | — | — | — | 87 | — | 44 | 46 |
+| lvl@576h | — | — | — | — | — | — | 87 | — | 59 | 65 |
+| lvlAtRebirth1 | — | — | — | — | 40 | 88 | 40 | — | 37 | 37 |
+| lvlAtRebirth2 | — | — | — | — | 55 | — | 55 | — | 48 | 51 |
+| lvlAtRebirth3 | — | — | — | — | 68 | — | 68 | — | 61 | 66 |
+| lvlAtRebirth4 | — | — | — | — | — | — | 77 | — | 73 | 80 |
+| lvlAtRebirth5 | — | — | — | — | — | — | 84 | — | 83 | — |
+| r2.castle6 | — | — | — | — | 1.5 d | 22.3 h | 1.5 d | — | 2.5 d | 2.5 d |
+| r2.finished | — | — | — | — | 1.5 d | 22.3 h | 1.5 d | — | 7.0 d | 7.0 d |
+| r2.tiles100 | — | — | — | — | 1.3 h | 0.2 h | 1.3 h | — | 2.0 d | 2.0 d |
+| r3.castle6 | — | — | — | — | 1.4 d | — | 1.4 d | — | 2.6 d | 2.0 d |
+| r3.finished | — | — | — | — | 1.4 d | — | 1.4 d | — | 7.0 d | 7.0 d |
+| r3.tiles100 | — | — | — | — | 0.5 h | — | 0.5 h | — | 2.0 d | 2.0 d |
+| r4.castle6 | — | — | — | — | 1.3 d | — | 1.3 d | — | 2.6 d | 2.0 d |
+| r4.finished | — | — | — | — | 1.3 d | — | 1.3 d | — | 7.0 d | 7.0 d |
+| r4.tiles100 | — | — | — | — | 2.4 h | — | 2.4 h | — | 2.0 d | 2.0 d |
+| r5.castle6 | — | — | — | — | — | — | 1.3 d | — | 2.5 d | 2.0 d |
+| r5.finished | — | — | — | — | — | — | 1.3 d | — | 7.0 d | 7.0 d |
+| r5.tiles100 | — | — | — | — | — | — | 0.8 h | — | 2.0 d | 2.0 d |
+| r6.castle6 | — | — | — | — | — | — | 1.3 d | — | 1.8 d | — |
+| r6.finished | — | — | — | — | — | — | 1.3 d | — | 7.0 d | — |
+| r6.tiles100 | — | — | — | — | — | — | 1.5 h | — | 1.8 d | — |
 | rebirth | — | — | — | — | 2.3 d | 11.8 d | 2.3 d | — | 7.1 d | 7.1 d |
 | rebirthDay1 | — | — | — | — | 2.3 d | 11.8 d | 2.3 d | — | 7.1 d | 7.1 d |
-| rebirthDay2 | — | — | — | — | 3.9 d | — | 3.9 d | — | 14.8 d | 14.8 d |
-| rebirthDay3 | — | — | — | — | 5.4 d | — | 5.4 d | — | 23.0 d | 23.0 d |
-| rebirthDay4 | — | — | — | — | — | — | 6.8 d | — | 31.2 d | 31.2 d |
-| rebirthDay5 | — | — | — | — | — | — | 8.0 d | — | 40.2 d | — |
-| rebirthDay6 | — | — | — | — | — | — | 9.3 d | — | — | — |
-| rebirthDay7 | — | — | — | — | — | — | 10.5 d | — | — | — |
+| rebirthDay2 | — | — | — | — | 3.8 d | — | 3.8 d | — | 15.1 d | 15.1 d |
+| rebirthDay3 | — | — | — | — | 5.2 d | — | 5.2 d | — | 24.1 d | 24.1 d |
+| rebirthDay4 | — | — | — | — | — | — | 6.5 d | — | 34.1 d | 34.1 d |
+| rebirthDay5 | — | — | — | — | — | — | 8.1 d | — | 45.0 d | — |
 | waitHcastle1 | 2.3 | 2.3 | 2.3 | 1.2 | 2.3 | 2.3 | 2.3 | 2 | 2 | 2 |
 | waitHcastle2 | 1.6 | 1.6 | 1.6 | 0.6 | 1.6 | 1.6 | 1.6 | 11.5 | 11.5 | 11.5 |
 | waitHcastle3 | 4 | 4 | 2.1 | 1.5 | 2.1 | 2.1 | 2.1 | 2 | 2 | 2 |
 | waitHcastle4 | 14.5 | 14.4 | 3.9 | 0.2 | 3.9 | 3.9 | 3.9 | 14 | 14 | 14 |
-| waitHcastle5 | 21.6 | 10.5 | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 1 |
-| waitHcastle6 | 5.2 | 4.4 | 0 | 0 | — | 0 | — | 0 | — | 0 |
-| waitHcastle7 | 3.5 | 4.1 | 0 | 0 | — | 0 | — | 3 | — | 3 |
-| waitHcastle8 | 3.3 | 2.5 | 0 | 0 | — | 0 | — | 0 | — | — |
-| waitHcastle9 | 3.8 | 2.8 | 0 | 0 | — | 0 | — | 8 | — | — |
+| waitHcastle5 | 24.4 | 13.2 | 0 | 0 | 0 | 0 | 0 | 1 | 1 | 1 |
+| waitHcastle6 | 4.8 | 4 | 0 | 0 | — | 0 | — | 0 | — | 0 |
+| waitHcastle7 | 3.2 | 2.8 | 0 | 0 | — | 0 | — | 3 | — | 3 |
+| waitHcastle8 | 3.1 | 2.4 | 0 | 0 | — | 0 | — | 0 | — | — |
+| waitHcastle9 | 3.3 | 2 | 0 | 0 | — | 0 | — | 8 | — | — |
 | xp@1h | 3.07e+4 | 3.07e+4 | 3.07e+4 | 1.36e+5 | 3.07e+4 | 3.07e+4 | 3.07e+4 | 5.55e+3 | 5.55e+3 | 5.55e+3 |
 | xp@4.5h | 1.36e+5 | 1.36e+5 | 1.36e+5 | 3.11e+5 | 1.36e+5 | 1.36e+5 | 1.36e+5 | 1.30e+5 | 1.30e+5 | 1.30e+5 |
 | xp@24h | 1.77e+6 | 1.64e+6 | 1.24e+7 | 1.90e+7 | 1.24e+7 | 1.24e+7 | 1.24e+7 | 2.97e+5 | 2.97e+5 | 2.97e+5 |
-| xp@72h | 2.06e+8 | 3.37e+8 | 6.15e+8 | 6.52e+8 | 5.06e+8 | 6.15e+8 | 5.06e+8 | 4.74e+6 | 4.74e+6 | 4.74e+6 |
-| xp@168h | 9.64e+8 | 1.33e+9 | 1.91e+9 | 1.97e+9 | — | 1.91e+9 | 2.17e+9 | 3.19e+8 | 3.06e+8 | 3.19e+8 |
-| xp@336h | — | — | — | — | — | — | 5.35e+9 | — | 6.08e+8 | 6.85e+8 |
-| xp@576h | — | — | — | — | — | — | 5.45e+9 | — | 1.23e+9 | 1.48e+9 |
-| xpAtRebirth1 | — | — | — | — | 3.72e+8 | 4.16e+9 | 3.72e+8 | — | 3.53e+8 | 3.67e+8 |
-| xpAtRebirth2 | — | — | — | — | 9.57e+8 | — | 9.57e+8 | — | 7.33e+8 | 8.29e+8 |
-| xpAtRebirth3 | — | — | — | — | 1.56e+9 | — | 1.56e+9 | — | 1.23e+9 | 1.48e+9 |
-| xpAtRebirth4 | — | — | — | — | — | — | 2.16e+9 | — | 1.82e+9 | 2.27e+9 |
-| xpAtRebirth5 | — | — | — | — | — | — | 2.87e+9 | — | 2.53e+9 | — |
-| xpAtRebirth6 | — | — | — | — | — | — | 3.68e+9 | — | — | — |
-| xpAtRebirth7 | — | — | — | — | — | — | 4.47e+9 | — | — | — |
+| xp@72h | 2.26e+8 | 3.95e+8 | 8.07e+8 | 8.43e+8 | 6.05e+8 | 8.07e+8 | 6.05e+8 | 4.74e+6 | 4.74e+6 | 4.74e+6 |
+| xp@168h | 1.36e+9 | 1.99e+9 | 2.66e+9 | 2.73e+9 | — | 2.66e+9 | 2.84e+9 | 3.19e+8 | 3.06e+8 | 3.19e+8 |
+| xp@336h | — | — | — | — | — | — | 4.69e+9 | — | 6.08e+8 | 7.03e+8 |
+| xp@576h | — | — | — | — | — | — | 4.78e+9 | — | 1.41e+9 | 1.76e+9 |
+| xpAtRebirth1 | — | — | — | — | 4.45e+8 | 5.38e+9 | 4.45e+8 | — | 3.53e+8 | 3.67e+8 |
+| xpAtRebirth2 | — | — | — | — | 1.13e+9 | — | 1.13e+9 | — | 8.28e+8 | 9.59e+8 |
+| xpAtRebirth3 | — | — | — | — | 1.96e+9 | — | 1.96e+9 | — | 1.49e+9 | 1.85e+9 |
+| xpAtRebirth4 | — | — | — | — | — | — | 2.74e+9 | — | 2.39e+9 | 3.11e+9 |
+| xpAtRebirth5 | — | — | — | — | — | — | 3.76e+9 | — | 3.56e+9 | — |
 
 Time to "finished" in each further run as a share of the first run:
 
 | profile | share of run 1 |
 | --- | --- |
-| hardcore-rebirth6 | run 2: 72 %, run 3: 68 %, run 4: 61 % |
+| hardcore-rebirth6 | run 2: 67 %, run 3: 62 %, run 4: 56 % |
 | hardcore-rebirth10 | run 2: 41 % |
-| hardcore-rebirth6-x10 | run 2: 72 %, run 3: 68 %, run 4: 61 %, run 5: 54 %, run 6: 56 %, run 7: 50 %, run 8: 48 % |
-| human-rebirth6 | run 2: 99 %, run 3: 102 %, run 4: 99 %, run 5: 105 %, run 6: 105 % |
-| human-rebirth8 | run 2: 99 %, run 3: 102 %, run 4: 99 %, run 5: 105 % |
+| hardcore-rebirth6-x10 | run 2: 67 %, run 3: 62 %, run 4: 56 %, run 5: 55 %, run 6: 57 % |
+| human-rebirth6 | run 2: 99 %, run 3: 99 %, run 4: 99 %, run 5: 99 %, run 6: 99 % |
+| human-rebirth8 | run 2: 99 %, run 3: 99 %, run 4: 99 %, run 5: 99 % |
 
 
 Minutes the income needs to cover what is still missing of each part of the next tile, right after the purchase that reached that tile count (first run; the biggest number holds the player back):
@@ -135,37 +121,37 @@ Minutes the income needs to cover what is still missing of each part of the next
 | idle | 150 | 22 | 0 | 26 | 0 | 0 | 1 |
 | idle | 200 | 23 | 12 | 24 | 0 | 0 | 0 |
 | idle | 300 | 13 | 10 | 15 | 0 | 0 | 0 |
-| idle | 400 | 50 | 24 | 33 | 0 | 0 | 3 |
+| idle | 400 | 35 | 18 | 25 | 0 | 0 | 2 |
 | casual | 100 | 30 | 0 | 51 | 0 | 0 | 0 |
 | casual | 150 | 0 | 0 | 0 | 0 | 0 | 0 |
 | casual | 200 | 15 | 2 | 12 | 0 | 0 | 0 |
 | casual | 300 | 14 | 8 | 10 | 4 | 0 | 2 |
-| casual | 400 | 45 | 21 | 25 | 0 | 0 | 3 |
+| casual | 400 | 27 | 16 | 19 | 0 | 0 | 2 |
 | hardcore | 100 | 23 | 11 | 17 | 6 | 0 | 6 |
 | hardcore | 150 | 0 | 3 | 7 | 0 | 0 | 4 |
 | hardcore | 200 | 0 | 4 | 8 | 0 | 0 | 6 |
 | hardcore | 300 | 0 | 5 | 7 | 1 | 0 | 3 |
-| hardcore | 400 | 0 | 10 | 15 | 0 | 0 | 13 |
+| hardcore | 400 | 0 | 6 | 10 | 0 | 0 | 8 |
 | autoclicker | 100 | 40 | 19 | 53 | 7 | 0 | 9 |
 | autoclicker | 150 | 0 | 3 | 15 | 0 | 0 | 8 |
 | autoclicker | 200 | 0 | 7 | 17 | 0 | 0 | 5 |
 | autoclicker | 300 | 0 | 6 | 10 | 1 | 0 | 4 |
-| autoclicker | 400 | 0 | 12 | 20 | 1 | 0 | 12 |
+| autoclicker | 400 | 0 | 9 | 16 | 1 | 0 | 9 |
 | hardcore-rebirth6 | 100 | 23 | 11 | 17 | 6 | 0 | 6 |
 | hardcore-rebirth6 | 150 | 0 | 3 | 7 | 0 | 0 | 4 |
 | hardcore-rebirth6 | 200 | 0 | 4 | 8 | 0 | 0 | 6 |
 | hardcore-rebirth6 | 300 | 0 | 5 | 7 | 1 | 0 | 3 |
-| hardcore-rebirth6 | 400 | 0 | 10 | 15 | 0 | 0 | 13 |
+| hardcore-rebirth6 | 400 | 0 | 6 | 10 | 0 | 0 | 8 |
 | hardcore-rebirth10 | 100 | 23 | 11 | 17 | 6 | 0 | 6 |
 | hardcore-rebirth10 | 150 | 0 | 3 | 7 | 0 | 0 | 4 |
 | hardcore-rebirth10 | 200 | 0 | 4 | 8 | 0 | 0 | 6 |
 | hardcore-rebirth10 | 300 | 0 | 5 | 7 | 1 | 0 | 3 |
-| hardcore-rebirth10 | 400 | 0 | 10 | 15 | 0 | 0 | 13 |
+| hardcore-rebirth10 | 400 | 0 | 6 | 10 | 0 | 0 | 8 |
 | hardcore-rebirth6-x10 | 100 | 23 | 11 | 17 | 6 | 0 | 6 |
 | hardcore-rebirth6-x10 | 150 | 0 | 3 | 7 | 0 | 0 | 4 |
 | hardcore-rebirth6-x10 | 200 | 0 | 4 | 8 | 0 | 0 | 6 |
 | hardcore-rebirth6-x10 | 300 | 0 | 5 | 7 | 1 | 0 | 3 |
-| hardcore-rebirth6-x10 | 400 | 0 | 10 | 15 | 0 | 0 | 13 |
+| hardcore-rebirth6-x10 | 400 | 0 | 6 | 10 | 0 | 0 | 8 |
 | human | 100 | 0 | 0 | 0 | 0 | 0 | 0 |
 | human | 150 | 0 | 0 | 0 | 0 | 0 | 0 |
 | human | 200 | 0 | 0 | 0 | 0 | 0 | 0 |
@@ -188,49 +174,47 @@ Measured with the real store at the checkpoints of docs/06; the last seed of eac
 
 | profile | checkpoint | measured | band | status |
 | --- | --- | --- | --- | --- |
-| idle | run 1, castle 10: gold per second | 3,880 | 2500-5000 | ok |
-| idle | run 1, castle 10: unspent gold (hours of income) | 0.1 | <= 4 | ok |
-| idle | run 1, castle 10: biggest stock (food, hours of production) | 13.5 | <= 24 | ok |
-| casual | run 1, castle 10: gold per second | 4,742 | 2500-5000 | ok |
-| casual | run 1, castle 10: unspent gold (hours of income) | 1.7 | <= 4 | ok |
-| casual | run 1, castle 10: biggest stock (food, hours of production) | 13.8 | <= 24 | ok |
-| hardcore | run 1, castle 10: gold per second | 5,122 | 2500-5000 | **outside** |
-| hardcore | run 1, castle 10: unspent gold (hours of income) | 391 | <= 4 | **outside** |
-| hardcore | run 1, castle 10: biggest stock (food, hours of production) | 6.1 | <= 24 | ok |
-| autoclicker | run 1, castle 10: gold per second | 4,531 | 2500-5000 | ok |
-| autoclicker | run 1, castle 10: unspent gold (hours of income) | 1,049 | <= 4 | **outside** |
-| autoclicker | run 1, castle 10: biggest stock (food, hours of production) | 6.8 | <= 24 | ok |
-| hardcore-rebirth6 | rebirth 1 at castle 6: Embers gained | 22 | 20-30 | ok |
+| idle | run 1, castle 10: gold per second | 4,523 | 2500-5000 | ok |
+| idle | run 1, castle 10: unspent gold (hours of income) | 0.6 | <= 4 | ok |
+| idle | run 1, castle 10: biggest stock (food, hours of production) | 17.4 | <= 24 | ok |
+| casual | run 1, castle 10: gold per second | 5,486 | 2500-5000 | **outside** |
+| casual | run 1, castle 10: unspent gold (hours of income) | 0.5 | <= 4 | ok |
+| casual | run 1, castle 10: biggest stock (food, hours of production) | 12.5 | <= 24 | ok |
+| hardcore | run 1, castle 10: gold per second | 5,478 | 2500-5000 | **outside** |
+| hardcore | run 1, castle 10: unspent gold (hours of income) | 1,255 | <= 4 | **outside** |
+| hardcore | run 1, castle 10: biggest stock (food, hours of production) | 63.8 | <= 24 | **outside** |
+| autoclicker | run 1, castle 10: gold per second | 4,905 | 2500-5000 | ok |
+| autoclicker | run 1, castle 10: unspent gold (hours of income) | 1,966 | <= 4 | **outside** |
+| autoclicker | run 1, castle 10: biggest stock (food, hours of production) | 62.9 | <= 24 | **outside** |
+| hardcore-rebirth6 | rebirth 1 at castle 6: Embers gained | 24 | 20-30 | ok |
 | hardcore-rebirth6 | rebirth 2 at castle 6: Embers gained | 26 | 20-30 | ok |
-| hardcore-rebirth6 | rebirth 3 at castle 6: Embers gained | 24 | 20-30 | ok |
-| hardcore-rebirth10 | run 1, castle 10: gold per second | 5,122 | 2500-5000 | **outside** |
-| hardcore-rebirth10 | run 1, castle 10: unspent gold (hours of income) | 391 | <= 4 | **outside** |
-| hardcore-rebirth10 | run 1, castle 10: biggest stock (food, hours of production) | 6.1 | <= 24 | ok |
-| hardcore-rebirth10 | rebirth 1 at castle 10: Embers gained | 334 | 80-130 | **outside** |
-| hardcore-rebirth6-x10 | rebirth 1 at castle 6: Embers gained | 22 | 20-30 | ok |
+| hardcore-rebirth6 | rebirth 3 at castle 6: Embers gained | 26 | 20-30 | ok |
+| hardcore-rebirth10 | run 1, castle 10: gold per second | 5,478 | 2500-5000 | **outside** |
+| hardcore-rebirth10 | run 1, castle 10: unspent gold (hours of income) | 1,255 | <= 4 | **outside** |
+| hardcore-rebirth10 | run 1, castle 10: biggest stock (food, hours of production) | 63.8 | <= 24 | **outside** |
+| hardcore-rebirth10 | rebirth 1 at castle 10: Embers gained | 606 | 80-130 | **outside** |
+| hardcore-rebirth6-x10 | rebirth 1 at castle 6: Embers gained | 24 | 20-30 | ok |
 | hardcore-rebirth6-x10 | rebirth 2 at castle 6: Embers gained | 26 | 20-30 | ok |
-| hardcore-rebirth6-x10 | rebirth 3 at castle 6: Embers gained | 24 | 20-30 | ok |
-| hardcore-rebirth6-x10 | rebirth 4 at castle 6: Embers gained | 23 | 20-30 | ok |
+| hardcore-rebirth6-x10 | rebirth 3 at castle 6: Embers gained | 26 | 20-30 | ok |
+| hardcore-rebirth6-x10 | rebirth 4 at castle 6: Embers gained | 22 | 20-30 | ok |
 | hardcore-rebirth6-x10 | rebirth 5 at castle 6: Embers gained | 23 | 20-30 | ok |
-| hardcore-rebirth6-x10 | rebirth 6 at castle 6: Embers gained | 23 | 20-30 | ok |
-| hardcore-rebirth6-x10 | rebirth 7 at castle 6: Embers gained | 22 | 20-30 | ok |
-| hardcore-rebirth6-x10 | after rebirth 5: lifetime Embers | 118 | 150-350 | **outside** |
-| hardcore-rebirth6-x10 | after rebirth 5: income multiplier at castle 6 (run 6 over run 1) | 3.3 | x3-6 | ok |
+| hardcore-rebirth6-x10 | after rebirth 5: lifetime Embers | 121 | 150-350 | **outside** |
+| hardcore-rebirth6-x10 | after rebirth 5: income multiplier at castle 6 (run 6 over run 1) | 3.6 | x3-6 | ok |
 | human | run 1, castle 10: gold per second | 4,712 | 2500-5000 | ok |
-| human | run 1, castle 10: unspent gold (hours of income) | 394 | <= 4 | **outside** |
-| human | run 1, castle 10: biggest stock (hide, hours of production) | 139 | <= 24 | **outside** |
+| human | run 1, castle 10: unspent gold (hours of income) | 467 | <= 4 | **outside** |
+| human | run 1, castle 10: biggest stock (hide, hours of production) | 145 | <= 24 | **outside** |
 | human-rebirth6 | rebirth 1 at castle 6: Embers gained | 19 | 20-30 | **outside** |
-| human-rebirth6 | rebirth 2 at castle 6: Embers gained | 19 | 20-30 | **outside** |
-| human-rebirth6 | rebirth 3 at castle 6: Embers gained | 20 | 20-30 | ok |
-| human-rebirth6 | rebirth 4 at castle 6: Embers gained | 21 | 20-30 | ok |
-| human-rebirth6 | rebirth 5 at castle 6: Embers gained | 21 | 20-30 | ok |
-| human-rebirth6 | after rebirth 5: lifetime Embers | 100 | 150-350 | **outside** |
-| human-rebirth6 | after rebirth 5: income multiplier at castle 6 (run 6 over run 1) | 1.7 | x3-6 | **outside** |
-| human-rebirth8 | rebirth 1 at castle 8: Embers gained | 58 | 50-70 | ok |
-| human-rebirth8 | rebirth 2 at castle 8: Embers gained | 58 | 50-70 | ok |
-| human-rebirth8 | rebirth 3 at castle 8: Embers gained | 62 | 50-70 | ok |
-| human-rebirth8 | rebirth 4 at castle 8: Embers gained | 63 | 50-70 | ok |
+| human-rebirth6 | rebirth 2 at castle 6: Embers gained | 20 | 20-30 | ok |
+| human-rebirth6 | rebirth 3 at castle 6: Embers gained | 21 | 20-30 | ok |
+| human-rebirth6 | rebirth 4 at castle 6: Embers gained | 22 | 20-30 | ok |
+| human-rebirth6 | rebirth 5 at castle 6: Embers gained | 23 | 20-30 | ok |
+| human-rebirth6 | after rebirth 5: lifetime Embers | 105 | 150-350 | **outside** |
+| human-rebirth6 | after rebirth 5: income multiplier at castle 6 (run 6 over run 1) | 2 | x3-6 | **outside** |
+| human-rebirth8 | rebirth 1 at castle 8: Embers gained | 81 | 50-70 | **outside** |
+| human-rebirth8 | rebirth 2 at castle 8: Embers gained | 86 | 50-70 | **outside** |
+| human-rebirth8 | rebirth 3 at castle 8: Embers gained | 90 | 50-70 | **outside** |
+| human-rebirth8 | rebirth 4 at castle 8: Embers gained | 93 | 50-70 | **outside** |
 
-13 lines outside the band.
+20 lines outside the band.
 
 Profiles: idle = never clicks; casual = 1 click/s for 3 h/day; hardcore = 4 clicks/s for 8 h/day; autoclicker = 20 clicks/s 24 h/day (the limiter should keep it at roughly hardcore pace).

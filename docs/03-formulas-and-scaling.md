@@ -7,7 +7,7 @@ Notation: `n` = tiles owned (castle included), `L` = player level, `C` = castle 
 ## 1. Tile cost
 
 ```
-base(n)  = floor(min(55 × 1.13^min(m, 15) × 1.07^(min(m, 100) − 15, ≥0) × 1.007^max(m − 100, 0) × (n / 300)^4.5 if n > 300, ceiling))
+base(n)  = floor(min(55 × 1.13^min(m, 15) × 1.07^(min(m, 100) − 15, ≥0) × 1.007^max(m − 100, 0) × (n / 300)^3.5 if n > 300, ceiling))
            with m = min(n, 300)                                                              SCALING_CONFIG.costFormula (tilePrice)
 gold     = floor(base × (1 − discount%/100))
 extra    = floor(base × share × (1 − discount%/100))  for each TILE_RESOURCE_COST row with n ≥ from
@@ -22,7 +22,7 @@ discount%= min(0.5 × Charisma, 25)
 
 Cumulative gold for the first 100 / 200 / 300 / 400 / 500 tiles: 1.6 M / 17 M / 48 M / 138 M / 412 M (the extra wood, stone, coal and food shares come on top).
 
-**The tail (no tile limit).** Up to 300 tiles the price is the three exponential stages (×1.13 to 15 tiles, ×1.07 to 100, then only ×1.007 per tile, the soft middle). Past `TILE_PRICE.tailFrom` (300) it grows like `(n / 300)^4.5` (`TILE_PRICE.tailExponent`), much steeper than the stretch before, and is capped at `TILE_PRICE.ceiling` (`RESOURCE_CAP / 100`), so it is always finite and a map of tens of thousands of tiles stays buyable (table in [generated/balance-tables.md](generated/balance-tables.md)). `RESOURCE_CAP` was raised from 1e15 to 1e21 for it. There is no tile limit any more (see 02 §1, map). The numbers are tuned with `npm run sim` against the pacing targets in [06](06-pacing-targets.md) (100 tiles within the first day, 200-300 tiles in 2-3 days, a visibly harder climb after 300) for a game that will later be built around rebirths (bigger starting resources, much bigger maps); the tail is also on the balance backlog in [ROADMAP](ROADMAP.md).
+**The tail (no tile limit).** Up to 300 tiles the price is the three exponential stages (×1.13 to 15 tiles, ×1.07 to 100, then only ×1.007 per tile, the soft middle). Past `TILE_PRICE.tailFrom` (300) it grows like `(n / 300)^3.5` (`TILE_PRICE.tailExponent`, 4.5 before IDL-181), clearly steeper than the stretch before, and is capped at `TILE_PRICE.ceiling` (`RESOURCE_CAP / 100`), so it is always finite and a map of tens of thousands of tiles stays buyable (table in [generated/balance-tables.md](generated/balance-tables.md)). `RESOURCE_CAP` was raised from 1e15 to 1e21 for it. There is no tile limit any more (see 02 §1, map). The numbers are tuned with `npm run sim` against the pacing targets in [06](06-pacing-targets.md) (100 tiles within the first day, 200-300 tiles in 2-3 days, a visibly harder climb after 300) for a game that will later be built around rebirths (bigger starting resources, much bigger maps); the tail is also on the balance backlog in [ROADMAP](ROADMAP.md).
 
 Every purchase rolls its biome (no picker). XP per purchase in §2.
 
@@ -151,9 +151,9 @@ Pacing is measured, not written here: `npm run sim` drives the real store with b
 ## 9. Rebirth and Embers
 
 ```
-available   : castle ≥ 6 (REBIRTH.minCastleLevel), tiles ≥ 400 + 25 per rebirth done (REBIRTH.tilesNeeded); Embers add 0.02 per tile above that inside the sqrt term's bracket, no castle upgrade running
-points      = floor(3 × (C − 5) × sqrt(n / 10))                     REBIRTH.gain
-income      × (1 + 0.06 × legacyEarned)                                folded into the modifiers, spending never lowers it
+available   : castle ≥ 6 (REBIRTH.minCastleLevel), tiles ≥ 400 + 50 per rebirth done (REBIRTH.tilesNeeded); Embers add 0.02 per tile above that inside the sqrt term's bracket, no castle upgrade running
+points      = floor(3 × (C − 5)^1.3 × (sqrt(n / 10) + 0.02 × (n − needed)))   REBIRTH.gain (castle term (C − 5)^1.3: IDL-183)
+income      × (1 + 0.1 × legacyEarned^0.6)                             folded into the modifiers, spending never lowers it
 shop cost   = ceil(base × 1.4^level)        base: thrift 2, builders 3, mastery 2, provisions 2; max level 10
 thrift      : tile and building cost × (1 − 0.02 × level); on tiles it is summed with Charisma and Bulk Discount and capped at 45 %, buildings take Thrift only
 builders    : castle build time × (1 − 0.05 × level)

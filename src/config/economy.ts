@@ -24,7 +24,7 @@ export const XP_CAP = RESOURCE_CAP;
 // bigger starting resources and bigger maps mean raising `tailFrom` or lowering `tailExponent` (docs/05, BL16).
 export const TILE_PRICE = {
 	tailFrom: 300,
-	tailExponent: 4.5,
+	tailExponent: 3.5, // was 4.5: the medium-map decision (IDL-79, applied in IDL-181)
 	ceiling: RESOURCE_CAP / 100,
 };
 
