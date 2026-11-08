@@ -1,0 +1,16 @@
+[
+	{"icon": "art_frostglass_boots", "item": "frostglass_boots", "file": "feet/frostglass_boots", "slot": "feet", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_sunsilk_boots", "item": "sunsilk_boots", "file": "feet/sunsilk_boots", "slot": "feet", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_plated_sabatons", "item": "plated_sabatons", "file": "feet/plated_sabatons", "slot": "feet", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_fur_lined_boots", "item": "fur_lined_boots", "file": "feet/fur_lined_boots", "slot": "feet", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_mossweave_boots", "item": "mossweave_boots", "file": "feet/mossweave_boots", "slot": "feet", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_drake_scale_boots", "item": "drake_scale_boots", "file": "feet/drake_scale_boots", "slot": "feet", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_ironbound_boots", "item": "ironbound_boots", "file": "feet/ironbound_boots", "slot": "feet", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_shadowstep_boots", "item": "shadowstep_boots", "file": "feet/shadowstep_boots", "slot": "feet", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_wanderer_boots", "item": "wanderer_boots", "file": "feet/wanderer_boots", "slot": "feet", "weapon": null, "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "item_leather_boots", "item": "leather_boots", "file": null, "slot": "feet", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
+	{"icon": "item_cloth_slippers", "item": "cloth_slippers", "file": null, "slot": "feet", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
+	{"icon": "item_steel_sabatons", "item": "steel_sabatons", "file": null, "slot": "feet", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
+	{"icon": "item_obsidian_sabatons", "item": "obsidian_sabatons", "file": null, "slot": "feet", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
+	{"icon": "item_rattatui_boots", "item": "rattatui_boots", "file": null, "slot": "feet", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
+]

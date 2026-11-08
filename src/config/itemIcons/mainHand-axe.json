@@ -1,0 +1,5 @@
+[
+	{"icon": "art_reapers_crescent", "item": "reapers_crescent", "file": "legendary/reapers_crescent", "slot": "mainHand", "weapon": "axe", "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "art_tidecaller_axe", "item": "tidecaller_axe", "file": "legendary/tidecaller_axe", "slot": "mainHand", "weapon": "axe", "grade": null, "provenance": "supplied 64 px art, Sprite Fusion; sheet and prompt not recorded (pre-registry)"},
+	{"icon": "item_battle_axe", "item": "battle_axe", "file": null, "slot": "mainHand", "weapon": "axe", "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
+]

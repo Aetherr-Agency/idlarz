@@ -126,4 +126,4 @@ Sheet: `sets/special-sets-palette-draft.png` (ramps are light to dark, the last 
 
 ## Provenance of anything cut from here
 
-(none yet; add one line per cut: file, cell, output name, where it was used)
+The registry is the record: every icon has a `provenance` string in `src/config/itemIcons/*.json` (sheet and cell, or the Sprite Fusion prompt). Add it in the same line as the icon; `python scripts/pixel/item_registry.py --provenance` lists them all. Today the 115 supplied 64 px pieces say "origin not recorded (pre-registry)" and the 78 built icons come from `scripts/pixel/sprites_gear.py`.

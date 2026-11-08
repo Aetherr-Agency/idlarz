@@ -1,0 +1,7 @@
+[
+	{"icon": "item_leather_pauldrons", "item": "leather_pauldrons", "file": null, "slot": "shoulder", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
+	{"icon": "item_cloth_mantle", "item": "cloth_mantle", "file": null, "slot": "shoulder", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
+	{"icon": "item_steel_pauldrons", "item": "steel_pauldrons", "file": null, "slot": "shoulder", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
+	{"icon": "item_obsidian_pauldrons", "item": "obsidian_pauldrons", "file": null, "slot": "shoulder", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"},
+	{"icon": "item_rattatui_shoulderpads", "item": "rattatui_shoulderpads", "file": null, "slot": "shoulder", "weapon": null, "grade": null, "provenance": "procedural, scripts/pixel/sprites_gear.py"}
+]

@@ -8,3 +8,4 @@ supabase
 *.md
 test-results
 playwright-report
+src/config/itemIcons

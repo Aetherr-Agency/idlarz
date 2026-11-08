@@ -1,6 +1,7 @@
 """Builds every pixel asset the game uses.   python scripts/pixel/build.py [name ...]
 
-  public/pixel/icons/  sprites (resources, menu, equipment, portraits, animals, gold shine strip)
+  public/pixel/icons/  sprites (resources, menu, equipment, portraits, animals, gold shine strip); the item_* ones are listed in
+                       src/config/itemIcons/*.json (the item icon registry, checked by item_registry.py before the build)
   public/pixel/ui/     frames, header chrome, HP/MP flask parts, stone XP bar, hero scene
   public/pixel/bg/     cracked-stone header tile, fog mist, biome ground swatches (dialogs, farm stage)
   public/pixel/terrain/ dual-grid map terrain: textures, shape atlases, sprite atlas (+ src/config/terrainAtlas.json)
@@ -39,6 +40,7 @@ import sprites_props  # noqa: E402
 import sprites_resources  # noqa: E402
 import sprites_resource_art  # noqa: E402
 import sprites_sheet  # noqa: E402
+import item_registry  # noqa: E402
 import terrain_art  # noqa: E402
 import terrain_build  # noqa: E402
 import terrain_preview  # noqa: E402
@@ -220,6 +222,9 @@ def main():
     refs = '--refs' in sys.argv
     only = set(a for a in sys.argv[1:] if not a.startswith('--'))
     started = time.time()
+    problems = item_registry.validate(SPRITES)      # src/config/itemIcons/*.json must match what is drawn
+    if problems:
+        sys.exit('item icon registry out of sync:\n  ' + '\n  '.join(problems))
     os.makedirs(PREVIEW, exist_ok=True)
 
     sprites = save_group('icons', SPRITES, only)
