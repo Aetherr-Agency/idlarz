@@ -9,7 +9,6 @@ import { generateLoot } from '../../src/lib/loot/generate';
 import { LOOT_DATA } from '../../src/lib/loot/data';
 import { eligibleCandidates } from '../../src/lib/loot/pools';
 import { mulberry32 } from '../../src/lib/rng';
-import { monsterStats } from '../../src/lib/monsters';
 import type { Drop } from '../../src/types/game';
 
 const ctx = { goldPerSec: 100, xpPerSec: 2, luck: 0 };
@@ -111,14 +110,14 @@ test('older rats unlock better material: steel from level 5, obsidian from level
 		for (const id of seen(level)) assert.ok(!ITEM_CATALOG[id].pools?.length || id.startsWith('potion'), `${id} is not a named item`);
 });
 
-test('gold and xp are seconds of income and scale with the monster level', () => {
-	const t1 = rollKillLoot(T1, ctx, () => 0.999);
-	assert.equal(t1.gold, 9000);
-	assert.equal(t1.xp, 180);
-	const seconds = monsterStats('thistleBoar', 3).rewardSec;
-	const t3 = rollKillLoot({ type: 'thistleBoar', level: 3 }, ctx, () => 0.999);
-	assert.equal(t3.gold, Math.floor(100 * seconds));
-	assert.equal(t3.xp, 2 * seconds);
+test('gold and xp are seconds of income (below the cap) and scale with the monster level', () => {
+	const low = { goldPerSec: 1, xpPerSec: 0.2, luck: 0 };
+	const t1 = rollKillLoot(T1, low, () => 0.999);
+	assert.equal(t1.gold, 90);
+	assert.equal(t1.xp, 18);
+	const t3 = rollKillLoot({ type: 'thistleBoar', level: 3 }, low, () => 0.999);
+	assert.equal(t3.gold, Math.floor(90 * 1.08 ** 2));
+	assert.ok(Math.abs(t3.xp - 18 * 1.08 ** 2) < 1e-9);
 	assert.ok(t3.gold > t1.gold);
 });
 
@@ -177,7 +176,7 @@ test('Gold Find raises kill gold by its percentage and leaves a plain kill alone
 });
 
 test("a kill pays pelts: a share of the farm hide income for the monster's reward seconds, nothing without a farm", () => {
-	const rat = monsterStats('thistleBoar', 5).rewardSec;
+	const rat = 90 * 1.08 ** 4;
 	assert.equal(rollKillLoot({ type: 'thistleBoar', level: 5 }, { ...ctx, hidePerSec: 4 }, () => 0.5).hide, Math.floor(4 * rat * COMBAT.rewards.hideShare));
 	assert.equal(rollKillLoot({ type: 'thistleBoar', level: 5 }, ctx, () => 0.5).hide, 0, 'no hide income, no pelts');
 	const king = rollKillLoot({ type: 'bossGreatAuroch', level: 15 }, { ...ctx, hidePerSec: 4 }, () => 0.5).hide;

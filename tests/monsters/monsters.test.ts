@@ -10,6 +10,7 @@ import {
 	maxLevelOf,
 	monsterAt,
 	monsterStats,
+	rewardLevelMult,
 	canSpawnOn,
 	pickSpawnTile,
 	rollSpawnLevel,
@@ -191,7 +192,10 @@ test('rat stats: level 1 is 100 HP, level 9 is the old tier 5 (506 HP); HP, atta
 	for (let l = 2; l <= 20; l++) {
 		const a = monsterStats('thistleBoar', l - 1);
 		const b = monsterStats('thistleBoar', l);
-		assert.ok(b.maxHp > a.maxHp && b.attack >= a.attack && b.armor >= a.armor && b.rewardSec > a.rewardSec, `level ${l}`);
+		assert.ok(
+			b.maxHp > a.maxHp && b.attack >= a.attack && b.armor >= a.armor && rewardLevelMult('thistleBoar', l) > rewardLevelMult('thistleBoar', l - 1),
+			`level ${l}`,
+		);
 	}
 	assert.equal(monsterStats('thistleBoar', 1).armor, 0);
 	assert.equal(monsterStats('thistleBoar', 1).critChance, 0);
