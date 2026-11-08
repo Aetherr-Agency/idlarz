@@ -1,4 +1,4 @@
-// The pure part of the pacing guard (scripts/pacing-guard.ts, tests/pacingGuard.test.ts): compares two sim baselines
+// The pure part of the pacing guard (scripts/pacing-guard.ts, tests/economy/pacingGuard.test.ts): compares two sim baselines
 // (docs/generated/sim-baseline.json, written by `npm run sim`) and lists the key milestones that moved by more than the tolerance.
 
 /** One profile's milestones, as game days (null = never reached within the sim's horizon). */

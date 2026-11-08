@@ -14,7 +14,7 @@ export const REBIRTH = {
 	tilesNeeded: (rebirths: number) => REBIRTH.minTiles + REBIRTH.tilesPerRebirth * Math.max(0, rebirths),
 	// income bonus = incomePerPoint x (Embers ever earned) ^ incomeExponent (spending points never lowers it). It was linear, +6 % per Ember,
 	// which made the first rebirth worth about +130-200 % and every later one snowball. Now about +64 % after 22 Embers, +100 % after 47,
-	// +134 % after 76, +220 % after 170 (balancing pass, measured with the sim; tests/rebirth.test.ts pins the curve)
+	// +134 % after 76, +220 % after 170 (balancing pass, measured with the sim; tests/economy/rebirth.test.ts pins the curve)
 	incomePerPoint: 0.1,
 	incomeExponent: 0.6,
 	discountCapPercent: 45, // Charisma + Thrift together can never take more than this off a tile

@@ -100,7 +100,7 @@ Each biome gets **3-4 monsters and one boss** (names are placeholders; ideas in 
 ## 7. Dev tools and testing
 
 - Dev panel (`GameDebug`): set rebirths, **unlock all biomes**, "grow N tiles outward" (extends `utils/growWorld.ts`, which already builds seeded worlds with `rollBiome`), paint a biome patch, teleport the camera. The unlock override is a parameter of the rule context, not a hack in the rules, and works only in dev builds; saves from a non-production server are already marked `test_account` and never ranked.
-- Tests: `tests/biomeSpawn.test.ts` gains distance and rebirth cases; a distribution test (1000 rolls at distance 12, 20, 35: new-biome share rises, basic never reaches 0); a no-regression test that with `rebirths = 0` the roll is identical to today's for the same seed (so existing saves and sim baselines do not move).
+- Tests: `tests/monsters/biomeSpawn.test.ts` gains distance and rebirth cases; a distribution test (1000 rolls at distance 12, 20, 35: new-biome share rises, basic never reaches 0); a no-regression test that with `rebirths = 0` the roll is identical to today's for the same seed (so existing saves and sim baselines do not move).
 - `npm run sim`: add a rebirth-aware expansion pattern so the sim can say how far a `human-rebirth6` run reaches by rebirth 5 (the real calibration of the minimum distances).
 
 ## 8. Game Guide and rollout

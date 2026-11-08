@@ -12,7 +12,7 @@ import { calculateCombatStats } from '@/utils/game/character';
 import type { CharacterStats, Equipment, EquipmentSlot, MonsterType } from '@/types/game';
 
 // A fight run by the server's own engine (lib/offline/fight.ts): used by scripts/fight-sim.ts to tune the monsters and the gear, and by
-// tests/fightBalance.test.ts to keep that tuning honest. The player swings at the weapon's attack speed, so there is no "click speed" any
+// tests/combat/fightBalance.test.ts to keep that tuning honest. The player swings at the weapon's attack speed, so there is no "click speed" any
 // more: a fight is decided by gear, attributes, potions and skills alone. Pure apart from the sealed random stream, which a seed picks.
 
 export const freshCharacter = (): CharacterStats => {

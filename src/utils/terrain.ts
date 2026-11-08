@@ -9,7 +9,7 @@ import { getTile, inRange, tileKey, type World } from './world';
  * RANK (the higher ground draws its own rim over the lower one). Interior tiles get deeper tiers (`lake_d1`,
  * `hills_d2`, ...) and a few sprites (trees, rocks, docks) are placed by hash.
  *
- * This file is a line-for-line port of scripts/pixel/terrain_logic.py (integer maths only); tests/terrain.test.ts
+ * This file is a line-for-line port of scripts/pixel/terrain_logic.py (integer maths only); tests/world/terrain.test.ts
  * checks it against tests/fixtures/terrain-parity.json written by the Python build, so art previews and game agree.
  */
 export const CELL = 48;

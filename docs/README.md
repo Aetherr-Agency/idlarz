@@ -45,7 +45,7 @@ npm run sim -- --maxdays=60 hardcore      # stop early
 npm run sim -- --no-write hardcore        # print only, leave the file alone
 npm run sim -- --legacy hardcore          # approximate the pre-rebalance game
 npm run sim -- --set=SCALING_CONFIG.growthLate=1.25 castleCostScale=...   # try a tweak without editing files
-npm run catalog-report        # the two sets, their items, affixes, loot sources -> docs/generated/item-catalog.md (tests/catalogDoc.test.ts keeps it current)
+npm run catalog-report        # the two sets, their items, affixes, loot sources -> docs/generated/item-catalog.md (tests/catalog/catalogDoc.test.ts keeps it current)
 npm run fight-sim -- --md     # fight balance tables -> docs/generated/fight-sim.md (without --md it only prints)
 npm run monster-ladder -- --md # which gear tier beats which monster at which level -> docs/generated/monster-ladder.md
 npm run loot-sim -- --md      # seeded loot simulation -> docs/generated/loot-sim.md (without --md it only prints)
@@ -59,5 +59,5 @@ Run `npm run docs:gen` and commit the diff whenever balance values change.
 ## Conventions
 
 - Rates are per second and *before* modifiers unless stated; modifiers are fractions (0.25 = +25 %).
-- Anything that moves resources must be validated in the store action and covered in `tests/economy.test.ts`; anything that is saved must be validated in `src/lib/sanitizeSave.ts` ([07](07-saves-and-security.md)); anything that decides a reward or a fight lives on the server side ([11](11-server-authority.md)).
+- Anything that moves resources must be validated in the store action and covered in `tests/economy/economy.test.ts`; anything that is saved must be validated in `src/lib/sanitizeSave.ts` ([07](07-saves-and-security.md)); anything that decides a reward or a fight lives on the server side ([11](11-server-authority.md)).
 - When a doc and the code disagree, the code wins; fix the doc in the same change.

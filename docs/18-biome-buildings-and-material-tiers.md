@@ -64,7 +64,7 @@ The tiers become a ladder with one job each, so crafting recipes ([17](17-crafti
 
 Rules: the **merchant trades T0 and T1 only** (your instruction); T2-T4 are crafting and building-upgrade inputs, so they have a real sink and cannot be converted to gold. This replaces the earlier idea in [12](12-rebirth-biomes.md) of selling Hardwood, Cloth and Honey (flagged there). Higher tiers appear in recipes in order: basic gear = T0/T1, the middle tiers = T2 + T3, the top tiers and enchanted crafts = T3 + T4 plus Ichor/Medals. Building upgrades past level 3 also take T2/T3 (so Extractors feed the economy as well as crafting).
 
-**Prerequisite refactor (S-M): one source for resource keys.** Adding 12 extracts and 5 T2 materials to the hand-kept lists (`Resources`, `INITIAL_RESOURCES`, `BASE_GENERATION_RATES`, `CASTLE_BASE_RATES`, `zeroResources`, `sanitizeSave` `OPTIONAL_RESOURCES`, `offline/grant.ts`, `offline/ledger.ts` `zeroTotals`) is the biggest source of mistakes in the whole plan. First derive them all from `RESOURCES` in `catalog/resources.ts` (one entry per resource; tier, label, icon, merchant price), and keep `tests/catalog.test.ts` as the guard. Then adding a material is one catalog entry plus its source and sink.
+**Prerequisite refactor (S-M): one source for resource keys.** Adding 12 extracts and 5 T2 materials to the hand-kept lists (`Resources`, `INITIAL_RESOURCES`, `BASE_GENERATION_RATES`, `CASTLE_BASE_RATES`, `zeroResources`, `sanitizeSave` `OPTIONAL_RESOURCES`, `offline/grant.ts`, `offline/ledger.ts` `zeroTotals`) is the biggest source of mistakes in the whole plan. First derive them all from `RESOURCES` in `catalog/resources.ts` (one entry per resource; tier, label, icon, merchant price), and keep `tests/catalog/catalog.test.ts` as the guard. Then adding a material is one catalog entry plus its source and sink.
 
 ## 5. Upgrades and timers
 
@@ -77,7 +77,7 @@ Rules: the **merchant trades T0 and T1 only** (your instruction); T2-T4 are craf
 - **Save**: today a tile with a building "never has a level" (`sanitizeSave`). Buildings need `level` (and `upgradeEndsAt`/remaining seconds) as **optional** tile fields in `extra`. No `SAVE_SCHEMA` bump: absent means level 1.
 
 ### 5.1 Castle timers (built, and changed)
-Built in the balancing pass, with other numbers than this section proposed: all nine timers were halved (30 min, 2 h, 6 h, 12 h, 24 h, 1.5 d, 2 d, 2.5 d, 3.5 d; `CASTLE_UPGRADE.durationsSec`, pinned in `tests/castle.test.ts`). Levels 2-6 take 1 d 20 h 30 min, level 10 comes after 11 d 8 h 30 min. Still open: the first five castle costs x0.75 (see [19](19-first-build-steps.md)) and a combined cap on Master Builders (-5 %/level) plus the Dwarf Statue (proposal 60 %).
+Built in the balancing pass, with other numbers than this section proposed: all nine timers were halved (30 min, 2 h, 6 h, 12 h, 24 h, 1.5 d, 2 d, 2.5 d, 3.5 d; `CASTLE_UPGRADE.durationsSec`, pinned in `tests/economy/castle.test.ts`). Levels 2-6 take 1 d 20 h 30 min, level 10 comes after 11 d 8 h 30 min. Still open: the first five castle costs x0.75 (see [19](19-first-build-steps.md)) and a combined cap on Master Builders (-5 %/level) plus the Dwarf Statue (proposal 60 %).
 
 ### 5.2 Roads (decided 2026-10-29)
 
