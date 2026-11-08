@@ -6,3 +6,5 @@ public
 art_style_reference
 supabase
 *.md
+test-results
+playwright-report
