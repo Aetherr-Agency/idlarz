@@ -6,6 +6,12 @@ Not diffed: UI descriptions (docs 02 §12, §14, the controls in §16) were not 
 
 Severity: **H** = a reader would build or balance on a wrong number; **M** = wrong but unlikely to mislead; **L** = wording or naming.
 
+## Status (2026-11-08)
+
+- **A (stale docs):** fixed. Docs 02, 03, 10, 11, 24 in PR #111; docs 07, 09 and 20 in the follow-up that also did B1-B4 and B7 (the tables below keep the original findings as the audit record).
+- **B1** fixed: the client heals after the same gap as the server (`UNCLAIMED_SEC`, now in `src/lib/offline/grant.ts`). **B2** fixed: the tooltip and the maths read `CHARACTER_STAT_CONFIG.hpPerPoint` and `critChancePercentPerPoint`. **B3, B4, B7** fixed (comment, dead `docs/05` pointers, "Two sets" text).
+- **B5** → IDL-221 (ticket cap and lakes). **B9** → IDL-222 (bosses, needs an owner decision). **B8** → IDL-223 (owner decision). **B6** was already resolved by IDL-169. **24.1** stays open as IDL-59.
+
 ## A. Stale statements in the old docs
 
 ### Doc 02 (mechanics)

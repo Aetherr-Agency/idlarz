@@ -12,7 +12,7 @@ export const BASE_XP_PER_TILE = 45; // was 125 (pacing commit): tile XP is now t
 // Hard limits shared by the tick loop and save validation
 export const MAX_CATCHUP_SEC = 300; // one tick never advances the game by more than this (clock edits, device sleep)
 // Every stockpile, XP included, stops here; a save above it is considered tampered. Raised from 1e15 so a map of tens of
-// thousands of tiles stays buyable (see TILE_PRICE and docs/05 BL16).
+// thousands of tiles stays buyable (see TILE_PRICE).
 export const RESOURCE_CAP = 1e21;
 export const XP_CAP = RESOURCE_CAP;
 
@@ -21,7 +21,7 @@ export const XP_CAP = RESOURCE_CAP;
 // for as long as the player keeps earning. `ceiling` keeps the price a finite, affordable-in-principle number.
 // The first 300 tiles are the "fill the map" part of a run (about 2-3 days); past them the price climbs much faster than the
 // income, so 400 tiles take about twice as long per 100 as the stretch before. This is the knob for the later rebirth design:
-// bigger starting resources and bigger maps mean raising `tailFrom` or lowering `tailExponent` (docs/05, BL16).
+// bigger starting resources and bigger maps mean raising `tailFrom` or lowering `tailExponent`.
 export const TILE_PRICE = {
 	tailFrom: 300,
 	tailExponent: 3.5, // was 4.5: the medium-map decision (IDL-79, applied in IDL-181)

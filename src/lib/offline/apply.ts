@@ -5,7 +5,7 @@ import { gearIncomePct } from '@/lib/gearEconomy';
 import type { LimitContext } from '@/lib/limits';
 import { afterAbsence } from '@/lib/merchant';
 import { advanceMonsters } from '@/lib/monsters';
-import type { OfflineGrant } from '@/lib/offline/grant';
+import { UNCLAIMED_SEC, type OfflineGrant } from '@/lib/offline/grant';
 import { calculateLevel, totalStatPoints } from '@/utils/game/character';
 import { calculateResourceRates } from '@/utils/game/income';
 import { getTile, setTile } from '@/utils/world';
@@ -42,9 +42,6 @@ export interface OfflineReport {
 	/** The gem balance the server holds */
 	gems: number;
 }
-
-/** An absence at least this long heals the hero completely. */
-const FULL_HEAL_AFTER_SEC = 600;
 
 export const applyOfflineGrant = (
 	state: OfflineStateIn,
@@ -98,7 +95,7 @@ export const applyOfflineGrant = (
 		levelsGained > 0
 			? { ...state.characterStats, availablePoints: state.characterStats.availablePoints + totalStatPoints(level) - totalStatPoints(state.level.level) }
 			: state.characterStats;
-	const healed = grant.gapSec >= FULL_HEAL_AFTER_SEC;
+	const healed = grant.gapSec > UNCLAIMED_SEC;
 	// the merchant's clocks count play time: the absence counts for them too
 	const merchant =
 		state.merchantRefresh && state.playSeconds !== undefined

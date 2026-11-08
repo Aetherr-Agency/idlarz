@@ -52,7 +52,7 @@ export const renderItemCatalog = (): string => {
 	out('## Sets');
 	out();
 	out(
-		'Two sets exist for now. Every threshold reached applies, so the bonuses add up; both rings count. The wood, cloth and steel families are plain loot (no set bonus), and so are the three legendary weapons and the potions: they are left out of this file until they get a role.',
+		'Every threshold reached applies, so the bonuses add up; both rings count. The wood, cloth and steel families are plain loot (no set bonus), and so are the three legendary weapons and the potions: they are left out of this file until they get a role.',
 	);
 	out();
 	out(

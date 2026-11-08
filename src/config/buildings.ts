@@ -76,7 +76,7 @@ export const BUILDINGS: Record<BuildingType, Building> = {
 			xp: 0.2,
 		},
 	},
-	// Round 2 buildings: every output is an existing resource (tuning notes in docs/05)
+	// Round 2 buildings: every output is an existing resource
 	lumbercamp: { name: 'lumbercamp', label: 'Lumber Camp', resourceGeneration: { wood: 0.18 } },
 	quarry: { name: 'quarry', label: 'Quarry', resourceGeneration: { stone: 0.25 } },
 	fishinghut: { name: 'fishinghut', label: 'Fishing Hut', resourceGeneration: { food: 0.16, gold: 0.05 } },

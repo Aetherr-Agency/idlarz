@@ -56,7 +56,7 @@ Reference images in this folder: `icons.png` (icon set), `characters.png` (heroe
   gold (faceted nuggets), wood (log pile), stone (grey boulders), coal (charcoal lumps), meat (roast drumstick), gems (the green gem on its moss, the **rebirth currency**).
   The sheet has no bread or emerald shard, so `food` (two carrots, so it is never mistaken for gold) and `res_shard` stay procedural, as do the farm products `eggs` (three eggs on straw),
   `milk` (a stoppered bottle) and `hide` (a rolled, corded hide). xp is the purple orb.
-  **Reserved, art only** (`res_iron`, `res_fish`, `res_mana`, `res_crystal`, `res_sapphire`, `res_shard`, `res_mystery`; no game resource yet, see `RESERVED_RESOURCES` and docs/05 BL14): navy iron ore,
+  **Reserved, art only** (`res_iron`, `res_fish`, `res_mana`, `res_crystal`, `res_sapphire`, `res_shard`, `res_mystery`; no game resource yet, see `RESERVED_RESOURCES`): navy iron ore,
   a blue fish, a violet crystal cluster, a blue crystal cluster, a tall blue crystal, a green ability shard and a gold-cornered crate with a "?" plaque.
   **Twinkle strips** (`<name>_shine.png`, 6 frames, `sprites_sheet.py`): gold, gems, both blue crystals, mana and the crate; played by the generic stepped `.px-shine` / `PixelSheet`
   (`PixelIcon shine`), reduced-motion safe.
