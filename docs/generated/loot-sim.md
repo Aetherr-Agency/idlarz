@@ -8,30 +8,30 @@ Config validation: 0 errors, 0 warnings.
 
 | Source | Source level | Gear / kill | Common | Uncommon | Rare | Epic | Legendary | Item level p50 / p90 / max | P(epic+ per kill) | Named / kill | Empty-pool warnings |
 |---|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|
-| Rat level 1 | 1 | 0.119 | 76.4% | 23.6% | 0.0% | 0.0% | 0.0% | 1 / 2 / 2 | 0.0% | 0.0000 | 0 |
-| Rat level 5 | 5 | 0.160 | 70.7% | 22.0% | 7.3% | 0.0% | 0.0% | 5 / 6 / 6 | 0.0% | 0.0000 | 0 |
-| Rat level 9 | 9 | 0.201 | 70.2% | 21.6% | 7.1% | 1.1% | 0.0% | 9 / 10 / 10 | 0.2% | 0.0000 | 0 |
-| Rat level 15 | 15 | 0.260 | 70.1% | 21.9% | 6.8% | 1.0% | 0.1% | 15 / 16 / 16 | 0.3% | 0.0000 | 0 |
-| Rat level 20 | 20 | 0.310 | 70.0% | 21.7% | 7.1% | 1.1% | 0.2% | 20 / 21 / 21 | 0.4% | 0.0000 | 0 |
-| Rat King level 15 | 15 | 2.451 | 8.2% | 12.3% | 12.3% | 63.2% | 4.1% | 15 / 15 / 15 | 100.0% | 1.4510 | 0 |
-| Rat King level 25 | 25 | 2.451 | 8.2% | 12.3% | 12.3% | 63.2% | 4.1% | 25 / 25 / 25 | 100.0% | 1.4510 | 0 |
-| Rat King level 35 | 35 | 2.451 | 8.2% | 12.3% | 12.3% | 63.2% | 4.1% | 35 / 35 / 35 | 100.0% | 1.4510 | 0 |
+| Monster level 1 | 1 | 0.119 | 76.4% | 23.6% | 0.0% | 0.0% | 0.0% | 1 / 2 / 2 | 0.0% | 0.0000 | 0 |
+| Monster level 5 | 5 | 0.160 | 70.7% | 22.0% | 7.3% | 0.0% | 0.0% | 5 / 6 / 6 | 0.0% | 0.0000 | 0 |
+| Monster level 9 | 9 | 0.201 | 70.2% | 21.6% | 7.1% | 1.1% | 0.0% | 9 / 10 / 10 | 0.2% | 0.0000 | 0 |
+| Monster level 15 | 15 | 0.260 | 70.1% | 21.9% | 6.8% | 1.0% | 0.1% | 15 / 16 / 16 | 0.3% | 0.0000 | 0 |
+| Monster level 20 | 20 | 0.310 | 70.0% | 21.7% | 7.1% | 1.1% | 0.2% | 20 / 21 / 21 | 0.4% | 0.0000 | 0 |
+| Boss level 15 | 15 | 2.451 | 8.2% | 12.3% | 12.3% | 63.2% | 4.1% | 15 / 15 / 15 | 100.0% | 1.4510 | 0 |
+| Boss level 25 | 25 | 2.451 | 8.2% | 12.3% | 12.3% | 63.2% | 4.1% | 25 / 25 / 25 | 100.0% | 1.4510 | 0 |
+| Boss level 35 | 35 | 2.451 | 8.2% | 12.3% | 12.3% | 63.2% | 4.1% | 35 / 35 / 35 | 100.0% | 1.4510 | 0 |
 | Chest, castle 1 | 4 | 0.825 | 63.6% | 24.9% | 9.2% | 0.0% | 2.3% | 4 / 5 / 5 | 1.9% | 0.0186 | 0 |
 | Chest, castle 5 | 16 | 0.823 | 60.4% | 23.6% | 8.8% | 3.9% | 3.3% | 16 / 17 / 17 | 5.9% | 0.0190 | 0 |
 | Chest, castle 10 | 31 | 0.823 | 60.4% | 23.6% | 8.8% | 3.9% | 3.3% | 31 / 32 / 32 | 5.9% | 0.0190 | 0 |
 
 ## What Luck does
 
-Rat level 9 and a castle 5 chest at several Luck totals (Charisma + Lucky Charm + gear). Gems and lucky monsters exist only for signed-in players (the server rolls them).
+A level 9 monster and a castle 5 chest at several Luck totals (Charisma + Lucky Charm + gear). Gems and lucky monsters exist only for signed-in players (the server rolls them).
 
-| Luck | Chest every | Rat gear / kill | Rare+ share of rat gear | Rare+ share of chest gear | Gem find / chest | Gems / chest | Lucky rat |
+| Luck | Chest every | Monster gear / kill | Rare+ share of monster gear | Rare+ share of chest gear | Gem find / chest | Gems / chest | Golden monster |
 |---:|---:|---:|---:|---:|---:|---:|---:|
-| 0 | 10.0 min | 0.000 | - | 16.0% | 3.0% | 0.59 | 2.0% |
-| 10 | 9.6 min | 0.000 | - | 16.5% | 3.6% | 0.71 | 2.5% |
-| 30 | 8.9 min | 0.000 | - | 17.3% | 4.8% | 0.95 | 3.5% |
-| 60 | 8.1 min | 0.000 | - | 18.5% | 6.6% | 1.32 | 5.0% |
-| 100 | 7.1 min | 0.000 | - | 20.0% | 9.0% | 1.79 | 7.0% |
-| 200 | 6.0 min | 0.000 | - | 22.1% | 15.0% | 2.99 | 10.0% |
+| 0 | 10.0 min | 0.201 | 8.2% | 16.0% | 3.0% | 0.59 | 2.0% |
+| 10 | 9.6 min | 0.204 | 8.5% | 16.5% | 3.6% | 0.71 | 2.5% |
+| 30 | 8.9 min | 0.212 | 9.0% | 17.3% | 4.8% | 0.95 | 3.5% |
+| 60 | 8.1 min | 0.224 | 9.7% | 18.5% | 6.6% | 1.32 | 5.0% |
+| 100 | 7.1 min | 0.240 | 10.7% | 20.0% | 9.0% | 1.79 | 7.0% |
+| 200 | 6.0 min | 0.281 | 12.4% | 22.1% | 15.0% | 2.99 | 10.0% |
 
 ## Item power over the level range
 
@@ -42,7 +42,6 @@ Base stats of a few items at item level 1, 10, 25, 50, 100 (common, quality 50, 
 | Wooden Sword (damage) | 6 | 10 | (20) 14 | (20) 14 | (20) 14 |
 | Iron Sword (damage) | (4) 12 | 16 | 27 | 44 | (50) 44 |
 | Obsidian Blade (damage) | (8) 18 | 20 | 32 | 54 | 96 |
-| Rattatui Fang Blade (damage) | (10) 24 | 24 | 39 | 65 | 117 |
 | Emberbrand (damage) | (3) 33 | 47 | 78 | 128 | 230 |
 | Steel Cuirass (armor) | (4) 7 | 9 | 16 | 26 | (50) 26 |
 

@@ -29,14 +29,14 @@ interface Scenario {
 }
 
 const SCENARIOS: Scenario[] = [
-	{ label: 'Rat level 1', sourceId: 'monster', level: 1 },
-	{ label: 'Rat level 5', sourceId: 'monster', level: 5 },
-	{ label: 'Rat level 9', sourceId: 'monster', level: 9 },
-	{ label: 'Rat level 15', sourceId: 'monster', level: 15 },
-	{ label: 'Rat level 20', sourceId: 'monster', level: 20 },
-	{ label: 'Rat King level 15', sourceId: 'boss', level: 15 },
-	{ label: 'Rat King level 25', sourceId: 'boss', level: 25 },
-	{ label: 'Rat King level 35', sourceId: 'boss', level: 35 },
+	{ label: 'Monster level 1', sourceId: 'monster', level: 1 },
+	{ label: 'Monster level 5', sourceId: 'monster', level: 5 },
+	{ label: 'Monster level 9', sourceId: 'monster', level: 9 },
+	{ label: 'Monster level 15', sourceId: 'monster', level: 15 },
+	{ label: 'Monster level 20', sourceId: 'monster', level: 20 },
+	{ label: 'Boss level 15', sourceId: 'boss', level: 15 },
+	{ label: 'Boss level 25', sourceId: 'boss', level: 25 },
+	{ label: 'Boss level 35', sourceId: 'boss', level: 35 },
 	{ label: 'Chest, castle 1', sourceId: 'chest', castleLevel: 1 },
 	{ label: 'Chest, castle 5', sourceId: 'chest', castleLevel: 5 },
 	{ label: 'Chest, castle 10', sourceId: 'chest', castleLevel: 10 },
@@ -101,10 +101,12 @@ out();
 out('## What Luck does');
 out();
 out(
-	'Rat level 9 and a castle 5 chest at several Luck totals (Charisma + Lucky Charm + gear). Gems and lucky monsters exist only for signed-in players (the server rolls them).',
+	'A level 9 monster and a castle 5 chest at several Luck totals (Charisma + Lucky Charm + gear). Gems and lucky monsters exist only for signed-in players (the server rolls them).',
 );
 out();
-out('| Luck | Chest every | Rat gear / kill | Rare+ share of rat gear | Rare+ share of chest gear | Gem find / chest | Gems / chest | Lucky rat |');
+out(
+	'| Luck | Chest every | Monster gear / kill | Rare+ share of monster gear | Rare+ share of chest gear | Gem find / chest | Gems / chest | Golden monster |',
+);
 out('|---:|---:|---:|---:|---:|---:|---:|---:|');
 for (const luck of [0, 10, 30, 60, 100, 200]) {
 	const share = (sourceId: string, level: number | undefined, castleLevel: number | undefined) => {
@@ -120,13 +122,13 @@ for (const luck of [0, 10, 30, 60, 100, 200]) {
 		}
 		return { perKill: gear / KILLS, rare: pct(rare, gear) };
 	};
-	const rat = share('thistleBoar', 9, undefined);
+	const monster = share('monster', 9, undefined);
 	const chest = share('chest', undefined, 5);
 	const rng = mulberry32(SEED + 1);
 	let gems = 0;
 	for (let i = 0; i < KILLS; i++) gems += rollGemFind(luck, rng);
 	out(
-		`| ${luck} | ${(chestIntervalSec(luck) / 60).toFixed(1)} min | ${rat.perKill.toFixed(3)} | ${rat.rare} | ${chest.rare} | ${(gemChance(luck) * 100).toFixed(1)}% | ${(gems / KILLS).toFixed(2)} | ${(luckyRatChance(luck) * 100).toFixed(1)}% |`,
+		`| ${luck} | ${(chestIntervalSec(luck) / 60).toFixed(1)} min | ${monster.perKill.toFixed(3)} | ${monster.rare} | ${chest.rare} | ${(gemChance(luck) * 100).toFixed(1)}% | ${(gems / KILLS).toFixed(2)} | ${(luckyRatChance(luck) * 100).toFixed(1)}% |`,
 	);
 }
 
@@ -137,7 +139,7 @@ out(
 	'Base stats of a few items at item level 1, 10, 25, 50, 100 (common, quality 50, no affixes), straight from the level curve. Items below their first level are shown at it.',
 );
 out();
-const SAMPLE = ['wooden_sword', 'iron_sword', 'obsidian_blade', 'rattatui_fang_blade', 'emberbrand', 'steel_cuirass'];
+const SAMPLE = ['wooden_sword', 'iron_sword', 'obsidian_blade', 'emberbrand', 'steel_cuirass'];
 const LEVELS = [1, 10, 25, 50, 100];
 out('| Item | ' + LEVELS.map((l) => `L${l}`).join(' | ') + ' |');
 out('|---|' + LEVELS.map(() => '---').join('|') + '|');
