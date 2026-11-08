@@ -55,7 +55,7 @@ modifiers[r] = castleModifier(C)                    castle, all resources (§4)
              + stat modifiers                       2.5 % per point, see 02 §11 (XP: +0.2 %/INT, +0.25 %/CHA)
              + 0.05 × plainsTiles                   (r = meat only)
 
-total[r] = base[r] × (1 + modifiers[r]) × (1 + 0.06 × embersEarned) × (1 + Foreman) × (1 + setIncomePct/100)     (second factor only after a Rebirth, §9; Foreman = merchant upgrade, +1 % per level; the set Income % comes from the worn Obsidian set; both on every resource but XP)
+total[r] = base[r] × (1 + modifiers[r]) × (1 + 0.1 × embersEarned^0.6) × (1 + Foreman) × (1 + setIncomePct/100)     (second factor only after a Rebirth, §9; Foreman = merchant upgrade, +1 % per level; the set Income % comes from the worn Obsidian set; both on every resource but XP)
 
 The merchant's Skinner upgrade (+5 % per level) multiplies the farm's meat and hide inside `base` before the modifiers.
 ```
@@ -78,15 +78,15 @@ upgrade C→C+1      = pay upgradeCosts[C−1] up front, then wait durationsSec[
 
 | Upgrade | Build time | gold | wood | stone | coal | food | meat |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1→2 | 1 h | 70 K | 10 K | 10 K | — | — | — |
-| 2→3 | 4 h | 200 K | 30 K | 30 K | 20 K | — | — |
-| 3→4 | 12 h | 1 M | 100 K | 100 K | 50 K | 200 K | 40 K |
-| 4→5 | 1 d | 4 M | 400 K | 400 K | 200 K | 2 M | 100 K |
-| 5→6 | 2 d | 8 M | 2 M | 2 M | 1 M | 4 M | 500 K |
-| 6→7 | 3 d | 30 M | 3 M | 3 M | 1.6 M | 16 M | 800 K |
-| 7→8 | 4 d | 48 M | 4.8 M | 4.8 M | 2.6 M | 25.6 M | 1.28 M |
-| 8→9 | 5 d | 76.8 M | 7.6 M | 7.6 M | 4 M | 41 M | 2 M |
-| 9→10 | 7 d | 122.8 M | 12.2 M | 12.2 M | 6.6 M | 65.6 M | 3.2 M |
+| 1→2 | 30 min | 70 K | 10 K | 10 K | — | — | — |
+| 2→3 | 2 h | 200 K | 30 K | 30 K | 20 K | — | — |
+| 3→4 | 6 h | 1 M | 100 K | 100 K | 50 K | 200 K | 40 K |
+| 4→5 | 12 h | 4 M | 400 K | 400 K | 200 K | 2 M | 100 K |
+| 5→6 | 24 h | 8 M | 2 M | 2 M | 1 M | 4 M | 500 K |
+| 6→7 | 1.5 d | 30 M | 3 M | 3 M | 1.6 M | 16 M | 800 K |
+| 7→8 | 2 d | 48 M | 4.8 M | 4.8 M | 2.6 M | 25.6 M | 1.28 M |
+| 8→9 | 2.5 d | 76.8 M | 7.6 M | 7.6 M | 4 M | 41 M | 2 M |
+| 9→10 | 3.5 d | 122.8 M | 12.2 M | 12.2 M | 6.6 M | 65.6 M | 3.2 M |
 
 Build time to level 6 is 1 d 20 h 30 min (30 min + 2 h + 6 h + 12 h + 1 d), to level 10 11 d 8 h 30 min (before Ember discounts); the timers are the floor of the first run, so the cost of 5→6 is what a player who plays a few times a day must be able to pay while the 4→5 timer runs. Cost rows come straight from `CASTLE_UPGRADE.upgradeCosts`; the generated tables show the same numbers.
 
@@ -131,7 +131,7 @@ item:  sell = floor(rarityValue × valueCurve(level) × qualityValue × affixesV
        valueCurve = 1.3^(min(L,10)−1) × 1.12^max(0,L−10);  qualityValue 0.75..1.25;  affixesValue = 1 + Σ(0.15 + 0.35 × roll/100)   (ITEM_VALUE in catalog/stats.ts)
        supplies (potions) price >= 3 × sellValue (> 3.9 × with a max Haggler), so buy + sell never gains gold
 goods: shelf = 6 pieces of loot source `merchant` (profile `merchant_stock`: common 60 / uncommon 40, nothing better); item level centre = min(castle-based level, avgWorn + 3), never above avgWorn + 5 (MERCHANT_GOODS)
-       price = ceil(sellValue × 5), reshuffle after 1800 s of play time, refresh = 5000 × (k+1) for the k-th paid refresh (k < 10), then 50000 × (k−8) (MERCHANT_GOODS.refresh)
+       price = ceil(sellValue × 5), reshuffle after 1800 s of play time, refresh = 10000 × 2^k for the k-th paid refresh (k from 0), capped at 1e9; 3 free per 12 h of play time, 30 s between any two (MERCHANT_GOODS.refresh)
 bonuses: price = ceil(base × growth^level)   Haggler 100 K ×1.9, Bulk Discount 250 K ×2.1, Lucky Charm 150 K ×1.9, Pack Rat 500 K ×3, Foreman 400 K ×1.9, Skinner 300 K ×1.9, Quick Hands / Keen Eye / Deadly Aim / Might 250 K ×1.9, Arcana 250 K ×2, Vampiric Fang / Second Wind 300 K ×2, Ancestral Tithe 600 K ×1.9 (all start again on a rebirth but Pack Rat); Embers of a rebirth = floor(gain × (1 + 0.05 × Tithe))
 click: gold = max(total gold/s × clickPower, floor) × (1 + Click Mastery) × (1 + set bonus)    power 2 → 4 → 8 → 15, floor 2 / 6 / 20 / 60   (750 K, 2.5 M, 10 M); Click Mastery +25 % per Ember level (CLICK_LADDER, clickGold)
 chest: gold = floor(total gold/s × U{600…3600} s × (1 + 0.005 × Luck))      one per 600 s of server time (Luck shortens it), counted with the monsters against min(40, 30 % of the free land)
@@ -157,15 +157,15 @@ income      × (1 + 0.1 × legacyEarned^0.6)                             folded 
 shop cost   = ceil(base × 1.4^level)        base: thrift 2, builders 3, mastery 2, provisions 2; max level 10
 thrift      : tile and building cost × (1 − 0.02 × level); on tiles it is summed with Charisma and Bulk Discount and capped at 45 %, buildings take Thrift only
 builders    : castle build time × (1 − 0.05 × level)
-mastery     : click power × (1 + 0.10 × level)
+mastery     : click gold × (1 + 0.25 × level)
 provisions  : start each run with level × (1500 gold, 400 wood, 400 stone)
 ```
 
-| castle | 100 tiles | 200 tiles | 300 tiles |
+| castle | 400 tiles | 500 tiles | 600 tiles |
 | --- | --- | --- | --- |
-| 6 | 9 | 13 | 16 |
-| 8 | 39 | 55 | 68 |
-| 10 | 76 | 108 | 133 |
+| 6 | 18 | 27 | 35 |
+| 8 | 79 | 113 | 146 |
+| 10 | 153 | 220 | 285 |
 
 Conservation rule used by the save check: `legacyPoints + Σ shop spending = legacyEarned`, and `rebirths = 0` implies `legacyEarned = 0` ([07](07-saves-and-security.md)). More tables in [generated/balance-tables.md](generated/balance-tables.md).
 
@@ -202,8 +202,8 @@ drops        : see [10-loot-system.md](10-loot-system.md): profile -> rolls -> s
                potion 25 % + 1.5 % per level (Greater from level 7)              (level 1: 90 s of income, level 9: ~316 s)
                Boss: 1 item of his own (rolled rarity) + 5 % (pity up to 15 %) a legendary weapon + 2 Minor and 1 Greater potion
                chest (item result, 8 % of chests): one item - gear 82 % (rolled rarity) or a potion, 1.9 % a legendary weapon instead
-item level   : a monster's drops are at its own level (rat 1-20, King 15-35); chest 4 and the merchant 4, +3 per castle level; gear power x levelScale(level) = 1 + 0.07 x (level - 1)
-spawn        : first rat 120 s after the start (a valid site must be free: owned land 2-9 tiles from the castle), then every 900 s, at most min(40, 30 % of the free land) waiting per kind; a boss (one at a time) every 10800 s of spawn time (COMBAT.spawn.bossIntervalSec)
+item level   : a monster's drops are at its own level (monster 1-30, boss 15-45); chest 4 and the merchant 4, +3 per castle level; gear power x levelScale(level) = 1 + 0.07 x (level - 1)
+spawn        : first rat 120 s after the start (a valid site must be free: owned land 2-9 tiles from the castle), then every 900 s, at most min(40, 30 % of the free land) waiting in all (chests, monsters and the boss together); a boss (one at a time) every 10800 s of spawn time (COMBAT.spawn.bossIntervalSec)
 Rat King     : level 15: 1000 HP behind 15 armor, attack 11 every 3 s, 75 s limit
 ```
 
