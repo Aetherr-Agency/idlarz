@@ -88,7 +88,7 @@ upgrade C→C+1      = pay upgradeCosts[C−1] up front, then wait durationsSec[
 | 8→9 | 5 d | 76.8 M | 7.6 M | 7.6 M | 4 M | 41 M | 2 M |
 | 9→10 | 7 d | 122.8 M | 12.2 M | 12.2 M | 6.6 M | 65.6 M | 3.2 M |
 
-Build time to level 6 is 3 d 17 h (1 h + 4 h + 12 h + 1 d + 2 d), to level 10 22 d 17 h (before Ember discounts); the timers are the floor of the first run, so the cost of 5→6 is what a player who plays a few times a day must be able to pay while the 4→5 timer runs. Cost rows come straight from `CASTLE_UPGRADE.upgradeCosts`; the generated tables show the same numbers.
+Build time to level 6 is 1 d 20 h 30 min (30 min + 2 h + 6 h + 12 h + 1 d), to level 10 11 d 8 h 30 min (before Ember discounts); the timers are the floor of the first run, so the cost of 5→6 is what a player who plays a few times a day must be able to pay while the 4→5 timer runs. Cost rows come straight from `CASTLE_UPGRADE.upgradeCosts`; the generated tables show the same numbers.
 
 ## 5. Farm animals
 
