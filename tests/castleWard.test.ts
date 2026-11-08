@@ -115,6 +115,8 @@ test('a monster never stands in the ward (the 3x3 around the castle from level 7
 	setCastle(L7);
 	assert.equal(pickSpawnTile('thistleBoar', api().tiles, new Set(), Math.random), null);
 	growTo(14);
+	// the grown tiles roll their biome, so none may suit a boar: pin a plains tile 6 out (boars live on plains, 2 to 9 tiles from the castle, outside the ward)
+	store.setState((s) => ({ tiles: setTile(s.tiles, CASTLE_X + 6, CASTLE_Y, { biome: 'plains', isOwned: true }) }));
 	for (let i = 0; i < 60; i++) {
 		const pick = pickSpawnTile('thistleBoar', api().tiles, new Set(), Math.random)!;
 		assert.ok(pick);
@@ -149,7 +151,7 @@ test('the castle area bonus multiplies the output of the tiles (and buildings) i
 		let w = setTile(EMPTY_WORLD, CASTLE_X, CASTLE_Y, { biome: 'castle', isOwned: true, level });
 		w = setTile(w, CASTLE_X + 1, CASTLE_Y, { biome: 'forest', isOwned: true }); // inside at every level
 		w = setTile(w, CASTLE_X + 3, CASTLE_Y, { biome: 'forest', isOwned: true, building: 'farm', level: 1 }); // inside from level 9
-		w = setTile(w, CASTLE_X + 6, CASTLE_Y, { biome: 'forest', isOwned: true }); // never inside
+		w = setTile(w, CASTLE_X + 6, CASTLE_Y, { biome: 'plains', isOwned: true }); // never inside
 		return w;
 	};
 	const area = (level: number, dx: number) => {

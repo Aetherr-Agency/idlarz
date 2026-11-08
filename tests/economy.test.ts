@@ -230,6 +230,8 @@ test('chests: collecting needs a real chest and takes it off the map at once (wh
 test('buildings: cost resources, grow more expensive, and only go on free land tiles', () => {
 	freshGame({ gold: 1e12, wood: 1e12, stone: 1e12 });
 	growTo(4);
+	// the bought tiles roll their biome, and all of them can be water: pin one owned land tile to build on
+	patchTileAt(CASTLE_X + 1, CASTLE_Y, { biome: 'plains', isOwned: true });
 	const spot = gridCells().find(({ t }) => t.isOwned && t.biome !== 'castle' && t.biome !== 'lake')!;
 	const first = calculateBuildingCost(api().tiles);
 	assert.equal(api().buildOnTile(spot.x, spot.y, 'nonsense'), false);
