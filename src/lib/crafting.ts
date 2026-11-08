@@ -73,6 +73,10 @@ export const craftLevelOf = (xp: number): { level: number; progress: number } =>
 /** The recipe that makes a component (the first one, there is one per component). */
 const makerOf = (component: string): Recipe | undefined => RECIPES.find((r) => 'component' in r.output && r.output.component === component);
 
+/** The gold value of the merchant resources a recipe takes itself (components are not counted: they were paid when they were made). */
+export const recipeResourceGold = (recipe: Recipe): number =>
+	recipe.inputs.reduce((sum, input) => ('resource' in input ? sum + input.qty * RESOURCES[input.resource].merchant.price : sum), 0);
+
 /** The gold value of a recipe's inputs at merchant prices; a component counts at what its own recipe costs per piece made. */
 export const recipeCostGold = (recipe: Recipe, seen: readonly string[] = []): number => {
 	let sum = 0;
