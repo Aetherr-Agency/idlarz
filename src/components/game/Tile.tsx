@@ -1,113 +1,25 @@
 import React, { memo, useState } from 'react';
-import { formatCompact } from '@/utils/formatters';
-import { createPortal } from 'react-dom';
 import { TileProps, type MonsterType } from '@/types/game';
 import { CASTLE_X, CASTLE_Y, CASTLE_FORTRESS, CASTLE_UPGRADE } from '@/config/castle';
-import { BIOMES, TILE_SIZE } from '@/config/biomes';
+import { TILE_SIZE } from '@/config/biomes';
 import { BUILDINGS, BuildingType } from '@/config/buildings';
 import '@/styles/Buildings.css';
 import { useMapSource } from './mapSource';
 import { castleLevelOf, inCastleRange, MAX_CASTLE_RANGE_RADIUS } from '@/lib/castleWard';
 import { getTile } from '@/utils/world';
-import { canBuildAt } from '@/utils/game/costs';
-import { isLandmarkTile } from '@/utils/terrain';
 import { cn } from '@/lib/utils';
 import audioManager from '@/utils/audioManager';
 import PixelIcon, { PixelSheet } from './PixelIcon';
 import CastleSprite from './CastleSprite';
 import CastleTimerBadge from './CastleTimerBadge';
 import { BUILDING_PIXEL_ICONS, BUILDING_GLOW } from '@/config/pixelIcons';
-import { TileStatus } from './TileStatus';
-import MonsterSprite from './MonsterSprite';
-import { growthInfo, growthSecondsLeft, isBoss, maxLevelOf, monsterAt, monsterStats } from '@/lib/monsters';
-import { limitOf } from '@/lib/limits';
-import { MONSTERS } from '@/config/combatConfig';
-import { MONSTER_CATALOG } from '@/catalog/monsters';
+import { maxLevelOf, monsterAt } from '@/lib/monsters';
 import { useWindowStore } from '@/stores/windowStore';
-import { useMapTipLayer } from './MapTipLayer';
-import { useUiStore, type ContextMenuItem } from '@/stores/uiStore';
+import { useUiStore } from '@/stores/uiStore';
 import { useGameStore } from '@/stores/gameStore';
-import { openMenuAt } from '@/lib/globalMenu';
-import '@/styles/ContextMenu.css';
-
-/** The monster on the map with its growth shown: a blue badge at full size, otherwise a thin bar that fills towards the next level (a CSS animation, so no timer runs). */
-const MapMonster: React.FC<{ id: number; type: MonsterType; level: number; max: number; lucky: boolean; art?: string; queued: number }> = ({
-	id,
-	type,
-	level,
-	max,
-	lucky,
-	art,
-	queued,
-}) => {
-	const state = useMapSource().game.getState();
-	const monster = art ? undefined : state.monsters.find((m) => m.id === id);
-	const ctx = { merchantUpgrades: state.merchantUpgrades, prestige: state.prestige };
-	const growth = monster ? growthInfo(monster, ctx) : null;
-	return (
-		<MonsterSprite
-			type={type}
-			level={level}
-			lucky={lucky}
-			art={art}
-			maxed={level >= max}
-			queued={queued}
-			growth={growth && !growth.maxed && growth.leftSec !== null ? { leftSec: growth.leftSec, fraction: growth.fraction } : undefined}
-			intervalSec={limitOf('monsterGrowthIntervalSec', ctx)}
-		/>
-	);
-};
-
-/** Hover card of a monster: level, HP, time to its next level, boss traits and the call to fight. Reads the age at render time. */
-const MonsterTip: React.FC<{ id: number; type: MonsterType; level: number; art?: string; queued: number; lineOpen: boolean }> = ({
-	id,
-	type,
-	level,
-	art,
-	queued,
-	lineOpen,
-}) => {
-	const state = useMapSource().game.getState();
-	const wip = art ? MONSTER_CATALOG.find((m) => m.id === art) : undefined;
-	if (wip) {
-		return (
-			<div className='map-tip map-tip-up map-tip-in absolute bottom-full mb-1 left-1/2 -translate-x-1/2 w-max px-tooltip text-xs'>
-				<div className='px-tip-title'>
-					{wip.grade === 'boss' ? '☠ ' : ''}
-					{wip.label} - Lv {formatCompact(level)}
-				</div>
-				<div className='px-tip-muted'>Work in progress: art preview only</div>
-			</div>
-		);
-	}
-	const monster = state.monsters.find((m) => m.id === id);
-	const nextLevel = monster ? growthSecondsLeft(monster, { merchantUpgrades: state.merchantUpgrades, prestige: state.prestige }) : null;
-	const stats = monsterStats(type, level);
-	return (
-		<div className='map-tip map-tip-up map-tip-in absolute bottom-full mb-1 left-1/2 -translate-x-1/2 w-max px-tooltip text-xs'>
-			<div className='px-tip-title'>
-				{isBoss(type) ? '☠ ' : ''}
-				{MONSTERS[type].label} - Lv {formatCompact(level)} - {formatCompact(stats.maxHp)} HP
-			</div>
-			{isBoss(type) && <div className='text-[#ff8a6a] font-bold'>BOSS</div>}
-			{monster && (
-				<div className='px-tip-muted'>
-					Level {formatCompact(level)} of{' '}
-					{formatCompact(maxLevelOf(monster.spawnLevel, { merchantUpgrades: state.merchantUpgrades, prestige: state.prestige }))}
-					{nextLevel !== null ? `, grows in ${Math.max(1, Math.ceil(nextLevel / 60))} min` : ' - fully grown'}
-				</div>
-			)}
-			{isBoss(type) && (
-				<div className='px-tip-muted'>
-					Crits {stats.critChance}%, resists Stun {stats.stunResist}%. Beat it within {MONSTERS[type].timeLimitSec} seconds
-				</div>
-			)}
-			<div className='text-[#f0d27a]'>
-				{queued > 0 ? `In the queue (${queued}) - click to leave it` : lineOpen ? 'Click to add to the queue' : 'Click to fight'}
-			</div>
-		</div>
-	);
-};
+import TileMonster from './TileMonster';
+import TileTooltip from './TileTooltip';
+import { openTileMenu } from './TileMenu';
 
 const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, level, building, canAfford = false }) => {
 	const { game, onTile, drag } = useMapSource();
@@ -130,7 +42,6 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, level, building, canA
 	const [isShaking, setIsShaking] = useState(false);
 	const [showChestTooltip, setShowChestTooltip] = useState(false);
 	const [hovered, setHovered] = useState(false);
-	const tipLayer = useMapTipLayer();
 
 	// Check if this tile has a chest
 	const hasChest = game((state) => isOwned && !!getTile(state.tiles, x, y)?.hasChest);
@@ -202,8 +113,7 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, level, building, canA
 		}
 	};
 
-	// Right click on an explored tile: what can be done here (dismiss a monster, open a chest, build, highlight the area),
-	// then the global entries. Unexplored tiles fall through to the global menu alone.
+	// Right click on an explored tile opens the tile menu (see TileMenu); unexplored tiles fall through to the global menu alone.
 	const handleContextMenu = (e: React.MouseEvent) => {
 		if (onTile || drag) {
 			e.preventDefault();
@@ -211,44 +121,17 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, level, building, canA
 			return;
 		}
 		if (!isOwned) return;
-		e.preventDefault();
-		const ui = useUiStore.getState();
-		const own: ContextMenuItem[] = [];
-		if (monsterKey) {
-			const id = Number(monsterId);
-			own.push(
-				{
-					id: 'fight',
-					label: lineOpen
-						? queuePos > 0
-							? 'Remove from the queue'
-							: `Add ${MONSTERS[monsterType as MonsterType].label} to the queue`
-						: `Fight ${MONSTERS[monsterType as MonsterType].label}`,
-					onSelect: () => void startFight(id),
-				},
-				{ id: 'dismiss', label: `Dismiss ${MONSTERS[monsterType as MonsterType].label}...`, danger: true, onSelect: () => ui.askDismissMonster(id) },
-			);
-		} else if (hasChest) {
-			own.push({ id: 'chest', label: 'Open chest', onSelect: () => void collectChest(x, y) });
-		}
-		if (biome !== 'castle') {
-			if (!hasBuilding) {
-				const blocked = !!monsterKey || hasChest;
-				own.push({
-					id: 'build',
-					label: 'Build here...',
-					disabled: blocked || !canBuildAt(game.getState().tiles, x, y),
-					hint: blocked ? 'tile in use' : isLandmarkTile(game.getState().tiles, x, y) ? 'landmark' : undefined,
-					onSelect: () => ui.openBuildDialog(x, y),
-				});
-			}
-			own.push({
-				id: 'highlight',
-				label: `Highlight this ${BIOMES[biome]?.label ?? biome} area`,
-				onSelect: () => ui.flashCluster(game.getState().tiles, x, y),
-			});
-		}
-		openMenuAt(e.clientX, e.clientY, biome === 'castle' ? 'Castle' : (BIOMES[biome]?.label ?? biome), own);
+		openTileMenu(e, {
+			x,
+			y,
+			biome,
+			game,
+			monster: monsterKey ? { id: Number(monsterId), type: monsterType as MonsterType } : undefined,
+			queuePos,
+			lineOpen,
+			hasChest,
+			hasBuilding,
+		});
 	};
 
 	return (
@@ -316,7 +199,7 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, level, building, canA
 					)}
 
 					{isOwned && monsterKey && (
-						<MapMonster
+						<TileMonster
 							id={Number(monsterId)}
 							type={monsterType as MonsterType}
 							level={Number(monsterLevel)}
@@ -352,37 +235,23 @@ const Tile: React.FC<TileProps> = ({ biome, isOwned, x, y, level, building, canA
 			</div>
 
 			{/* Tooltips live in the map's tooltip layer (above the ambient critters), anchored to this tile */}
-			{tipLayer &&
-				hovered &&
-				(isOwned || isAdjacent) &&
-				createPortal(
-					<div className='absolute' style={{ left: x * TILE_SIZE, top: y * TILE_SIZE, width: TILE_SIZE, height: TILE_SIZE }}>
-						{isOwned && monsterKey && (
-							<MonsterTip
-								id={Number(monsterId)}
-								type={monsterType as MonsterType}
-								level={Number(monsterLevel)}
-								art={monsterArt || undefined}
-								queued={queuePos}
-								lineOpen={lineOpen}
-							/>
-						)}
-						{isOwned && hasChest && showChestTooltip && (
-							<div className='map-tip map-tip-up map-tip-in absolute bottom-full mb-1 left-1/2 -translate-x-1/2 w-max px-tooltip text-xs text-[#f0d27a]'>
-								{biome === 'lake' ? 'Something glints in the water. Click to open' : 'Click to open the treasure chest'}
-							</div>
-						)}
-						{/* a monster has its own tooltip: the biome card would only cover it */}
-						{!(isOwned && monsterKey) && (
-							<div className='map-tip map-tip-in absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full w-max min-w-[190px] max-w-[290px]'>
-								<div className='px-tooltip break-words'>
-									<TileStatus biome={biome} isOwned={isOwned} isAdjacent={isAdjacent} level={level} x={x} y={y} />
-								</div>
-							</div>
-						)}
-					</div>,
-					tipLayer,
-				)}
+			{hovered && (
+				<TileTooltip
+					biome={biome}
+					isOwned={isOwned}
+					isAdjacent={isAdjacent}
+					x={x}
+					y={y}
+					level={level}
+					hasChest={hasChest}
+					showChestTip={showChestTooltip}
+					monster={
+						monsterKey ? { id: Number(monsterId), type: monsterType as MonsterType, level: Number(monsterLevel), art: monsterArt || undefined } : undefined
+					}
+					queued={queuePos}
+					lineOpen={lineOpen}
+				/>
+			)}
 		</>
 	);
 };
