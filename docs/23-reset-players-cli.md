@@ -42,3 +42,7 @@ The server side is fully reset, but a browser may still hold its own local save.
 ## Undoing it
 
 Restore from the JSON backup, or from `save_history` when it was kept (the latest copy per player is at most about 30 minutes older than their last save). There is no automated restore tool yet.
+
+## Before the reset: `npm run check-live-saves`
+
+A read-only dry run for the same operator ([scripts/check-live-saves.ts](../scripts/check-live-saves.ts), IDL-12; method in [14](14-server-audit-and-data-plan.md) section 6). Run it with the same `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (environment or `.env.local`, never printed, never committed) **before** a release that tightens the save rules or switches on `ENFORCEMENT` (the epoch reset IDL-76, IDL-208), and again after, to see what the reset left. It runs the current code over every `player_saves` and `player_ledger` row and prints counts and reasons only: saves rejected and why, saves that would be clamped or flagged, how many `ENFORCEMENT` would refuse, how many players are in the middle of a castle upgrade, ledgers without a save or inventory. It writes nothing. If it reports saves that would be refused, reset those players or write the conversion before the release.
